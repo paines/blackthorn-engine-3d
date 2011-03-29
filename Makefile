@@ -59,6 +59,7 @@ system := thopter
 
 # Stardard drivers:
 prop := property.lisp
+quicklisp-load := build/scripts/quicklisp-load.lisp
 load := load.lisp
 test := test.lisp
 dist := dist.lisp
@@ -156,31 +157,31 @@ shell:
 
 .PHONY: shell-allegro
 shell-allegro:
-	alisp -- ${args}
+	alisp +s ${quicklisp-load} -- ${args}
 
 .PHONY: shell-sbcl
 shell-sbcl:
-	sbcl -- ${args}
+	sbcl --load ${quicklisp-load} -- ${args}
 
 .PHONY: shell-clisp
 shell-clisp:
-	clisp -- ${args}
+	clisp -x "(load \"${quicklisp-load}\")" -- ${args}
 
 .PHONY: shell-ecl
 shell-ecl:
 ifneq ($(shell which ecl.exe),)
-	ecl.exe -- ${args}
+	ecl.exe -load ${quicklisp-load} -- ${args}
 else
-	ecl -- ${args}
+	ecl -load ${quicklisp-load} -- ${args}
 endif
 
 .PHONY: shell-clozure
 shell-clozure:
-	ccl -- ${args}
+	ccl --load ${quicklisp-load} -- ${args}
 
 .PHONY: shell-clozure-builtin
 shell-clozure-builtin:
-	build/ccl/wx86cl.exe -- ${args}
+	build/ccl/wx86cl.exe --load ${quicklisp-load} -- ${args}
 
 .PHONY: server
 server:

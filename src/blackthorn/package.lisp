@@ -23,35 +23,66 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn3d)
+(in-package :cl-user)
 
-#+quicklisp
-(ql:quickload *driver-system*)
+;;;
+;;; Internal Interface:
+;;; Anything exported here but not exported in the public interface is
+;;; intended for internal use only.
+;;;
 
-#-quicklisp
-(require :asdf)
-#-quicklisp
-(asdf:operate 'asdf:load-op *driver-system*)
+(defpackage :blackthorn3d-utils
+  (:nicknames :blt3d-utils)
+  (:use :cl :alexandria :iter)
+  (:export
 
-;;; --------------------------------------------------------------------------
-;;; Setup profiler and run main.
-;;; --------------------------------------------------------------------------
+   ;; utils.lisp
+   :aif
+   :acond
+   :it
 
-(in-package :blt3d-user)
+   ;; resources.lisp
+   :add-resource-path
+   :resolve-resource
 
-(defmacro profile-packages (&rest packages)
-  `(progn
-     ,@(loop for package in packages collect
-            `(progn
-               ,@(loop for symbol being the external-symbols in package
-                    when (fboundp symbol)
-                    collect
-                      #+sbcl `(sb-profile:profile ,symbol))))))
+   ))
 
-(profile-packages blt3d blt3d-user)
+;;;
+;;; Public Interface:
+;;; The generic functions and classes listed form the interface to Blackthorn.
+;;;
 
-(main :exit-when-done nil)
+(defpackage :blackthorn3d
+  (:nicknames :blt3d)
+  (:use :cl :blt3d-utils)
+  (:export
 
-#+sbcl (sb-profile:report)
+   ;; utils.lisp
+   :aif
+   :acond
+   :it
 
-#+sbcl (sb-ext:quit)
+   ;; resources.lisp
+   :add-resource-path
+   :resolve-resource
+
+   ))
+
+;;;
+;;; User Package:
+;;;
+
+(defpackage :blackthorn3d-user
+  (:nicknames :blt3d-user)
+  (:use :cl :iter :blt3d)
+  #+allegro (:import-from :cl-user :exit)
+  (:export
+
+   ;; main.lisp
+   :main
+
+   ))
+
+#-allegro
+(eval-when (:compile-toplevel :load-toplevel)
+  (setf (symbol-function 'blt3d-user::exit) #'quit))

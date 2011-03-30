@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn-test)
+(defvar *driver-system* :blackthorn3d-test)
 
 #+quicklisp
 (ql:quickload *driver-system*)
@@ -37,8 +37,8 @@
 ;;; Run main.
 ;;; --------------------------------------------------------------------------
 
-(in-package :blt-test)
+(in-package :blt3d-test)
 
 (run-tests)
 
-(blt-user::exit)
+(blt3d-user::exit)

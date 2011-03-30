@@ -23,8 +23,8 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn-build
-  (:nicknames :blt-build)
+(defpackage :blackthorn3d-build
+  (:nicknames :blt3d-build)
   (:use :cl)
   (:import-from :cl-user :*driver-system*)
   #+allegro (:import-from :excl :exit :generate-application :run-shell-command)
@@ -32,9 +32,9 @@
   #+clisp (:import-from :ext :quit :saveinitmem)
   #+clozure (:import-from :ccl :quit :save-application))
 
-(in-package :blt-build)
+(in-package :blt3d-build)
 
-(defvar *driver-system* :blackthorn)
+(defvar *driver-system* :blackthorn3d)
 
 ;;;
 ;;; Compile the system and associated driver.
@@ -115,7 +115,7 @@
  #+windows :icon-file
  #+windows
  (make-pathname :directory '(:relative "windows") :name "thopter" :type "ico")
- :restart-init-function 'blt-user:main
+ :restart-init-function 'blt3d-user:main
  #-windows
  :application-administration
  #-windows ;; Quiet startup (See below for Windows version of this.)
@@ -173,14 +173,14 @@
 ;;; Make main executable, SBCL.
 ;;;
 
-#+sbcl (save-lisp-and-die +build-exe+ :toplevel #'blt-user:main :executable t)
+#+sbcl (save-lisp-and-die +build-exe+ :toplevel #'blt3d-user:main :executable t)
 
 ;;;
 ;;; Make main executable, CLISP.
 ;;;
 
 #+clisp
-(saveinitmem +build-exe+ :init-function #'blt-user:main :executable t :norc t)
+(saveinitmem +build-exe+ :init-function #'blt3d-user:main :executable t :norc t)
 #+clisp (quit)
 
 ;;;
@@ -188,6 +188,6 @@
 ;;;
 
 #+clozure
-(save-application +build-exe+ :toplevel-function #'blt-user:main
+(save-application +build-exe+ :toplevel-function #'blt3d-user:main
                   :prepend-kernel t)
 #+clozure (quit)

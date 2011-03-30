@@ -36,7 +36,7 @@
 #+quicklisp
 (ql:quickload :cl-fad)
 #+quicklisp
-(ql:quickload :blackthorn)
+(ql:quickload :blackthorn3d)
 
 #-quicklisp
 (require :asdf)
@@ -45,7 +45,7 @@
 #-quicklisp
 (asdf:oos 'asdf:load-op :cl-fad)
 #-quicklisp
-(asdf:oos 'asdf:load-op :blackthorn)
+(asdf:oos 'asdf:load-op :blackthorn3d)
 
 ;;;
 ;;; Setup directories for build.
@@ -72,13 +72,13 @@
 ;;;
 
 (atdoc:generate-html-documentation
- '(:blt :blt-user)
+ '(:blt3d :blt3d-user)
  +doc-dir+
  :index-title "Blackthorn API Reference"
  :heading "Blackthorn -- Lisp Game Engine")
 
 (atdoc:generate-latex-documentation
- '(:blt :blt-user)
+ '(:blt3d :blt3d-user)
  +doc-dir+
  :title "Blackthorn API Reference")
 

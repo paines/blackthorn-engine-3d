@@ -25,7 +25,7 @@
 
 (defvar *system*)
 
-(defvar *driver-system* :blackthorn)
+(defvar *driver-system* :blackthorn3d)
 (defvar *output-file* ".tmp")
 (defvar *output-expression* '(asdf:component-name *system*))
 

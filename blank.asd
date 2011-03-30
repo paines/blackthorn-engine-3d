@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2007-2010, Elliott Slaughter <elliottslaughter@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,35 +23,13 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn3d)
+(defpackage :blank-asd
+  (:use :cl :asdf))
 
-#+quicklisp
-(ql:quickload *driver-system*)
+(in-package :blank-asd)
 
-#-quicklisp
-(require :asdf)
-#-quicklisp
-(asdf:operate 'asdf:load-op *driver-system*)
-
-;;; --------------------------------------------------------------------------
-;;; Setup profiler and run main.
-;;; --------------------------------------------------------------------------
-
-(in-package :blt3d-user)
-
-(defmacro profile-packages (&rest packages)
-  `(progn
-     ,@(loop for package in packages collect
-            `(progn
-               ,@(loop for symbol being the external-symbols in package
-                    when (fboundp symbol)
-                    collect
-                      #+sbcl `(sb-profile:profile ,symbol))))))
-
-(profile-packages blt3d blt3d-user)
-
-(main :exit-when-done nil)
-
-#+sbcl (sb-profile:report)
-
-#+sbcl (sb-ext:quit)
+(defsystem blank
+  :name "blank"
+  :author "Elliott Slaughter <elliottslaughter@gmail.com>"
+  :version "0.0"
+  :depends-on (:blackthorn3d))

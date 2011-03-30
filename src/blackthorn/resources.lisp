@@ -23,35 +23,37 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn3d)
+(in-package :blackthorn3d-utils)
 
-#+quicklisp
-(ql:quickload *driver-system*)
+;;;
+;;; Resource search paths
+;;;
 
-#-quicklisp
-(require :asdf)
-#-quicklisp
-(asdf:operate 'asdf:load-op *driver-system*)
+(defvar *resource-search-paths* nil
+  "List of paths to be searched for resources like image and sound files.")
 
-;;; --------------------------------------------------------------------------
-;;; Setup profiler and run main.
-;;; --------------------------------------------------------------------------
+(defun directory-of (pathname)
+  (make-pathname
+   :host (pathname-host pathname)
+   :directory (pathname-directory pathname)))
 
-(in-package :blt3d-user)
+(defun add-resource-path (pathname)
+  (aif (and pathname (fad:file-exists-p (directory-of pathname)))
+       (pushnew it *resource-search-paths* :test #'equal)))
 
-(defmacro profile-packages (&rest packages)
-  `(progn
-     ,@(loop for package in packages collect
-            `(progn
-               ,@(loop for symbol being the external-symbols in package
-                    when (fboundp symbol)
-                    collect
-                      #+sbcl `(sb-profile:profile ,symbol))))))
+(defun resource (pathname)
+  (aif (iter (for dir in *resource-search-paths*)
+             (thereis (fad:file-exists-p (merge-pathnames pathname dir))))
+       it
+       (error "Unable to find resource ~s in search path ~s."
+              pathname
+              *resource-search-paths*)))
 
-(profile-packages blt3d blt3d-user)
+(defun resource-wild (pathname)
+  (iter (for dir in *resource-search-paths*)
+        (appending (directory (merge-pathnames pathname dir)))))
 
-(main :exit-when-done nil)
-
-#+sbcl (sb-profile:report)
-
-#+sbcl (sb-ext:quit)
+(defun resolve-resource (pathname &key (allow-wild nil))
+  (if (and allow-wild (wild-pathname-p pathname))
+      (resource-wild pathname)
+      (resource pathname)))

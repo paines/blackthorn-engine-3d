@@ -30,7 +30,7 @@ ifeq (${cl},)
 endif
 
 # Which ASDF system to load:
-system := thopter
+system := blank
 
 # Stardard drivers:
 quicklisp-setup := build/scripts/quicklisp-setup.lisp

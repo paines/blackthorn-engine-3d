@@ -23,19 +23,29 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :thopter)
+(defvar *driver-system* :blackthorn3d)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (when (find-package :swank)
     (pushnew :blt-debug *features*)))
 
+#-quicklisp
+(require :asdf)
+
+;; Inject library paths for cffi:
+#+quicklisp
+(ql:quickload :cffi)
+#-quicklisp
+(asdf:operate 'asdf:load-op :cffi)
+
+(pushnew
+ (merge-pathnames (make-pathname :directory '(:relative "lib")))
+ cffi:*foreign-library-directories* :test #'equal)
+
 ;; Load and run main:
 #+quicklisp
 (ql:quickload *driver-system*)
-
-#-quicklisp
-(require :asdf)
 #-quicklisp
 (asdf:operate 'asdf:load-op *driver-system*)
 
-(blt-user::main)
+(blt3d-user:main)

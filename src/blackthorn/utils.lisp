@@ -23,35 +23,22 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn3d)
+(in-package :blackthorn3d-utils)
 
-#+quicklisp
-(ql:quickload *driver-system*)
+;;;
+;;; Anaphora
+;;;
 
-#-quicklisp
-(require :asdf)
-#-quicklisp
-(asdf:operate 'asdf:load-op *driver-system*)
+(defmacro aif (test-form then-form &optional else-form)
+  `(let ((it ,test-form))
+     (if it ,then-form ,else-form)))
 
-;;; --------------------------------------------------------------------------
-;;; Setup profiler and run main.
-;;; --------------------------------------------------------------------------
-
-(in-package :blt3d-user)
-
-(defmacro profile-packages (&rest packages)
-  `(progn
-     ,@(loop for package in packages collect
-            `(progn
-               ,@(loop for symbol being the external-symbols in package
-                    when (fboundp symbol)
-                    collect
-                      #+sbcl `(sb-profile:profile ,symbol))))))
-
-(profile-packages blt3d blt3d-user)
-
-(main :exit-when-done nil)
-
-#+sbcl (sb-profile:report)
-
-#+sbcl (sb-ext:quit)
+(defmacro acond (&rest clauses)
+  (if (null clauses)
+      nil
+      (let ((cl1 (car clauses))
+            (sym (gensym)))
+        `(let ((,sym ,(car cl1)))
+           (if ,sym
+               (let ((it ,sym)) ,@(cdr cl1))
+               (acond ,@(cdr clauses)))))))

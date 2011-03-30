@@ -1,6 +1,6 @@
 #### Blackthorn -- Lisp Game Engine
 ####
-#### Copyright (c) 2007-2010, Elliott Slaughter <elliottslaughter@gmail.com>
+#### Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
 ####
 #### Permission is hereby granted, free of charge, to any person
 #### obtaining a copy of this software and associated documentation
@@ -24,34 +24,9 @@
 ####
 
 # Search PATH for a Lisp compiler.
-ifneq ($(shell which sbcl),)
-	cl := sbcl
-else
-ifneq ($(shell which alisp),)
-	cl := allegro
-else
-ifneq ($(shell which clisp),)
-	cl := clisp
-else
-ifneq ($(shell which ecl),)
-	cl := ecl
-else
-ifneq ($(shell which ecl.exe),)
-	cl := ecl
-else
-ifneq ($(shell which ccl),)
-	cl := clozure
-else
-ifneq ($(shell uname -s),WinNT)
-	cl := clozure-builtin
-else
+cl := $(shell build/scripts/find-lisp.sh)
+ifeq (${cl},)
 	$(error No Lisp compiler found.)
-endif
-endif
-endif
-endif
-endif
-endif
 endif
 
 # Which ASDF system to load:
@@ -59,7 +34,8 @@ system := thopter
 
 # Stardard drivers:
 prop := property.lisp
-quicklisp-load := build/scripts/quicklisp-load.lisp
+quicklisp-setup := build/scripts/quicklisp-setup.lisp
+nop := build/scripts/nop.lisp
 load := load.lisp
 test := test.lisp
 dist := dist.lisp
@@ -83,19 +59,23 @@ tempfile := .tmp
 
 # A command which can be used to get an ASDF system property.
 ifeq (${cl}, allegro)
-	get-property = $(shell alisp +B +s ${prop} -e "(defparameter *driver-system* '|${system}|)" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))")
+	get-property = $(shell alisp +B +s ${quicklisp-setup} +s ${prop} -e "(defparameter *driver-system* '|${system}|)" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))")
 else
 ifeq (${cl}, sbcl)
-	get-property = $(shell sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
+	get-property = $(shell sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
 else
 ifeq (${cl}, clisp)
-	get-property = $(shell clisp -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${prop}\")")
+	get-property = $(shell clisp -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${quicklisp-setup}\")" -x "(load \"${prop}\")")
 else
 ifeq (${cl}, ecl)
-	get-property = $(shell ecl -eval "(defparameter *driver-system* \"${system}\")" -eval "(defparameter *output-file* \"${tempfile}\")" -eval "(defparameter *output-expression* '$(1))" -load ${prop})
+	get-property = $(shell ecl -eval "(defparameter *driver-system* \"${system}\")" -eval "(defparameter *output-file* \"${tempfile}\")" -eval "(defparameter *output-expression* '$(1))" -load ${quicklisp-setup} -load ${prop})
 else
 ifeq (${cl}, clozure)
-	get-property = $(shell ccl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
+	get-property = $(shell ccl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+else
+ifeq (${cl}, clozure-builtin)
+	get-property = $(shell build/ccl/wx86cl.exe --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+endif
 endif
 endif
 endif
@@ -129,59 +109,31 @@ load:
 
 .PHONY: load-allegro
 load-allegro:
-	alisp +B +s ${driver} -e "(defparameter *driver-system* '|${system}|)" -- ${args}
+	alisp +B +s ${quicklisp-setup} +s ${driver} -e "(defparameter *driver-system* '|${system}|)" -- ${args}
 
 .PHONY: load-sbcl
 load-sbcl:
-	sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${driver} -- ${args}
+	sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: load-clisp
 load-clisp:
-	clisp -x "(defparameter *driver-system* \"${system}\")" -x "(load \"${driver}\")" -- ${args}
+	clisp -x "(defparameter *driver-system* \"${system}\")" -x "(load \"${quicklisp-setup}\")" -x "(load \"${driver}\")" -- ${args}
 
 .PHONY: load-ecl
 load-ecl:
-ifneq ($(shell which ecl.exe),)
-	ecl.exe -eval "(defparameter *driver-system* \"${system}\")" -load ${driver} -- ${args}
-else
-	ecl -eval "(defparameter *driver-system* \"${system}\")" -load ${driver} -- ${args}
-endif
+	ecl -eval "(defparameter *driver-system* \"${system}\")" -load ${quicklisp-setup} -load ${driver} -- ${args}
 
 .PHONY: load-clozure
 load-clozure:
-	ccl --eval "(defparameter *driver-system* \"${system}\")" --load ${driver} -- ${args}
+	ccl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
+
+.PHONY: load-clozure-builtin
+load-clozure-builtin:
+	build/ccl/wx86cl.exe --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: shell
 shell:
-	$(MAKE) shell-${cl}
-
-.PHONY: shell-allegro
-shell-allegro:
-	alisp +s ${quicklisp-load} -- ${args}
-
-.PHONY: shell-sbcl
-shell-sbcl:
-	sbcl --load ${quicklisp-load} -- ${args}
-
-.PHONY: shell-clisp
-shell-clisp:
-	clisp -x "(load \"${quicklisp-load}\")" -- ${args}
-
-.PHONY: shell-ecl
-shell-ecl:
-ifneq ($(shell which ecl.exe),)
-	ecl.exe -load ${quicklisp-load} -- ${args}
-else
-	ecl -load ${quicklisp-load} -- ${args}
-endif
-
-.PHONY: shell-clozure
-shell-clozure:
-	ccl --load ${quicklisp-load} -- ${args}
-
-.PHONY: shell-clozure-builtin
-shell-clozure-builtin:
-	build/ccl/wx86cl.exe --load ${quicklisp-load} -- ${args}
+	$(MAKE) driver="${nop}" new
 
 .PHONY: server
 server:
@@ -242,16 +194,6 @@ distnoclean:
 dist:
 	$(MAKE) distclean distnoclean
 
-.PHONY: README
-README:
-	pdflatex README.tex
-ifneq ($(shell which hevea.bat),)
-	hevea.bat -o README.html README.tex
-	d2u README.html
-else
-	hevea -o README.html README.tex
-endif
-
 .PHONY: doc
 doc:
 	$(MAKE) docclean
@@ -303,13 +245,13 @@ install-mac:
 
 .PHONY: clean
 clean:
-	rm -rf $(wildcard */*/*.o */*/*.fas */*/*.lib */*/*.fasl */*/*.?x32fsl */*/*.?x64fsl *.db ${tempfile})
+	rm -rf ${tempfile}
 
 .PHONY: docclean
 docclean:
-	rm -rf doc README.aux README.haux README.htoc README.log README.out README.toc
+	rm -rf doc
 
 .PHONY: distclean
 distclean:
 	$(MAKE) clean docclean
-	rm -rf $(wildcard build.in build.out bin)
+	rm -rf build.in build.out bin

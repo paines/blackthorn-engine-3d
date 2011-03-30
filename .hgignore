@@ -5,6 +5,8 @@ syntax: glob
 .\#*
 .*.swp
 .DS_Store
+.tmp
+.find-lisp
 
 # object files
 *.o

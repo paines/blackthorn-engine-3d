@@ -33,14 +33,14 @@ endif
 system := thopter
 
 # Stardard drivers:
-prop := property.lisp
 quicklisp-setup := build/scripts/quicklisp-setup.lisp
+prop :=  build/scripts/property.lisp
 nop := build/scripts/nop.lisp
-load := load.lisp
-test := test.lisp
-dist := dist.lisp
-prof := profile.lisp
-atdoc := atdoc.lisp
+load :=  build/scripts/load.lisp
+test :=  build/scripts/test.lisp
+dist :=  build/scripts/dist.lisp
+prof :=  build/scripts/profile.lisp
+atdoc :=  build/scripts/atdoc.lisp
 
 # Select which driver to run (load by default).
 driver := ${load}

@@ -38,7 +38,7 @@ fi
 function test-for () {
   program="$1"
   result="$2"
-  ignore=$(which "$program" 3>&2)
+  ignore=$(which "$program" 2>&1)
   if [[ $? -eq 0 ]]; then
     echo "$result"
     echo "$result" > "$cached_result_file"
@@ -52,10 +52,16 @@ test-for clisp clisp
 test-for ecl ecl
 test-for ccl clozure
 
-if [[ $(uname) == CYGWIN* -o $(uname) == MINGW* ]]; then
+if [[ $(uname) == CYGWIN* ]]; then
     echo clozure-builtin
     echo clozure-builtin > "$cached_result_file"
     exit 0
 fi
+if [[ $(uname) == MINGW* ]]; then
+    echo clozure-builtin
+    echo clozure-builtin > "$cached_result_file"
+    exit 0
+fi
+
 
 exit 1

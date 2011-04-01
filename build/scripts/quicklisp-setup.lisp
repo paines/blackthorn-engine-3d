@@ -23,6 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
+;; Load quicklisp
 #-quicklisp
 (let ((quicklisp-init
        (merge-pathnames
@@ -34,3 +35,11 @@
                                               *load-truename*))))))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
+
+;; Inject library paths for cffi
+(ql:quickload :cffi)
+(asdf:operate 'asdf:load-op :cffi)
+
+(pushnew
+ (merge-pathnames (make-pathname :directory '(:relative "lib")))
+ cffi:*foreign-library-directories* :test #'equal)

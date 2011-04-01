@@ -32,16 +32,6 @@
 #-quicklisp
 (require :asdf)
 
-;; Inject library paths for cffi:
-#+quicklisp
-(ql:quickload :cffi)
-#-quicklisp
-(asdf:operate 'asdf:load-op :cffi)
-
-(pushnew
- (merge-pathnames (make-pathname :directory '(:relative "lib")))
- cffi:*foreign-library-directories* :test #'equal)
-
 ;; Load and run main:
 #+quicklisp
 (ql:quickload *driver-system*)

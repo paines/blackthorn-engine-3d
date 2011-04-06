@@ -33,12 +33,12 @@
 #-quicklisp
 (asdf:operate 'asdf:load-op *driver-system*)
 
-;;; --------------------------------------------------------------------------
+;;;
 ;;; Run main.
-;;; --------------------------------------------------------------------------
+;;;
 
 (in-package :blt3d-test)
 
 (run-tests)
 
-(blt3d-user::exit)
+(blt3d-main::exit)

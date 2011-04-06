@@ -48,9 +48,13 @@
                                               ((:file "package")
                                                (:file "draw"))
                                               :serial t)
-                                     (:file "package")
-                                     (:file "library")
-                                     (:file "main"))
+                                     (:module main
+                                              :components
+                                              ((:file "package")
+                                               (:file "library")
+                                               (:file "main"))
+                                              :serial t)
+                                     (:file "package"))
                                     :serial t))))
     :depends-on (;; Utilities
                  :alexandria

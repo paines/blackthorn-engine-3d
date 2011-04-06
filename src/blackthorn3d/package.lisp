@@ -26,28 +26,6 @@
 (in-package :cl-user)
 
 ;;;
-;;; Internal Interface:
-;;; Anything exported here but not exported in the public interface is
-;;; intended for internal use only.
-;;;
-
-(defpackage :blackthorn3d-utils
-  (:nicknames :blt3d-utils)
-  (:use :cl :alexandria :iter)
-  (:export
-
-   ;; utils.lisp
-   :aif
-   :acond
-   :it
-
-   ;; resources.lisp
-   :add-resource-path
-   :resolve-resource
-
-   ))
-
-;;;
 ;;; Public Interface:
 ;;; The generic functions and classes listed form the interface to Blackthorn.
 ;;;

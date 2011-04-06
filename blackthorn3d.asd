@@ -34,7 +34,7 @@
     :version "0.0"
     :components ((:module src
                           :components
-                          ((:module blackthorn
+                          ((:module blackthorn3d
                                     :components
                                     ((:module utils
                                               :components

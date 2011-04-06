@@ -113,9 +113,9 @@
       (gl:clear-color 0 0 0 0)
       (gl:enable :depth-test)
       (gl:depth-func :lequal)
-	  (gl:matrix-mode :projection)
-	  (gl:load-identity)
-	  (gl:frustum -1.0 1.0 -1.0 1.0 1.0 100.0)
+      (gl:matrix-mode :projection)
+      (gl:load-identity)
+      (gl:frustum -1.0 1.0 -1.0 1.0 1.0 100.0)
       (gl:matrix-mode :modelview)
       (gl:load-identity)
 
@@ -142,10 +142,10 @@
               )
             (:idle ()
               (gl:clear :color-buffer-bit :depth-buffer-bit)
-			  (gl:load-identity)			  
-			  (gl:translate 0.0 0.0 -6.0)
-			  (gfx:draw-cube :color #(1.0 .75 0))	  
-			  
+              (gl:load-identity)                      
+              (gl:translate 0.0 0.0 -6.0)
+              (gfx:draw-cube :color #(1.0 .75 0))     
+                          
               ;(render *game* #c(0 0) 1d0 -1d0)
               (gl:flush)
               (sdl:update-display)

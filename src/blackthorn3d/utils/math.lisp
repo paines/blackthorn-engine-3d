@@ -47,7 +47,6 @@
         (sum (* (aref a i) (aref b i)))))
 
 (defun cross (a b)
-  ;(declare (type (simple-array float (4)) a b))
   (make-array float 4 :initial-elements
               (list (- (* (y v1) (z v2)) (* (z v1) (y v2)))
                     (- (* (x v1) (z v2)) (* (z v1) (x v2)))
@@ -55,24 +54,18 @@
                     (w a))))
 
 (defun vec+ (&rest vecs)
-  ;(declare (type (simple-vector 4) a b))
   (apply #'map 'vector #'+ vecs))
 
 (defun vec- (&rest vecs)
- ; (declare (type (simple-vector 4) a b))  
   (apply #'map 'vector #'- vecs))
 
 (defun vec* (&rest vecs)
-  ;(declare (type (simple-vector 4) a b))
   (apply #'map 'vector #'* vecs))
   
 (defun vec/ (&rest vecs)
- ; (declare (type (simple-vector 4) a b))
   (apply #'map 'vector #'/ vecs))
 
 (defun vec-scale (v s)
-  ;(declare (type (simple-vector 4) v)
-  ;         (type float s))
   (make-array float 4 :initial-contents
     (iter (for i below 4)
               (collect (* s (svref v i))))))
@@ -131,8 +124,6 @@
     mat))
  
 (defun get-row (mat row)
-  ;(declare (type (simple-array 'float) mat)
-  ;         (type fixnum row))
   (let ((ncols (array-dimension mat 1)))
     (make-array nrows :element-type 'float :initial-elements
       (iter (for i below ncols)
@@ -154,7 +145,6 @@
 ;; Computes the inner product of two vectors
 ;; Returns a float value
 (defun inner-product (a b)
-  ;(declare (type (simple-array 'float) a b))
   (let ((len (min (length a) (length b))))
     (the float
       (iter (for i below len)

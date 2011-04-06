@@ -36,12 +36,22 @@
                         :components
                         ((:module blackthorn
                                   :components
-                                  ((:file "package")
-                                   (:file "utils")
-                                   (:file "resources")
-                                   (:file "library")
-                                   (:file "main"))
-                                  :serial t))))
+                                  ((:module utils
+								            :components
+											((:file "package")
+											 (:file "utils")
+											 (:file "resources")
+											 (:file "math"))
+											 :serial t)
+								   (:module graphics
+                                            :components
+										    ((:file "package")
+											 (:file "draw"))
+										    :serial t)
+								   (:file "package")
+								   (:file "library")
+								   (:file "main"))
+								   :serial t))))
   :depends-on (;; Utilities
                :alexandria
                :trivial-features

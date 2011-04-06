@@ -44,7 +44,7 @@
 (gen-vec-accessors x y z w)
 (gen-vec-accessors r g b a)
 
-  
+
 (defun dot (a b)
   (iter (for i from 0 below 4)
         (sum (* (aref a i) (aref b i)))))
@@ -58,22 +58,22 @@
 		  (w a))))
   
 
-(defun vec+ (a b)
+(defun vec+ (&rest vecs)
   ;(declare (type (simple-vector 4) a b))
-  (map 'vector #'+ a b))
+  (apply #'map 'vector #'+ vecs))
   
-(defun vec- (a b)
+(defun vec- (&rest vecs)
  ; (declare (type (simple-vector 4) a b))  
-  (map 'vector #'- a b))
+  (apply #'map 'vector #'- vecs))
 
-(defun vec* (a b)
+(defun vec* (&rest vecs)
   ;(declare (type (simple-vector 4) a b))
-  (map 'vector #'* a b))
+  (apply #'map 'vector #'* vecs))
   
-(defun vec/ (a b)
+(defun vec/ (&rest vecs)
  ; (declare (type (simple-vector 4) a b))
-  (map 'vector #'/ a b))
- 
+  (apply #'map 'vector #'/ vecs))
+
 (defun vec-scale (v s)
   ;(declare (type (simple-vector 4) v)
   ;         (type float s))
@@ -90,6 +90,20 @@
 		   
 (defun norm (v)
   (v/ v mag(v)))
+  
+(defun homogenize (v)
+  (vec-scale v (/ (w v))))
+  
+(defun min-axis (v)
+  (iter (for i below 4)
+        (finding i minimizing (svref v i))))
+		
+(defun make-perp (v)
+  (let ((min-a (min-axis v)))
+    (case min-a
+	  (0 (norm (vector 0.0 -(z v) (y v))))
+	  (1 (norm (vector -(z v) 0.0 (x v))))
+	  (2 (norm (vector -(y v) (x v) 0.0))))))
   
 
   
@@ -119,7 +133,7 @@
  
 (defun set-col (mat col vec)
   (let ((nrows (array-dimension mat 0)))
-    (iter (for i below nrows)
+    (iter (for i below (min (length vec) nrows))
 	      (setf (aref mat i col) (svref vec i)))
     mat))
  
@@ -133,7 +147,7 @@
 	
 (defun set-row (mat row vec)
   (let ((ncols (array-dimension mat 1)))
-    (iter (for i below ncols)
+    (iter (for i below (min (length vec) ncols))
           (setf (aref mat row i) (svref vec i)))
 	mat))
 	
@@ -170,9 +184,9 @@
 		
 		
 ;;; Calculate the transpose of a matrix m
-(defun transpose (m)
-  (let* ((n-rows (array-dimension m 0))
-         (n-cols (array-dimension m 1))
+(defun transpose (m &key size)
+  (let* ((n-rows (if size (first size) (array-dimension m 0)))
+         (n-cols (if size (second size) (array-dimension m 1)))
 		 (new-mat (make-matrix (list n-cols n-rows) :element-type 'float)))
     (iter (for i below n-rows)
 	  (iter (for j below n-cols)
@@ -222,5 +236,3 @@
   
 (defun make-scale (v)
   (matrix-multiply-v (make-identity) v))
-  
-	

@@ -25,52 +25,49 @@
 
 (in-package graphics)
 
-
 (defun draw-cube (&key (color #(1.0 1.0 1.0)))
   (gl:color (r color) (g color) (b color))
   (gl:with-primitive :quads
-  
-	;; front face
+
+    ;; front face
     (gl:vertex -1.0 1.0 1.0)
-	(gl:vertex -1.0 -1.0 1.0)
-	(gl:vertex 1.0 -1.0 1.0)
-	(gl:vertex 1.0 1.0 1.0)
-	
-	;; top face
-	(gl:vertex -1.0 1.0 -1.0)
-	(gl:vertex -1.0 1.0 1.0)
-	(gl:vertex 1.0 1.0 1.0)
-	(gl:vertex 1.0 1.0 -1.0)
-	
-	;; right face
-	(gl:vertex 1.0 1.0 1.0)
-	(gl:vertex 1.0 -1.0 1.0)
-	(gl:vertex 1.0 -1.0 -1.0)
-	(gl:vertex 1.0 1.0 -1.0)
-	
-	;; back face
-	(gl:vertex 1.0 1.0 -1.0)
-	(gl:vertex 1.0 -1.0 -1.0)
-	(gl:vertex -1.0 -1.0 -1.0)
-	(gl:vertex -1.0 1.0 -1.0)
-	
-	;; left face
-	(gl:vertex -1.0 1.0 -1.0)
-	(gl:vertex -1.0 -1.0 -1.0)
-	(gl:vertex -1.0 -1.0 1.0)
-	(gl:vertex -1.0 1.0 1.0)
-	
-	;; bottom face
-	(gl:vertex -1.0 -1.0 -1.0)
-	(gl:vertex 1.0 -1.0 -1.0)
-	(gl:vertex 1.0 -1.0 1.0)
-	(gl:vertex -1.0 -1.0 1.0)))
-  
+    (gl:vertex -1.0 -1.0 1.0)
+    (gl:vertex 1.0 -1.0 1.0)
+    (gl:vertex 1.0 1.0 1.0)
+        
+    ;; top face
+    (gl:vertex -1.0 1.0 -1.0)
+    (gl:vertex -1.0 1.0 1.0)
+    (gl:vertex 1.0 1.0 1.0)
+    (gl:vertex 1.0 1.0 -1.0)
+        
+    ;; right face
+    (gl:vertex 1.0 1.0 1.0)
+    (gl:vertex 1.0 -1.0 1.0)
+    (gl:vertex 1.0 -1.0 -1.0)
+    (gl:vertex 1.0 1.0 -1.0)
+        
+    ;; back face
+    (gl:vertex 1.0 1.0 -1.0)
+    (gl:vertex 1.0 -1.0 -1.0)
+    (gl:vertex -1.0 -1.0 -1.0)
+    (gl:vertex -1.0 1.0 -1.0)
+        
+    ;; left face
+    (gl:vertex -1.0 1.0 -1.0)
+    (gl:vertex -1.0 -1.0 -1.0)
+    (gl:vertex -1.0 -1.0 1.0)
+    (gl:vertex -1.0 1.0 1.0)
+        
+    ;; bottom face
+    (gl:vertex -1.0 -1.0 -1.0)
+    (gl:vertex 1.0 -1.0 -1.0)
+    (gl:vertex 1.0 -1.0 1.0)
+    (gl:vertex -1.0 -1.0 1.0)))
+
 (defun draw-triangle (&key (color #(1.0 1.0 1.0)))
   (gl:color (r color) (g color) (b color))
   (gl:with-primitive :triangles
     (gl:vertex 0.0 1.0 0.0)
-	(gl:vertex -1.0 0.0 0.0)
-	(gl:vertex 1.0 0.0 0.0)))
-
-
+    (gl:vertex -1.0 0.0 0.0)
+    (gl:vertex 1.0 0.0 0.0)))

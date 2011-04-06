@@ -25,14 +25,16 @@
 
 (in-package :cl-user)
 
-
 (defpackage :graphics
   (:nicknames :gfx)
   (:use :iter :cl :blt3d-utils)
   (:export
-    :draw-triangle
-    :draw-cube
-	))
-	
-	
-	
+
+   ;; draw.lisp
+   :draw-triangle
+   :draw-cube
+
+   ))
+        
+        
+        

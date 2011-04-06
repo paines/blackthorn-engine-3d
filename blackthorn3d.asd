@@ -29,44 +29,44 @@
 (in-package :blackthorn3d-asd)
 
 (defsystem blackthorn3d
-  :name "blackthorn3d"
-  :author "Elliott Slaughter <elliottslaughter@gmail.com>"
-  :version "0.0"
-  :components ((:module src
-                        :components
-                        ((:module blackthorn
-                                  :components
-                                  ((:module utils
-								            :components
-											((:file "package")
-											 (:file "utils")
-											 (:file "resources")
-											 (:file "math"))
-											 :serial t)
-								   (:module graphics
-                                            :components
-										    ((:file "package")
-											 (:file "draw"))
-										    :serial t)
-								   (:file "package")
-								   (:file "library")
-								   (:file "main"))
-								   :serial t))))
-  :depends-on (;; Utilities
-               :alexandria
-               :trivial-features
-               :command-line-arguments
-               :cl-fad
-               :iterate
-               :cl-containers
-               :mt19937
+    :name "blackthorn3d"
+    :author "Elliott Slaughter <elliottslaughter@gmail.com>"
+    :version "0.0"
+    :components ((:module src
+                          :components
+                          ((:module blackthorn
+                                    :components
+                                    ((:module utils
+                                              :components
+                                              ((:file "package")
+                                               (:file "utils")
+                                               (:file "resources")
+                                               (:file "math"))
+                                              :serial t)
+                                     (:module graphics
+                                              :components
+                                              ((:file "package")
+                                               (:file "draw"))
+                                              :serial t)
+                                     (:file "package")
+                                     (:file "library")
+                                     (:file "main"))
+                                    :serial t))))
+    :depends-on (;; Utilities
+                 :alexandria
+                 :trivial-features
+                 :command-line-arguments
+                 :cl-fad
+                 :iterate
+                 :cl-containers
+                 :mt19937
 
-               ;; Networking and Serialization
-               :usocket
-               :cl-store
+                 ;; Networking and Serialization
+                 :usocket
+                 :cl-store
 
-               ;; Graphics and Sound:
-               :lispbuilder-sdl
-               :lispbuilder-sdl-image
-               :lispbuilder-sdl-mixer
-               :cl-opengl))
+                 ;; Graphics and Sound:
+                 :lispbuilder-sdl
+                 :lispbuilder-sdl-image
+                 :lispbuilder-sdl-mixer
+                 :cl-opengl))

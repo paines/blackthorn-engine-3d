@@ -144,7 +144,7 @@
               (gl:clear :color-buffer-bit :depth-buffer-bit)
               (gl:load-identity)                      
               (gl:translate 0.0 0.0 -6.0)
-              (gfx:draw-cube :color #(1.0 .75 0))     
+              (blt3d-gfx:draw-cube :color #(1.0 .75 0))     
                           
               ;(render *game* #c(0 0) 1d0 -1d0)
               (gl:flush)

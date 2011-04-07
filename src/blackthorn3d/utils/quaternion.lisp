@@ -30,12 +30,46 @@
 ;;;;   Do not seek to understand them, the denizens of Quaternia, for they are
 ;;;;   far beyond mortal ken.  Know only well that they do a mean twist.
 ;;;;
+;;;; for our purposes, we will represent quaternions in the same form as
+;;;; points <x y z w> where <x y z> == qv and w == qw.  This will make it easy
+;;;; to do operations on quaternions and convert points to quaternions for
+;;;; rotation (though ideally this should be done on hardware with matrices,
+;;;; unless copying matrices onto the hardware proves too expensive)
 
 
-(defun make-quat (axis phi)
-  (
+(defun qv (q)
+  (make-vector3 (x q) (y q) (z q)))
+(defmacro qw (q)
+  `(w ,q))
   
-(defun quat-identity ())
+(defun make-quaternion (x y z w)
+  (make-vector4 x y z w))
 
-(defun quat+ (q p)
-  (
+(defun make-quat-from-vw (v w)
+  (make-vector4 (x v) (y v) (z v) w))
+  
+(defun point3->quat (p)
+  (make-quaternion (x p) (y p) (z p) 0.0))
+  
+(defun axis-rad->quat (axis phi)
+  (make-quat-from-vw (vec-scale axis (sin phi)) (cos phi)))
+  
+(defun quat-identity () 
+  (make-vector4 0.0 0.0 0.0 1.0))
+
+(defun quat-norm (q)
+  (normalize q))
+  
+(defun quat+ (q r)
+  (vec+ q r))
+
+(defun quat* (q r)
+  (let ((q-v (qv q)) (q-w (qw q))
+        (r-v (qv r)) (r-w (qw r)))
+    (make-quat-from-rw
+      (vec+ (vec+ (cross3 q-v r-v)
+                  (vec-scale q-v r-w))
+            (vec-scale r-v q-w))
+       (- (* q-w r-w) (dot q-v r-v)))))
+
+(defun quat-conjugate (q))

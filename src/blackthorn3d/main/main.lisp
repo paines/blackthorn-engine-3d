@@ -122,7 +122,7 @@
       (defparameter cam-pos (blt3d-utils:make-point3 0.0 0.0 5.0))
       (defparameter cam-d (blt3d-utils:make-vec3 0.0 0.0 -1.0))
       (defparameter cam-up (blt3d-utils:make-vec3 0.0 1.0 0.0))
-      (defparameter cam (gfx:make-camera-matrix cam-pos
+      (defparameter cam (blt3d-gfx:make-camera-matrix cam-pos
                                                 cam-d
                                                 #(0.0 1.0 0.0 0.0)))
       ;; Main loop:
@@ -154,11 +154,11 @@
                   :initial-contents
                     '((1.0 0.0 0.0 0.0)
                       (0.0 1.0 0.0 0.0)
-                      (0.0 0.0 1.0 -5.0)
-                      (0.0 0.0 0.0 1.0))))
+                      (0.0 0.0 1.0 0.0)
+                      (0.0 0.0 -5.0 1.0))))
               ;(gl:load-identity)
               ;(gl:translate 0.0 0.0 -5.0)
-              (gfx:draw-cube :color #(1.0 .75 0))     
+              (blt3d-gfx:draw-cube :color #(1.0 .75 0))     
                           
               ;(render *game* #c(0 0) 1d0 -1d0)
               (gl:flush)

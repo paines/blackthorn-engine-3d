@@ -119,12 +119,12 @@
       (gl:matrix-mode :modelview)
       (gl:load-identity)
 
-      (defparameter cam-pos (blt3d-utils:make-point3 0.0 0.0 5.0))
-      (defparameter cam-d (blt3d-utils:make-vec3 0.0 0.0 -1.0))
-      (defparameter cam-up (blt3d-utils:make-vec3 0.0 1.0 0.0))
-      (defparameter cam (gfx:make-camera-matrix cam-pos
-                                                cam-d
-                                                #(0.0 1.0 0.0 0.0)))
+      (defparameter cam-pos (make-point3 0.0 0.0 5.0))
+      (defparameter cam-d (make-vec3 0.0 0.0 -1.0))
+      (defparameter cam-up (make-vec3 0.0 1.0 0.0))
+      (defparameter cam (make-camera-matrix cam-pos
+                                            cam-d
+                                            #(0.0 1.0 0.0 0.0)))
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue)))
         (catch 'main-loop
@@ -148,9 +148,9 @@
               )
             (:idle ()
               (gl:clear :color-buffer-bit :depth-buffer-bit)
-              ;(gl:load-matrix (gfx:cam-inverse cam))
+              ;(gl:load-matrix (cam-inverse cam))
               (gl:load-matrix 
-                (make-array '(4 4) :element-type '%gl:float
+                (make-array '(4 4) :element-type 'float
                   :initial-contents
                     '((1.0 0.0 0.0 0.0)
                       (0.0 1.0 0.0 0.0)
@@ -158,7 +158,7 @@
                       (0.0 0.0 0.0 1.0))))
               ;(gl:load-identity)
               ;(gl:translate 0.0 0.0 -5.0)
-              (gfx:draw-cube :color #(1.0 .75 0))     
+              (draw-cube :color #(1.0 .75 0))     
                           
               ;(render *game* #c(0 0) 1d0 -1d0)
               (gl:flush)

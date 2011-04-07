@@ -25,12 +25,10 @@
 
 (in-package :blackthorn3d-utils)
 
+;;;
+;;; Vector Stuff
+;;;  
 
-;;;;
-;;;; Vector Stuff
-;;;;
-  
- 
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
              (with-gensyms (v) `(defmacro ,n (,v) `(svref ,,v ,,p)))))
@@ -39,8 +37,8 @@
                (for j below (length names))
                (collect (vec-accessor i j))))))
             
-;;; Create aliases for accessing different elements
-;;; of vectors            
+;; Create aliases for accessing different elements
+;; of vectors            
 (gen-vec-accessors x y z w)
 (gen-vec-accessors r g b a)
 
@@ -107,7 +105,7 @@
     (* s (y v))
     (* s (z v))
     (w v)))
-    
+
 (defun vec-scale3 (v s)
   (make-vector3
     (* s (x v))
@@ -141,18 +139,17 @@
 
 (defun homogenize (v)
   (unless (zerop (w v)) (vec-scale v (/ (w v)))))
-  
+
 (defun min-axis (v)
   (iter (for i below 4)
         (finding i minimizing (svref v i))))
-        
+
 (defun make-perp (v)
   (let ((min-a (min-axis v)))
     (case min-a
       (0 (norm (make-vec3 0.0 (-(z v)) (y v))))
       (1 (norm (make-vec3 (-(z v)) 0.0 (x v))))
       (2 (norm (make-vec3 (-(y v)) (x v) 0.0))))))
-  
 
 ;;;
 ;;; Matrices
@@ -164,10 +161,10 @@
                      :initial-contents init-contents)
     (make-array size :element-type 'float
                      :initial-element 0.0)))
-  
+
 (defun make-matrix4x4 (&optional init-contents) 
   (make-matrix '(4 4) init-contents))
-                                
+
 (defun make-matrix3x3 (&optional init-contents)
   (make-matrix '(3 3) init-contents))
 
@@ -179,7 +176,6 @@
     (iter (for i below (* n-row n-col))
          (setf (row-major-aref copy i) (row-major-aref mat i)))))
 
-
 (defun get-col (mat col)
   "@arg[mat]{matrix of any size}
    @arg[col]{zero-index column into mat}
@@ -188,7 +184,7 @@
     (make-array nrows :element-type 'float :initial-contents
                 (iter (for i below nrows)
                       (collect (aref mat i col))))))
- 
+
 (defun set-col (mat col vec)
   "@arg[mat]{matrix of any size mxn}
    @arg[col]{zero-index column into mat}
@@ -200,16 +196,16 @@
     (iter (for i below (min (length vec) nrows))
           (setf (aref mat i col) (svref vec i)))
     mat))
- 
+
 (defun get-row (mat row)
   "@arg[mat]{matrix of any size}
    @arg[row]{zero-index row into mat}
    @return{the row of mat as a simple-vector}"
   (let ((ncols (array-dimension mat 1)))
     (make-array nrows :element-type 'float :initial-contents
-      (iter (for i below ncols)
-                (collect (aref mat row i))))))
-        
+                (iter (for i below ncols)
+                      (collect (aref mat row i))))))
+
 (defun set-row (mat row vec)
   "@arg[mat]{matrix of any size mxn}
    @arg[row]{zero-index row into mat}
@@ -221,7 +217,7 @@
     (iter (for i below (min (length vec) ncols))
           (setf (aref mat row i) (svref vec i)))
     mat))
-        
+
 ;;;
 ;;; General Matrix and Vector Math
 ;;;
@@ -236,7 +232,6 @@
   (let ((len (min (length a) (length b))))
       (iter (for i below len)
             (sum (* (aref a i) (aref b i))))))
-                  
 
 (defun outer-product (a b)
   "Computes the outer product of two vectors (of the same size)
@@ -248,7 +243,7 @@
     (iter (for i below len)
           (iter (for j below len)
                 (setf (aref new-mat i j) (* (aref a i) (aref b j)))))))
-                
+
 ;; Calculate the transpose of a matrix m
 (defun transpose (m)
   "@return{the transpose of matrix m}"
@@ -259,7 +254,7 @@
           (iter (for j below n-cols)
                 (setf (aref new-mat j i) (aref m i j))))
     new-mat))
-  
+
 (defun matrix-multipy-v (mat vec)
   "Multiply matrix mat by column vector vec
    @arg[mat]{a matrix of size m x n}
@@ -272,7 +267,7 @@
           (setf (aref new-vec i)
                 (inner-product (get-row mat i) v)))
     new-vec))
-  
+
 ;; Not sure what we would need this for...
 ;; row vectors have little use
 (defun vector-multiply-m (v A)
@@ -334,7 +329,7 @@
 (defun make-scale (v)
   "@return{a scaling matrix that will scale points by v}"
   (matrix-multiply-v (make-identity) v))
-  
+
 (defun make-x-rot (r)
   "@arg[r]{radians to rotate around x-axis (counter-clockwise)}
    @return{a 4x4 rotation matrix}"

@@ -34,7 +34,7 @@
 
 ;; Load and run main:
 #+quicklisp
-(ql:quickload *driver-system*)
+(ql:quickload *driver-system* :verbose t)
 #-quicklisp
 (asdf:operate 'asdf:load-op *driver-system*)
 

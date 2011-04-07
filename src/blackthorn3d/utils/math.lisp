@@ -81,7 +81,6 @@
     (- (* (x a) (y b)) (* (y a) (x b)))
     (w a)))
 
-
 (defun vec+ (a b)
   ;(declare (type (simple-vector 4) a b))
   (make-vector4 
@@ -153,6 +152,7 @@
       (1 (norm (make-vec3 (-(z v)) 0.0 (x v))))
       (2 (norm (make-vec3 (-(y v)) (x v) 0.0))))))
   
+
 ;;;
 ;;; Matrices
 ;;;
@@ -229,7 +229,6 @@
   "@short{the magnitude of a vector of any length}"
   (sqrt (iter (for i in-vector v) (sum (sq i)))))
 
-;; 
 (defun inner-product (a b)
   "Computes the inner product of two vectors
    @returns{float result of a . b}"

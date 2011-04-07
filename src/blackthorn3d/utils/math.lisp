@@ -70,48 +70,37 @@
   (make-vector4 x y z 0.0))
 
 (defun dot (a b)
-  (iter (for i from 0 below 4)
+  (iter (for i from 0 below 3)
         (sum (* (aref a i) (aref b i)))))
 
 (defun cross (a b)
-  ;(declare (type (simple-array float (4)) a b))
   (make-vector4
     (- (* (y a) (z b)) (* (z a) (y b)))
     (- (* (z a) (x b)) (* (x a) (z b)))
     (- (* (x a) (y b)) (* (y a) (x b)))
-    (w a)))
+    (w a))
+        
+(defun cross3 (a b)
+  (make-vector3
+    (- (* (y a) (z b)) (* (z a) (y b)))
+    (- (* (z a) (x b)) (* (x a) (z b)))
+    (- (* (x a) (y b)) (* (y a) (x b))))))
+
+
+(defmacro vector-elt-wise (fn a b)
+  `(map 'vector ,fn ,a ,b))
 
 (defun vec+ (a b)
-  ;(declare (type (simple-vector 4) a b))
-  (make-vector4 
-    (+ (x a) (x b))
-    (+ (y a) (y b))
-    (+ (z a) (z b))
-    (w a)))
-
+  (vector-elt-wise #'- a b))
+  
 (defun vec- (a b)
- ; (declare (type (simple-vector 4) a b))  
-  (make-vector4 
-    (- (x a) (x b))
-    (- (y a) (y b))
-    (- (z a) (z b))
-    (w a)))
+  (vector-elt-wise #'- a b))
 
 (defun vec* (a b)
-  ;(declare (type (simple-vector 4) a b))
-  (make-vector4 
-    (* (x a) (x b))
-    (* (y a) (y b))
-    (* (z a) (z b))
-    (w a)))
+  (vector-elt-wise #'* a b))
 
 (defun vec/ (a b)
- ; (declare (type (simple-vector 4) a b))
-  (make-vector4 
-    (/ (x a) (x b))
-    (/ (y a) (y b))
-    (/ (z a) (z b))
-    (w a)))
+  (vector-elt-wise #'/ a b))
 
 (defun vec-scale (v s)
   (make-vector4 
@@ -119,6 +108,12 @@
     (* s (y v))
     (* s (z v))
     (w v)))
+    
+(defun vec-scale3 (v s)
+  (make-vector3
+    (* s (x v))
+    (* s (y v))
+    (* s (z v))))
 
 (defun vec-neg (v)
   (make-vector4 
@@ -135,8 +130,15 @@
            (sq (z v)))))
 
 (defun norm (v)
+  "Normalize a vector4, see normalize for general normalize fn"
   (let ((magv (mag v)))
     (unless (zerop magv) (vec-scale v (/ magv)))))
+    
+(defun normalize (v)
+  "Normalize a vector of any length"
+  (let ((magv (magnitude v)))
+    (unless (zerop magv) 
+      (map 'vector #'(lamda (x) (/ x magv)) v))))
 
 (defun homogenize (v)
   (unless (zerop (w v)) (vec-scale v (/ (w v)))))

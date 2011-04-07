@@ -45,9 +45,11 @@
    :x :y :z :w
    :r :g :b :a   
    :dot
-   :cross
+   :cross 
+   :cross3
    :vec+ :vec- :vec* :vec/
-   :vec-scale
+   :vec-scale 
+   :vec-scale3
    :vec-neg
    :mag
    :sq

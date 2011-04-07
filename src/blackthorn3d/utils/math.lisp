@@ -78,14 +78,13 @@
     (- (* (y a) (z b)) (* (z a) (y b)))
     (- (* (z a) (x b)) (* (x a) (z b)))
     (- (* (x a) (y b)) (* (y a) (x b)))
-    (w a))
-        
+    (w a)))
+
 (defun cross3 (a b)
   (make-vector3
-    (- (* (y a) (z b)) (* (z a) (y b)))
-    (- (* (z a) (x b)) (* (x a) (z b)))
-    (- (* (x a) (y b)) (* (y a) (x b))))))
-
+   (- (* (y a) (z b)) (* (z a) (y b)))
+   (- (* (z a) (x b)) (* (x a) (z b)))
+   (- (* (x a) (y b)) (* (y a) (x b)))))
 
 (defmacro vector-elt-wise (fn a b)
   `(map 'vector ,fn ,a ,b))
@@ -133,12 +132,12 @@
   "Normalize a vector4, see normalize for general normalize fn"
   (let ((magv (mag v)))
     (unless (zerop magv) (vec-scale v (/ magv)))))
-    
+
 (defun normalize (v)
   "Normalize a vector of any length"
   (let ((magv (magnitude v)))
     (unless (zerop magv) 
-      (map 'vector #'(lamda (x) (/ x magv)) v))))
+      (map 'vector #'(lambda (x) (/ x magv)) v))))
 
 (defun homogenize (v)
   (unless (zerop (w v)) (vec-scale v (/ (w v)))))

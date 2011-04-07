@@ -1,0 +1,21 @@
+syntax: glob
+
+# hidden, backup, and temporary files
+*~
+.\#*
+.*.swp
+.DS_Store
+.tmp
+.find-lisp
+
+# object files
+*.o
+*.fas
+*.lib
+*.fasl
+*.?x32fsl
+*.?x64fsl
+
+# build files
+bin
+build/quicklisp

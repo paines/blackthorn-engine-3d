@@ -115,7 +115,7 @@
  #+windows :icon-file
  #+windows
  (make-pathname :directory '(:relative "windows") :name "thopter" :type "ico")
- :restart-init-function 'blt3d-user:main
+ :restart-init-function 'blt3d:main
  #-windows
  :application-administration
  #-windows ;; Quiet startup (See below for Windows version of this.)
@@ -173,14 +173,14 @@
 ;;; Make main executable, SBCL.
 ;;;
 
-#+sbcl (save-lisp-and-die +build-exe+ :toplevel #'blt3d-user:main :executable t)
+#+sbcl (save-lisp-and-die +build-exe+ :toplevel #'blt3d:main :executable t)
 
 ;;;
 ;;; Make main executable, CLISP.
 ;;;
 
 #+clisp
-(saveinitmem +build-exe+ :init-function #'blt3d-user:main :executable t :norc t)
+(saveinitmem +build-exe+ :init-function #'blt3d:main :executable t :norc t)
 #+clisp (quit)
 
 ;;;
@@ -188,6 +188,6 @@
 ;;;
 
 #+clozure
-(save-application +build-exe+ :toplevel-function #'blt3d-user:main
+(save-application +build-exe+ :toplevel-function #'blt3d:main
                   :prepend-kernel t)
 #+clozure (quit)

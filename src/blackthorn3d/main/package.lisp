@@ -23,38 +23,19 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defvar *driver-system* :blackthorn3d)
+(in-package :cl-user)
 
-#+quicklisp
-(ql:quickload *driver-system*)
+(defpackage :blackthorn3d-main
+  (:nicknames :blt3d-main)
+  (:use :cl :iter :blt3d-utils :blt3d-gfx)
+  #+allegro (:import-from :cl-user :exit)
+  (:export
 
-#-quicklisp
-(require :asdf)
-#-quicklisp
-(asdf:operate 'asdf:load-op *driver-system*)
+   ;; main.lisp
+   :main
 
-;;;
-;;; Setup profiler and run main.
-;;;
+   ))
 
-(defpackage blackthorn3d-profile
-  (:use :cl :blt3d))
-
-(in-package :blackthorn3d-profile)
-
-(defmacro profile-packages (&rest packages)
-  `(progn
-     ,@(loop for package in packages collect
-            `(progn
-               ,@(loop for symbol being the external-symbols in package
-                    when (fboundp symbol)
-                    collect
-                      #+sbcl `(sb-profile:profile ,symbol))))))
-
-(profile-packages blt3d)
-
-(main :exit-when-done nil)
-
-#+sbcl (sb-profile:report)
-
-(blt3d-main::exit)
+#-allegro
+(eval-when (:compile-toplevel :load-toplevel)
+  (setf (symbol-function 'blt3d-main::exit) #'quit))

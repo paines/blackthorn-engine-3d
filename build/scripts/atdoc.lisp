@@ -72,14 +72,14 @@
 ;;;
 
 (atdoc:generate-html-documentation
- '(:blt3d :blt3d-user)
+ '(:blt3d)
  +doc-dir+
  :index-title "Blackthorn API Reference"
  :heading "Blackthorn -- Lisp Game Engine")
 
 (atdoc:generate-latex-documentation
- '(:blt3d :blt3d-user)
+ '(:blt3d)
  +doc-dir+
  :title "Blackthorn API Reference")
 
-(#-allegro quit #+allegro exit)
+(blt3d-main::exit)

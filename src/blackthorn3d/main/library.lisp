@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-user)
+(in-package :blackthorn3d-main)
 
 ;;;
 ;;; Runtime dependencies which must be loaded into the lisp executable prior

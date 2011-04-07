@@ -25,8 +25,8 @@
 
 (in-package :cl-user)
 
-(defpackage :graphics
-  (:nicknames :gfx)
+(defpackage :blackthorn3d-graphics
+  (:nicknames :blt3d-gfx)
   (:use :iter :cl :blt3d-utils)
   (:export
 

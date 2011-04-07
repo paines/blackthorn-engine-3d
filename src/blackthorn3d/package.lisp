@@ -32,7 +32,7 @@
 
 (defpackage :blackthorn3d
   (:nicknames :blt3d)
-  (:use :cl :blt3d-utils)
+  (:use :cl :blt3d-utils :blt3d-main)
   (:export
 
    ;; utils.lisp
@@ -44,23 +44,7 @@
    :add-resource-path
    :resolve-resource
 
-   ))
-
-;;;
-;;; User Package:
-;;;
-
-(defpackage :blackthorn3d-user
-  (:nicknames :blt3d-user)
-  (:use :cl :iter :blt3d)
-  #+allegro (:import-from :cl-user :exit)
-  (:export
-
    ;; main.lisp
    :main
 
    ))
-
-#-allegro
-(eval-when (:compile-toplevel :load-toplevel)
-  (setf (symbol-function 'blt3d-user::exit) #'quit))

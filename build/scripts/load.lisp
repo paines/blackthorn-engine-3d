@@ -38,4 +38,4 @@
 #-quicklisp
 (asdf:operate 'asdf:load-op *driver-system*)
 
-(blt3d-user:main)
+(blt3d:main)

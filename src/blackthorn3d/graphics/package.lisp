@@ -33,6 +33,12 @@
    ;; draw.lisp
    :draw-triangle
    :draw-cube
+   
+   ;; camera.lisp
+   :make-camera-matrix
+   :cam-inverse
+   :mult-cam
+   :move-cam
 
    ))
         

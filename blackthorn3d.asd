@@ -46,7 +46,8 @@
                                      (:module graphics
                                               :components
                                               ((:file "package")
-                                               (:file "draw"))
+                                               (:file "draw")
+											   (:file "camera"))
                                               :serial t)
                                      (:file "package")
                                      (:file "library")

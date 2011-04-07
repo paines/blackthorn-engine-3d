@@ -38,12 +38,17 @@
    :resolve-resource
    
    ;; math.lisp
+   :make-vector4
+   :make-vector3
+   :make-point3
+   :make-vec3
    :x :y :z :w
    :r :g :b :a   
    :dot
    :cross
    :vec+ :vec- :vec* :vec/
    :vec-scale
+   :vec-neg
    :mag
    :sq
    :norm
@@ -55,6 +60,9 @@
    :make-identity
    :make-translate
    :make-scale
+   :make-x-rot :make-y-rot :make-z-rot
+   :set-col :get-col
+   :set-row :get-row
    :inner-product
    :outer-product
    :matrix-multiply-v

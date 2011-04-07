@@ -29,8 +29,8 @@
 ;;;;
 ;;;; Vector Stuff
 ;;;;
-  
- 
+
+
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
              (with-gensyms (v) `(defmacro ,n (,v) `(svref ,,v ,,p)))))
@@ -38,7 +38,7 @@
        ,@(iter (for i in names)
                (for j below (length names))
                (collect (vec-accessor i j))))))
-            
+        
 ;;; Create aliases for accessing different elements
 ;;; of vectors            
 (gen-vec-accessors x y z w)
@@ -52,7 +52,7 @@
    @arg[w]{element at index 3}"
   (make-array 4 :element-type 'float :initial-contents
     (list x y z w)))
-    
+
 (defun make-vector3 (x y z)
   "@short{Creates a vector of length 3 of floats}
    @arg[x]{element at index 0}
@@ -78,13 +78,13 @@
     (- (* (y a) (z b)) (* (z a) (y b)))
     (- (* (z a) (x b)) (* (x a) (z b)))
     (- (* (x a) (y b)) (* (y a) (x b)))
-    (w a))
+    (w a)))
         
 (defun cross3 (a b)
   (make-vector3
     (- (* (y a) (z b)) (* (z a) (y b)))
     (- (* (z a) (x b)) (* (x a) (z b)))
-    (- (* (x a) (y b)) (* (y a) (x b))))))
+    (- (* (x a) (y b)) (* (y a) (x b)))))
 
 
 (defmacro vector-elt-wise (fn a b)

@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :graphics)
+(in-package :blackthorn3d-graphics)
 
 ;;;;
 ;;;; Yay cameras!

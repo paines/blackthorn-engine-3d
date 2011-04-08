@@ -33,6 +33,8 @@
    ;; draw.lisp
    :draw-triangle
    :draw-cube
+   :make-cube
+   :draw-vert-array
    
    ;; camera.lisp
    :make-camera-matrix

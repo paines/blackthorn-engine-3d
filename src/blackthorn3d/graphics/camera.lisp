@@ -31,14 +31,14 @@
 
 (defun set-cam-pos (cam pos)
   (set-col cam 3 pos))
-
+  
 (defun get-cam-pos (cam)
   (get-col cam 3))
-
+  
 (defun translate-cam (cam vec)
   "translates a camera by the vector in vec.  Modifies it's paramter"
   (iter (for i below 3)
-        (setf (aref cam i 3) (+ (aref cam i 3) (svref vec i)))))
+        (setf cam i 3 (+ (aref cam i 3) (svref vec i)))))
 
 (defun move-cam (cam pos)
   (set-cam-pos cam pos))
@@ -57,6 +57,7 @@
     (set-col cam 2 z) 
     (set-col cam 3 e)
     (set-row cam 3 (make-vector4 0.0 0.0 0.0 1.0))))
+
 
 ;;; Get the inverse matrix for the modelview matrix
 ;;; This is done by computing the inverse of the 3x3 

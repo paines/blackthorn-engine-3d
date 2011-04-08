@@ -72,4 +72,7 @@
    :vector-multiply-m
    :transpose
 
+   ;; library.lisp
+   :load-dlls
+
    ))

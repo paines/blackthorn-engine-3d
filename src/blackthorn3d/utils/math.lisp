@@ -30,7 +30,6 @@
 ;;;; Vector Stuff
 ;;;;
 
-
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
              (with-gensyms (v) `(defmacro ,n (,v) `(svref ,,v ,,p)))))
@@ -159,6 +158,10 @@
 ;;; Matrices
 ;;;
 
+
+(defun transpose-lists (lsts)
+  (apply #'mapcar #'list lsts))
+
 (defun make-matrix (size &optional init-contents)
   (if init-contents
     (make-array size :element-type 'float
@@ -171,11 +174,17 @@
                                 
 (defun make-matrix3x3 (&optional init-contents)
   (make-matrix '(3 3) init-contents))
+  
+(defun get-nrows (mat)
+  (array-dimension mat 1))
+  
+(defun get-ncols (mat)
+  (array-dimension mat 0))
 
 (defun copy-matrix (mat)
   "@return{a matrix with the same elements as mat}"
-  (let* ((n-row (array-dimension mat 0))
-         (n-col (array-dimension mat 1))
+  (let* ((n-row (get-nrows mat))
+         (n-col (get-ncols mat))
          (copy  (make-matrix (list n-row n-col))))
     (iter (for i below (* n-row n-col))
          (setf (row-major-aref copy i) (row-major-aref mat i)))))
@@ -185,10 +194,10 @@
   "@arg[mat]{matrix of any size}
    @arg[col]{zero-index column into mat}
    @return{the column of mat as a simple-vector}"
-  (let ((nrows (array-dimension mat 0)))
+  (let ((nrows (get-nrows mat)))
     (make-array nrows :element-type 'float :initial-contents
-                (iter (for i below nrows)
-                      (collect (aref mat i col))))))
+      (iter (for i below nrows)
+            (collect (aref mat col i))))))
  
 (defun set-col (mat col vec)
   "@arg[mat]{matrix of any size mxn}
@@ -197,19 +206,19 @@
              If l < m. the elements in range [l m) in mat not modified.
              If l > m, only the [0 m) elements of vec are copied}
    @return{the modified matrix.  Modifies argument mat}"
-  (let ((nrows (array-dimension mat 0)))
+  (let ((nrows (get-nrows mat)))
     (iter (for i below (min (length vec) nrows))
-          (setf (aref mat i col) (svref vec i)))
+          (setf (aref mat col i) (svref vec i)))
     mat))
  
 (defun get-row (mat row)
   "@arg[mat]{matrix of any size}
    @arg[row]{zero-index row into mat}
    @return{the row of mat as a simple-vector}"
-  (let ((ncols (array-dimension mat 1)))
-    (make-array nrows :element-type 'float :initial-contents
+  (let ((ncols (get-ncols mat)))
+    (make-array ncols :element-type 'float :initial-contents
       (iter (for i below ncols)
-                (collect (aref mat row i))))))
+                (collect (aref mat i row))))))
         
 (defun set-row (mat row vec)
   "@arg[mat]{matrix of any size mxn}
@@ -218,9 +227,9 @@
              If l < n. the elements in range [l n) in mat not modified.
              If l > n, only the [0 n) elements of vec are copied}
    @return{the modified matrix.  Modifies argument mat}"
-  (let ((ncols (array-dimension mat 1)))
-    (iter (for i below (min (length vec) ncols))
-          (setf (aref mat row i) (svref vec i)))
+  (let ((ncols (get-ncols mat)))
+    (iter (for col below (min (length vec) ncols))
+          (setf (aref mat col row) (svref vec col)))
     mat))
         
 ;;;
@@ -248,30 +257,30 @@
          (new-mat (make-matrix (list len len))))
     (iter (for i below len)
           (iter (for j below len)
-                (setf (aref new-mat i j) (* (aref a i) (aref b j)))))))
+                (setf (aref new-mat i j) (* (aref a j) (aref b i)))))))
                 
 ;; Calculate the transpose of a matrix m
 (defun transpose (m)
   "@return{the transpose of matrix m}"
-  (let* ((n-rows (array-dimension m 0))
-         (n-cols (array-dimension m 1))
+  (let* ((n-rows (get-nrows m))
+         (n-cols (get-ncols m))
          (new-mat (make-matrix (list n-cols n-rows))))
     (iter (for i below n-rows)
           (iter (for j below n-cols)
                 (setf (aref new-mat j i) (aref m i j))))
     new-mat))
   
-(defun matrix-multipy-v (mat vec)
+(defun matrix-multiply-v (mat vec)
   "Multiply matrix mat by column vector vec
    @arg[mat]{a matrix of size m x n}
    @arg[vec]{a vector of size n}
    @return{the result of multiplying mat by vec, a vector of size m}"
-  (let* ((nrows (min (length vec) (array-dimension mat 0)))
-         (ncols (array-dimension mat 1))
+  (let* ((nrows (min (length vec) (get-nrows mat)))
+         (ncols (get-ncols mat))
          (new-vec (make-array nrows :element-type 'float)))
     (iter (for i below nrows)
           (setf (aref new-vec i)
-                (inner-product (get-row mat i) v)))
+                (inner-product (get-row mat i) vec)))
     new-vec))
   
 ;; Not sure what we would need this for...
@@ -281,8 +290,8 @@
    @arg[v]{a vector of size m}
    @arg[A]{a matrix of size m x n}
    @return{the result of multiplying v by A, a row vector of size n}"
-  (let* ((n-rows (array-dimension mat 0))
-         (n-cols (min (length v) (array-dimension mat 1)))
+  (let* ((n-rows (get-nrows A))
+         (n-cols (min (length v) (get-ncols A)))
          (new-cvec (make-array `(1 ,n-rows) :element-type 'float)))
     (iter (for i below n-cols)
           (setf (aref new-cvec 1 i) 
@@ -293,8 +302,8 @@
    @arg[A]{Matrix on left-side of multiplication. Should be size m x n}
    @arg[B]{Matrix on right-side of multiplication.  Should be size n x k}
    @return{the m x k matrix that results from performing A * B}"
-  (let* ((n-rows (array-dimension A 0))
-         (n-cols (array-dimension B 1))
+  (let* ((n-rows (get-nrows A))
+         (n-cols (get-ncols B))
          (new-mat (make-matrix (list n-rows n-cols))))
     (iter (for i below n-cols)
           (iter (for j below n-rows)
@@ -341,27 +350,30 @@
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 `((1.0 0.0 0.0 0.0)
-                       (0.0 ,cosr ,(- sinr) 0.0)
-                       (0.0 ,sinr ,cosr 0.0)
-                       (0.0 0.0 0.0 1.0)))))
+    (make-matrix4x4 
+      (transpose-lists  `((1.0 0.0 0.0 0.0)
+                          (0.0 ,cosr ,(- sinr) 0.0)
+                          (0.0 ,sinr ,cosr 0.0)
+                          (0.0 0.0 0.0 1.0))))))
 
 (defun make-y-rot (r)
   "@arg[r]{radians to rotate around y-axis (counter-clockwise)}
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 `((,cosr 0.0 ,sinr 0.0)
-                       (0.0 1.0 0.0 0.0)
-                       (,(- sinr) 0.0 ,cosr 0.0)
-                       (0.0 0.0 0.0 1.0)))))
+    (make-matrix4x4 
+      (transpose-lists `((,cosr 0.0 ,sinr 0.0)
+                         (0.0 1.0 0.0 0.0)
+                         (,(- sinr) 0.0 ,cosr 0.0)
+                         (0.0 0.0 0.0 1.0))))))
 
 (defun make-z-rot (r)
   "@arg[r]{radians to rotate around z-axis (counter-clockwise)}
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 `((,cosr ,(- sinr) 0.0 0.0)
-                       (,sinr ,cosr 0.0 0.0)
-                       (0.0 0.0 1.0 0.0)
-                       (0.0 0.0 0.0 1.0)))))
+    (make-matrix4x4 
+      (transpose-lists `((,cosr ,(- sinr) 0.0 0.0)
+                         (,sinr ,cosr 0.0 0.0)
+                         (0.0 0.0 1.0 0.0)
+                         (0.0 0.0 0.0 1.0))))))

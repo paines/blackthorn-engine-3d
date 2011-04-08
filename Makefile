@@ -64,6 +64,9 @@ else
 ifeq (${cl}, sbcl)
 	get-property = $(shell sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
 else
+ifeq (${cl}, sbcl-builtin)
+	get-property = $(shell SBCL_HOME=build/sbcl/ build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+else
 ifeq (${cl}, clisp)
 	get-property = $(shell clisp -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${quicklisp-setup}\")" -x "(load \"${prop}\")")
 else
@@ -75,6 +78,7 @@ ifeq (${cl}, clozure)
 else
 ifeq (${cl}, clozure-builtin)
 	get-property = $(shell build/ccl/wx86cl.exe --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+endif
 endif
 endif
 endif
@@ -114,6 +118,10 @@ load-allegro:
 .PHONY: load-sbcl
 load-sbcl:
 	sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
+
+.PHONY: load-sbcl-builtin
+load-sbcl-builtin:
+	SBCL_HOME=$(shell build/scripts/pwd.sh)/build/sbcl/ build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: load-clisp
 load-clisp:

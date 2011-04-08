@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-main
   (:nicknames :blt3d-main)
-  (:use :cl :iter :blt3d-utils :blt3d-gfx)
+  (:use :cl :iter :blt3d-utils :blt3d-gfx :blt3d-input)
   #+allegro (:import-from :cl-user :exit)
   (:export
 

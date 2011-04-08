@@ -76,8 +76,17 @@
                 "libSDL_mixer-1.2.so.0")))
   (cffi:use-foreign-library sdl-mixer))
 
+(defun load-xbox ()
+   "Load the xbox 360 input device"
+    (cffi:define-foreign-library xbox360
+      (:windows "xbox360.dll"))
+	(cffi:use-foreign-library xbox360))
+  
 (defun load-dlls ()
   "Loads dlls needed to run SDL, SDL_image, and SDL_gfx."
   (load-sdl-dlls)
   (load-sdl-image-dlls)
-  (load-sdl-mixer-dlls))
+  (load-sdl-mixer-dlls)
+  (load-xbox))
+  
+

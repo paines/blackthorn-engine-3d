@@ -49,6 +49,11 @@
                                                (:file "draw")
 											   (:file "camera"))
                                               :serial t)
+								     (:module input
+										      :components
+											  ((:file "package")
+											   (:file "xbox360"))
+											  :serial t)
                                      (:module main
                                               :components
                                               ((:file "package")

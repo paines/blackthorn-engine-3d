@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-main)
+(in-package :blackthorn3d-utils)
 
 ;;;
 ;;; Runtime dependencies which must be loaded into the lisp executable prior
@@ -89,4 +89,5 @@
   (load-sdl-mixer-dlls)
   (load-xbox))
   
-
+(eval-when (:load-toplevel)
+  (load-dlls))

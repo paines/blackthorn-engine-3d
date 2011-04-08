@@ -41,7 +41,8 @@
                                               ((:file "package")
                                                (:file "utils")
                                                (:file "resources")
-                                               (:file "math"))
+                                               (:file "math")
+                                               (:file "library"))
                                               :serial t)
                                      (:module graphics
                                               :components
@@ -57,7 +58,6 @@
                                      (:module main
                                               :components
                                               ((:file "package")
-                                               (:file "library")
                                                (:file "main"))
                                               :serial t)
                                      (:file "package"))

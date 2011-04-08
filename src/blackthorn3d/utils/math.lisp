@@ -106,11 +106,7 @@
     (* s (y v))
     (* s (z v))
     (w v)))
-<<<<<<< local
-    
-=======
 
->>>>>>> other
 (defun vec-scale3 (v s)
   (make-vector3
     (* s (x v))

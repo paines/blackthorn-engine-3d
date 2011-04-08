@@ -186,7 +186,7 @@ collision:
 
 .PHONY: test
 test:
-	$(MAKE) driver="${test}" system="blackthorn-test" new
+	$(MAKE) driver="${test}" system="blackthorn3d-test" new
 
 .PHONY: prof
 prof:

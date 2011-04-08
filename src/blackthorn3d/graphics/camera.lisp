@@ -38,7 +38,7 @@
 (defun translate-cam (cam vec)
   "translates a camera by the vector in vec.  Modifies it's paramter"
   (iter (for i below 3)
-        (setf cam i 3 (+ (aref cam i 3) (svref vec i)))))
+        (setf (aref cam i 3) (+ (aref cam i 3) (svref vec i)))))
 
 (defun move-cam (cam pos)
   (set-cam-pos cam pos))

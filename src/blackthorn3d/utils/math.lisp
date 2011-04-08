@@ -137,7 +137,7 @@
   "Normalize a vector of any length"
   (let ((magv (magnitude v)))
     (unless (zerop magv)
-      (map 'vector #'(lamda (x) (/ x magv)) v))))
+      (map 'vector #'(lambda (x) (/ x magv)) v))))
 
 (defun homogenize (v)
   (unless (zerop (w v)) (vec-scale v (/ (w v)))))

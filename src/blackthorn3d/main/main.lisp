@@ -118,13 +118,22 @@
       (gl:frustum -1.0 1.0 -1.0 1.0 1.0 100.0)
       (gl:matrix-mode :modelview)
       (gl:load-identity)
+      (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
+      (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
+      (gl:enable :lighting)
+      (gl:enable :light0)
 
-      (defparameter cam-pos (blt3d-utils:make-point3 0.0 0.0 5.0))
-      (defparameter cam-d (blt3d-utils:make-vec3 0.0 0.0 -1.0))
+      (defparameter cam-pos (blt3d-utils:make-point3 1.0 1.0 5.0))
+      (defparameter cam-d (blt3d-utils:vec- 
+                            (blt3d-utils:make-vec3 0.0 0.0 0.0)
+                            cam-pos))
       (defparameter cam-up (blt3d-utils:make-vec3 0.0 1.0 0.0))
       (defparameter cam (blt3d-gfx:make-camera-matrix cam-pos
                                                 cam-d
                                                 #(0.0 1.0 0.0 0.0)))
+                                                
+      (defparameter cube (make-cube))
+      
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue)))
         (catch 'main-loop
@@ -148,17 +157,12 @@
               )
             (:idle ()
               (gl:clear :color-buffer-bit :depth-buffer-bit)
-              ;(gl:load-matrix (gfx:cam-inverse cam))
-              (gl:load-matrix 
-                (make-array '(4 4) :element-type '%gl:float
-                  :initial-contents
-                    '((1.0 0.0 0.0 0.0)
-                      (0.0 1.0 0.0 0.0)
-                      (0.0 0.0 1.0 0.0)
-                      (0.0 0.0 -5.0 1.0))))
+              (gl:load-matrix (blt3d-gfx:cam-inverse cam))
               ;(gl:load-identity)
               ;(gl:translate 0.0 0.0 -5.0)
-              (blt3d-gfx:draw-cube :color #(1.0 .75 0))     
+              ;(blt3d-gfx:draw-cube :color #(1.0 .75 0)) 
+              (gl:color 1.0 .75 0.0)
+              (apply #'draw-vert-array cube)
                           
               ;(render *game* #c(0 0) 1d0 -1d0)
               (gl:flush)

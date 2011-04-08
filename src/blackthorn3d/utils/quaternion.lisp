@@ -61,7 +61,11 @@
   (normalize q))
   
 (defun quat+ (q r)
-  (vec+ q r))
+  (make-quaternion 
+    (+ (x q) (x r))
+    (+ (y q) (y r))
+    (+ (z q) (z r))
+    (+ (w q) (w q))))
 
 (defun quat* (q r)
   (let ((q-v (qv q)) (q-w (qw q))

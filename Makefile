@@ -62,22 +62,22 @@ ifeq (${cl}, allegro)
 	get-property = $(shell alisp +B +s ${quicklisp-setup} +s ${prop} -e "(defparameter *driver-system* '|${system}|)" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))")
 else
 ifeq (${cl}, sbcl)
-	get-property = $(shell sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+	get-property = $(shell sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 else
 ifeq (${cl}, sbcl-builtin)
-	get-property = $(shell SBCL_HOME=build/sbcl/ build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+	get-property = $(shell SBCL_HOME=$(shell build/scripts/pwd.sh)/build/sbcl/ build/sbcl/sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 else
 ifeq (${cl}, clisp)
-	get-property = $(shell clisp -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${quicklisp-setup}\")" -x "(load \"${prop}\")")
+	get-property = $(shell clisp -x "(load \"${quicklisp-setup}\")" -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${prop}\")")
 else
 ifeq (${cl}, ecl)
-	get-property = $(shell ecl -eval "(defparameter *driver-system* \"${system}\")" -eval "(defparameter *output-file* \"${tempfile}\")" -eval "(defparameter *output-expression* '$(1))" -load ${quicklisp-setup} -load ${prop})
+	get-property = $(shell ecl -load ${quicklisp-setup} -eval "(defparameter *driver-system* \"${system}\")" -eval "(defparameter *output-file* \"${tempfile}\")" -eval "(defparameter *output-expression* '$(1))" -load ${prop})
 else
 ifeq (${cl}, clozure)
-	get-property = $(shell ccl --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+	get-property = $(shell ccl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 else
 ifeq (${cl}, clozure-builtin)
-	get-property = $(shell build/ccl/wx86cl.exe --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${quicklisp-setup} --load ${prop})
+	get-property = $(shell build/ccl/wx86cl.exe --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 endif
 endif
 endif

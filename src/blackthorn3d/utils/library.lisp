@@ -76,6 +76,7 @@
                 "libSDL_mixer-1.2.so.0")))
   (cffi:use-foreign-library sdl-mixer))
 
+#+windows
 (defun load-xbox ()
    "Load the xbox 360 input device"
     (cffi:define-foreign-library xbox360
@@ -87,7 +88,7 @@
   (load-sdl-dlls)
   (load-sdl-image-dlls)
   (load-sdl-mixer-dlls)
-  (load-xbox))
+  #+windows (load-xbox))
   
 (eval-when (:load-toplevel)
   (load-dlls))

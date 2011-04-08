@@ -48,13 +48,14 @@
                                               :components
                                               ((:file "package")
                                                (:file "draw")
-											   (:file "camera"))
+                                               (:file "camera"))
                                               :serial t)
-								     (:module input
-										      :components
-											  ((:file "package")
-											   (:file "xbox360"))
-											  :serial t)
+                                     (:module input
+                                              :components
+                                              ((:file "package")
+                                               #+(or win32 windows)
+                                               (:file "xbox360"))
+                                              :serial t)
                                      (:module main
                                               :components
                                               ((:file "package")
@@ -62,7 +63,7 @@
                                               :serial t)
                                      (:file "package"))
                                     :serial t))))
-    :depends-on (;; Utilities
+    :depends-on ( ;; Utilities
                  :alexandria
                  :trivial-features
                  :command-line-arguments

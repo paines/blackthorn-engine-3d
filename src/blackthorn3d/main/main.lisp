@@ -154,12 +154,13 @@
               ;                :mod m :mod-key m-k :unicode u))
               )
             (:idle ()
-			  (xbox360_poll 0)
-			  (let ( (x (* 2 (abs (xbox360_get_lx 0))))
-			         (y (* 2 (abs (xbox360_get_ly 0))))) 
-			    (xbox360-vibrate 0 x y))
-				
-			  
+              #+windows
+              (progn
+                (xbox360_poll 0)
+                (let ( (x (* 2 (abs (xbox360_get_lx 0))))
+                      (y (* 2 (abs (xbox360_get_ly 0))))) 
+                  (xbox360-vibrate 0 x y)))
+
               (gl:clear :color-buffer-bit :depth-buffer-bit)
               (gl:load-matrix (cam-inverse cam))
               (gl:color 1.0 .75 0.0)
@@ -187,7 +188,7 @@
 
   ;; Finalization:
   ;(net-exit)
-  (xbox360-vibrate 0 0 0)
+  #+windows (xbox360-vibrate 0 0 0)
   )
   (when exit-when-done
     (exit)))

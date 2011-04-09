@@ -39,10 +39,14 @@
                                     ((:module utils
                                               :components
                                               ((:file "package")
-                                               (:file "utils")
-                                               (:file "resources")
+                                               (:file "anaphora")
                                                (:file "math")
                                                (:file "library"))
+                                              :serial t)
+                                     (:module resources
+                                              :components
+                                              ((:file "package")
+                                               (:file "locate"))
                                               :serial t)
                                      (:module graphics
                                               :components

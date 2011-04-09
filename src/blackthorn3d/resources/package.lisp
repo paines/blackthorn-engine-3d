@@ -23,52 +23,13 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-utils
-  (:nicknames :blt3d-utils)
-  (:use :cl :alexandria :iter)
+(defpackage :blackthorn3d-resources
+  (:nicknames :blt3d-res)
+  (:use :cl :alexandria :iter :blt3d-utils)
   (:export
 
-   ;; utils.lisp
-   :aif
-   :acond
-   :it
-   
-   ;; math.lisp
-   :make-vector4
-   :make-vector3
-   :make-point3
-   :make-vec3
-   :x :y :z :w
-   :r :g :b :a   
-   :dot
-   :cross 
-   :cross3
-   :vec+ :vec- :vec* :vec/
-   :vec-scale 
-   :vec-scale3
-   :vec-neg
-   :mag
-   :sq
-   :norm
-   :magnitude
-   
-   :make-matrix
-   :make-matrix3x3
-   :make-matrix4x4
-   :make-identity
-   :make-translate
-   :make-scale
-   :make-x-rot :make-y-rot :make-z-rot
-   :set-col :get-col
-   :set-row :get-row
-   :inner-product
-   :outer-product
-   :matrix-multiply-v
-   :matrix-multiply-m
-   :vector-multiply-m
-   :transpose
-
-   ;; library.lisp
-   :load-dlls
+   ;; locate.lisp
+   :add-resource-path
+   :resolve-resource
 
    ))

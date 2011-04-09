@@ -59,5 +59,5 @@
            (x (norm (cross up z)))
            (y (cross z x))
            (cam-inv (make-ortho-basis x y z)))
-      (setf (col cam-inv 3) (matrix-multiply-v cam-inv pos))
+      (setf (col cam-inv 3) (matrix-multiply-v cam-inv (vec-neg pos)))
       cam-inv)))

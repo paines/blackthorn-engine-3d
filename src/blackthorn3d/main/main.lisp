@@ -132,7 +132,8 @@
       (let ((input-queue (make-instance 'containers:basic-queue))
             (cam (make-instance 'camera :position (make-point3 0.0 0.0 5.0)
                                         :direction (norm (vec- (make-vec3 0.0 0.0 0.0)
-                                                               (make-vec3 0.0 0.0 5.0))))))
+                                                               (make-vec3 0.0 0.0 5.0)))))
+            (cam-quat (axis-rad->quaternion (make-vec3 0.0 1.0 0.0) (/ pi 100))))
         (catch 'main-loop
           ;(net-game-start #'main-loop-abort-handler)
 
@@ -156,7 +157,8 @@
               #+windows
               (progn
                 (xbox360_poll 0)
-				(setf (cam-dir cam) (matrix-multiply-v turn (cam-dir cam)))
+				;(setf (cam-dir cam) (matrix-multiply-v turn (cam-dir cam)))
+                (setf (cam-dir cam) (matrix-multiply-v (quaternion->matrix cam-quat) (cam-dir cam)))
                 
 				;#+disabled
                 (let ((x (* 2 (abs (xbox360_get_lx 0))))

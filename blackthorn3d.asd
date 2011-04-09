@@ -46,7 +46,8 @@
                                               :components
                                               ((:file "package")
                                                (:file "vector")
-                                               (:file "matrix"))
+                                               (:file "matrix")
+                                               (:file "quaternion"))
                                               :serial t)
                                      (:module resources
                                               :components

@@ -67,5 +67,15 @@
    :transpose
 
    ;; quaternion.lisp
-
+   :make-quaternion
+   :make-quaternion-from-vw
+   :vec3->quaternion
+   :axis-rad->quaternion
+   :quat+ :quat*
+   :quat-norm
+   :quaternion-identity
+   :quat-conjugate
+   :quaternion-rotate-vec
+   :quaternion->matrix
+   
    ))

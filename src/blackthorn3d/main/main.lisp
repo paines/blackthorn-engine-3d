@@ -116,7 +116,8 @@
       (gl:depth-func :lequal)
       (gl:matrix-mode :projection)
       (gl:load-identity)
-      (gl:frustum -1.0 1.0 -1.0 1.0 1.0 100.0)
+      (let ((fx 1.0) (fy (* 1.0 6/8)))
+        (gl:frustum (- fx) fx (- fy) fy 1.0 100.0))
       (gl:matrix-mode :modelview)
       (gl:load-identity)
       (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
@@ -130,8 +131,8 @@
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue))
             (cam (make-instance 'camera :position (make-point3 0.0 0.0 5.0)
-                                        :direction (norm (make-vec3 5.0 0.0 -5.0))
-                                                   #+disable(norm (vec- (make-vec3 0.0 0.0 0.0) 
+                                        :direction (norm (make-vec3 0.0 0.0 -1.0))
+                                                   #+disable(norm (vec- (make-vec3 0.0 0.0 0.0)
                                                                (make-vec3 0.0 0.0 5.0))))))
         (catch 'main-loop
           ;(net-game-start #'main-loop-abort-handler)

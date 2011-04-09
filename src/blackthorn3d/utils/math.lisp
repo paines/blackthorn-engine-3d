@@ -193,16 +193,16 @@
     (iter (for i below (* n-row n-col))
          (setf (row-major-aref copy i) (row-major-aref mat i)))))
 
-(defun get-col (mat col)
+(defun col (mat c)
   "@arg[mat]{matrix of any size}
    @arg[col]{zero-index column into mat}
    @return{the column of mat as a simple-vector}"
   (let ((nrows (get-nrows mat)))
     (make-array nrows :element-type 'float :initial-contents
       (iter (for i below nrows)
-            (collect (aref mat col i))))))
+            (collect (aref mat c i))))))
 
-(defun set-col (mat col vec)
+(defun (setf col) (vec mat c)
   "@arg[mat]{matrix of any size mxn}
    @arg[col]{zero-index column into mat}
    @arg[vec]{the vector of length l to replace col. 
@@ -211,19 +211,19 @@
    @return{the modified matrix.  Modifies argument mat}"
   (let ((nrows (get-nrows mat)))
     (iter (for i below (min (length vec) nrows))
-          (setf (aref mat col i) (svref vec i)))
-    mat))
+          (setf (aref mat c i) (svref vec i)))
+    vec))
 
-(defun get-row (mat row)
+(defun row (mat r)
   "@arg[mat]{matrix of any size}
    @arg[row]{zero-index row into mat}
    @return{the row of mat as a simple-vector}"
   (let ((ncols (get-ncols mat)))
     (make-array ncols :element-type 'float :initial-contents
       (iter (for i below ncols)
-                (collect (aref mat i row))))))
+                (collect (aref mat i r))))))
 
-(defun set-row (mat row vec)
+(defun (setf row) (vec mat r)
   "@arg[mat]{matrix of any size mxn}
    @arg[row]{zero-index row into mat}
    @arg[vec]{the vector of length l to replace row of mat. 
@@ -231,9 +231,9 @@
              If l > n, only the [0 n) elements of vec are copied}
    @return{the modified matrix.  Modifies argument mat}"
   (let ((ncols (get-ncols mat)))
-    (iter (for col below (min (length vec) ncols))
-          (setf (aref mat col row) (svref vec col)))
-    mat))
+    (iter (for c below (min (length vec) ncols))
+          (setf (aref mat c r) (svref vec c)))
+    vec))
 
 ;;;
 ;;; General Matrix and Vector Math
@@ -281,7 +281,7 @@
          (new-vec (make-array nrows :element-type 'float)))
     (iter (for i below nrows)
           (setf (aref new-vec i)
-                (inner-product (get-row mat i) vec)))
+                (inner-product (row mat i) vec)))
     new-vec))
 
 ;; Not sure what we would need this for...
@@ -296,7 +296,7 @@
          (new-cvec (make-array `(1 ,n-rows) :element-type 'float)))
     (iter (for i below n-cols)
           (setf (aref new-cvec 1 i) 
-                (inner-product v (get-col A i))))
+                (inner-product v (col A i))))
 	new-cvec))
 
 (defun matrix-multiply-m (A B)
@@ -310,8 +310,8 @@
     (iter (for i below n-cols)
           (iter (for j below n-rows)
                 (setf (aref new-mat j i)
-                      (inner-product (get-row A j)
-                                     (get-col B i)))))
+                      (inner-product (row A j)
+                                     (col B i)))))
 	new-mat))
 
 (defun place-one (index len)
@@ -342,7 +342,7 @@
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
-  (set-col (make-identity) 3 v))
+  (setf (col (make-identity) 3) v))
 
 (defun make-scale (v)
   "@return{a scaling matrix that will scale points by v}"

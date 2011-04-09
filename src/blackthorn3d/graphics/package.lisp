@@ -37,10 +37,12 @@
    :draw-vert-array
    
    ;; camera.lisp
-   :make-camera-matrix
-   :cam-inverse
-   :mult-cam
-   :move-cam
+   :camera-matrix
+   :camera-inverse
+   :camera
+   :cam-pos
+   :cam-dir
+   :cam-up
 
    ))
         

@@ -23,22 +23,41 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-;; Load quicklisp
-#-quicklisp
-(let ((quicklisp-init
-       (merge-pathnames
-        "../quicklisp/setup.lisp"
-        (make-pathname
-         :host (pathname-host #.(or *compile-file-truename*
-                                    *load-truename*))
-         :directory (pathname-directory #.(or *compile-file-truename*
-                                              *load-truename*))))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
+(setq inhibit-startup-message t)
+(setq-default indent-tabs-mode nil)
+(setq-default show-paren-mode t)
+(delete-selection-mode t)
 
-;; Inject library paths for cffi
-(ql:quickload :cffi)
+;;;
+;;; Lisp File Extensions
+;;;
 
-(pushnew
- (merge-pathnames (make-pathname :directory '(:relative "lib")))
- cffi:*foreign-library-directories* :test #'equal)
+(setq auto-mode-alist (cons '("\\.lisp$" . lisp-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.lsp$" . lisp-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.cl$" . lisp-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.asd$" . lisp-mode) auto-mode-alist))
+
+;;;
+;;; Paredit
+;;;
+
+(add-to-list 'load-path "build/emacs/")
+(autoload 'paredit-mode "paredit"
+  "Minor mode for pseudo-structurally editing Lisp code."
+  t)
+(add-hook 'lisp-mode-hook (lambda () (paredit-mode +1)))
+
+;;;
+;;; Slime
+;;;
+
+(load (expand-file-name "build/quicklisp/slime-helper.el"))
+
+(setq slime-lisp-implementations
+      '((sbcl ("sbcl"))))
+
+(eval-after-load "slime"
+  '(progn
+     (slime-setup '(slime-fancy slime-asdf slime-banner))
+     (setq slime-complete-symbol*-fancy t)
+     (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))

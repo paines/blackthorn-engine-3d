@@ -34,6 +34,7 @@ system := blank
 
 # Stardard drivers:
 quicklisp-setup := build/scripts/quicklisp-setup.lisp
+quicklisp-preload-slime-helper := build/scripts/quicklisp-preload-slime-helper.lisp
 prop :=  build/scripts/property.lisp
 nop := build/scripts/nop.lisp
 load :=  build/scripts/load.lisp
@@ -143,6 +144,16 @@ load-clozure-builtin:
 shell:
 	$(MAKE) driver="${nop}" new
 
+.PHONY: emacs
+emacs:
+	$(MAKE) driver="${quicklisp-preload-slime-helper}" new
+	$(shell build/scripts/find-emacs.sh) -l build/emacs/emacs.el
+
+.PHONY: slime
+slime:
+	$(MAKE) clean
+	emacs --eval "(progn (slime '${cl}) (while (not (slime-connected-p)) (sleep-for 0 200)) (slime-interactive-eval \"(defparameter *driver-system* \\\"${system}\\\")\") (slime-load-file \"${driver}\"))"
+
 .PHONY: server
 server:
 	$(MAKE) args="--server=127.0.0.1 --port=12345" new
@@ -162,11 +173,6 @@ server4:
 .PHONY: server5
 server5:
 	$(MAKE) args="--server --port=12345 --players=5" new
-
-.PHONY: slime
-slime:
-	$(MAKE) clean
-	emacs --eval "(progn (slime '${cl}) (while (not (slime-connected-p)) (sleep-for 0 200)) (slime-interactive-eval \"(defparameter *driver-system* \\\"${system}\\\")\") (slime-load-file \"${driver}\"))"
 
 .PHONY: thopter
 thopter:

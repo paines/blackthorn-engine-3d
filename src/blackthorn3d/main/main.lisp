@@ -121,19 +121,18 @@
       (gl:load-identity)
       (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
       (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-      (gl:enable :lighting)
+      ;(gl:enable :lighting)
       (gl:enable :light0)
 
-      (defparameter cam-pos (make-point3 1.0 1.0 5.0))
-      (defparameter cam-d (vec- (make-vec3 0.0 0.0 0.0) cam-pos))
-      (defparameter cam-up (blt3d-utils:make-vec3 0.0 1.0 0.0))
-      (defparameter cam (make-camera-matrix cam-pos 
-                                            cam-d 
-                                            #(0.0 1.0 0.0 0.0)))
       (defparameter cube (make-cube))
       (defparameter turn (make-y-rot (/ pi 100)))
+      
       ;; Main loop:
-      (let ((input-queue (make-instance 'containers:basic-queue)))
+      (let ((input-queue (make-instance 'containers:basic-queue))
+            (cam (make-instance 'camera :position (make-point3 0.0 0.0 5.0)
+                                        :direction (norm (make-vec3 5.0 0.0 -5.0))
+                                                   #+disable(norm (vec- (make-vec3 0.0 0.0 0.0) 
+                                                               (make-vec3 0.0 0.0 5.0))))))
         (catch 'main-loop
           ;(net-game-start #'main-loop-abort-handler)
 
@@ -157,15 +156,16 @@
               #+windows
               (progn
                 (xbox360_poll 0)
-				(setf cam (mult-cam cam turn))
-				
+				;(setf (cam-dir cam) (matrix-multiply-v turn (cam-dir cam)))
+                
 				;#+disabled
                 (let ((x (* 2 (abs (xbox360_get_lx 0))))
                       (y (* 2 (abs (xbox360_get_ly 0))))) 
                   (xbox360-vibrate 0 x y)))
 
               (gl:clear :color-buffer-bit :depth-buffer-bit)
-              (gl:load-matrix (cam-inverse cam))
+              (gl:load-matrix (camera-inverse cam))
+              ;(gl:translate 1.0 0.0 -1.0)
               (gl:color 1.0 .75 0.0)
               (apply #'draw-vert-array cube)
                           

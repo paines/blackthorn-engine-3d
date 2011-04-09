@@ -29,43 +29,39 @@
 ;;;; Yay cameras!
 ;;;;
 
-(defun set-cam-pos (cam pos)
-  (set-col cam 3 pos))
+(defclass camera ()
+  ((pos :accessor cam-pos
+        :initarg :position
+        :initform (make-point3 0.0 0.0 0.0))
+   (dir :accessor cam-dir
+        :initarg :direction
+        :initform (make-vec3 0.0 0.0 -1.0))
+   (up  :accessor cam-up
+        :initarg :up
+        :initform (make-vec3 0.0 1.0 0.0))))
 
-(defun get-cam-pos (cam)
-  (get-col cam 3))
-
-(defun translate-cam (cam vec)
-  "translates a camera by the vector in vec.  Modifies its paramter"
-  (iter (for i below 3)
-        (setf (aref cam i 3) (+ (aref cam i 3) (svref vec i)))))
-
-(defun move-cam (cam pos)
-  (set-cam-pos cam pos))
-
-(defun mult-cam (cam matrix)
-  (matrix-multiply-m matrix cam))
-
-(defun make-camera-matrix (e d up)
+(defmethod camera-matrix ((c camera))
    "@return{A 4x4 matrix representing a camera's location and direction}"
-  (let* ((cam (make-matrix4x4))
-         (z (norm (vec-neg d)))
-         (x (norm (cross up z)))
-         (y (cross z x)))
-    (set-col cam 0 x)
-    (set-col cam 1 y)
-    (set-col cam 2 z)
-    (set-col cam 3 e)
-    (set-row cam 3 (make-vector4 0.0 0.0 0.0 1.0))))
+  (with-slots (pos dir up) c
+    (let* ((cam-matrix (make-matrix4x4))
+           (z (norm (vec-neg dir)))
+           (x (norm (cross up z)))
+           (y (cross z x)))
+      (setf (col cam-matrix 0) x)
+      (setf (col cam-matrix 1) y)
+      (setf (col cam-matrix 2) z)
+      (setf (col cam-matrix 3) pos)
+      cam-matrix)))
 
-
-;;; Get the inverse matrix for the modelview matrix
-;;; This is done by computing the inverse of the 3x3 
-;;; rotation part of the matrix (the same as its 
-;;; transpose and then inverting the translate
-;;; (negating the values) and putting in the final
-;;; matrix
-(defun cam-inverse (cam-mat)
-  (set-cam-pos
-     (set-row (transpose cam-mat) 3 (make-vec3 0.0 0.0 0.0))
-     (vec-neg (get-cam-pos cam-mat))))
+(defmethod camera-inverse ((c camera))
+  (with-slots (pos dir up) c
+    (let* ((cam-inv (make-matrix4x4))
+           (z (norm (vec-neg dir)))
+           (x (norm (cross up z)))
+           (y (cross z x)))
+      (setf (row cam-inv 0) x)
+      (setf (row cam-inv 1) y)
+      (setf (row cam-inv 2) z)
+      (setf (col cam-inv 3) (vec-neg pos))
+      (setf (row cam-inv 3) (make-vector4 0.0 0.0 0.0 1.0))
+      cam-inv)))

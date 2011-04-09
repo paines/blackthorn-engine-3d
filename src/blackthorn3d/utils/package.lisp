@@ -60,8 +60,8 @@
    :make-translate
    :make-scale
    :make-x-rot :make-y-rot :make-z-rot
-   :set-col :get-col
-   :set-row :get-row
+   :col
+   :row
    :inner-product
    :outer-product
    :matrix-multiply-v

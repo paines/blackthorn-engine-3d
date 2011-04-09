@@ -96,24 +96,40 @@
         (,fn (y ,v1) (y ,v2))
         (,fn (z ,v1) (z ,v2))
         (w ,v1)))))
-        
-(defun vec+ (a b)
-  (vec4-3elt-op + a b)
-  #+disable(vector-elt-wise #'- a b))
+
+(defmacro vec3-3elt-op (fn a b)
+  (with-gensyms (v1 v1)
+    (let ((v1 a) (v2 b))
+      `(make-vector3
+        (,fn (x ,v1) (x ,v2))
+        (,fn (y ,v1) (y ,v2))
+        (,fn (z ,v1) (z ,v2))))))
+
+(defun vec4+ (a b)
+  (vec4-3elt-op + a b))
+
+(defun vec3+ (a b)
+  (vec3-3elt-op + a b))
   
-(defun vec- (a b)
-  (vec4-3elt-op - a b)
-  #+disable(vector-elt-wise #'- a b))
+(defun vec4- (a b)
+  (vec4-3elt-op - a b))
 
-(defun vec* (a b)
-  (vec4-3elt-op * a b)
-  #+disable(vector-elt-wise #'* a b))
+(defun vec3- (a b)
+  (vec3-3elt-op - a b))
 
-(defun vec/ (a b)
-  (vec4-3elt-op / a b)
-  #+disable(vector-elt-wise #'/ a b))
+(defun vec4* (a b)
+  (vec4-3elt-op * a b))
 
-(defun vec-scale (v s)
+(defun vec3* (a b)
+  (vec3-3elt-op * a b))
+
+(defun vec4/ (a b)
+  (vec4-3elt-op / a b))
+
+(defun vec3/ (a b)
+  (vec3-3elt-op / a b))
+
+(defun vec-scale4 (v s)
   (make-vector4 
     (* s (x v))
     (* s (y v))
@@ -145,11 +161,15 @@
         (sq (y v))
      (sq (z v)))))
 
-(defun norm (v)
+(defun norm4 (v)
   "Normalize a vector4, see normalize for general normalize fn"
   (let ((magv (mag v)))
-    (unless (zerop magv) (vec-scale v (/ magv)))))
+    (unless (zerop magv) (vec-scale4 v (/ magv)))))
 
+(defun norm3 (v)
+  "Normalize a vector3."
+  (let ((magv (mag v)))
+    (unless (zerop magv) (vec-scale3 v (/ magv)))))
 
 (defun normalize (v)
   "Normalize a vector of any length"

@@ -40,8 +40,13 @@
                                               :components
                                               ((:file "package")
                                                (:file "anaphora")
-                                               (:file "math")
                                                (:file "library"))
+                                              :serial t)
+                                     (:module math
+                                              :components
+                                              ((:file "package")
+                                               (:file "vector")
+                                               (:file "matrix"))
                                               :serial t)
                                      (:module resources
                                               :components

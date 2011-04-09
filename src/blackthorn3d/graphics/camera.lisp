@@ -55,10 +55,10 @@
 
 (defmethod camera-inverse ((c camera))
   (with-slots (pos dir up) c
-    (let* ((cam-inv (make-matrix4x4))
-           (z (norm (vec-neg dir)))
+    (let* ((z (norm (vec-neg dir)))
            (x (norm (cross up z)))
-           (y (cross z x)))
+           (y (cross z x))
+           (cam-inv (make-ortho-basis x y z)))
       (setf (row cam-inv 0) x)
       (setf (row cam-inv 1) y)
       (setf (row cam-inv 2) z)

@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,17 +23,49 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-utils
-  (:nicknames :blt3d-utils)
-  (:use :cl :alexandria :iter)
+(defpackage :blackthorn3d-math
+  (:nicknames :blt3d-math)
+  (:use :cl :alexandria :iter :blt3d-utils)
   (:export
+   
+   ;; vector.lisp
+   :make-vector4
+   :make-vector3
+   :make-point3
+   :make-vec3
+   :x :y :z :w
+   :r :g :b :a   
+   :dot
+   :cross 
+   :cross3
+   :vec+ :vec- :vec* :vec/
+   :vec-scale 
+   :vec-scale3
+   :vec-neg
+   :mag
+   :sq-mag
+   :sq
+   :norm
+   :magnitude
+   
+   ;; matrix.lisp
+   :make-matrix
+   :make-matrix3x3
+   :make-matrix4x4
+   :make-identity
+   :make-translate
+   :make-scale
+   :make-x-rot :make-y-rot :make-z-rot
+   :make-ortho-basis
+   :col
+   :row
+   :inner-product
+   :outer-product
+   :matrix-multiply-v
+   :matrix-multiply-m
+   :vector-multiply-m
+   :transpose
 
-   ;; utils.lisp
-   :aif
-   :acond
-   :it
-
-   ;; library.lisp
-   :load-dlls
+   ;; quaternion.lisp
 
    ))

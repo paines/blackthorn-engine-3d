@@ -34,7 +34,7 @@ system := blank
 
 # Stardard drivers:
 quicklisp-setup := build/scripts/quicklisp-setup.lisp
-quicklisp-preload-slime-helper := build/scripts/quicklisp-preload-slime-helper.lisp
+emacs-setup := build/scripts/emacs-setup.lisp
 prop :=  build/scripts/property.lisp
 nop := build/scripts/nop.lisp
 load :=  build/scripts/load.lisp
@@ -144,10 +144,10 @@ load-clozure-builtin:
 shell:
 	$(MAKE) driver="${nop}" new
 
-.PHONY: emacs
-emacs:
-	$(MAKE) driver="${quicklisp-preload-slime-helper}" new
-	$(shell build/scripts/find-emacs.sh) -l build/emacs/emacs.el
+.PHONY: setup-emacs
+setup-emacs:
+	$(MAKE) driver="${emacs-setup}" new
+#$(shell build/scripts/find-emacs.sh) -l build/emacs/emacs.el
 
 .PHONY: slime
 slime:

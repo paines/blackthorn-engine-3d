@@ -41,7 +41,7 @@
 ;;; Paredit
 ;;;
 
-(add-to-list 'load-path "build/emacs/")
+(add-to-list 'load-path "@BLACKTHORN_DIR@/build/emacs/")
 (autoload 'paredit-mode "paredit"
   "Minor mode for pseudo-structurally editing Lisp code."
   t)
@@ -51,13 +51,25 @@
 ;;; Slime
 ;;;
 
-(load (expand-file-name "build/quicklisp/slime-helper.el"))
+(load (expand-file-name "@BLACKTHORN_DIR@/build/quicklisp/slime-helper.el"))
 
 (setq slime-lisp-implementations
-      '((sbcl ("sbcl"))))
+      '((clozure ("@BLACKTHORN_DIR@/build/ccl/wx86cl" "--load" "@BLACKTHORN_DIR@/build/scripts/quicklisp-setup.lisp"))
+        (sbcl ("@BLACKTHORN_DIR@/build/sbcl/sbcl" "--core" "@BLACKTHORN_DIR@/build/sbcl/sbcl.core" "--load" "@BLACKTHORN_DIR@/build/scripts/quicklisp-setup.lisp"))))
 
 (eval-after-load "slime"
   '(progn
      (slime-setup '(slime-fancy slime-asdf slime-banner))
      (setq slime-complete-symbol*-fancy t)
      (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
+
+(defun clozure ()
+  (interactive)
+  (slime 'clozure))
+
+(defun sbcl ()
+  (interactive)
+  (slime 'sbcl))
+
+(global-set-key [f5] 'clozure)
+(global-set-key [f6] 'sbcl)

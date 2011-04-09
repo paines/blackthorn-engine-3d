@@ -44,7 +44,7 @@
   (set-cam-pos cam pos))
 
 (defun mult-cam (cam matrix)
-  (setf cam (matrix-mulitply-m cam matrix)))
+  (matrix-multiply-m matrix cam))
 
 (defun make-camera-matrix (e d up)
    "@return{A 4x4 matrix representing a camera's location and direction}"

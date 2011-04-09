@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils)
+  (:use :iter :cl :blt3d-utils :blt3d-math)
   (:export
 
    ;; draw.lisp

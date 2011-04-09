@@ -196,7 +196,7 @@
   (make-matrix4x4 
     (iter (for i below 4) 
       (collect
-        (list (svref u i) (svref v i) (svref w i) 0.0)))
+        (list (svref u i) (svref v i) (svref w i) (if (= i 3) 1.0 0.0))))))
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"

@@ -43,26 +43,42 @@
 (defmacro qw (q)
   `(w ,q))
   
-(defun make-quaternion (x y z w)
+(defun make-quat (x y z w)
   (make-vector4 x y z w))
 
-(defun make-quaternion-from-vw (v w)
+(defun make-quat-from-vw (v w)
   (make-vector4 (x v) (y v) (z v) w))
   
-(defun vec3->quaternion (p)
-  (make-quaternion (x p) (y p) (z p) 0.0))
+(defun vec3->quat (p)
+  (make-quat (x p) (y p) (z p) 0.0))
   
-(defun axis-rad->quaternion (axis rad)
-  (make-quaternion-from-vw (vec-scale axis (sin rad)) (cos rad)))
+(defun axis-rad->quat (axis rad)
+  (make-quat-from-vw (vec-scale axis (sin rad)) (cos rad)))
   
-(defun quaternion-identity ()
+(defun euler->quat (roll pitch yaw)
+  "Takes euler angles (roll pitch and yaw and converts them
+   to a quaternion.  Assumes order is r->p->y"
+  (let ((cos-r (cos (/ roll 2.0)))
+        (cos-p (cos (/ pitch 2.0)))
+        (cos-y (cos (/ yaw 2.0)))
+        (sin-r (sin (/ roll 2.0)))
+        (sin-p (sin (/ pitch 2.0)))
+        (sin-y (sin (/ yaw 2.0)))
+        (cpcy (* cos-p cos-y))
+        (spsy (* sin-p sin-y)))
+    (make-quat (+ (* cos-r cpcy) (* sin-r spsy))
+               (- (* sin-r cpcy) (* cos-r spsy))
+               (+ (* cos-r sin-p cos-y) (* sin-r cos-p sin-y))
+               (- (* cos-r cos-p sin-y) (* sin-r sin-p cos-y)))))
+
+(defun quat-identity ()
   (make-vector4 0.0 0.0 0.0 1.0))
 
 (defun quat-norm (q)
   (normalize q))
   
 (defun quat+ (q r)
-  (make-quaternion
+  (make-quat
     (+ (x q) (x r))
     (+ (y q) (y r))
     (+ (z q) (z r))
@@ -71,26 +87,28 @@
 (defun quat* (q r)
   (let ((q-v (qv q)) (q-w (qw q))
         (r-v (qv r)) (r-w (qw r)))
-    (make-quaternion-from-rw
-      (vec+ (vec+ (cross3 q-v r-v)
-                  (vec-scale q-v r-w))
-            (vec-scale r-v q-w))
-       (- (* q-w r-w) (dot q-v r-v)))))
+    (make-quat-from-rw
+     (vec3+ (vec3+ (cross3 q-v r-v)
+                   (vec-scale3 q-v r-w))
+            (vec-scale3 r-v q-w))
+     (- (* q-w r-w) (dot q-v r-v)))))
 
 (defun quat-conjugate (q)
-  (make-quaternion-from-vw (vec-neg (qv q)) (qw q)))
+  (make-quat-from-vw (vec-neg (qv q)) (qw q)))
   
-(defun quaternion-rotate-vec (q v)
+(defun quat-rotate-vec (q v)
   "Rotates a vector or point v by quaternion q.
+   Calculated Q' = QVQ* where V = <v, 0.0>
    @arg[q]{quaternion to rotate by}
    @arg[v]{point or vector being rotated}
    @return{a point}"
-  (quat* q (quat* (vec3->quaternion v) (quat-conjugate q))))
+  (quat* q (quat* (vec3->quat v) (quat-conjugate q))))
 
-(defun quaternion->matrix (q)
+(defun quat->matrix (q)
   "Convert a quaternion into a matrix (if this weren't lisp, i'd be more exited
    at the lack of trig functions)
-   @return{a matrix that can be used to rotate objects according to the quaternion}"
+   @return{a matrix that can be used to rotate objects according to
+   the quaternion}"
   (let ((m11 (- 1.0 (* 2.0 (+ (sq (y q)) (sq (z q))))))
         (m12 (* 2.0 (- (* (x q) (y q)) (* (w q) (z q)))))
         (m13 (* 2.0 (+ (* (x q) (z q)) (* (w q) (y q)))))
@@ -105,3 +123,14 @@
       (,m12 ,m22 ,m32 0.0)
       (,m13 ,m23 ,m33 0.0)
       (0.0  0.0  0.0  1.0)))))
+
+(defun quat-rotate-to-vec (srcVec destVec)
+  "Creates a quaternion that will reorient a vector pointing in
+   srcVec to point in destVec"
+  (let* ((s (norm srcVec))
+         (t (norm destVec))
+         (u (cross s t))
+         (e (dot s t))
+         (radical (sqrt (* (2.0 (+ 1.0 e))))))
+    (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical)) ; qv
+                         (/ radical 2.0))))             ; qw

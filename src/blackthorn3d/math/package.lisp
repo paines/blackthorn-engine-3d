@@ -38,14 +38,16 @@
    :dot
    :cross 
    :cross3
-   :vec+ :vec- :vec* :vec/
-   :vec-scale 
+   :vec4+ :vec4- :vec4* :vec4/
+   :vec3+ :vec3- :vec3* :vec3/
+   :vec-scale4 
    :vec-scale3
    :vec-neg
    :mag
    :sq-mag
    :sq
-   :norm
+   :norm4
+   :norm3
    :magnitude
    
    ;; matrix.lisp

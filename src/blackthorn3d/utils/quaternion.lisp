@@ -55,14 +55,14 @@
 (defun axis-rad->quat (axis phi)
   (make-quat-from-vw (vec-scale axis (sin phi)) (cos phi)))
   
-(defun quat-identity () 
+(defun quat-identity ()
   (make-vector4 0.0 0.0 0.0 1.0))
 
 (defun quat-norm (q)
   (normalize q))
   
 (defun quat+ (q r)
-  (make-quaternion 
+  (make-quaternion
     (+ (x q) (x r))
     (+ (y q) (y r))
     (+ (z q) (z r))
@@ -77,4 +77,8 @@
             (vec-scale r-v q-w))
        (- (* q-w r-w) (dot q-v r-v)))))
 
-(defun quat-conjugate (q))
+(defun quat-conjugate (q)
+  (make-quat-from-vw (vec-neg (qv q)) (qw q)))
+  
+(defun quat-rotate-vec (q v)
+  ()

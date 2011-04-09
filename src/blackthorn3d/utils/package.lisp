@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -32,10 +32,6 @@
    :aif
    :acond
    :it
-
-   ;; resources.lisp
-   :add-resource-path
-   :resolve-resource
    
    ;; math.lisp
    :make-vector4

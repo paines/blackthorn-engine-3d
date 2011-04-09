@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,19 +23,13 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
-
-(defpackage :blackthorn3d-main
-  (:nicknames :blt3d-main)
-  (:use :cl :iter :blt3d-utils :blt3d-res :blt3d-gfx :blt3d-input)
-  #+allegro (:import-from :cl-user :exit)
+(defpackage :blackthorn3d-resources
+  (:nicknames :blt3d-res)
+  (:use :cl :alexandria :iter :blt3d-utils)
   (:export
 
-   ;; main.lisp
-   :main
+   ;; locate.lisp
+   :add-resource-path
+   :resolve-resource
 
    ))
-
-#-allegro
-(eval-when (:compile-toplevel :load-toplevel)
-  (setf (symbol-function 'blt3d-main::exit) #'quit))

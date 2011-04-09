@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-utils)
+(in-package :blackthorn3d-resources)
 
 ;;;
 ;;; Resource search paths

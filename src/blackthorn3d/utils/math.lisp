@@ -296,7 +296,8 @@
          (new-cvec (make-array `(1 ,n-rows) :element-type 'float)))
     (iter (for i below n-cols)
           (setf (aref new-cvec 1 i) 
-                (inner-product v (get-col A i))))))
+                (inner-product v (get-col A i))))
+	new-cvec))
 
 (defun matrix-multiply-m (A B)
   "Multiply a matrix A by matrix B
@@ -310,7 +311,8 @@
           (iter (for j below n-rows)
                 (setf (aref new-mat j i)
                       (inner-product (get-row A j)
-                                     (get-col B i)))))))
+                                     (get-col B i)))))
+	new-mat))
 
 (defun place-one (index len)
   (iter (for i below len)

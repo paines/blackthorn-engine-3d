@@ -131,7 +131,7 @@
                                             cam-d 
                                             #(0.0 1.0 0.0 0.0)))
       (defparameter cube (make-cube))
-
+      (defparameter turn (make-y-rot (/ pi 100)))
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue)))
         (catch 'main-loop
@@ -157,7 +157,10 @@
               #+windows
               (progn
                 (xbox360_poll 0)
-                (let ( (x (* 2 (abs (xbox360_get_lx 0))))
+				(setf cam (mult-cam cam turn))
+				
+				;#+disabled
+                (let ((x (* 2 (abs (xbox360_get_lx 0))))
                       (y (* 2 (abs (xbox360_get_ly 0))))) 
                   (xbox360-vibrate 0 x y)))
 

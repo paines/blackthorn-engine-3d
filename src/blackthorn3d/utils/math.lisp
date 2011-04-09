@@ -127,6 +127,11 @@
               (sq (y v)))
            (sq (z v)))))
 
+(defun sq-mag (v)
+  (+ (+ (sq (x v))
+        (sq (y v))
+     (sq (z v)))))
+
 (defun norm (v)
   "Normalize a vector4, see normalize for general normalize fn"
   (let ((magv (mag v)))
@@ -273,7 +278,6 @@
    @arg[vec]{a vector of size n}
    @return{the result of multiplying mat by vec, a vector of size m}"
   (let* ((nrows (min (length vec) (get-nrows mat)))
-         (ncols (get-ncols mat))
          (new-vec (make-array nrows :element-type 'float)))
     (iter (for i below nrows)
           (setf (aref new-vec i)

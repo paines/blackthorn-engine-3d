@@ -52,6 +52,7 @@
    :vec-scale3
    :vec-neg
    :mag
+   :sq-mag
    :sq
    :norm
    :magnitude

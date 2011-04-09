@@ -31,12 +31,12 @@
 
 (defun set-cam-pos (cam pos)
   (set-col cam 3 pos))
-  
+
 (defun get-cam-pos (cam)
   (get-col cam 3))
-  
+
 (defun translate-cam (cam vec)
-  "translates a camera by the vector in vec.  Modifies it's paramter"
+  "translates a camera by the vector in vec.  Modifies its paramter"
   (iter (for i below 3)
         (setf (aref cam i 3) (+ (aref cam i 3) (svref vec i)))))
 
@@ -44,17 +44,17 @@
   (set-cam-pos cam pos))
 
 (defun mult-cam (cam matrix)
-  (matrix-mulitply-m cam matrix))
+  (setf cam (matrix-mulitply-m cam matrix)))
 
 (defun make-camera-matrix (e d up)
-   "@return{A 4x4 matrix representing a camera's location and direction"
+   "@return{A 4x4 matrix representing a camera's location and direction}"
   (let* ((cam (make-matrix4x4))
          (z (norm (vec-neg d)))
          (x (norm (cross up z)))
          (y (cross z x)))
-    (set-col cam 0 x) 
-    (set-col cam 1 y) 
-    (set-col cam 2 z) 
+    (set-col cam 0 x)
+    (set-col cam 1 y)
+    (set-col cam 2 z)
     (set-col cam 3 e)
     (set-row cam 3 (make-vector4 0.0 0.0 0.0 1.0))))
 

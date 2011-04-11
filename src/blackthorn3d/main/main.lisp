@@ -158,7 +158,8 @@
               (progn
                 (xbox360_poll 0)
 				;(setf (cam-dir cam) (matrix-multiply-v turn (cam-dir cam)))
-                (setf (cam-dir cam) (matrix-multiply-v (quaternion->matrix cam-quat) (cam-dir cam)))
+                ;(setf (cam-dir cam) (matrix-multiply-v (quaternion->matrix cam-quat) (cam-dir cam)))
+                (setf (cam-dir cam) (quaternion-rotate-vec cam-quat (cam-dir cam)))
                 
 				;#+disabled
                 (let ((x (* 2 (abs (xbox360_get_lx 0))))

@@ -238,3 +238,11 @@
                          (,sinr ,cosr 0.0 0.0)
                          (0.0 0.0 1.0 0.0)
                          (0.0 0.0 0.0 1.0))))))
+
+(defun reshape (mat size)
+  (let ((new-sz (apply #'* size))
+        (mat-sz (apply #'* (array-dimensions mat))))
+    (unless (/= new-sz mat-sz)
+      (let ((new-mat (make-matrix size)))
+        (iter (for i below new-sz)
+              (setf (row-major-aref new-mat) (row-major-aref mat)))))))

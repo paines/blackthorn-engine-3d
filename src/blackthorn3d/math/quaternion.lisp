@@ -95,7 +95,7 @@
 
 (defun quat-conjugate (q)
   (make-quat-from-vw (vec-neg (qv q)) (qw q)))
-  
+
 (defun quat-rotate-vec (q v)
   "Rotates a vector or point v by quaternion q.
    Calculated Q' = QVQ* where V = <v, 0.0>

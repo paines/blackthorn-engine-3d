@@ -245,4 +245,4 @@
     (unless (/= new-sz mat-sz)
       (let ((new-mat (make-matrix size)))
         (iter (for i below new-sz)
-              (setf (row-major-aref new-mat) (row-major-aref mat)))))))
+              (setf (row-major-aref new-mat i) (row-major-aref mat i)))))))

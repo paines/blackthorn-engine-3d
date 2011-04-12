@@ -53,19 +53,19 @@
   (make-quat (x p) (y p) (z p) 0.0))
   
 (defun axis-rad->quat (axis rad)
-  (make-quat-from-vw (vec-scale axis (sin rad)) (cos rad)))
+  (make-quat-from-vw (vec-scale4 axis (sin rad)) (cos rad)))
   
 (defun euler->quat (roll pitch yaw)
   "Takes euler angles (roll pitch and yaw and converts them
    to a quaternion.  Assumes order is r->p->y"
-  (let ((cos-r (cos (/ roll 2.0)))
-        (cos-p (cos (/ pitch 2.0)))
-        (cos-y (cos (/ yaw 2.0)))
-        (sin-r (sin (/ roll 2.0)))
-        (sin-p (sin (/ pitch 2.0)))
-        (sin-y (sin (/ yaw 2.0)))
-        (cpcy (* cos-p cos-y))
-        (spsy (* sin-p sin-y)))
+  (let* ((cos-r (cos (/ roll 2.0)))
+         (cos-p (cos (/ pitch 2.0)))
+         (cos-y (cos (/ yaw 2.0)))
+         (sin-r (sin (/ roll 2.0)))
+         (sin-p (sin (/ pitch 2.0)))
+         (sin-y (sin (/ yaw 2.0)))
+         (cpcy (* cos-p cos-y))
+         (spsy (* sin-p sin-y)))
     (make-quat (+ (* cos-r cpcy) (* sin-r spsy))
                (- (* sin-r cpcy) (* cos-r spsy))
                (+ (* cos-r sin-p cos-y) (* sin-r cos-p sin-y))
@@ -87,14 +87,14 @@
 (defun quat* (q r)
   (let ((q-v (qv q)) (q-w (qw q))
         (r-v (qv r)) (r-w (qw r)))
-    (make-quat-from-rw
+    (make-quat-from-vw
      (vec3+ (vec3+ (cross3 q-v r-v)
                    (vec-scale3 q-v r-w))
             (vec-scale3 r-v q-w))
      (- (* q-w r-w) (dot q-v r-v)))))
 
 (defun quat-conjugate (q)
-  (make-quat-from-vw (vec-neg (qv q)) (qw q)))
+  (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
 
 (defun quat-rotate-vec (q v)
   "Rotates a vector or point v by quaternion q.
@@ -127,10 +127,10 @@
 (defun quat-rotate-to-vec (srcVec destVec)
   "Creates a quaternion that will reorient a vector pointing in
    srcVec to point in destVec"
-  (let* ((s (norm srcVec))
-         (t (norm destVec))
-         (u (cross s t))
-         (e (dot s t))
-         (radical (sqrt (* (2.0 (+ 1.0 e))))))
+  (let* ((ns (norm srcVec))
+         (nt(norm destVec))
+         (u (cross ns nt))
+         (e (dot ns nt))
+         (radical (sqrt (* 2.0 (+ 1.0 e)))))
     (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical)) ; qv
                          (/ radical 2.0))))             ; qw

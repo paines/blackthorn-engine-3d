@@ -98,7 +98,7 @@
         (w ,v1)))))
 
 (defmacro vec3-3elt-op (fn a b)
-  (with-gensyms (v1 v1)
+  (with-gensyms (v1 v2)
     (let ((v1 a) (v2 b))
       `(make-vector3
         (,fn (x ,v1) (x ,v2))
@@ -142,12 +142,18 @@
     (* s (y v))
     (* s (z v))))
 
-(defun vec-neg (v)
+(defun vec-neg4 (v)
   (make-vector4 
     (- (x v))
     (- (y v))
     (- (z v))
     (w v)))
+
+(defun vec-neg3 (v)
+  (make-vector3 
+    (- (x v))
+    (- (y v))
+    (- (z v))))
 
 (defun sq (x) (* x x))
 

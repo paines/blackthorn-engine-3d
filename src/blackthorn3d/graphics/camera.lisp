@@ -44,8 +44,8 @@
    "@return{A 4x4 matrix representing a camera's location and direction}"
   (with-slots (pos dir up) c
     (let* ((cam-matrix (make-matrix4x4))
-           (z (norm (vec-neg dir)))
-           (x (norm (cross up z)))
+           (z (norm4 (vec-neg4 dir)))
+           (x (norm4 (cross up z)))
            (y (cross z x)))
       (setf (col cam-matrix 0) x)
       (setf (col cam-matrix 1) y)
@@ -55,9 +55,9 @@
 
 (defmethod camera-inverse ((c camera))
   (with-slots (pos dir up) c
-    (let* ((z (norm (vec-neg dir)))
-           (x (norm (cross up z)))
+    (let* ((z (norm4 (vec-neg4 dir)))
+           (x (norm4 (cross up z)))
            (y (cross z x))
            (cam-inv (make-ortho-basis x y z)))
-      (setf (col cam-inv 3) (matrix-multiply-v cam-inv (vec-neg pos)))
+      (setf (col cam-inv 3) (matrix-multiply-v cam-inv (vec-neg4 pos)))
       cam-inv)))

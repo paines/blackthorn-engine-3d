@@ -42,7 +42,8 @@
    :vec3+ :vec3- :vec3* :vec3/
    :vec-scale4 
    :vec-scale3
-   :vec-neg
+   :vec-neg4
+   :vec-neg3
    :mag
    :sq-mag
    :sq
@@ -69,15 +70,15 @@
    :transpose
 
    ;; quaternion.lisp
-   :make-quaternion
-   :make-quaternion-from-vw
-   :vec3->quaternion
-   :axis-rad->quaternion
+   :make-quat
+   :make-quat-from-vw
+   :vec3->quat
+   :axis-rad->quat
    :quat+ :quat*
    :quat-norm
-   :quaternion-identity
+   :quat-identity
    :quat-conjugate
-   :quaternion-rotate-vec
-   :quaternion->matrix
+   :quat-rotate-vec
+   :quat->matrix
    
    ))

@@ -131,62 +131,61 @@
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue))
             (cam (make-instance 'camera :position (make-point3 0.0 0.0 5.0)
-                                        :direction (norm (vec- (make-vec3 0.0 0.0 0.0)
-                                                               (make-vec3 0.0 0.0 5.0)))))
-            (cam-quat (axis-rad->quaternion (make-vec3 0.0 1.0 0.0) (/ pi 100))))
+                                :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
+                                                         (make-vec3 0.0 0.0 5.0)))))
+            (cam-quat (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100))))
         (catch 'main-loop
-          ;(net-game-start #'main-loop-abort-handler)
+                                        ;(net-game-start #'main-loop-abort-handler)
 
           (sdl:with-events ()
             (:quit-event ()
-              ;(net-game-quit)
-              t)
+                                        ;(net-game-quit)
+                         t)
             (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
-              ;(containers:enqueue
-              ; input-queue
-              ; (make-instance 'key-event :host (hostname) :type :key-down :key k
-              ;                :mod m :mod-key m-k :unicode u))
-              )
+                                        ;(containers:enqueue
+                                        ; input-queue
+                                        ; (make-instance 'key-event :host (hostname) :type :key-down :key k
+                                        ;                :mod m :mod-key m-k :unicode u))
+                             )
             (:key-up-event (:key k :mod m :mod-key m-k :unicode u)
-              ;(containers:enqueue
-              ; input-queue
-              ; (make-instance 'key-event :host (hostname) :type :key-up :key k
-              ;                :mod m :mod-key m-k :unicode u))
-              )
+                                        ;(containers:enqueue
+                                        ; input-queue
+                                        ; (make-instance 'key-event :host (hostname) :type :key-up :key k
+                                        ;                :mod m :mod-key m-k :unicode u))
+                           )
             (:idle ()
-              #+windows
-              (progn
-                (xbox360_poll 0)
-				;(setf (cam-dir cam) (matrix-multiply-v turn (cam-dir cam)))
-                ;(setf (cam-dir cam) (matrix-multiply-v (quaternion->matrix cam-quat) (cam-dir cam)))
-                (setf (cam-dir cam) (quaternion-rotate-vec cam-quat (cam-dir cam)))
+                   #+windows
+                   (progn
+                     (xbox360_poll 0)
+                                                     
+                     (setf (cam-dir cam) (quat-rotate-vec cam-quat (cam-dir cam)))
                 
-				;#+disabled
-                (let ((x (* 2 (abs (xbox360_get_lx 0))))
-                      (y (* 2 (abs (xbox360_get_ly 0))))) 
-                  (xbox360-vibrate 0 x y)))
+                                        ;#+disabled
+                     (let ((x (* 2 (abs (xbox360_get_lx 0))))
+                           (y (* 2 (abs (xbox360_get_ly 0))))) 
+                       (xbox360-vibrate 0 x y)))
 
-              (gl:clear :color-buffer-bit :depth-buffer-bit)
-              (gl:load-matrix (camera-inverse cam))
-              ;(gl:translate 1.0 0.0 -1.0)
-              (gl:color 1.0 .75 0.0)
-              (apply #'draw-vert-array cube)
+                   (gl:clear :color-buffer-bit :depth-buffer-bit)
+                   (gl:load-matrix (camera-inverse cam))
+                                        ;(gl:translate 1.0 0.0 -1.0)
+                   (gl:color 1.0 .75 0.0)
+                   (apply #'draw-vert-array cube)
                           
-              ;(render *game* #c(0 0) 1d0 -1d0)
-              (gl:flush)
-              (sdl:update-display)
+                                        ;(render *game* #c(0 0) 1d0 -1d0)
+                   (gl:flush)
+                   (sdl:update-display)
 
-              #+blt-debug
-              (let ((connection (or swank::*emacs-connection*
-                                    (swank::default-connection))))
-                (when (and connection
-                           (not (eql swank:*communication-style* :spawn)))
-                  (swank::handle-requests connection t)))
+                   #+blt-debug
+                   (let ((connection (or swank::*emacs-connection*
+                                         (swank::default-connection))))
+                     (when (and connection
+                                (not (eql swank:*communication-style* :spawn)))
+                       (swank::handle-requests connection t)))
 
-              ;(net-game-update input-queue #'main-process-event
-              ;                 #'main-loop-abort-handler)
-              ;(game-update *game*)
-              )))))
+                                        ;(net-game-update input-queue #'main-process-event
+                                        ;                 #'main-loop-abort-handler)
+                                        ;(game-update *game*)
+                   )))))
     ;#-clozure ;; FIXME: This causes a crash on Clozure builds on Windows.
     ;(unload-graphics)
     ;(unload-mixer)

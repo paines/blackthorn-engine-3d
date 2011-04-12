@@ -74,6 +74,9 @@
 ;;; Main Game Driver
 ;;;
 
+(defun deg->rad (x)
+    (* x (/ pi 180)))
+
 (defun main-init-abort-handler ()
   (throw 'main-init nil))
 
@@ -158,9 +161,17 @@
                    (progn
                      (xbox360_poll 0)
                                                      
-                     (setf (cam-dir cam) (quat-rotate-vec cam-quat (cam-dir cam)))
-                
-                                        ;#+disabled
+                     ;(setf (cam-dir cam) (quat-rotate-vec cam-quat (cam-dir cam)))
+                     (let ((rot-amt  (* -1 (/ (xbox360_get_lx 0) 65535)))
+                           (step-amt (*  1 (/ (xbox360_get_ly 0) 65535))))
+                         
+                         (setf (cam-dir cam) (quat-rotate-vec
+                            (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))
+                            (cam-dir cam)))
+                         (setf (cam-pos cam) (vec4+ (cam-pos cam) (vec-scale4 (cam-dir cam) step-amt)) )
+                         )
+                    
+                     #+disabled
                      (let ((x (* 2 (abs (xbox360_get_lx 0))))
                            (y (* 2 (abs (xbox360_get_ly 0))))) 
                        (xbox360-vibrate 0 x y)))

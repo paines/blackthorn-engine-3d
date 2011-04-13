@@ -32,13 +32,28 @@
 (defclass camera ()
   ((pos :accessor cam-pos
         :initarg :position
-        :initform (make-point3 0.0 0.0 0.0))
+        :initform (make-point3 0.0 0.0 0.0)
+        :documentation "the current world location of the camera")
    (dir :accessor cam-dir
         :initarg :direction
-        :initform (make-vec3 0.0 0.0 -1.0))
+        :initform (make-vec3 0.0 0.0 -1.0)
+        :documentation "the current direction the camera is pointing. Used in 1st person mode")
    (up  :accessor cam-up
         :initarg :up
-        :initform (make-vec3 0.0 1.0 0.0))))
+        :initform (make-vec3 0.0 1.0 0.0)
+        :documentation "the current up direction of the camera")
+   (target :accessor cam-target
+           :initarg :target
+           :initform (make-point3 0.0 0.0 0.0)
+           :documentation "the desired target of the camera. Used in 3rd person mode")
+   (mode :accessor cam-mode
+         :initarg :mode
+         :initform :first-person)
+   (matrix :accessor cam-matrix)))
+
+(defmethod update-camera ((c camera))
+  (with-slots (mode) c
+    (if (eql mode :first-person))))
 
 (defmethod camera-matrix ((c camera))
    "@return{A 4x4 matrix representing a camera's location and direction}"

@@ -29,6 +29,9 @@
 (defconstant +geometry-block+ "geometry")
 (defconstant +mesh-block+ "mesh")
 (defconstant +source-block+ "source")
+(defconstant +accessor+ "accessor")
+(defconstant +vertices+ "vertices")
+(defconstant +triangles+ "triangles")
 
 (defparameter *file* nil)
 
@@ -36,38 +39,76 @@
   (with-input-from-string s str 
     (apply #'vector 
            (iter (for val = (read s nil :eof ))
-                 (unitl (eql val :eof))
+                 (until (eql val :eof))
                  (collect val)))))
 
 (defun find-tag (tag) 
   (klacks:find-element *file* tag))
 
+(defun current-tag ()
+  (klacks:current-lname *file*))
+
+(defun find-end-tag (tag)
+  (while (not (eql (klacks:peek-next *file* :end-element))
+              (and (string-equal (current-tag) tag))))
+  (klacks:current-lname *file*))
+
 (defun get-attribute (attrib-name)
   (klacks:get-attribute *file* attrib-name))
 
-(defun next-element ()
-  (while (not (eql (klacks:peek-next *file*) :start-element))))
+(defun next-tag ()
+  (while (not (eql (klacks:peek-next *file*) :start-element)))
+  (klacks:current-lname *file*))
 
-;; returns a dotted list containing the id of the source and
-;; a vector containing the values in the source
-(defun consume-source ())
+;;;
+;;; Format:
+;;; <blah...material stuff>
+;;; <source>...</source>
+;;; ...
+;;; <source>...</source>
+;;; <vertices><input source="src"/></vertices>
+;;; <primitive-type>
+;;;   <input source=...>
+;;;   <input source=...>
+;;; <p> ...[indices]...</p>
+;;; </primitive-type>
+;;;
+
+(defun make-accessor (array)
+  (find-tag +accessor+)
+  (let ((stride (get-attribute "stride")))
+    (#'lambda (index) 
+      (aref array (* index stride)))))
+
+(defun build-components ()
+  (next-element)
+  (iter (while (string-equal (next-tag) "param"))
+        (collect (read-from-string (get-attribute "name")))))
+
+;; returns a list containing the id of the source and
+;; a vector containing the values in the source, an
+;; accessor function (for use later) and the names of components
+(defun consume-source (source-id)
+  (next-element)
+  (let* ((data (string->sv (klacks:peek-next *file*)))
+         (accessor-fn (make-accessor data))
+         (components (build-components)))
+    (find-end-tag +source_block+)
+    (list source-id data accessor-fn components)))
 
 ;; returns a p-list of the sources in the .DAE file for the current
 ;; mesh
 (defun build-sources ()
-  (next-element)
-  (if (string-equal (current-element) +source-block+)
-    (cons (consume-source) (build-sources))
+  (if (string-equal (next-element) +source-block+)
+    (cons (consume-source (get-attribute "id")) (build-sources))
     nil))
 
 ;; consturcts a mesh object from a .DAE file between 
 ;; <mesh></mesh> tags.
 (defun build-mesh (name)
   (find-tag +mesh-block+)
-  (let ((sources-lst ()))
-    (next-element)
-    (when (equal (current-element) +source+)
-      )))
+  (let ((sources-lst (build-sources)))
+    sources-lst))
 
 ;; Load a dae file into a list of meshes
 (defun load-dae (filename)

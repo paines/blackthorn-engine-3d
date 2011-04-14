@@ -127,8 +127,8 @@
 (defun quat-rotate-to-vec (srcVec destVec)
   "Creates a quaternion that will reorient a vector pointing in
    srcVec to point in destVec"
-  (let* ((ns (norm srcVec))
-         (nt(norm destVec))
+  (let* ((ns (norm4 srcVec))
+         (nt (norm4 destVec))
          (u (cross ns nt))
          (e (dot ns nt))
          (radical (sqrt (* 2.0 (+ 1.0 e)))))

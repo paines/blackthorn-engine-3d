@@ -30,31 +30,39 @@
 ;;;;
 
 (defclass camera ()
-  ((pos :accessor cam-pos
-        :initarg :position
-        :initform (make-point3 0.0 0.0 0.0)
-        :documentation "the current world location of the camera")
-   (dir :accessor cam-dir
-        :initarg :direction
-        :initform (make-vec3 0.0 0.0 -1.0)
-        :documentation "the current direction the camera is pointing. Used in 1st person mode")
-   (up  :accessor cam-up
-        :initarg :up
-        :initform (make-vec3 0.0 1.0 0.0)
-        :documentation "the current up direction of the camera")
-   (target :accessor cam-target
-           :initarg :target
-           :initform (make-point3 0.0 0.0 0.0)
-           :documentation "the desired target of the camera. Used in 3rd person mode")
-   (mode :accessor cam-mode
-         :initarg :mode
-         :initform :first-person)
-   (matrix :accessor cam-matrix)))
+  ((pos
+    :accessor cam-pos
+    :initarg :position
+    :initform (make-point3 0.0 0.0 0.0)
+    :documentation "the current world location of the camera")
+   (dir
+    :accessor cam-dir
+    :initarg :direction
+    :initform (make-vec3 0.0 0.0 -1.0)
+    :documentation "the current direction the camera is pointing. Used in 1st person mode")
+   (up
+    :accessor cam-up
+    :initarg :up
+    :initform (make-vec3 0.0 1.0 0.0)
+    :documentation "the current up direction of the camera")
+   (target
+    :accessor cam-target
+    :initarg :target
+    :initform (make-point3 0.0 0.0 0.0)
+    :documentation "the desired target of the camera. Used in 3rd person mode")
+   (mode
+    :accessor cam-mode
+    :initarg :mode
+    :initform :first-person)
+   (matrix 
+    :accessor cam-matrix)))
 
 
-(defmethod update-fp-camera ((c camera)))
+(defmethod update-fp-camera ((c camera))
+  (setf (cam-matrix c) (camera-inverse c)))
 
-(defmethod update-tp-camera ((c camera)))
+(defmethod update-tp-camera ((c camera))
+  (setf (cam-matrix c) (camera-inverse c)))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 
@@ -110,3 +118,15 @@
          (quat (quat-rotate-to-vec (cam-dir c) new-dir)))
     (setf (cam-dir c) new-dir)
     (setf (cam-up c) (quat-rotate-vec quat (cam-up c)))))
+
+(defmethod camera-orbit! ((c camera) phi theta dist)
+  "Orbits the camera around its target by phi (horizontal axis) and theta (vertical axis)
+   at a radius dist"
+  (with-slots (dir up pos target) c
+    (let* ((x-axis (norm4 (cross dir up)))
+           (y-axis (cross x-axis dir))
+           (quat (quat* (axis-rad->quat x-axis phi)
+                        (axis-rad->quat y-axis theta))))
+      (setf dir (quat-rotate-vec quat dir))
+      (setf up (quat-rotate-vec quat up))
+      (setf pos (vec4+ target (vec-neg4 (vec-scale4 dir dist)))))))

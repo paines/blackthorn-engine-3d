@@ -75,13 +75,31 @@
      (setq slime-complete-symbol*-fancy t)
      (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)))
 
+(defun load-game ()
+  (slime-interactive-eval "(defparameter *driver-system* \"blank\")")
+  (slime-load-file "@BLACKTHORN_DIR@/build/scripts/load.lisp"))
+
 (defun clozure ()
   (interactive)
+  (setq slime-connected-hook (delq 'load-game slime-connected-hook))
   (slime 'clozure))
 
 (defun sbcl ()
   (interactive)
+  (setq slime-connected-hook (delq 'load-game slime-connected-hook))
+  (slime 'sbcl))
+
+(defun clozure-game ()
+  (interactive)
+  (add-hook 'slime-connected-hook 'load-game)
+  (slime 'clozure))
+
+(defun sbcl-game ()
+  (interactive)
+  (add-hook 'slime-connected-hook 'load-game)
   (slime 'sbcl))
 
 (global-set-key [f5] 'clozure)
 (global-set-key [f6] 'sbcl)
+(global-set-key [f7] 'clozure-game)
+(global-set-key [f8] 'sbcl-game)

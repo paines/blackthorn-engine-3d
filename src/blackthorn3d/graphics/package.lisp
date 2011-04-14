@@ -43,6 +43,10 @@
    :cam-pos
    :cam-dir
    :cam-up
+   :camera-move!
+   :camera-rotate!
+   :camera-lookat!
+   :camera-orbit!
 
    ;; dae-loader.lisp
    :load-dae

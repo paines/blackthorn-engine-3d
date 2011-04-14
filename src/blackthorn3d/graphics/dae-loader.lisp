@@ -34,6 +34,7 @@
 (defvar +triangles+ "triangles")
 
 (defparameter *file* nil)
+(defparameter *source-ht* nil)
 
 (defun xml-listp (lst)
   (and (consp lst)
@@ -74,7 +75,8 @@
                  (collect val)))))
 
 (defun make-accessor (accessor-lst)
-  (let ((stride (parse-integer (get-attribute "stride" (attributes accessor-lst)))))
+  (let ((stride (parse-integer (get-attribute "stride" 
+(attributes accessor-lst)))))
     #'(lambda (array index)
         (apply #'vector 
                (iter (for i below stride)
@@ -103,14 +105,23 @@
                    :accessor (make-accessor accessor-lst)
                    :components (make-components accessor-lst))))
 
+(defun hash-sources (xml-lsts)
+  (let ((src-lst (mapcar #'make-source
+                         (remove-if-not #'(lambda (x)
+                                            (and (consp x)
+                                                 (string-equal (tag-name x) "source")))
+                                        xml-lst))))
+    (iter (for src in src-lst)
+          (setf (gethash (src-id src) *source-ht*) src))))
+
+(defun set-vertices (vert-lst)
+  (setf (gethash (get-attribute "id" (attributes vert-lst)))
+        (gethash (get-attribute "source" (attributes (first-child vert-lst))))))
+
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)
-  (let ((sources-lst (mapcar #'make-source 
-                             (remove-if-not #'(lambda (x)
-                                                (and (consp x)
-                                                     (string-equal (caar x) "source")))
-                                            (children xml-lst)))))
-    sources-lst))
+  (hash-sources (children xml-lst))
+  (set-vertices (find-tag +vertices+ xml-lst)))
 
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))

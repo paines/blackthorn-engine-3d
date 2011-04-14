@@ -57,6 +57,7 @@
                                      (:module graphics
                                               :components
                                               ((:file "package")
+                                               (:file "dae-loader")
                                                (:file "draw")
                                                (:file "camera"))
                                               :serial t)
@@ -81,6 +82,7 @@
                  :iterate
                  :cl-containers
                  :mt19937
+                 :cxml
 
                  ;; Networking and Serialization
                  :usocket

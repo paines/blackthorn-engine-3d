@@ -44,6 +44,8 @@
    :cam-dir
    :cam-up
 
+   ;; dae-loader.lisp
+   :load-dae
    ))
         
         

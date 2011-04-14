@@ -25,95 +25,93 @@
 
 (in-package :blackthorn3d-graphics)
 
-(defconstant +library_geometries+ "library_geometries")
-(defconstant +geometry-block+ "geometry")
-(defconstant +mesh-block+ "mesh")
-(defconstant +source-block+ "source")
-(defconstant +accessor+ "accessor")
-(defconstant +vertices+ "vertices")
-(defconstant +triangles+ "triangles")
+(defvar +library_geometries+ "library_geometries")
+(defvar +geometry-block+ "geometry")
+(defvar +mesh-block+ "mesh")
+(defvar +source-block+ "source")
+(defvar +accessor+ "accessor")
+(defvar +vertices+ "vertices")
+(defvar +triangles+ "triangles")
 
 (defparameter *file* nil)
 
+(defun xml-listp (lst)
+  (and (consp lst)
+       (consp (car lst))))
+
+(defun children (xml-lst)
+  (cddr xml-lst))
+
+;; Returns first xml child of xml-lst
+(defun first-child (xml-lst)
+  (find-if #'consp (children xml-lst)))
+
+(defun attributes (xml-lst)
+  (second xml-lst))
+
+(defun tag-name (xml-lst)
+  (caar xml-lst))
+
+(defun find-tag (tag lst) 
+  (if (consp lst)
+      (let ((xml-lst (find-if #'consp lst)))
+        (if (string-equal (tag-name xml-lst) tag)
+            xml-lst
+            (or (find-tag tag (children xml-lst))
+                (find-tag tag (cdr lst)))))
+      nil))
+
+(defun get-attribute (attrib attrib-lst)
+  (aif (member attrib attrib-lst :test #'string-equal :key #'car)
+       (second (car it))
+       nil))
+  
 (defun string->sv (str)
-  (with-input-from-string s str 
-    (apply #'vector 
+  (with-input-from-string (s str)
+    (apply #'vector
            (iter (for val = (read s nil :eof ))
                  (until (eql val :eof))
                  (collect val)))))
 
-(defun find-tag (tag) 
-  (klacks:find-element *file* tag))
+(defun make-accessor (accessor-lst)
+  (let ((stride (parse-integer (get-attribute "stride" (attributes accessor-lst)))))
+    #'(lambda (array index)
+        (apply #'vector 
+               (iter (for i below stride)
+                     (collect (svref array (+ i (* index stride)))))))))
 
-(defun current-tag ()
-  (klacks:current-lname *file*))
+(defun make-components (accessor-lst)
+  (mapcar #'(lambda (child) 
+              (get-attribute "name" (attributes child)))
+          (remove-if-not #'consp (children accessor-lst))))
 
-(defun find-end-tag (tag)
-  (while (not (eql (klacks:peek-next *file* :end-element))
-              (and (string-equal (current-tag) tag))))
-  (klacks:current-lname *file*))
+(defclass dae-source ()
+  ((id :accessor src-id
+       :initarg :id)
+   (array :accessor src-array
+          :initarg :array)
+   (accessor :accessor src-accessor
+             :initarg :accessor)
+   (components :accessor src-components
+               :initarg :components)))
 
-(defun get-attribute (attrib-name)
-  (klacks:get-attribute *file* attrib-name))
+(defun make-source (src-lst)
+  (let ((accessor-lst (find-tag +accessor+ (children src-lst))))
+    (make-instance 'dae-source 
+                   :id (get-attribute "id" (attributes src-lst))
+                   :array (string->sv (car (children (first-child src-lst))))
+                   :accessor (make-accessor accessor-lst)
+                   :components (make-components accessor-lst))))
 
-(defun next-tag ()
-  (while (not (eql (klacks:peek-next *file*) :start-element)))
-  (klacks:current-lname *file*))
-
-;;;
-;;; Format:
-;;; <blah...material stuff>
-;;; <source>...</source>
-;;; ...
-;;; <source>...</source>
-;;; <vertices><input source="src"/></vertices>
-;;; <primitive-type>
-;;;   <input source=...>
-;;;   <input source=...>
-;;; <p> ...[indices]...</p>
-;;; </primitive-type>
-;;;
-
-(defun make-accessor (array)
-  (find-tag +accessor+)
-  (let ((stride (get-attribute "stride")))
-    (#'lambda (index) 
-      (aref array (* index stride)))))
-
-(defun build-components ()
-  (next-element)
-  (iter (while (string-equal (next-tag) "param"))
-        (collect (read-from-string (get-attribute "name")))))
-
-;; returns a list containing the id of the source and
-;; a vector containing the values in the source, an
-;; accessor function (for use later) and the names of components
-(defun consume-source (source-id)
-  (next-element)
-  (let* ((data (string->sv (klacks:peek-next *file*)))
-         (accessor-fn (make-accessor data))
-         (components (build-components)))
-    (find-end-tag +source_block+)
-    (list source-id data accessor-fn components)))
-
-;; returns a p-list of the sources in the .DAE file for the current
-;; mesh
-(defun build-sources ()
-  (if (string-equal (next-element) +source-block+)
-    (cons (consume-source (get-attribute "id")) (build-sources))
-    nil))
-
-;; consturcts a mesh object from a .DAE file between 
-;; <mesh></mesh> tags.
-(defun build-mesh (name)
-  (find-tag +mesh-block+)
-  (let ((sources-lst (build-sources)))
+;; constructs a mesh object from an xml-list mesh tag
+(defun build-mesh (xml-lst)
+  (let ((sources-lst (mapcar #'make-source 
+                             (remove-if-not #'(lambda (x)
+                                                (and (consp x)
+                                                     (string-equal (caar x) "source")))
+                                            (children xml-lst)))))
     sources-lst))
 
-;; Load a dae file into a list of meshes
 (defun load-dae (filename)
-  (let ((*file* (cxml:make-source filename))
-        (meshes nil))
-    (when (find-tag +library-geometries+)
-      (iter (while (find-tag +geometry-block+))
-            (cons (build-mesh (get-attribute "name'")) meshes)))))
+  (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))
+    (build-mesh (find-tag "mesh" (list dae-file)))))

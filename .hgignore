@@ -4,6 +4,7 @@ syntax: glob
 *~
 .\#*
 .*.swp
+*.orig
 .DS_Store
 .tmp
 .find-lisp

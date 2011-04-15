@@ -90,7 +90,9 @@
             (:keyboard 
               (+ (if (sdl:get-key-state :sdl-key-right) 1.0  0)
                  (if (sdl:get-key-state :sdl-key-left) -1.0  0)))
-            (:xbox (/ (xbox360_get_lx 0) 65535)))))
+            #+windows
+            (:xbox (/ (xbox360_get_lx 0) 65535))
+            (otherwise 0))))
 
 (defmethod input-move-y ((system input-system))
     (with-slots (kind) system
@@ -98,7 +100,9 @@
             (:keyboard
                (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
                   (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
-            (:xbox (/ (xbox360_get_ly 0) 65535)))))
+            #+windows
+            (:xbox (/ (xbox360_get_ly 0) 65535))
+            (otherwise 0))))
         
 (defparameter *input* (make-instance 'input-system :kind :keyboard))
 
@@ -194,9 +198,9 @@
                                         ;                :mod m :mod-key m-k :unicode u))
                            )
             (:idle ()
-                   #+windows
                    
                    (progn
+                   #+windows
                      (xbox360_poll 0)
                                                      
                      ; (/ (xbox360_get_lx 0) 65535)

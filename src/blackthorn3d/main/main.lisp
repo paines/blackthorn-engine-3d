@@ -169,7 +169,7 @@
                                                          (make-vec3 0.0 0.0 5.0)))
                                 :mode :third-person ))
             (cam-quat (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100))))
-        (camera-orbit! cam 0.0 -0.2 5.0)
+        ;(camera-orbit! cam 0.0 -0.2 5.0)
         (catch 'main-loop
                                         ;(net-game-start #'main-loop-abort-handler)
 

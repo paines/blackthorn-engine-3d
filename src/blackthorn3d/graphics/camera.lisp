@@ -120,13 +120,13 @@
     (setf (cam-up c) (quat-rotate-vec quat (cam-up c)))))
 
 (defmethod camera-orbit! ((c camera) phi theta dist)
-  "Orbits the camera around its target by phi (horizontal axis) and theta (vertical axis)
-   at a radius dist"
+  "Orbits the camera around its target by phi (horizontal axis) and theta 
+   (vertical axis) at a radius dist"
   (with-slots (dir up pos target) c
     (let* ((x-axis (norm4 (cross dir up)))
-           (y-axis (cross x-axis dir))
-           (quat (quat* (axis-rad->quat x-axis phi)
-                        (axis-rad->quat y-axis theta))))
+           (y-axis up #+disable(cross x-axis dir))
+           (quat (quat* (axis-rad->quat x-axis theta)
+                        (axis-rad->quat y-axis phi))))
       (setf dir (quat-rotate-vec quat dir))
-      (setf up (quat-rotate-vec quat up))
+      #+disable(setf up (quat-rotate-vec quat up))
       (setf pos (vec4+ target (vec-neg4 (vec-scale4 dir dist)))))))

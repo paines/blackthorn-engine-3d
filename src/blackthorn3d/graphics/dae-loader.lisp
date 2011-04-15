@@ -110,7 +110,7 @@
                          (remove-if-not #'(lambda (x)
                                             (and (consp x)
                                                  (string-equal (tag-name x) "source")))
-                                        xml-lst))))
+                                        xml-lsts))))
     (iter (for src in src-lst)
           (setf (gethash (src-id src) *source-ht*) src))))
 

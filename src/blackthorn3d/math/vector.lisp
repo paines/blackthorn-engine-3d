@@ -184,7 +184,7 @@
       (map 'vector #'(lambda (x) (/ x magv)) v))))
 
 (defun homogenize (v)
-  (unless (zerop (w v)) (vec-scale v (/ (w v)))))
+  (unless (zerop (w v)) (vec-scale4 v (/ (w v)))))
 
 (defun min-axis (v)
   (iter (for i below 4)

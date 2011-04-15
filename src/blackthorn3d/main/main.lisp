@@ -133,10 +133,13 @@
       
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue))
-            (cam (make-instance 'camera :position (make-point3 0.0 0.0 5.0)
+            (cam (make-instance 'camera 
+                                :position (make-point3 0.0 0.0 5.0)
                                 :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
-                                                         (make-vec3 0.0 0.0 5.0)))))
+                                                         (make-vec3 0.0 0.0 5.0)))
+                                :mode :third-person ))
             (cam-quat (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100))))
+        (camera-orbit! cam 0.0 -0.2 5.0)
         (catch 'main-loop
                                         ;(net-game-start #'main-loop-abort-handler)
 
@@ -158,6 +161,7 @@
                            )
             (:idle ()
                    #+windows
+                   #+disabled
                    (progn
                      (xbox360_poll 0)
                                                      
@@ -175,6 +179,9 @@
                      (let ((x (* 2 (abs (xbox360_get_lx 0))))
                            (y (* 2 (abs (xbox360_get_ly 0))))) 
                        (xbox360-vibrate 0 x y)))
+                   
+                   ;; Rotate the camera around the target each frame
+                   (camera-orbit! cam (/ pi 100) 0.0 5.0)
 
                    (gl:clear :color-buffer-bit :depth-buffer-bit)
                    (gl:load-matrix (camera-inverse cam))

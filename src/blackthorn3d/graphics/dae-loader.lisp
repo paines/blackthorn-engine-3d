@@ -115,13 +115,48 @@
           (setf (gethash (src-id src) *source-ht*) src))))
 
 (defun set-vertices (vert-lst)
-  (setf (gethash (get-attribute "id" (attributes vert-lst)))
-        (gethash (get-attribute "source" (attributes (first-child vert-lst))))))
+  (setf (gethash (get-attribute "id" (attributes vert-lst)) *sources-ht*)
+        (gethash (get-attribute "source" (attributes (first-child vert-lst))) 
+                 *sources-ht*)))
+
+(defun input->source (str)
+  (gethash (string-left-trim '(#\#) str) *source-ht*))
+
+(defun build-input-lst (prim-chld-lst)
+  (iter (for xml in prim-chld-lst)
+        (if (and (consp xml) (string-equal "input" (tag-name xml)))
+            (let ((attribs (attributes xml)))
+              (collect (list (get-attribute "semantic" attribs)
+                             (input->source (get-attribute "source" attribs))))))))
+#+disable
+(defmacro create-semantic (input)
+  (with-gensyms (in)
+    (let* ((in input)
+           (semantic (intern (first in)))
+           (components (mapcar #'intern (second in))))
+      (case semantic
+        (vertex `(gl:vertex :type :float :components ,components))
+        (color `(gl:color :type :float :components ,components))))))
+
+#+disable
+(defmacro create-array-format (name input-lst)
+  `(gl:define-gl-array-format ,name
+       ,@(iter (for input in input-lst)
+               (collect (create-semantic input)))))
+
+(defun process-indices (tri-lst)
+  (let* ((input-lst (build-input-lst (children tri-lst)))
+         (prim-arr (string->sv(third (find-tag "p" (children tri-lst)))))
+         (vertex-ht (make-hash-table))
+         #+disable(array-format (create-array-format :tmp-name input-lst)))
+    ))
 
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)
+  (setf *source-ht* (make-hash-table))
   (hash-sources (children xml-lst))
-  (set-vertices (find-tag +vertices+ xml-lst)))
+  (set-vertices (find-tag +vertices+ xml-lst))
+  (process-indices (find-tag +triangles+ xml-lst)))
 
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))

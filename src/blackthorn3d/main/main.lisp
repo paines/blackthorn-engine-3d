@@ -74,9 +74,39 @@
 ;;; Main Game Driver
 ;;;
 
+; TODO: Move these to the proper package
 (defun deg->rad (x)
     (* x (/ pi 180)))
+    
+(defclass input-system ()
+    ((kind 
+        :accessor input-kind
+        :initarg :kind
+        :documentation "Either :keyboard or :xbox")))
+        
+(defmethod input-move-x ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard 
+              (+ (if (sdl:get-key-state :sdl-key-right) 1.0  0)
+                 (if (sdl:get-key-state :sdl-key-left) -1.0  0)))
+            (:xbox (/ (xbox360_get_lx 0) 65535)))))
 
+(defmethod input-move-y ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard
+               (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
+                  (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
+            (:xbox (/ (xbox360_get_ly 0) 65535)))))
+        
+(defparameter *input* (make-instance 'input-system :kind :keyboard))
+
+(defmethod set-controller ((system input-system) type)
+    (setf (input-kind system) type))
+
+; end todo
+    
 (defun main-init-abort-handler ()
   (throw 'main-init nil))
 
@@ -148,6 +178,10 @@
                                         ;(net-game-quit)
                          t)
             (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
+                (when (sdl:key= k :sdl-key-return)
+                  (if (eql (input-kind *input*) :keyboard)
+                    (set-controller *input* :xbox)
+                    (set-controller *input* :keyboard)))
                                         ;(containers:enqueue
                                         ; input-queue
                                         ; (make-instance 'key-event :host (hostname) :type :key-down :key k
@@ -161,13 +195,15 @@
                            )
             (:idle ()
                    #+windows
-                   #+disabled
+                   
                    (progn
                      (xbox360_poll 0)
                                                      
+                     ; (/ (xbox360_get_lx 0) 65535)
+                                                     
                      ;(setf (cam-dir cam) (quat-rotate-vec cam-quat (cam-dir cam)))
-                     (let ((rot-amt  (* -1 (/ (xbox360_get_lx 0) 65535)))
-                           (step-amt (*  1 (/ (xbox360_get_ly 0) 65535))))
+                     (let ((rot-amt  (* -1 (input-move-x *input*)))
+                           (step-amt (*  1 (input-move-y *input*))))
                          
                          (setf (cam-dir cam) (quat-rotate-vec
                             (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))
@@ -175,12 +211,15 @@
                          (setf (cam-pos cam) (vec4+ (cam-pos cam) (vec-scale4 (cam-dir cam) step-amt)) )
                          )
                     
+                    
+                    
                      #+disabled
                      (let ((x (* 2 (abs (xbox360_get_lx 0))))
                            (y (* 2 (abs (xbox360_get_ly 0))))) 
                        (xbox360-vibrate 0 x y)))
                    
                    ;; Rotate the camera around the target each frame
+                   #+disabled
                    (camera-orbit! cam (/ pi 100) 0.0 5.0)
 
                    (gl:clear :color-buffer-bit :depth-buffer-bit)

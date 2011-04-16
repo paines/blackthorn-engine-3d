@@ -123,10 +123,10 @@
   "Orbits the camera around its target by phi (horizontal axis) and theta 
    (vertical axis) at a radius dist"
   (with-slots (dir up pos target) c
-    (let* ((x-axis (norm4 (cross dir up)))
-           (y-axis up #+disable(cross x-axis dir))
-           (quat (quat* (axis-rad->quat x-axis theta)
-                        (axis-rad->quat y-axis phi))))
-      (setf dir (quat-rotate-vec quat dir))
-      #+disable(setf up (quat-rotate-vec quat up))
-      (setf pos (vec4+ target (vec-neg4 (vec-scale4 dir dist)))))))
+    (when (< (abs (dot up dir)) 0.8)
+      (let* ((x-axis (norm4 (cross dir up)))
+             (y-axis up)
+             (quat (quat* (axis-rad->quat x-axis theta)
+                          (axis-rad->quat y-axis phi))))
+        (setf dir (quat-rotate-vec quat dir))
+        (setf pos (vec4+ target (vec-neg4 (vec-scale4 dir dist))))))))

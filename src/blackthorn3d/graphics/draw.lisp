@@ -73,7 +73,7 @@
     (gl:vertex 1.0 0.0 0.0)))
     
 (gl:define-gl-array-format position
-  (gl:vertex :type :float :components (x y z)))
+  (gl:vertex :type :float :components (x y)))
  
 (defun set-vec-in-glarray (a i v)
   (setf (gl:glaref a i 'x) (x v))
@@ -113,3 +113,55 @@
   (gl:bind-gl-vertex-array vert-arr)
   (gl:draw-elements :quads ind-arr)
   (gl:flush))
+
+(defun make-vao-cube ()
+  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+  (destructuring-bind (v-arr i-arr) (make-cube)
+    (let ((vbo (car (gl:gen-buffers 1)))
+          (ibo (car (gl:gen-buffers 1))))  
+      ;(gl:bind-vertex-array vao)
+      (gl:bind-buffer :array-buffer vbo)
+      (gl:buffer-data :array-buffer :static-draw v-arr)
+      ;(gl:enable-client-state :vertex-array)
+
+      (gl:bind-buffer :element-array-buffer ibo)
+      (gl:buffer-data :element-array-buffer :static-draw i-arr)
+      ;(gl:bind-vertex-array 0)
+      (list vbo ibo))))
+
+(defun draw-vao-cube (vbo ibo)
+  ;(gl:bind-vertex-array vao)
+  (gl:bind-buffer :array-buffer vbo)
+  (gl:enable-client-state :vertex-array)
+  (gl:bind-buffer :element-array-buffer ibo)
+  (%gl:draw-elements :quads 24 :unsigned-short (cffi:null-pointer))
+  ;(gl:bind-vertex-array 0)
+  (gl:flush))
+
+(defparameter *vertices*
+  '((-0.8 -0.8)
+    (0.8 -0.8)
+    (0.8 0.8)
+    (-0.8 0.8)))
+
+(defvar *buffer-array*)
+(defvar *buffer*)
+
+(defun gfx-draw ()
+  (gl:bind-buffer :array-buffer *buffer*)
+  (gl:enable-client-state :vertex-array)
+  (gl:draw-arrays :triangles 0 (length *vertices*))
+  (gl:disable-client-state :vertex-array))
+
+(defun gfx-init ()
+  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+  (setf *buffer-array* (gl:alloc-gl-array 'position (length *vertices*)))
+  (loop for (x y) in *vertices*
+       for i from 0 do
+       (setf (gl:glaref *buffer-array* i 'x) x)
+       (setf (gl:glaref *buffer-array* i 'y) y))
+  (setf *buffer* (car (gl:gen-buffers 1)))
+  (gl:bind-buffer :array-buffer *buffer*)
+  (gl:buffer-data :array-buffer :stream-draw *buffer-array*)
+  (gl:buffer-sub-data :array-buffer *buffer-array*)
+  (gl:bind-buffer :array-buffer 0))

@@ -35,6 +35,10 @@
    :draw-cube
    :make-cube
    :draw-vert-array
+   :make-vao-cube
+   :draw-vao-cube
+   :gfx-init
+   :gfx-draw
    
    ;; camera.lisp
    :camera-matrix

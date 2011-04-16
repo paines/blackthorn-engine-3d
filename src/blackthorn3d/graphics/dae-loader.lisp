@@ -76,7 +76,7 @@
 
 (defun make-accessor (accessor-lst)
   (let ((stride (parse-integer (get-attribute "stride" 
-(attributes accessor-lst)))))
+                                              (attributes accessor-lst)))))
     #'(lambda (array index)
         (apply #'vector 
                (iter (for i below stride)
@@ -88,14 +88,19 @@
           (remove-if-not #'consp (children accessor-lst))))
 
 (defclass dae-source ()
-  ((id :accessor src-id
-       :initarg :id)
-   (array :accessor src-array
-          :initarg :array)
-   (accessor :accessor src-accessor
-             :initarg :accessor)
-   (components :accessor src-components
-               :initarg :components)))
+  ((id 
+    :accessor src-id
+    :initarg :id)
+   (array 
+    :accessor src-array
+    :initarg :array)
+   (accessor 
+    :accessor src-accessor
+    :initarg :accessor
+    :documentation "function taking an array and index")
+   (components 
+    :accessor src-components
+    :initarg :components)))
 
 (defun make-source (src-lst)
   (let ((accessor-lst (find-tag +accessor+ (children src-lst))))
@@ -131,40 +136,59 @@
 
 
 (gl:define-gl-array-format blt-mesh
-  (gl:vertex :type :float :components (x y z))
-  (gl:normal :type :float :components (x y z))
+  (gl:vertex :type :float :components (px py pz))
+  (gl:normal :type :float :components (nx ny nz))
   (gl:tex-coord :type :float :components (u v)))
 
-;; Currently creates semantics of the form
-;; (gl:<semantic> :type :float :components (x y z))
-(defun create-semantic (input)
-  (let* ((semantic (intern (first input)))
-         (components (mapcar #'intern (src-components (second input)))))
-    (case semantic
-      (vertex `(gl:vertex :type :float :components ,components))
-      (normal `(gl:normal :type :float :components ,components))
-      (texcoord `(gl:tex-coord :type :float :componenets ,components))
-      (color `(gl:color :type :float :components ,components)))))
 
-#+disable
-(defmacro expand-clauses (name clauses)
-  `(gl:define-gl-array-format ,name ,@clauses))
-#+disable
-(defun create-array-format (name input-lst)
-  (let ((len (length input-lst)))
-    (expand-clauses name 
-                    (iter (for input in input-lst)
-                          (collect (create-semantic input))))))
-(defun process-index (indices inputs vert-ht)
+;; Step 1: check if indices are already in vert-ht
+;; if step 1 = true, get the index
+;; else
+;; Step 2: increment curr-index and add to vert-ht hashed with indices
+;; Step 3: get the vertex values from positions, normals, texcoords, and add to arrays
+;; 
+(defun process-index (index-lst inputs vert-ht)
   ())
 
+(defun get-vertex-attrib (semantic input-lst primative)
+  (iter (for i below (length primative))
+        (for input in input-lst)
+        (when (eql (intern (car input)) semantic)
+            (let ((source (second input)))
+              (return-from get-vertex-attribute 
+                (apply (src-accessor source) (src-array source) (svref primative i)))))))
+
+;; this function is going to need some serious refactoring ... >_<
 (defun process-indices (tri-lst)
   (let* ((input-lst (build-input-lst (children tri-lst)))
-         (prim-arr (string->sv(third (find-tag "p" (children tri-lst)))))
-         (vertex-ht (make-hash-table))
-         (ind-len (length input-lst)))
+         ;; The list of indices
+         (prim-arr (string->sv (third (find-tag "p" (children tri-lst)))))
+         ;; Hash table of previously-seen vertex arrangements
+         (vertex-ht (make-hash-table :test #'equalp))
+         (ind-len (length input-lst))
+         (num-tri (parse-integer (get-attribute "count" (attributes tri-lst))))
+         (num-vert (* num-tri 3))
+         (curr-index 0)
+         ;; Array indexes (into primatives)
+         (pos-index (position "VERTEX" input-lst :key #'car))
+         (norm-index (position "NORMAL" input-lst :key #'car))
+         (tex-index (position "TEXCOORD" input-lst :key #'car))
+         ;; Arrays (conservatively sized for now) to hold data (will be re-arranged later)
+         (vertices  (make-array num-vert :fill-pointer 0 :adjustable t))
+         (normals   (make-array num-vert :fill-pointer 0 :adjustable t))
+         (texcoords (make-array num-vert :fill-pointer 0 :adjustable t))
+         (indices   (make-array num-vert :fill-pointer 0 :adjustable t)))
     (iter (for i below (length prim-arr) by ind-len)
-          (process-index (subseq prim-arr i (+ i ind-len)) input-lst vertex-ht ))))
+          (let ((triangle (subseq prim-arr (+ (* ind-len i)) ind-len)))
+            (aif (gethash triangle vert-ht)
+                 (vector-push-extend indices it)
+                 (progn
+                   (setf (gethash triangle vert-ht) curr-index)
+                   (vector-push-extend vertices  ())
+                   (vector-push-extend normals   (get-vertex-attrib 'normal input-lst triangle))
+                   (vector-push-extend texcoords (get-vertex-attrib 'texcoord input-lst triangle))
+                   (vector-push-extend curr-index)
+                   (incf curr-index)))))))
 
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)

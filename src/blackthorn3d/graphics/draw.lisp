@@ -73,7 +73,7 @@
     (gl:vertex 1.0 0.0 0.0)))
     
 (gl:define-gl-array-format position
-  (gl:vertex :type :float :components (x y)))
+  (gl:vertex :type :float :components (x y z)))
  
 (defun set-vec-in-glarray (a i v)
   (setf (gl:glaref a i 'x) (x v))

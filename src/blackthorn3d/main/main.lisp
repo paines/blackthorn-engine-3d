@@ -162,7 +162,8 @@
       ;(gl:enable :lighting)
       (gl:enable :light0)
 
-      ;(defparameter cube (make-vao-cube))
+      (defparameter cube (make-cube))
+      ;(gfx-init)
       (defparameter turn (make-y-rot (/ pi 100)))
       
       ;; Main loop:
@@ -230,7 +231,8 @@
                    (gl:load-matrix (camera-inverse cam))
                                         ;(gl:translate 1.0 0.0 -1.0)
                    (gl:color 1.0 .75 0.0)
-                   ;(apply #'draw-vao-cube cube)
+                   (apply #'draw-vert-array cube)
+                   ;(gfx-draw)
                           
                                         ;(render *game* #c(0 0) 1d0 -1d0)
                    (gl:flush)

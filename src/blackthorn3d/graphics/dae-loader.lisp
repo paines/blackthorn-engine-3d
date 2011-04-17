@@ -62,6 +62,12 @@
                 (find-tag tag (cdr lst)))))
       nil))
 
+(defun find-tag-in-children (tag xml-lst)
+  (let ((children (remove-if-not #'consp (children xml-lst))))
+    (find tag children
+          :test #'string-equal
+          :key #'car)))
+
 (defun get-attribute (attrib attrib-lst)
   (aif (member attrib attrib-lst :test #'string-equal :key #'car)
        (second (car it))
@@ -120,12 +126,12 @@
           (setf (gethash (src-id src) *source-ht*) src))))
 
 (defun set-vertices (vert-lst)
-  (setf (gethash (get-attribute "id" (attributes vert-lst)) *sources-ht*)
-        (gethash (get-attribute "source" (attributes (first-child vert-lst))) 
-                 *sources-ht*)))
+  (setf (gethash (get-attribute "id" (attributes vert-lst)) *source-ht*)
+        (gethash (subseq (get-attribute "source" (attributes (first-child vert-lst))) 1) 
+                 *source-ht*)))
 
 (defun input->source (str)
-  (gethash (string-left-trim '(#\#) str) *source-ht*))
+  (gethash (subseq str 1) *source-ht*))
 
 (defun build-input-lst (prim-chld-lst)
   (iter (for xml in prim-chld-lst)
@@ -141,61 +147,66 @@
   (gl:tex-coord :type :float :components (u v)))
 
 
-;; Step 1: check if indices are already in vert-ht
-;; if step 1 = true, get the index
-;; else
-;; Step 2: increment curr-index and add to vert-ht hashed with indices
-;; Step 3: get the vertex values from positions, normals, texcoords, and add to arrays
-;; 
-(defun process-index (index-lst inputs vert-ht)
-  ())
-
-(defun get-vertex-attrib (semantic input-lst primative)
-  (iter (for i below (length primative))
-        (for input in input-lst)
-        (when (eql (intern (car input)) semantic)
-            (let ((source (second input)))
-              (return-from get-vertex-attribute 
-                (apply (src-accessor source) (src-array source) (svref primative i)))))))
+;; Returns a list of (fn . array) where calling fn with an index modifies array
+;; fn is designed to take in index to a source and add the corresponding value(s) 
+;; to array. 
+(defun get-source-functions (inputs)
+  (iter (for i in inputs)
+        (collect 
+         (let* ((source (second i))
+                (attrib-len (length (src-array source)))
+                (attrib-vec (make-array attrib-len :fill-pointer 0)))
+           (cons #'(lambda (index)
+                     (let ((src-array-vec (funcall (src-accessor source) 
+                                                   (src-array source) 
+                                                   index)))
+                       (iter (for elt in-vector src-array-vec)
+                             (vector-push elt attrib-vec))))
+                 attrib-vec)))))
 
 ;; this function is going to need some serious refactoring ... >_<
 (defun process-indices (tri-lst)
   (let* ((input-lst (build-input-lst (children tri-lst)))
+         (ind-len (length input-lst))
          ;; The list of indices
          (prim-arr (string->sv (third (find-tag "p" (children tri-lst)))))
          ;; Hash table of previously-seen vertex arrangements
          (vertex-ht (make-hash-table :test #'equalp))
-         (ind-len (length input-lst))
          (num-tri (parse-integer (get-attribute "count" (attributes tri-lst))))
          (num-vert (* num-tri 3))
+         (fns (get-source-functions input-lst))
+         ;; Index Array
          (curr-index 0)
-         ;; Array indexes (into primatives)
-         (pos-index (position "VERTEX" input-lst :key #'car))
-         (norm-index (position "NORMAL" input-lst :key #'car))
-         (tex-index (position "TEXCOORD" input-lst :key #'car))
-         ;; Arrays (conservatively sized for now) to hold data (will be re-arranged later)
-         (vertices  (make-array num-vert :fill-pointer 0 :adjustable t))
-         (normals   (make-array num-vert :fill-pointer 0 :adjustable t))
-         (texcoords (make-array num-vert :fill-pointer 0 :adjustable t))
-         (indices   (make-array num-vert :fill-pointer 0 :adjustable t)))
-    (iter (for i below (length prim-arr) by ind-len)
-          (let ((triangle (subseq prim-arr (+ (* ind-len i)) ind-len)))
-            (aif (gethash triangle vert-ht)
-                 (vector-push-extend indices it)
-                 (progn
-                   (setf (gethash triangle vert-ht) curr-index)
-                   (vector-push-extend vertices  ())
-                   (vector-push-extend normals   (get-vertex-attrib 'normal input-lst triangle))
-                   (vector-push-extend texcoords (get-vertex-attrib 'texcoord input-lst triangle))
-                   (vector-push-extend curr-index)
-                   (incf curr-index)))))))
+         (indices (make-array num-vert :fill-pointer 0)))
+    ;; For each index section: If it's already been seen before get that index
+    ;; otherwise create a new index and set the arrays
+   (iter (for i below (length prim-arr) by ind-len)
+          (let ((vertex (subseq prim-arr i (+ i ind-len))))
+            (aif (gethash vertex vertex-ht)
+                (vector-push it indices)
+                (progn
+                  (setf (gethash vertex vertex-ht) curr-index)
+                  (vector-push curr-index indices)
+                  (iter (for f in fns)
+                        (for i in-vector vertex)
+                        (funcall (car f) i))
+                  (incf curr-index)))))
+    ;; we return a list of each attribute array with it's semantic
+   (mapcar #'(lambda (input fn)
+               (cons (car input) (cdr fn)))
+           input-lst fns)
+    #+disabled(iter (for i in input-lst)
+          (for f in fns)
+          (collect (list (car i) (cdr f))))))
 
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)
-  (setf *source-ht* (make-hash-table))
-  (hash-sources (children xml-lst))
-  (set-vertices (find-tag +vertices+ xml-lst))
-  (process-indices (find-tag +triangles+ xml-lst)))
+  (let ((children (children xml-lst)))
+    (setf *source-ht* (make-hash-table :test #'equal))
+    (hash-sources children)
+    (set-vertices (find-tag +vertices+ children))
+    (process-indices (find-tag +triangles+ children))
+    ))
 
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))

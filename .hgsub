@@ -1,0 +1,2 @@
+build/ccl = [svn]http://svn.clozure.com/publicsvn/openmcl/trunk/windows/ccl
+build/sbcl = http://sbcl.blackthorn-engine-3d.googlecode.com/hg/

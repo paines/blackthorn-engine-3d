@@ -44,7 +44,8 @@
                 :host (pathname-host #.(or *compile-file-truename*
                                            *load-truename*))
                 :directory (pathname-directory #.(or *compile-file-truename*
-                                                     *load-truename*))))))
+                                                     *load-truename*))))
+              #+clozure :directories #+clozure t))
   (pushnew dir asdf:*central-registry* :test #'equal))
 
 ;; Inject native library paths for cffi

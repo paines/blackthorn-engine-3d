@@ -36,7 +36,19 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
-;; Inject library paths for cffi
+;; Add any directories in build/libs to the registry
+(dolist (dir (directory
+              (merge-pathnames
+               "../libs/*/"
+               (make-pathname
+                :host (pathname-host #.(or *compile-file-truename*
+                                           *load-truename*))
+                :directory (pathname-directory #.(or *compile-file-truename*
+                                                     *load-truename*))))
+              #+clozure :directories #+clozure t))
+  (pushnew dir asdf:*central-registry* :test #'equal))
+
+;; Inject native library paths for cffi
 (ql:quickload :cffi)
 
 (pushnew

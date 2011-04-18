@@ -74,8 +74,9 @@
     
 (gl:define-gl-array-format position
   (gl:vertex :type :float :components (x y z)))
- 
-(defun set-vec-in-glarray (a i v)
+
+
+ (defun set-vec-in-glarray (a i v)
   (setf (gl:glaref a i 'x) (x v))
   (setf (gl:glaref a i 'y) (y v))
   (setf (gl:glaref a i 'z) (z v)))
@@ -139,10 +140,9 @@
   (gl:flush))
 
 (defparameter *vertices*
-  '((-0.8 -0.8)
-    (0.8 -0.8)
-    (0.8 0.8)
-    (-0.8 0.8)))
+  '(0.0 1.0
+    -1.0 0.0
+    1.0 0.0))
 
 (defvar *buffer-array*)
 (defvar *buffer*)
@@ -150,16 +150,16 @@
 (defun gfx-draw ()
   (gl:bind-buffer :array-buffer *buffer*)
   (gl:enable-client-state :vertex-array)
+  ;(%gl:vertex-pointer (length *vertices*) :gl-float 0 0)
   (gl:draw-arrays :triangles 0 (length *vertices*))
   (gl:disable-client-state :vertex-array))
 
 (defun gfx-init ()
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
-  (setf *buffer-array* (gl:alloc-gl-array 'position (length *vertices*)))
-  (loop for (x y) in *vertices*
+  (setf *buffer-array* (gl:alloc-gl-array :float (length *vertices*)))
+  (loop for v in *vertices*
        for i from 0 do
-       (setf (gl:glaref *buffer-array* i 'x) x)
-       (setf (gl:glaref *buffer-array* i 'y) y))
+       (setf (gl:glaref *buffer-array* i) v))
   (setf *buffer* (car (gl:gen-buffers 1)))
   (gl:bind-buffer :array-buffer *buffer*)
   (gl:buffer-data :array-buffer :stream-draw *buffer-array*)

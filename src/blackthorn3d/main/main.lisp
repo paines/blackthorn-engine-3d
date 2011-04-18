@@ -231,6 +231,7 @@
                    (gl:load-matrix (camera-inverse cam))
                                         ;(gl:translate 1.0 0.0 -1.0)
                    (gl:color 1.0 .75 0.0)
+
                    (apply #'draw-vert-array cube)
                    ;(gfx-draw)
                           

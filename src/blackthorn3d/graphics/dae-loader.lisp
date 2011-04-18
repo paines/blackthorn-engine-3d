@@ -145,6 +145,7 @@
   (gl:vertex :type :float :components (px py pz))
   (gl:normal :type :float :components (nx ny nz))
   (gl:tex-coord :type :float :components (u v)))
+(defparameter *blt-mesh-components* '(px py pz nx ny nz u v))
 
 
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
@@ -169,7 +170,7 @@
 ;; this function is going to need some serious refactoring ... >_<
 (defun process-indices (tri-lst)
   (let* ((input-lst (build-input-lst (children tri-lst)))
-         (ind-len (length input-lst))
+         (num-inputs (length input-lst))
          ;; The list of indices
          (prim-arr (string->sv (third (find-tag "p" (children tri-lst)))))
          ;; Hash table of previously-seen vertex arrangements
@@ -182,8 +183,8 @@
          (indices (make-array num-vert :fill-pointer 0)))
     ;; For each index section: If it's already been seen before get that index
     ;; otherwise create a new index and set the arrays
-   (iter (for i below (length prim-arr) by ind-len)
-          (let ((vertex (subseq prim-arr i (+ i ind-len))))
+   (iter (for i below (length prim-arr) by num-inputs)
+          (let ((vertex (subseq prim-arr i (+ i num-inputs))))
             (aif (gethash vertex vertex-ht)
                 (vector-push it indices)
                 (progn
@@ -196,13 +197,30 @@
     ;; we return a list of each attribute array with it's semantic
    (cons indices (mapcar #'(lambda (input fn)
                              (cons (car input) (cdr fn)))
-                         input-lst fns))
-    #+disabled(iter (for i in input-lst)
-          (for f in fns)
-          (collect (list (car i) (cdr f))))))
+                         input-lst fns))))
 
-(defun interleave (&rest arrays)
-  )
+;; combines arrays into one large 2-d array
+(defun interleave (arrays)
+  (let* ((size (length (cdar arrays)))
+         (depth (iter (for (s . a) in arrays)
+                      (sum (length (aref a 0)))))
+         (interleaved (make-array `(size depth)))
+         (index 0))
+    (iter (for j below size)
+          (iter (for (semantic . a) in arrays)
+                (iter (for elt in a)
+                      (setf (row-major-aref interleaved index) elt)
+                      (incf index))))))
+
+(defun blt-mesh-array->gl-array (array)
+  (let* ((count (array-dimension array 0))
+         (vertex-size (array-dimension array 1))
+         (gl-array (gl:alloc-gl-array 'blt-mesh count)))
+    (iter (for i below count)
+          (iter (for j below vertex-size)
+                (for c in *blt-mesh-components*)
+                (setf (gl:glaref gl-array i c) (aref array i j))))
+    gl-array))
 
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)
@@ -210,9 +228,20 @@
     (setf *source-ht* (make-hash-table :test #'equal))
     (hash-sources children)
     (set-vertices (find-tag +vertices+ children))
-    (process-indices (find-tag +triangles+ children))
-    ))
+    (destructuring-bind (indices &rest arrays) 
+        (process-indices (find-tag +triangles+ children))
+      (make-instance 'mesh 
+                     :vert-data (blt-mesh-array->gl-array 
+                                 (interleave arrays))
+                     :index-data (indices)
+                     :array-format 'blt-mesh
+                     :primitive-type 'triangles))))
 
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))
-    (build-mesh (find-tag "mesh" (list dae-file)))))
+    (mapcar #'build-mesh 
+            (remove-if-not #'(lambda (x)
+                               (and (consp x) 
+                                    (string-equal "mesh" (tag-name x))))
+                           (children dae-file))) 
+    #+disabled(build-mesh (find-tag "mesh" (children dae-file)))))

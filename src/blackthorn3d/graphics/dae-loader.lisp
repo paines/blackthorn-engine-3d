@@ -160,8 +160,9 @@
                      (let ((src-array-vec (funcall (src-accessor source) 
                                                    (src-array source) 
                                                    index)))
-                       (iter (for elt in-vector src-array-vec)
-                             (vector-push elt attrib-vec))))
+                       #+disabled(iter (for elt in-vector src-array-vec)
+                             (vector-push elt attrib-vec))
+                       (vector-push src-array-vec attrib-vec)))
                  attrib-vec)))))
 
 ;; this function is going to need some serious refactoring ... >_<
@@ -192,12 +193,15 @@
                         (funcall (car f) i))
                   (incf curr-index)))))
     ;; we return a list of each attribute array with it's semantic
-   (mapcar #'(lambda (input fn)
-               (cons (car input) (cdr fn)))
-           input-lst fns)
+   (cons indices (mapcar #'(lambda (input fn)
+                             (cons (car input) (cdr fn)))
+                         input-lst fns))
     #+disabled(iter (for i in input-lst)
           (for f in fns)
           (collect (list (car i) (cdr f))))))
+
+(defun interleave (&rest arrays)
+  )
 
 ;; constructs a mesh object from an xml-list mesh tag
 (defun build-mesh (xml-lst)

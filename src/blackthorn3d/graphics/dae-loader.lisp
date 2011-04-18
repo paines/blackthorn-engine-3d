@@ -154,7 +154,8 @@
   (iter (for i in inputs)
         (collect 
          (let* ((source (second i))
-                (attrib-len (length (src-array source)))
+                (attrib-len (/ (length (src-array source)) 
+                               (length (src-components source))))
                 (attrib-vec (make-array attrib-len :fill-pointer 0)))
            (cons #'(lambda (index)
                      (let ((src-array-vec (funcall (src-accessor source) 

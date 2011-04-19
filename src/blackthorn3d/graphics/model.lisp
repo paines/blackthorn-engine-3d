@@ -25,44 +25,27 @@
 
 (in-package :blackthorn3d-graphics)
 
-;; notes- uses similar description for a frustum as opengl
-;;        there is nothing forcing the left and right plane
-;;        to be mirrored
-(defclass frustum ()
-  ((near-dist
-    :accessor frstm-near
-    :initarg :near)
-   (far-dist
-    :accessor frstm-far
-    :initarg :far)
-   (top-left
-    :accessor frstm-top-left
-    :initarg :top-left)
-   (bottom-right
-    :accessor frstm-bottom-right
-    :initarg :bottom-right)))
+;;;
+;;; Models 
+;;; 
+;;; a model encapsulates mesh and material data in a
+;;; tree like structure that chains matrices and meshes
+;;; with the textures and shaders they require to render
+;;;
 
-(defun make-frstm (near far aspect fov)
-  (let* ((width (/ (calc-width near fov) 2.0))
-         (height (* width (/ aspect))))
-    (make-instance 'frustum
-                   :near near
-                   :far far
-                   :top-left (vector height (- width))
-                   :bottom-right (vector (- height) width))))
+;; However, for now let's just get a mesh with transform
+(defclass model-shape ()  
+  ((mesh
+    :accessor model-mesh
+    :initarg :mesh
+    :documentation "The 3d geometry data comprising the model")
+   (matrix
+    :accessor model-matrix
+    :initarg :matrix
+    :initform (make-identity-matrix)
+    :documentation "the matrix that transforms from the model space to the space of the parent (world, unless a child in a scenegraph")
+   (material
+    :accessor model-mat
+    :initarg :material
+    :documentation "the material to use for the mesh")))
 
-(defun calc-width (near fov)
-  (* near 
-     (tan (/ fov 2))))
-
-(defmethod load-frstm ((this frustum))
-  (with-slots ((near near-dist)
-               (far far-dist)
-               (tl top-left)
-               (br bottom-right)) this
-    (gl:matrix-mode :projection)
-    (gl:load-identity)
-    (gl:frustum (svref tl 1) (svref br 1)
-                (svref tl 0) (svref br 0)
-                near far)
-    (gl:matrix-mode :modelview)))

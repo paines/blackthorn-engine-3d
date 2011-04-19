@@ -31,15 +31,34 @@
 ;;;  necessary to render it.
 ;;;
 
+;; The formats meshes can use:
+;; Note that I would like to sometime write a macro that 
+;; will create component information, and maybe even
+;; accessors to make things nice and easy 
+(gl:define-gl-array-format blt-vnt-mesh
+  (gl:vertex :type :float :components (px py pz))
+  (gl:normal :type :float :components (nx ny nz))
+  #+disabled(gl:tex-coord :type :float :components (u v)))
+(defparameter *blt-mesh-components* '(px py pz nx ny nz))
+
+;; the class
 (defclass mesh ()
   ;; For now we're going to assume we can interleave all the data
   ;; allowing us to keep everything neatly in one gl-vertex-array
-  ((vert-data :accessor mesh-vert-data
-              :initarg :vert-data)
-   (index-data :accessor mesh-indices
-               :initarg :indices)
-   (array-format :accessor mesh-array-format
-                 :initarg :array-format)
+  ((id 
+    :accessor mesh-id
+    :initarg :id)
+   (vert-data 
+    :accessor mesh-vert-data
+    :initarg :vert-data)
+   (index-data 
+    :accessor mesh-indices
+    :initarg :indices)
+   (array-format 
+    :accessor mesh-array-format
+    :initarg :array-format)
    ;; Also assuming we only have one primitive per mesh
-   (primitive-type :accessor mesh-primitive-type
-                   :initarg :primitive)))
+   (primitive-type 
+    :accessor mesh-primitive-type
+    :initarg :primitive
+    :initform :triangles)))

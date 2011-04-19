@@ -40,7 +40,14 @@
    :gfx-init
    :gfx-draw
    :draw-object
-   
+
+   ; should go somewhere else
+   :init
+   :prepare-scene
+   :*main-cam*
+   :*main-cam-quat*
+   :render-frame
+
    ;; camera.lisp
    :camera-matrix
    :camera-inverse
@@ -52,6 +59,8 @@
    :camera-rotate!
    :camera-lookat!
    :camera-orbit!
+   :update-fp-camera
+   :update-tp-camera
 
    ;; mesh.lisp
    :mesh

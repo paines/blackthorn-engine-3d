@@ -134,6 +134,7 @@
   ;(gl:bind-vertex-array vao)
   (gl:bind-buffer :array-buffer vbo)
   (gl:enable-client-state :vertex-array)
+  ;(%gl:vertex-pointer 3 :float 0 0)
   (gl:bind-buffer :element-array-buffer ibo)
   (%gl:draw-elements :quads 24 :unsigned-short (cffi:null-pointer))
   ;(gl:bind-vertex-array 0)
@@ -150,7 +151,7 @@
 (defun gfx-draw ()
   (gl:bind-buffer :array-buffer *buffer*)
   (gl:enable-client-state :vertex-array)
-  ;(%gl:vertex-pointer (length *vertices*) :gl-float 0 0)
+  ;(%gl:vertex-pointer 2 :float 0 0)
   (gl:draw-arrays :triangles 0 (length *vertices*))
   (gl:disable-client-state :vertex-array))
 
@@ -173,5 +174,59 @@
     (gl:enable-client-state :vertex-array)
     (gl:enable-client-state :normal-array)
     (gl:bind-gl-vertex-array vert-data)
-    (gl:draw-elements :quads index-data)
+    (gl:draw-elements :triangles index-data)
     (gl:flush)))
+
+
+
+;;;
+;;; This all should go in a different file...
+;;;
+
+(defvar *main-cam* nil)
+(defvar *main-cam-quat* nil)
+
+(defparameter cube-mesh nil)
+
+(defun init ()
+  (setf cube-mesh (load-dae #p"res/models/orange-box2.dae"))
+  (setf *main-cam* (make-instance 'camera 
+                           :position (make-point3 0.0 0.0 5.0)
+                           :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
+                                                    (make-vec3 0.0 0.0 5.0)))
+                           :mode :third-person ))
+  (setf *main-cam-quat* (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100))))
+
+
+(defun prepare-scene ()
+  (gl:viewport 0 0 800 600)
+
+  (gl:enable :texture-2d)
+  (gl:enable :blend)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
+  (gl:clear-color 0 0 0 0)
+  (gl:enable :depth-test)
+  (gl:depth-func :lequal)
+
+  (gl:matrix-mode :projection)
+  (gl:load-identity)
+  (let ((fx 1.0) (fy (* 1.0 6/8)))
+    (gl:frustum (- fx) fx (- fy) fy 1.0 100.0))
+  (gl:matrix-mode :modelview)
+  (gl:load-identity)
+
+  (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
+  (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
+  (gl:enable :lighting)
+  (gl:enable :light0))
+
+
+(defun render-frame ()
+  (gl:clear :color-buffer-bit :depth-buffer-bit)
+  (gl:load-matrix (camera-inverse *main-cam*))
+  (gl:color 1.0 .75 0.0)
+
+  (draw-object cube-mesh)
+
+  (gl:flush)
+  (sdl:update-display))

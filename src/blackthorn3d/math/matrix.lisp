@@ -181,7 +181,7 @@
   (iter (for i below len)
         (collect (if (= i index) 1.0 0.0))))
 
-(defun make-identity (&optional (size 4))
+(defun make-identity-matrix (&optional (size 4))
   "@return{a square identity matrix}"
   (make-matrix (list size size)
                (iter (for i below size)
@@ -200,11 +200,11 @@
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
-  (setf (col (make-identity) 3) v))
+  (setf (col (make-identity-matrix) 3) v))
 
 (defun make-scale (v)
   "@return{a scaling matrix that will scale points by v}"
-  (matrix-multiply-v (make-identity) v))
+  (matrix-multiply-v (make-identity-matrix) v))
 
 (defun make-x-rot (r)
   "@arg[r]{radians to rotate around x-axis (counter-clockwise)}

@@ -141,13 +141,6 @@
                              (input->source (get-attribute "source" attribs))))))))
 
 
-(gl:define-gl-array-format blt-mesh
-  (gl:vertex :type :float :components (px py pz))
-  (gl:normal :type :float :components (nx ny nz))
-  #+disabled(gl:tex-coord :type :float :components (u v)))
-(defparameter *blt-mesh-components* '(px py pz nx ny nz))
-
-
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
 ;; fn is designed to take in index to a source and add the corresponding value(s) 
 ;; to array. 
@@ -217,7 +210,7 @@
 (defun blt-mesh-array->gl-array (array)
   (let* ((count (array-dimension array 0))
          (vertex-size (array-dimension array 1))
-         (gl-array (gl:alloc-gl-array 'blt-mesh count)))
+         (gl-array (gl:alloc-gl-array 'blt-vnt-mesh count)))
     (iter (for i below count)
           (iter (for j below vertex-size)
                 (for c in *blt-mesh-components*)

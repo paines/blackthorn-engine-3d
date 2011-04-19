@@ -23,43 +23,29 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
+(defun loaded-file-directory ()
+  (make-pathname
+   :host (pathname-host #.(or *compile-file-truename*
+                              *load-truename*))
+   :directory (pathname-directory #.(or *compile-file-truename*
+                                        *load-truename*))))
+
 ;; Load quicklisp
 #-quicklisp
 (let ((quicklisp-init
-       (merge-pathnames
-        "../quicklisp/setup.lisp"
-        (make-pathname
-         :host (pathname-host #.(or *compile-file-truename*
-                                    *load-truename*))
-         :directory (pathname-directory #.(or *compile-file-truename*
-                                              *load-truename*))))))
+       (merge-pathnames "../quicklisp/setup.lisp" (loaded-file-directory))))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
 ;; Add any directories in build/libs to the registry
-(let ((dir
-       (merge-pathnames
-        "../../"
-        (make-pathname
-         :host (pathname-host #.(or *compile-file-truename*
-                                    *load-truename*))
-         :directory (pathname-directory #.(or *compile-file-truename*
-                                              *load-truename*))))))
+(let ((dir (merge-pathnames "../../" (loaded-file-directory))))
   (pushnew dir asdf:*central-registry* :test #'equal))
-(dolist (dir (directory
-              (merge-pathnames
-               "../libs/*/"
-               (make-pathname
-                :host (pathname-host #.(or *compile-file-truename*
-                                           *load-truename*))
-                :directory (pathname-directory #.(or *compile-file-truename*
-                                                     *load-truename*))))
+(dolist (dir (directory (merge-pathnames "../libs/*/" (loaded-file-directory))
               #+clozure :directories #+clozure t))
   (pushnew dir asdf:*central-registry* :test #'equal))
 
 ;; Inject native library paths for cffi
 (ql:quickload :cffi)
 
-(pushnew
- (merge-pathnames (make-pathname :directory '(:relative "lib")))
- cffi:*foreign-library-directories* :test #'equal)
+(pushnew (merge-pathnames #p "../../lib/" (loaded-file-directory))
+         cffi:*foreign-library-directories* :test #'equal)

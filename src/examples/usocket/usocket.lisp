@@ -11,11 +11,9 @@
 ;;;; to start two Lisp consoles to run the test.
 ;;;;
 
-(require :asdf)
-
-(asdf:oos 'asdf:load-op :usocket)
-(asdf:oos 'asdf:load-op :flexi-streams)
-(asdf:oos 'asdf:load-op :cl-store)
+(ql:quickload :usocket)
+(ql:quickload :flexi-streams)
+(ql:quickload :cl-store)
 
 (use-package :usocket)
 (use-package :cl-store)

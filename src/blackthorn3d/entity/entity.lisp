@@ -46,6 +46,9 @@
   ((oid
     :initarg :oid)))
 
+(defun make-server-oid ()
+  (error "unimplemented"))
+
 (defun make-client-entity (oid)
   (make-instance 'entity-client :oid oid))
 

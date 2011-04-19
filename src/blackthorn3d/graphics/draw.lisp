@@ -165,3 +165,13 @@
   (gl:buffer-data :array-buffer :stream-draw *buffer-array*)
   (gl:buffer-sub-data :array-buffer *buffer-array*)
   (gl:bind-buffer :array-buffer 0))
+
+(setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+
+(defmethod draw-object ((m mesh))
+  (with-slots (vert-data index-data) m
+    (gl:enable-client-state :vertex-array)
+    (gl:enable-client-state :normal-array)
+    (gl:bind-gl-vertex-array vert-data)
+    (gl:draw-elements :quads index-data)
+    (gl:flush)))

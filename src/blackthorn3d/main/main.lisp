@@ -162,8 +162,9 @@
       ;(gl:enable :lighting)
       (gl:enable :light0)
 
-      (defparameter cube (make-cube))
+      ;(defparameter cube (make-cube))
       ;(gfx-init)
+      (defparameter cube-mesh (load-dae "h:/orange-box2.dae"))
       (defparameter turn (make-y-rot (/ pi 100)))
       
       ;; Main loop:
@@ -232,9 +233,10 @@
                                         ;(gl:translate 1.0 0.0 -1.0)
                    (gl:color 1.0 .75 0.0)
 
-                   (apply #'draw-vert-array cube)
+                   ;(apply #'draw-vert-array cube)
                    ;(gfx-draw)
-                          
+                   (draw-object cube-mesh)
+       
                                         ;(render *game* #c(0 0) 1d0 -1d0)
                    (gl:flush)
                    (sdl:update-display)

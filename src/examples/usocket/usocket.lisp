@@ -11,14 +11,16 @@
 ;;;; to start two Lisp consoles to run the test.
 ;;;;
 
-(require :asdf)
+(ql:quickload :usocket)
+(ql:quickload :flexi-streams)
+(ql:quickload :cl-store)
 
-(asdf:oos 'asdf:load-op :usocket)
-(asdf:oos 'asdf:load-op :flexi-streams)
-(asdf:oos 'asdf:load-op :cl-store)
-
-(use-package :usocket)
-(use-package :cl-store)
+(defpackage :usocket-test
+  (:use :cl :usocket :cl-store)
+  (:export :http-test :tcp-server :tcp-client :udp-server :udp-client))
+(in-package :cl-user)
+(use-package :usocket-test)
+(in-package :usocket-test)
 
 
 ;; example HTTP conversation with google.com

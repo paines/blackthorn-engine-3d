@@ -157,14 +157,15 @@
          (let* ((source (second i))
                 (attrib-len (/ (length (src-array source)) 
                                (length (src-components source))))
-                (attrib-vec (make-array attrib-len :fill-pointer 0)))
+                (attrib-vec (make-array attrib-len :fill-pointer 0
+                                        :adjustable t)))
            (cons #'(lambda (index)
                      (let ((src-array-vec (funcall (src-accessor source) 
                                                    (src-array source) 
                                                    index)))
                        #+disabled(iter (for elt in-vector src-array-vec)
                              (vector-push elt attrib-vec))
-                       (vector-push src-array-vec attrib-vec)))
+                       (vector-push-extend src-array-vec attrib-vec)))
                  attrib-vec)))))
 
 ;; this function is going to need some serious refactoring ... >_<
@@ -238,6 +239,8 @@
     (set-vertices (find-tag +vertices+ children))
     (destructuring-bind (indices &rest arrays) 
         (process-indices (find-tag +triangles+ children))
+      ;(cons indices (interleave arrays))
+      ;#+disabled
       (make-instance 'mesh 
                      :vert-data (blt-mesh-array->gl-array 
                                  (interleave arrays))
@@ -246,7 +249,8 @@
                      :primitive 'triangles))))
 
 (defun load-dae (filename)
-  (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))
+  (let ((dae-file (cxml:parse-file (blt3d-res:resolve-resource filename) 
+                                   (cxml-xmls:make-xmls-builder))))
     #+disabled(mapcar #'build-mesh 
             (remove-if-not #'(lambda (x)
                                (and (consp x) 

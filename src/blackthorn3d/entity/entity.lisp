@@ -26,7 +26,9 @@
 (in-package :blackthorn3d-entity)
 
 (defclass entity ()
-  ((pos
+  ((oid
+    :accessor oid)
+   (pos
     :accessor pos
     :initarg :pos)
    (dir
@@ -36,56 +38,28 @@
     :accessor veloc
     :initarg :veloc)))
 
-;; Hoping that this abomination will be unnecessary in a future version
-;; of userial....
-(defmacro make-init-slot-serializer (type (&rest factory)
-                                     (&rest init) (&rest fields))
-  (labels ((get-types-and-slots (fields &optional types slots)
-	     (cond
-	       ((null fields) (values (nreverse types) (nreverse slots)))
-	       ((null (rest fields))
-		  (error "Expected same number of TYPEs as SLOTs"))
-	       (t (get-types-and-slots (rest (rest fields))
-				       (cons (first fields) types)
-				       (cons (second fields) slots))))))
-    (multiple-value-bind (init-types init-slots) (get-types-and-slots init)
-      (multiple-value-bind (types slots) (get-types-and-slots fields)
-        (let ((obj-sym (gensym "OBJ-")))
-          `(progn
-             (defmethod serialize ((type (eql ,type)) value
-                                   &key (buffer *buffer*))
-               (with-slots ,(append init-slots slots) value
-                 ,@(mapcar #'(lambda (type slot)
-                               `(serialize ,type ,slot :buffer buffer))
-                           (append init-types types)
-                           (append init-slots slots)))
-               buffer)
-             (defmethod unserialize ((type (eql ,type))
-                                     &key (buffer *buffer*))
-               (let ((,obj-sym
-                      ,(append
-                        factory
-                        (mapcar #'(lambda (type)
-                                    `(unserialize ,type
-                                                  :buffer buffer))
-                                init-types))))
-                 (with-slots ,slots ,obj-sym
-                   ,@(mapcar #'(lambda (type slot)
-                                 `(setf ,slot (unserialize ,type
-                                                           :buffer buffer)))
-                             types slots))
-                 (values ,obj-sym buffer)))))))))
+(defclass entity-server (entity)
+  ((oid
+    :initform (make-server-oid))))
+
+(defclass entity-client (entity)
+  ((oid
+    :initarg :oid)))
+
+(defun make-client-entity (oid)
+  (make-instance 'entity-client :oid oid))
+
+(defun lookup-client-entity (oid)
+  (error "unimplemented"))
 
 (make-init-slot-serializer :entity-create
-                           (make-entity)
-                           (:oid oid)
+                           (make-client-entity) (:oid oid)
                            (:vec3 pos
                             :vec3 dir
                             :vec3 veloc))
 
 (make-init-slot-serializer :entity-update-fields
-                           (lookup-entity)
-                           (:oid oid)
+                           (lookup-client-entity) (:oid oid)
                            (:vec3 pos
                             :vec3 dir
                             :vec3 veloc))

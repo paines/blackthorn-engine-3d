@@ -37,6 +37,15 @@
     (load quicklisp-init)))
 
 ;; Add any directories in build/libs to the registry
+(let ((dir
+       (merge-pathnames
+        "../../"
+        (make-pathname
+         :host (pathname-host #.(or *compile-file-truename*
+                                    *load-truename*))
+         :directory (pathname-directory #.(or *compile-file-truename*
+                                              *load-truename*))))))
+  (pushnew dir asdf:*central-registry* :test #'equal))
 (dolist (dir (directory
               (merge-pathnames
                "../libs/*/"

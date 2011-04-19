@@ -125,6 +125,7 @@
   ;; Initialization:
   (setup-paths)
   (load-dlls)
+  (blt3d-gfx:init)
 
   ;(unless *game* (error "No game specified.~%"))
 
@@ -143,38 +144,11 @@
       ; TODO: temporary code, abstract this away
       (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
-      (gl:viewport 0 0 800 600)
 
-      (gl:enable :texture-2d)
-      (gl:enable :blend)
-      (gl:blend-func :src-alpha :one-minus-src-alpha)
-      (gl:clear-color 0 0 0 0)
-      (gl:enable :depth-test)
-      (gl:depth-func :lequal)
-      (gl:matrix-mode :projection)
-      (gl:load-identity)
-      (let ((fx 1.0) (fy (* 1.0 6/8)))
-        (gl:frustum (- fx) fx (- fy) fy 1.0 100.0))
-      (gl:matrix-mode :modelview)
-      (gl:load-identity)
-      (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
-      (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-      ;(gl:enable :lighting)
-      (gl:enable :light0)
-
-      ;(defparameter cube (make-cube))
-      ;(gfx-init)
-      (defparameter cube-mesh (load-dae "h:/orange-box2.dae"))
-      (defparameter turn (make-y-rot (/ pi 100)))
+      (blt3d-gfx:prepare-scene)
       
       ;; Main loop:
-      (let ((input-queue (make-instance 'containers:basic-queue))
-            (cam (make-instance 'camera 
-                                :position (make-point3 0.0 0.0 5.0)
-                                :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
-                                                         (make-vec3 0.0 0.0 5.0)))
-                                :mode :third-person ))
-            (cam-quat (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100))))
+      (let ((input-queue (make-instance 'containers:basic-queue)))
         ;(camera-orbit! cam 0.0 -0.2 5.0)
         (catch 'main-loop
                                         ;(net-game-start #'main-loop-abort-handler)
@@ -211,13 +185,15 @@
                      (let ((rot-amt  (* -1 (input-move-x *input*)))
                            (step-amt (*  1 (input-move-y *input*))))
                          
-                         (setf (cam-dir cam) (quat-rotate-vec
+                         (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) (quat-rotate-vec
                             (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))
-                            (cam-dir cam)))
-                         (setf (cam-pos cam) (vec4+ (cam-pos cam) (vec-scale4 (cam-dir cam) step-amt)) )
+                            (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
+                         (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                               (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                                      (vec-scale4 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) step-amt)) )
                          )
                     
-                    
+                    (blt3d-gfx:render-frame)
                     
                      #+disabled
                      (let ((x (* 2 (abs (xbox360_get_lx 0))))
@@ -227,19 +203,6 @@
                    ;; Rotate the camera around the target each frame
                    #+disabled
                    (camera-orbit! cam (/ pi 100) 0.0 5.0)
-
-                   (gl:clear :color-buffer-bit :depth-buffer-bit)
-                   (gl:load-matrix (camera-inverse cam))
-                                        ;(gl:translate 1.0 0.0 -1.0)
-                   (gl:color 1.0 .75 0.0)
-
-                   ;(apply #'draw-vert-array cube)
-                   ;(gfx-draw)
-                   (draw-object cube-mesh)
-       
-                                        ;(render *game* #c(0 0) 1d0 -1d0)
-                   (gl:flush)
-                   (sdl:update-display)
 
                    #+blt-debug
                    (let ((connection (or swank::*emacs-connection*

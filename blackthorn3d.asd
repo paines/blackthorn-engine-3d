@@ -62,6 +62,7 @@
                                      (:module entity
                                               :components
                                               ((:file "package")
+                                               (:file "slot-serializer")
                                                (:file "entity"))
                                               :serial t)
                                      (:module graphics

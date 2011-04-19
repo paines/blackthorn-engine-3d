@@ -144,8 +144,8 @@
 (gl:define-gl-array-format blt-mesh
   (gl:vertex :type :float :components (px py pz))
   (gl:normal :type :float :components (nx ny nz))
-  (gl:tex-coord :type :float :components (u v)))
-(defparameter *blt-mesh-components* '(px py pz nx ny nz u v))
+  #+disabled(gl:tex-coord :type :float :components (u v)))
+(defparameter *blt-mesh-components* '(px py pz nx ny nz))
 
 
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
@@ -204,13 +204,14 @@
   (let* ((size (length (cdar arrays)))
          (depth (iter (for (s . a) in arrays)
                       (sum (length (aref a 0)))))
-         (interleaved (make-array `(size depth)))
+         (interleaved (make-array `(,size ,depth)))
          (index 0))
     (iter (for j below size)
           (iter (for (semantic . a) in arrays)
-                (iter (for elt in a)
+                (iter (for elt in-vector (aref a j))
                       (setf (row-major-aref interleaved index) elt)
-                      (incf index))))))
+                      (incf index))))
+    interleaved))
 
 (defun blt-mesh-array->gl-array (array)
   (let* ((count (array-dimension array 0))
@@ -220,6 +221,13 @@
           (iter (for j below vertex-size)
                 (for c in *blt-mesh-components*)
                 (setf (gl:glaref gl-array i c) (aref array i j))))
+    gl-array))
+
+(defun indices->gl-array (indices)
+  (let* ((count (length indices))
+         (gl-array (gl:alloc-gl-array :unsigned-short count)))
+    (iter (for i below count)
+          (setf (gl:glaref gl-array i) (aref indices i)))
     gl-array))
 
 ;; constructs a mesh object from an xml-list mesh tag
@@ -233,15 +241,15 @@
       (make-instance 'mesh 
                      :vert-data (blt-mesh-array->gl-array 
                                  (interleave arrays))
-                     :index-data (indices)
+                     :indices (indices->gl-array indices)
                      :array-format 'blt-mesh
-                     :primitive-type 'triangles))))
+                     :primitive 'triangles))))
 
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file filename (cxml-xmls:make-xmls-builder))))
-    (mapcar #'build-mesh 
+    #+disabled(mapcar #'build-mesh 
             (remove-if-not #'(lambda (x)
                                (and (consp x) 
                                     (string-equal "mesh" (tag-name x))))
                            (children dae-file))) 
-    #+disabled(build-mesh (find-tag "mesh" (children dae-file)))))
+    (build-mesh (find-tag "mesh" (children dae-file)))))

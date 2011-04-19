@@ -39,6 +39,7 @@
    :draw-vao-cube
    :gfx-init
    :gfx-draw
+   :draw-object
    
    ;; camera.lisp
    :camera-matrix
@@ -51,6 +52,9 @@
    :camera-rotate!
    :camera-lookat!
    :camera-orbit!
+
+   ;; mesh.lisp
+   :mesh
 
    ;; dae-loader.lisp
    :load-dae

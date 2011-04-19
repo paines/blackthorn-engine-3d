@@ -57,6 +57,7 @@
                                      (:module graphics
                                               :components
                                               ((:file "package")
+                                               (:file "mesh")
                                                (:file "dae-loader")
                                                (:file "draw")
                                                (:file "camera"))

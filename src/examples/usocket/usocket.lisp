@@ -15,8 +15,12 @@
 (ql:quickload :flexi-streams)
 (ql:quickload :cl-store)
 
-(use-package :usocket)
-(use-package :cl-store)
+(defpackage :usocket-test
+  (:use :cl :usocket :cl-store)
+  (:export :http-test :tcp-server :tcp-client :udp-server :udp-client))
+(in-package :cl-user)
+(use-package :usocket-test)
+(in-package :usocket-test)
 
 
 ;; example HTTP conversation with google.com

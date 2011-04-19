@@ -54,6 +54,16 @@
                                               ((:file "package")
                                                (:file "locate"))
                                               :serial t)
+                                     (:module network
+                                              :components
+                                              ((:file "package")
+                                               (:file "event"))
+                                              :serial t)
+                                     (:module entity
+                                              :components
+                                              ((:file "package")
+                                               (:file "entity"))
+                                              :serial t)
                                      (:module graphics
                                               :components
                                               ((:file "package")
@@ -75,7 +85,7 @@
                                               :serial t)
                                      (:file "package"))
                                     :serial t))))
-    :depends-on ( ;; Utilities
+    :depends-on (;; Utilities
                  :alexandria
                  :trivial-features
                  :command-line-arguments
@@ -85,11 +95,13 @@
                  :mt19937
                  :cxml
 
-                 ;; Networking and Serialization
+                 ;; Networking
                  :usocket
-                 :cl-store
 
-                 ;; Graphics and Sound:
+                 ;; Serialization
+                 :userial
+
+                 ;; Graphics and Sound
                  :lispbuilder-sdl
                  :lispbuilder-sdl-image
                  :lispbuilder-sdl-mixer

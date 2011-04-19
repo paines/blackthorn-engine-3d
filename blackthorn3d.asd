@@ -70,7 +70,9 @@
                                                (:file "mesh")
                                                (:file "dae-loader")
                                                (:file "draw")
-                                               (:file "camera"))
+                                               (:file "frustum")
+                                               (:file "camera")
+                                               (:file "render"))
                                               :serial t)
                                      (:module input
                                               :components

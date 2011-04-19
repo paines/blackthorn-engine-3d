@@ -41,12 +41,17 @@
    :gfx-draw
    :draw-object
 
-   ; should go somewhere else
+   ; render.lisp
    :init
    :prepare-scene
    :*main-cam*
    :*main-cam-quat*
    :render-frame
+
+   ;; frustum.lisp
+   :frustum
+   :make-frstm
+   :load-frstm
 
    ;; camera.lisp
    :camera-matrix

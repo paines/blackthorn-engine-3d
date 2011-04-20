@@ -25,64 +25,25 @@
 
 (in-package :blackthorn3d-graphics)
 
-(defvar +library_geometries+ "library_geometries")
+(defvar +geometry-library+ "library_geometries")
+(defvar +material-library+ "library_materials")
+(defvar +scene-library+    "library_visual_scenes")
+(defvar +light-library+    "library_lights")
+
 (defvar +geometry-block+ "geometry")
-(defvar +mesh-block+ "mesh")
-(defvar +source-block+ "source")
-(defvar +accessor+ "accessor")
-(defvar +vertices+ "vertices")
+(defvar +mesh-block+     "mesh")
+(defvar +source-block+   "source")
+
+(defvar +accessor+  "accessor")
+(defvar +vertices+  "vertices")
 (defvar +triangles+ "triangles")
 
 (defparameter *file* nil)
 (defparameter *source-ht* nil)
 
-(defun xml-listp (lst)
-  (and (consp lst)
-       (consp (car lst))))
-
-(defun children (xml-lst)
-  (cddr xml-lst))
-
-;; Returns first xml child of xml-lst
-(defun first-child (xml-lst)
-  (find-if #'consp (children xml-lst)))
-
-(defun attributes (xml-lst)
-  (second xml-lst))
-
-(defun tag-name (xml-lst)
-  (caar xml-lst))
-
-(defun find-tag (tag lst) 
-  (if (consp lst)
-      (let ((xml-lst (find-if #'consp lst)))
-        (if (string-equal (tag-name xml-lst) tag)
-            xml-lst
-            (or (find-tag tag (children xml-lst))
-                (find-tag tag (cdr lst)))))
-      nil))
-
-(defun find-tag-in-children (tag xml-lst)
-  (let ((children (remove-if-not #'consp (children xml-lst))))
-    (find tag children
-          :test #'string-equal
-          :key #'car)))
-
-(defun get-attribute (attrib attrib-lst)
-  (aif (member attrib attrib-lst :test #'string-equal :key #'car)
-       (second (car it))
-       nil))
-  
-(defun string->sv (str)
-  (with-input-from-string (s str)
-    (apply #'vector
-           (iter (for val = (read s nil :eof ))
-                 (until (eql val :eof))
-                 (collect val)))))
-
 (defun make-accessor (accessor-lst)
-  (let ((stride (parse-integer (get-attribute "stride" 
-                                              (attributes accessor-lst)))))
+  (let ((stride (parse-integer 
+                 (get-attribute "stride" (attributes accessor-lst)))))
     #'(lambda (array index)
         (apply #'vector 
                (iter (for i below stride)
@@ -224,29 +185,50 @@
           (setf (gl:glaref gl-array i) (aref indices i)))
     gl-array))
 
-;; constructs a mesh object from an xml-list mesh tag
-(defun build-mesh (xml-lst)
-  (let ((children (children xml-lst)))
+;; constructs a mesh object from an xml-list geometry tag
+(defun build-mesh (geometry-lst)
+  (let ((id (get-attribute "id" (attributes geometry-lst)))
+        (children (children (find-tag-in-children "mesh" geometry-lst))))
     (setf *source-ht* (make-hash-table :test #'equal))
     (hash-sources children)
     (set-vertices (find-tag +vertices+ children))
     (destructuring-bind (indices &rest arrays) 
         (process-indices (find-tag +triangles+ children))
-      ;(cons indices (interleave arrays))
-      ;#+disabled
+                                        ;(cons indices (interleave arrays))
+                                        ;#+disabled
       (make-instance 'mesh 
+                     :id (intern id)
                      :vert-data (blt-mesh-array->gl-array 
                                  (interleave arrays))
                      :indices (indices->gl-array indices)
                      :array-format 'blt-mesh
                      :primitive 'triangles))))
 
+;; Build a hash table of mesh ids and meshes 
+(defun process-geometry (geom-library)
+  (let ((mesh-table (make-hash-table)))
+    (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
+          (let ((new-mesh (build-mesh geom-xml)))
+            (setf (gethash (mesh-id new-mesh) mesh-table) new-mesh)))
+    mesh-table))
+
+;; Build a table of scene nodes.  This is assuming a flat graph, which
+;; so far is all that max has given me.  SO it should be fine, until
+;; we start looking at character animation.  Then...who knows.
+(defun process-scene (scene-library))
+
+
+(defun build-models (&key geometry scenes lights materials)
+  (iter (for (id mesh-obj) in-hashtable geometry)
+        (collect mesh-obj)))
+
 (defun load-dae (filename)
   (let ((dae-file (cxml:parse-file (blt3d-res:resolve-resource filename) 
                                    (cxml-xmls:make-xmls-builder))))
-    #+disabled(mapcar #'build-mesh 
-            (remove-if-not #'(lambda (x)
-                               (and (consp x) 
-                                    (string-equal "mesh" (tag-name x))))
-                           (children dae-file))) 
-    (build-mesh (find-tag "mesh" (children dae-file)))))
+    (let ((geometry-table (process-geometry 
+                           (find-tag-in-children +geometry-library+ dae-file)))
+          (scene-table    (process-scene 
+                           (find-tag-in-children +scene-library+ dae-file))))
+      ;; Combine all the tables into a list of model-shape objects
+      (build-models :geometry geometry-table
+                    :scenes   scene-table))))

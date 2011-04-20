@@ -69,6 +69,7 @@
                                               :components
                                               ((:file "package")
                                                (:file "mesh")
+                                               (:file "xmls-helpers")
                                                (:file "dae-loader")
                                                (:file "draw")
                                                (:file "frustum")

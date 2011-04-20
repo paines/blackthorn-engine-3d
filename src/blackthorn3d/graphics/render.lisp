@@ -34,7 +34,7 @@
 (defparameter cube-mesh nil)
 
 (defun init ()
-  (setf cube-mesh (load-dae #p"res/models/room-02.dae"))
+  (setf cube-mesh (car (load-dae #p"res/models/room_01.dae")))
   (setf *main-cam* (make-instance 'camera 
                            :position (make-point3 0.0 0.0 5.0)
                            :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)

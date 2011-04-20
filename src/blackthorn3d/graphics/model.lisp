@@ -48,4 +48,3 @@
     :accessor model-mat
     :initarg :material
     :documentation "the material to use for the mesh")))
-

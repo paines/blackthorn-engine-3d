@@ -27,6 +27,23 @@
   ((shader
     :accessor mat-shader
     :initarg :shader)
-   (textures
-    :accessor mat-textures
+   (ambient
+    :initarg :ambient
+    :initform #(0.0 0.0 0.0 1.0))
+   (diffuse
+    :initarg :diffuse
+    :initform #(1.0 1.0 1.0 1.0))
+   (specular
+    :initarg :specular
+    :initform #(0.0 0.0 0.0 1.0))
+   (texture
+    :accessor mat-texture
     :initarg :tex)))
+
+
+(defmethod use-material ((this material))
+  (with-slots (ambient diffuse specular texture) this
+    (gl:material :front :ambient ambient)
+    (gl:material :front :diffuse diffuse)
+    (gl:material :front :specular specular)
+    (gl:bind-texture :texture-2d texture)))

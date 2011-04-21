@@ -46,14 +46,26 @@
   ((oid
     :initarg :oid)))
 
-(defun make-server-oid ()
-  (error "unimplemented"))
+(defvar *global-oid-table* (make-hash-table))
 
-(defun make-client-entity (oid)
-  (make-instance 'entity-client :oid oid))
+(let ((next-oid))
+  (defun make-server-oid ()
+    (incf a)))
+
+(defun intern-entity (object)
+  (with-slots (oid) object
+    (setf (gethash oid *global-oid-table*) object)))
+
+(defun make-server-entity (&rest initargs)
+  (intern-entity (apply #'make-instance 'entity-server initargs)))
+
+(defun make-client-entity (oid &rest initargs)
+  (intern-entity (apply #'make-instance 'entity-client :oid oid initargs)))
 
 (defun lookup-client-entity (oid)
-  (error "unimplemented"))
+  (multiple-value-bind (object exists) (gethash oid *global-oid-table*)
+    (unless exists (error "No object for oid ~a." oid))
+    object))
 
 (make-init-slot-serializer :entity-create
                            (make-client-entity) (:oid oid)

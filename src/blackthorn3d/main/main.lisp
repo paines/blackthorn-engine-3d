@@ -144,9 +144,7 @@
                    #+windows
                      (xbox360_poll 0)
                                                      
-                     ; (/ (xbox360_get_lx 0) 65535)
-                                                     
-                     ;(setf (cam-dir cam) (quat-rotate-vec cam-quat (cam-dir cam)))
+                     ; move camera based on keyboard/xbox controller
                      (let ((rot-amt  (* -1 (input-move-x *input*)))
                            (step-amt (*  1 (input-move-y *input*))))
                          

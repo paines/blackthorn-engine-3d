@@ -19,18 +19,6 @@
 ;;;  -the home for various functions such as lerp
 ;;;   range and clamp
 
-(defun clamp (val lower upper)
-  "@return{(val > upper ? upper : (val < lower ? lower : val))}
-   Assumes lower < upper.  Otherwise, returns upper"
-  (min upper (max lower val)))
-
-(defun lerp (s lower upper)
-  "@return{the linear interpolation of s from lower to upper.}
-   s should be [0 1]; will be clamped if not"
-  (+ lower 
-     (* (clamp s 0.0 1.0)
-        (- upper lower))))
-
 (defun range (val lower upper)
   "@return{true if val is [lower upper)}"
   (and (< val upper)

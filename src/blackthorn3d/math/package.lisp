@@ -68,7 +68,6 @@
    :matrix-multiply-m
    :vector-multiply-m
    :transpose
-   :reshape
 
    ;; quaternion.lisp
    :make-quat

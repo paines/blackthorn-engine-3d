@@ -25,7 +25,6 @@
 
 (in-package :blackthorn3d-graphics)
 
-
 ;;;
 ;;; Mesh -
 ;;;  A mesh object contains the geometry data and information
@@ -39,8 +38,8 @@
 (gl:define-gl-array-format blt-vnt-mesh
   (gl:vertex :type :float :components (px py pz))
   (gl:normal :type :float :components (nx ny nz))
-  (gl:tex-coord :type :float :components (u v)))
-(defparameter *blt-mesh-components* '(px py pz nx ny nz u v))
+  #+disabled(gl:tex-coord :type :float :components (u v)))
+(defparameter *blt-mesh-components* '(px py pz nx ny nz))
 
 ;; the class
 (defclass mesh ()

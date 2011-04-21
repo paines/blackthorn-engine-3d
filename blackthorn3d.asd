@@ -68,8 +68,6 @@
                                      (:module graphics
                                               :components
                                               ((:file "package")
-                                               (:file "texture")
-                                               (:file "material")
                                                (:file "mesh")
                                                (:file "xmls-helpers")
                                                (:file "dae-loader")

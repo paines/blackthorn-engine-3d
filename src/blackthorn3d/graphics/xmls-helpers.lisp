@@ -54,8 +54,9 @@
 (defun find-tag-in-children (tag xml-lst)
   "Searches the children of xml-list for the first element with tag <tag>"
   (let ((children (remove-if-not #'consp (children xml-lst))))
-    (iter (for elt in children)
-          (when (string-equal tag (tag-name elt)) (return elt)))))
+    (find tag children
+          :test #'string-equal
+          :key #'tag-name)))
 
 (defun children-with-tag (tag xml-lst)
   "Return a list of children that have tag-name tag"
@@ -74,6 +75,3 @@
            (iter (for val = (read s nil :eof ))
                  (until (eql val :eof))
                  (collect val)))))
-
-(defun get-url (xml-lst)
-  (intern (subseq (get-attribute "url" (attributes xml-lst)) 1)))

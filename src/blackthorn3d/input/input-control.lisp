@@ -23,28 +23,33 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-input)
+    
+(defclass input-system ()
+    ((kind 
+        :accessor input-kind
+        :initarg :kind
+        :documentation "Either :keyboard or :xbox")))
+        
+(defmethod input-move-x ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard 
+              (+ (if (sdl:get-key-state :sdl-key-right) 1.0  0)
+                 (if (sdl:get-key-state :sdl-key-left) -1.0  0)))
+            #+windows
+            (:xbox (/ (xbox360_get_lx 0) 65535))
+            (otherwise 0))))
 
-(defpackage :blackthorn3d-input
-  (:nicknames :blt3d-input)
-  (:use :cl)
-  (:export
+(defmethod input-move-y ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard
+               (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
+                  (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
+            #+windows
+            (:xbox (/ (xbox360_get_ly 0) 65535))
+            (otherwise 0))))
 
-   ;; input-control.lisp
-   :input-system
-   :input-move-x
-   :input-move-y
-   
-   ;; xbox360.lisp
-   :xbox360-vibrate
-   :xbox360_poll
-   :xbox360_get_a
-   :xbox360_get_b
-   :xbox360_get_x
-   :xbox360_get_y
-   :xbox360_get_lx
-   :xbox360_get_ly
-   :xbox360_get_rx
-   :xbox360_get_ry
-
-   ))
+(defmethod set-controller ((system input-system) type)
+    (setf (input-kind system) type))

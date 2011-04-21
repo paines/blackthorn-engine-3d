@@ -80,6 +80,7 @@
                                      (:module input
                                               :components
                                               ((:file "package")
+                                               (:file "input-control")
                                                #+(or win32 windows)
                                                (:file "xbox360"))
                                               :serial t)

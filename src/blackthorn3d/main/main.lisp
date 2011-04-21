@@ -74,41 +74,7 @@
 ;;; Main Game Driver
 ;;;
 
-; TODO: Move these to the proper package
-
-    
-(defclass input-system ()
-    ((kind 
-        :accessor input-kind
-        :initarg :kind
-        :documentation "Either :keyboard or :xbox")))
-        
-(defmethod input-move-x ((system input-system))
-    (with-slots (kind) system
-        (case kind
-            (:keyboard 
-              (+ (if (sdl:get-key-state :sdl-key-right) 1.0  0)
-                 (if (sdl:get-key-state :sdl-key-left) -1.0  0)))
-            #+windows
-            (:xbox (/ (xbox360_get_lx 0) 65535))
-            (otherwise 0))))
-
-(defmethod input-move-y ((system input-system))
-    (with-slots (kind) system
-        (case kind
-            (:keyboard
-               (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
-                  (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
-            #+windows
-            (:xbox (/ (xbox360_get_ly 0) 65535))
-            (otherwise 0))))
-        
 (defparameter *input* (make-instance 'input-system :kind :keyboard))
-
-(defmethod set-controller ((system input-system) type)
-    (setf (input-kind system) type))
-
-; end todo
     
 (defun main-init-abort-handler ()
   (throw 'main-init nil))

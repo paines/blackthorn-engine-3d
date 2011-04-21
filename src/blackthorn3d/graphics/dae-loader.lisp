@@ -34,8 +34,6 @@
 (defvar +mesh-block+     "mesh")
 (defvar +source-block+   "source")
 
-(defvar +instance-geometry+ "instance_geometry")
-
 (defvar +accessor+  "accessor")
 (defvar +vertices+  "vertices")
 (defvar +triangles+ "triangles")
@@ -206,9 +204,6 @@
                      :array-format 'blt-mesh
                      :primitive 'triangles))))
 
-(defun matrix-tag->matrix (xml-lst)
-  (reshape (string->sv (third xml-lst)) '(4 4)))
-
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)
   (let ((mesh-table (make-hash-table)))
@@ -220,17 +215,7 @@
 ;; Build a table of scene nodes.  This is assuming a flat graph, which
 ;; so far is all that max has given me.  SO it should be fine, until
 ;; we start looking at character animation.  Then...who knows.
-(defun process-scene (scene-library)
-  (let ((scene (first-child scene-library))
-        (scene-table (make-hash-table)))
-    (iter (for node in (children-with-tag "node" scene))
-          (let ((node-id (intern (get-attribute "id" (attributes node))))
-                (transform (matrix-tag->matrix (first-child node)))
-                (geometry-id (get-url 
-                                (find-tag-in-children +instance-geometry+ 
-                                                      node))))
-            (setf (gethash node-id scene-table) (cons geometry-id transform))))
-    scene-table))
+(defun process-scene (scene-library))
 
 
 (defun build-models (&key geometry scenes lights materials)

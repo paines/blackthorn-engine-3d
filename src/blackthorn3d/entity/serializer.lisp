@@ -25,6 +25,20 @@
 
 (in-package :blackthorn3d-entity)
 
+(defmacro make-vec-serializer (vec-type elt-type count)
+  (with-gensyms (type value component)
+    (let ((buffer (make-symbol (symbol-name 'buffer))))
+      `(progn
+         (defmethod serialize ((,type (eql ,vec-type)) ,value
+                               &key (,buffer *buffer*))
+           (assert (= (length ,value) ,count))
+           (iter (for ,component in-vector ,value)
+                 (serialize ,elt-type ,component :buffer ,buffer)))
+         (defmethod unserialize ((type (eql ,vec-type)) &key (,buffer *buffer*))
+           (iter (repeat ,count)
+                 (collect (unserialize ,elt-type :buffer ,buffer)
+                          result-type 'vector)))))))
+
 ;; Hoping that this abomination will be unnecessary in a future version
 ;; of userial....
 (defmacro make-init-slot-serializer (type (&rest factory)

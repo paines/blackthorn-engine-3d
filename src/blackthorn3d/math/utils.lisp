@@ -35,3 +35,6 @@
   "@return{true if val is [lower upper)}"
   (and (< val upper)
        (>= val lower)))
+       
+(defun deg->rad (x)
+  (* x (/ pi 180)))

@@ -75,8 +75,7 @@
 ;;;
 
 ; TODO: Move these to the proper package
-(defun deg->rad (x)
-    (* x (/ pi 180)))
+
     
 (defclass input-system ()
     ((kind 

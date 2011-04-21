@@ -48,9 +48,9 @@
 
 (defvar *global-oid-table* (make-hash-table))
 
-(let ((next-oid))
+(let ((next-oid 0))
   (defun make-server-oid ()
-    (incf a)))
+    (incf next-oid)))
 
 (defun intern-entity (object)
   (with-slots (oid) object
@@ -66,6 +66,18 @@
   (multiple-value-bind (object exists) (gethash oid *global-oid-table*)
     (unless exists (error "No object for oid ~a." oid))
     object))
+
+(make-uint-serializer :oid 4)
+
+(defmethod serialize ((type (eql :vec3)) value &key (buffer *buffer*))
+  (assert (= (length value) 3))
+  (iter (for component in-vector value)
+        (serialize :float64 component :buffer buffer)))
+
+(defmethod unserialize ((type (eql :vec3)) &key (buffer *buffer*))
+  (iter (for i from 0 below 3)
+        (collect (unserialize :float64 :buffer buffer)
+          result-type 'vector)))
 
 (make-init-slot-serializer :entity-create
                            (make-client-entity) (:oid oid)

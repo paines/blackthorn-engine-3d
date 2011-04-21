@@ -62,22 +62,14 @@
 (defun make-client-entity (oid &rest initargs)
   (intern-entity (apply #'make-instance 'entity-client :oid oid initargs)))
 
-(defun lookup-client-entity (oid)
+(defun lookup-entity (oid)
   (multiple-value-bind (object exists) (gethash oid *global-oid-table*)
     (unless exists (error "No object for oid ~a." oid))
     object))
 
 (make-uint-serializer :oid 4)
 
-(defmethod serialize ((type (eql :vec3)) value &key (buffer *buffer*))
-  (assert (= (length value) 3))
-  (iter (for component in-vector value)
-        (serialize :float64 component :buffer buffer)))
-
-(defmethod unserialize ((type (eql :vec3)) &key (buffer *buffer*))
-  (iter (for i from 0 below 3)
-        (collect (unserialize :float64 :buffer buffer)
-          result-type 'vector)))
+(make-vec-serializer :vec3 :float64 3)
 
 (make-init-slot-serializer :entity-create
                            (make-client-entity) (:oid oid)
@@ -86,7 +78,7 @@
                             :vec3 veloc))
 
 (make-init-slot-serializer :entity-update-fields
-                           (lookup-client-entity) (:oid oid)
+                           (lookup-entity) (:oid oid)
                            (:vec3 pos
                             :vec3 dir
                             :vec3 veloc))

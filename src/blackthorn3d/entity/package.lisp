@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-entity
   (:nicknames :blt3d-ent)
-  (:use :iter :cl)
+  (:use :iter :cl :userial)
   (:export
 
    ))

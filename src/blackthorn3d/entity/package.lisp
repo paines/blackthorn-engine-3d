@@ -31,10 +31,14 @@
   (:export
 
    ;; entity.lisp
-   entity-client
-   entity-server
-   make-server-entity
-   make-client-entity
-   lookup-entity
+   :entity-client
+   :entity-server
+   :oid
+   :pos
+   :dir
+   :veloc
+   :make-server-entity
+   :make-client-entity
+   :lookup-entity
 
    ))

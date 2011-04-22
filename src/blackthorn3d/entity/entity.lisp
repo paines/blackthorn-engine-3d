@@ -63,8 +63,8 @@
   (with-slots (oid) object
     (remhash oid *global-oid-table*)))
 
-(defun make-server-entity (&rest initargs)
-  (intern-entity (apply #'make-instance 'entity-server initargs)))
+(defun make-server-entity (class &rest initargs)
+  (intern-entity (apply #'make-instance class initargs)))
 
 (defun make-client-entity (oid &rest initargs)
   (intern-entity (apply #'make-instance 'entity-client :oid oid initargs)))

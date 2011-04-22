@@ -87,6 +87,7 @@
                                      (:module main
                                               :components
                                               ((:file "package")
+                                               (:file "server")
                                                (:file "main"))
                                               :serial t)
                                      (:file "package"))

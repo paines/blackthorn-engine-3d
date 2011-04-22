@@ -57,14 +57,14 @@
                                               :serial t)
                                      (:module network
                                               :components
-                                              ((:file "package")
-                                               (:file "event"))
+                                              ((:file "package"))
                                               :serial t)
                                      (:module entity
                                               :components
                                               ((:file "package")
                                                (:file "serializer")
-                                               (:file "entity"))
+                                               (:file "entity")
+                                               (:file "event"))
                                               :serial t)
                                      (:module graphics
                                               :components

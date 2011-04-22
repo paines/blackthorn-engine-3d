@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-network)
+(in-package :blackthorn3d-entity)
 
-(defmethod serialize ((keyword (eql :event)) value &key buffer
-                      &allow-other-keys))
+(make-list-serializer :event-entity-create :entity-create)
+(make-list-serializer :event-entity-update-fields :entity-update-fields)

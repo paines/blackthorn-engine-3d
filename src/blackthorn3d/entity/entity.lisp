@@ -28,6 +28,9 @@
 (defclass entity ()
   ((oid
     :accessor oid)
+   (modified
+    :accessor modified
+    :initform nil)
    (pos
     :accessor pos
     :initarg :pos)
@@ -55,6 +58,10 @@
 (defun intern-entity (object)
   (with-slots (oid) object
     (setf (gethash oid *global-oid-table*) object)))
+
+(defun unintern-entity (object)
+  (with-slots (oid) object
+    (remhash oid *global-oid-table*)))
 
 (defun make-server-entity (&rest initargs)
   (intern-entity (apply #'make-instance 'entity-server initargs)))

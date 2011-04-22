@@ -39,6 +39,21 @@
                  (collect (unserialize ,elt-type :buffer ,buffer)
                           result-type 'vector)))))))
 
+(defmacro make-list-serializer (list-type elt-type
+                                &optional (count-type :uint32))
+  (with-gensyms (type value item count component)
+    (let ((buffer (make-symbol (symbol-name 'buffer))))
+      `(progn
+         (defmethod serialize ((,type (eql ,list-type)) ,value
+                               &key ,buffer)
+           (serialize ,count-type (length ,value) :buffer ,buffer)
+           (iter (for ,item in ,value)
+                 (serialize ,elt-type ,item :buffer ,buffer)))
+         (defmethod unserialize ((,type (eql ,list-type)) &key ,buffer)
+           (let ((,count (unserialize ,count-type :buffer ,buffer)))
+             (iter (repeat ,count)
+                   (unserialize ,elt-type :buffer ,buffer))))))))
+
 ;; Hoping that this abomination will be unnecessary in a future version
 ;; of userial....
 (defmacro make-init-slot-serializer (type (&rest factory)

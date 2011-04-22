@@ -87,6 +87,14 @@
 
 (defun main (&key (exit-when-done t))
   "Main entry point for the game. Deals with initialization, finalization, and the main game loop."
+  
+  ; switch to server mode, or else continue based on command line args
+  (let ((modes (cli-get-mode)))
+      (when (eq (first modes) :server)
+        (server-main)
+        (exit)
+  ))
+  
   ;; Initialization:
   (setup-paths)
   (load-dlls)

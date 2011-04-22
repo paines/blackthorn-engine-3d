@@ -30,4 +30,11 @@
   (:use :iter :cl :alexandria :userial)
   (:export
 
+   ;; entity.lisp
+   entity-client
+   entity-server
+   make-server-entity
+   make-client-entity
+   lookup-entity
+
    ))

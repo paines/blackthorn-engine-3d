@@ -50,6 +50,8 @@
     :initarg :oid)))
 
 (defvar *global-oid-table* (make-hash-table))
+(defvar *recently-created-server-entities* nil)
+(defvar *recently-removed-server-entities* nil)
 
 (let ((next-oid 0))
   (defun make-server-oid ()
@@ -63,8 +65,19 @@
   (with-slots (oid) object
     (remhash oid *global-oid-table*)))
 
+(defun remember-created-server-entity (object)
+  (push object *recently-created-server-entities*))
+
+(defun remember-removed-server-entity (object)
+  (push object *recently-removed-server-entities*))
+
+(defun forget-server-entity-changes ()
+  (setf *recently-created-server-entities* nil
+        *recently-removed-server-entities* nil))
+
 (defun make-server-entity (class &rest initargs)
-  (intern-entity (apply #'make-instance class initargs)))
+  (remember-created-server-entity
+   (intern-entity (apply #'make-instance class initargs))))
 
 (defun make-client-entity (oid &rest initargs)
   (intern-entity (apply #'make-instance 'entity-client :oid oid initargs)))

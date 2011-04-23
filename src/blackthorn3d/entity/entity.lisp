@@ -41,6 +41,17 @@
     :accessor veloc
     :initarg :veloc)))
 
+(defmacro track-modifed-slots (class &rest slots)
+  (with-gensyms (value object modified)
+    `(progn
+       ,@(iter (for slot in slots)
+               (collect
+                   `(defmethod (setf ,slot) :after (,value (,object ,class))
+                      (with-slots ((,modified modified)) ,object
+                        (setf ,modified t))))))))
+
+(track-modifed-slots entity pos dir veloc)
+
 (defclass entity-server (entity)
   ((oid
     :initform (make-server-oid))))
@@ -74,6 +85,7 @@
   object)
 
 (defun forget-server-entity-changes ()
+  ;; TODO: wipe all entities modified state
   (setf *recently-created-server-entities* nil
         *recently-removed-server-entities* nil))
 

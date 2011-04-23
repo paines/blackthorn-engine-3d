@@ -41,7 +41,7 @@
 
 (defmacro make-list-serializer (list-type elt-type
                                 &optional (count-type :uint32))
-  (with-gensyms (type value item count component)
+  (with-gensyms (type value item count)
     (let ((buffer (make-symbol (symbol-name 'buffer))))
       `(progn
          (defmethod serialize ((,type (eql ,list-type)) ,value

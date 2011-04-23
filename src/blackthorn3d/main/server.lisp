@@ -25,6 +25,35 @@
 
 (in-package :blackthorn3d-main)
 
-(defun server-main ()
-    (format t "hello world")
+
+
+(defclass ball (entity-server)
+    ()
 )
+
+(defgeneric update (a-server-entity))
+
+(defmethod update ((b ball))
+    (format t "I am ball #~a. I am at ~a~%" (oid b) (pos b))
+    (incf (pos b))
+    )
+
+
+(defvar *living-things* (list
+    (make-server-entity 'ball :pos 0)
+    (make-server-entity 'ball :pos -1000)
+))
+
+(defun next-frame ()
+    "Reset the state of things to begin processing the next frame"
+    (forget-server-entity-changes)
+)
+    
+(defun server-main ()
+    (loop
+        (next-frame)
+        (iter (for thing in *living-things*)
+           (update thing))
+           
+        ; insert network code call here
+))

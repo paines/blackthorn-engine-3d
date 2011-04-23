@@ -40,5 +40,6 @@
    :make-server-entity
    :make-client-entity
    :lookup-entity
+   :forget-server-entity-changes
 
    ))

@@ -66,10 +66,12 @@
     (remhash oid *global-oid-table*)))
 
 (defun remember-created-server-entity (object)
-  (push object *recently-created-server-entities*))
+  (push object *recently-created-server-entities*)
+  object)
 
 (defun remember-removed-server-entity (object)
-  (push object *recently-removed-server-entities*))
+  (push object *recently-removed-server-entities*)
+  object)
 
 (defun forget-server-entity-changes ()
   (setf *recently-created-server-entities* nil

@@ -84,6 +84,11 @@
                                                #+(or win32 windows)
                                                (:file "xbox360"))
                                               :serial t)
+                                     (:module physics
+                                              :components
+                                              ((:file "package")
+                                               (:file "physics"))
+                                              :serial t)
                                      (:module main
                                               :components
                                               ((:file "package")

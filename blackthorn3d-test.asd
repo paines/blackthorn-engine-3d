@@ -37,6 +37,7 @@
                         ((:module test
                                   :components
                                   ((:file "package")
-                                   (:file "math"))
+                                   (:file "math")
+                                   (:file "collisiontest"))
                                   :serial t))))
   :depends-on (:blackthorn3d :fiveam))

@@ -72,11 +72,12 @@
 ;;;
 
 (atdoc:generate-html-documentation
- '(:blt3d)
+ '(:blt3d-ent :blt3d-gfx :blt3d-input :blt3d-main :blt3d-math :blt3d-net :blt3d-phy :blt3d-res :blt3d-utils)
  +doc-dir+
  :index-title "Blackthorn API Reference"
  :heading "Blackthorn -- Lisp Game Engine")
 
+#+disable
 (atdoc:generate-latex-documentation
  '(:blt3d)
  +doc-dir+

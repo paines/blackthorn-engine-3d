@@ -57,7 +57,7 @@
 (defun socket-client-connect (host port &key timeout)
   "@short{Connects to the specified server.}
 
-   @arg[host]{A host specifier. Either a string (e.g. @code{\"127.0.0.1\") or
+   @arg[host]{A host specifier. Either a string (e.g. @code{\"127.0.0.1\"}) or
               a vector (e.g. @code{#(127 0 0 1)}).}
    @arg[port]{A port number.}
    @arg[timeout]{An integer number of seconds to wait for a connection.}
@@ -105,8 +105,7 @@
   "@short{Receives a single message.}
 
    @arg[buffer]{A userial buffer to store the incomming message.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]
-                {make-buffer}.}
+                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[timeout]{An integer number of seconds to wait for a message.}"
   (assert (boundp '*socket-server-listen*))
   (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
@@ -120,8 +119,7 @@
   "@short{Receives (and processes) all available messages.}
 
    @arg[buffer]{A userial buffer to store the incomming messages.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]
-                {make-buffer}.}
+                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[callback]{A function to the called for each available message. The
                   function should take two arguments: the buffer, and the
                   length in bytes of the data written into the buffer.}
@@ -138,8 +136,7 @@
   "@short{Receives a single message.}
 
    @arg[buffer]{A userial buffer to store the incomming message.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]
-                {make-buffer}.}
+                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[timeout]{An integer number of seconds to wait for a message.}"
   (assert (boundp '*socket-client-connection*))
   (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
@@ -151,7 +148,6 @@
   "@short{Sends a message.}
 
    @arg[buffer]{A userial buffer with the outgoing message.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]
-                {make-buffer}.}"
+                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}"
   (assert (boundp '*socket-client-connection*))
   (socket-send-message *socket-client-connection* buffer))

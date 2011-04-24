@@ -21,3 +21,4 @@ syntax: glob
 # build files
 bin
 build/quicklisp
+doc

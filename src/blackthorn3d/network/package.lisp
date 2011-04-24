@@ -30,4 +30,13 @@
   (:use :cl :iter :usocket :userial)
   (:export
 
+   ;; socket.lisp
+   :socket-server-start
+   :socket-server-connect
+   :socket-client-connect
+   :socket-server-receive-message
+   :socket-server-receive-all-messages
+   :socket-client-receive-message
+   :socket-client-send-message
+
    ))

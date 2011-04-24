@@ -49,7 +49,30 @@
     (forget-server-entity-changes)
 )
     
+(let ((client-count 0))
+    (defun wait-for-clients ()
+        (loop
+            (when (eq client-count 4)  ; TODO: should not hard-code # of players
+                (return t))
+            (format t "Clients: ~a~%" client-count)
+            (when (socket-server-connect :timeout 0)
+                (format t "~%Client joined!~%")
+                (incf client-count)
+            ))))
+    
 (defun server-main ()
+    ; TODO: Customizable server port
+    (format t "Please wait while the server starts up...~%")
+    (when (not (socket-server-start 9001))
+        (format t "Unable to start the server~%")
+        (exit)
+    )
+    
+    ; wait for clients to join
+    (format t "Waiting for clients to join~%")
+    (wait-for-clients)
+    (format t "All clients joined. Beginning game...~%")
+    
     (loop
         (next-frame)
         (iter (for thing in *living-things*)

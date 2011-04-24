@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-network
   (:nicknames :blt3d-net)
-  (:use :iter :cl :userial)
+  (:use :cl :iter :usocket :userial)
   (:export
 
    ))

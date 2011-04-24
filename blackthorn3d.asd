@@ -57,7 +57,8 @@
                                               :serial t)
                                      (:module network
                                               :components
-                                              ((:file "package"))
+                                              ((:file "package")
+                                               (:file "socket"))
                                               :serial t)
                                      (:module entity
                                               :components

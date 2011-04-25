@@ -50,8 +50,7 @@
    @return{@code{T} on success.}"
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (when (print (wait-for-input *socket-server-listen* :timeout timeout :ready-only t))
-    (format t "socket is ready to connect! state ~s~%" (usocket::state *socket-server-listen*))
+  (when (wait-for-input *socket-server-listen* :timeout timeout :ready-only t)
     (push (socket-accept *socket-server-listen*) *socket-server-connections*)
     t))
 

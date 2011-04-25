@@ -94,6 +94,7 @@
                                               :components
                                               ((:file "package")
                                                (:file "server")
+                                               (:file "client")
                                                (:file "main"))
                                               :serial t)
                                      (:file "package"))

@@ -92,8 +92,11 @@
   (let ((modes (cli-get-mode)))
       (when (eq (first modes) :server)
         (server-main)
-        (exit)
-  ))
+        (exit))
+      (when (eq (first modes) :client)
+        (client-main)
+        (exit))
+   )
   
   ;; Initialization:
   (setup-paths)

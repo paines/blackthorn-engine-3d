@@ -30,6 +30,11 @@
 (defvar *socket-client-connection*)
 (defvar *message-size-buffer* (make-buffer 4))
 
+;; TODO: Bugs!
+;; Handle client error due to connection failure.
+;; Handle server error due to client disconnect.
+;; Bug unserializing string on other side (client -> server).
+
 (defun socket-server-start (port)
   "@short{Starts a server listening on the specified port.} Note that
    @fun{socket-server-connect} must be used to actually connect to a client.
@@ -106,7 +111,9 @@
 
    @arg[buffer]{A userial buffer to store the incomming message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
-   @arg[timeout]{An integer number of seconds to wait for a message.}"
+   @arg[timeout]{An integer number of seconds to wait for a message.}
+   @return{The number of bytes read into @code{buffer}, or 0 if nothing was
+           available.}"
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (let ((ready (wait-for-input *socket-server-connections*
@@ -123,21 +130,25 @@
    @arg[callback]{A function to the called for each available message. The
                   function should take two arguments: the buffer, and the
                   length in bytes of the data written into the buffer.}
-   @arg[timeout]{An integer number of seconds to wait for any messages.}"
+   @arg[timeout]{An integer number of seconds to wait for any messages.}
+   @return{The number of messages received.}"
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (let ((ready (wait-for-input *socket-server-connections*
                                :timeout timeout :ready-only t)))
     (iter (for connection in ready)
           (let ((size (socket-receive-message connection buffer)))
-            (funcall callback buffer size)))))
+            (funcall callback buffer size)))
+    (length ready)))
 
 (defun socket-client-receive-message (buffer &key timeout)
   "@short{Receives a single message.}
 
    @arg[buffer]{A userial buffer to store the incomming message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
-   @arg[timeout]{An integer number of seconds to wait for a message.}"
+   @arg[timeout]{An integer number of seconds to wait for a message.}
+   @return{The number of bytes read into @code{buffer}, or 0 if nothing was
+           available.}"
   (assert (boundp '*socket-client-connection*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (if (wait-for-input *socket-client-connection* :timeout timeout)

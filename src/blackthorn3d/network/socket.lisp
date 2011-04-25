@@ -49,8 +49,9 @@
    @arg[timeout]{An integer number of seconds to wait for a connection.}
    @return{@code{T} on success.}"
   (assert (boundp '*socket-server-listen*))
-  (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
-  (when (wait-for-input *socket-server-listen* :timeout timeout)
+  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
+  (when (print (wait-for-input *socket-server-listen* :timeout timeout :ready-only t))
+    (format t "socket is ready to connect! state ~s~%" (usocket::state *socket-server-listen*))
     (push (socket-accept *socket-server-listen*) *socket-server-connections*)
     t))
 
@@ -63,7 +64,7 @@
    @arg[timeout]{An integer number of seconds to wait for a connection.}
    @return{@code{T} on success.}"
   (assert (not (boundp '*socket-client-connection*)))
-  (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
+  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (setf *socket-client-connection*
         (socket-connect host port
                         :protocol :stream
@@ -90,7 +91,7 @@
     (with-buffer buffer
       (buffer-rewind)
       (buffer-advance :amount size)
-      (read-sequence size (socket-stream connection))
+      (read-sequence buffer (socket-stream connection))
       (buffer-rewind)
       size)))
 
@@ -108,7 +109,7 @@
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[timeout]{An integer number of seconds to wait for a message.}"
   (assert (boundp '*socket-server-listen*))
-  (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
+  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (let ((ready (wait-for-input *socket-server-connections*
                                :timeout timeout :ready-only t)))
     (if ready
@@ -125,7 +126,7 @@
                   length in bytes of the data written into the buffer.}
    @arg[timeout]{An integer number of seconds to wait for any messages.}"
   (assert (boundp '*socket-server-listen*))
-  (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
+  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (let ((ready (wait-for-input *socket-server-connections*
                                :timeout timeout :ready-only t)))
     (iter (for connection in ready)
@@ -139,7 +140,7 @@
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[timeout]{An integer number of seconds to wait for a message.}"
   (assert (boundp '*socket-client-connection*))
-  (assert (integerp timeout) (timeout) "Please specify an integral timeout.")
+  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (if (wait-for-input *socket-client-connection* :timeout timeout)
       (socket-receive-message *socket-client-connection* buffer)
       0))

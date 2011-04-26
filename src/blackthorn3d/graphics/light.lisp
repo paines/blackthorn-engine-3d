@@ -23,66 +23,23 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-math
-  (:nicknames :blt3d-math)
-  (:use :cl :alexandria :iter :blt3d-utils)
-  (:export
-   
-   ;; vector.lisp
-   :make-vector4
-   :make-vector3
-   :make-point3
-   :make-vec3
-   :x :y :z :w
-   :r :g :b :a   
-   :dot
-   :cross 
-   :cross3
-   :vec4+ :vec4- :vec4* :vec4/
-   :vec3+ :vec3- :vec3* :vec3/
-   :vec-scale4 
-   :vec-scale3
-   :vec-neg4
-   :vec-neg3
-   :mag
-   :sq-mag
-   :sq
-   :norm4
-   :norm3
-   :magnitude
-   
-   ;; matrix.lisp
-   :make-matrix
-   :make-matrix3x3
-   :make-matrix4x4
-   :make-identity
-   :make-translate
-   :make-scale
-   :make-x-rot :make-y-rot :make-z-rot
-   :make-ortho-basis
-   :col
-   :row
-   :inner-product
-   :outer-product
-   :matrix-multiply-v
-   :matrix-multiply-m
-   :vector-multiply-m
-   :transpose
-   :reshape
+(in-package :blackthorn3d-graphics)
 
-   ;; quaternion.lisp
-   :make-quat
-   :make-quat-from-vw
-   :vec3->quat
-   :axis-rad->quat
-   :quat+ :quat*
-   :quat-norm
-   :quat-identity
-   :quat-conjugate
-   :quat-rotate-vec
-   :quat->matrix
+(defclass light ()
+  ((position
+    :accessor light-pos
+    :initarg :position
+    :initform (make-point3 0.0 0.0 0.0))
+   (diffuse
+    :accessor light-diff
+    :initarg :diffuse
+    :initform #(1.0 1.0 1.0 1.0))
+   (ambient
+    :accessor light-amb
+    :initarg :ambient
+    :initform #(0.0 0.0 0.0 1.0))))
 
-   ;; utils.lisp
-   :deg->rad
-
-   ))
+(defmethod init-light ((this light) gl-light)
+  (gl:light gl-light :position (light-pos this))
+  (gl:light gl-light :diffuse (light-diff this))
+  (gl:light gl-light :ambient (light-amb this)))

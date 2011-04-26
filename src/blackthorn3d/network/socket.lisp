@@ -100,13 +100,16 @@
    @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (let ((connection (socket-connect host port
-                                    :protocol :stream
-                                    :element-type '(unsigned-byte 8)
-                                    :timeout timeout)))
-    (setf *socket-client-connection* connection)
-    (push connection *socket-connections*)
-    (add-nid :server connection)))
+  (handler-bind ((socket-error
+                  #'(lambda (err)
+                      (return-from socket-client-connect (values nil err)))))
+    (let ((connection (socket-connect host port
+                                      :protocol :stream
+                                      :element-type '(unsigned-byte 8)
+                                      :timeout timeout)))
+      (setf *socket-client-connection* connection)
+      (push connection *socket-connections*)
+      (values (add-nid :server connection) nil))))
 
 ;;;
 ;;; Messages

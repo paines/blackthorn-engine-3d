@@ -108,6 +108,8 @@
         ; insert network code call here
         (socket-receive-all *my-buffer* #'handle-message 
             :timeout 0)
+            
+        ; this causes all kinds of interesting problems!
         ;(when (boundp '*last*)
         ;    (send-string *last* "A message for you"))
         (sleep 1/120)

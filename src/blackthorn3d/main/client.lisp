@@ -25,20 +25,8 @@
 
 (in-package :blackthorn3d-main)
 
-;(let ((my-buffer (userial:make-buffer)))
-;    (defun send-string (dst str)
-;        (userial:with-buffer my-buffer
-;           (userial:buffer-rewind)
-;           (userial:serialize :string str))
-;        (socket-message-send dst my-buffer)))
-
 (defvar *my-client-buffer*)
 
-;(defun read-string (b)
-;    (userial:with-buffer b
-;        (userial:buffer-rewind)
-;        (userial:unserialize :string)))
-        
 (defun handle-message-client (src b size)
   (let ((msg (read-string b)))
     (format t "Msg from ~a was ~a~%" src msg)))
@@ -46,11 +34,9 @@
 (defvar counter 0)
         
 (defun client-main ()
-
     (setf *my-client-buffer* (userial:make-buffer))
     (setf *random-state* (make-random-state t))
-    
-    
+        
     ; TODO: Don't hard code connection information
     (handler-case 
         (socket-client-connect "127.0.0.1" 9001 :timeout 1.0)
@@ -59,13 +45,7 @@
         (format t "Error: Connection refused.~%")
         (return-from client-main)))
         
-    ;(userial:with-buffer *my-buffer*
-    ;  (userial:buffer-rewind)
-    ;  (userial:serialize :string "Hello, world!"))
-    ;(socket-message-send :server *my-buffer*)
-    
     (loop
-      ;(format t "HELLO")
       (socket-receive-all *my-client-buffer* #'handle-message-client 
             :timeout 0)
       (sleep 1/60)

@@ -66,7 +66,7 @@
     
     (loop
       ;(format t "HELLO")
-      (socket-message-receive-all *my-client-buffer* #'handle-message-client 
+      (socket-receive-all *my-client-buffer* #'handle-message-client 
             :timeout 0)
       (sleep 1/60)
       (send-string :server (format nil "Msg #~a (rand: ~a)" counter (random 10)))

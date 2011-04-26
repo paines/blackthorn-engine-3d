@@ -74,7 +74,7 @@
         (userial:with-buffer my-buffer
            (userial:buffer-rewind)
            (userial:serialize :string str))
-        (socket-message-send dst my-buffer)))
+        (socket-send dst my-buffer)))
 
 (defvar *last*)
         
@@ -106,7 +106,7 @@
            (update thing))
            
         ; insert network code call here
-        (socket-message-receive-all *my-buffer* #'handle-message 
+        (socket-receive-all *my-buffer* #'handle-message 
             :timeout 0)
         ;(when (boundp '*last*)
         ;    (send-string *last* "A message for you"))

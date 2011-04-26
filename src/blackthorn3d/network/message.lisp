@@ -37,12 +37,13 @@
     (serialize :message message)
     (socket-send destination *message-buffer*)))
 
-(defun message-receive-all (&timeout timeout)
+(defun message-receive-all (&key timeout)
   (let (messages)
-    (labels ((callback (src buffer size)
+    (labels ((read-message (src buffer size)
+               (declare (ignore size))
                (with-buffer buffer
                  (push (list src (unserialize :message)) messages))))
-      (socket-receive-all *message-buffer* #'callback :timeout timeout)
+      (socket-receive-all *message-buffer* #'read-message :timeout timeout)
       (nreverse messages))))
 
 (defclass message ()
@@ -53,7 +54,8 @@
     :accessor message-value
     :initarg :value)))
 
-(make-enum-serializer :message-type (:string))
+;; Note: The bogus enum entry was needed to make this take up more than 0 bits.
+(make-enum-serializer :message-type (:string :something-else))
 
 (defun make-message (message-type)
   (make-instance
@@ -61,17 +63,15 @@
    :type message-type
    :value (userialize message-type)))
 
-(make-init-slot-serializer :message
-                           (make-message) (:message-type message-type)
-                           ())
-
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
-  (with-slots (type value) value
-    (serialize :message-type type)
-    (serialize type value)))
+  (with-buffer buffer
+    (with-slots (type value) value
+      (serialize :message-type type)
+      (serialize type value))))
 
 (defmethod unserialize ((mtype (eql :message)) &key (buffer *buffer*))
   (let ((message (make-instance 'message)))
-    (with-slots (type value) message
-      (setf type (unserialize :message-type))
-      (setf value (unserialize type)))))
+    (with-buffer buffer
+      (with-slots (type value) message
+        (setf type (unserialize :message-type))
+        (setf value (unserialize type))))))

@@ -60,33 +60,43 @@
   (speed_right :unsigned-short))
 
 (cffi:defcfun ("xbox360_poll" xbox360_poll) :void
+  "Call this once per step of the game, before accessing input."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_a" xbox360_get_a) :int
+  "Returns whether or not the A button is pressed."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_b" xbox360_get_b) :int
+  "Returns whether or not the B button is pressed."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_x" xbox360_get_x) :int
+  "Returns whether or not the X button is pressed."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_y" xbox360_get_y) :int
+  "Returns whether or not the Y button is pressed."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_lx" xbox360_get_lx) :short
+  "Returns left thumb's x-axis position."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_ly" xbox360_get_ly) :short
+  "Returns left thumb's y-axis position."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_rx" xbox360_get_rx) :short
+  "Returns right thumb's x-axis position."
   (controller :int))
 
 (cffi:defcfun ("xbox360_get_ry" xbox360_get_ry) :short
+  "Returns right thumb's y-axis position."
   (controller :int))
 
 (defun xbox360-vibrate (controller left-motor right-motor)
+    "Makes the xbox360 controller vibrate. Provide values in range [0,65535]."
 	(setf left-motor  (min left-motor 65535))   ; xbox360_vibrate takes shorts
 	(setf right-motor (min right-motor 65535))
 	(xbox360_vibrate controller left-motor right-motor))

@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-entity)
+(in-package :blackthorn3d-network)
 
 (defmacro make-vec-serializer (vec-type elt-type count)
   (with-gensyms (type value component)

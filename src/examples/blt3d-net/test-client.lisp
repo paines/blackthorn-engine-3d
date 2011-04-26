@@ -2,8 +2,7 @@
 (in-package :blt3d-net)
 
 (defvar *port* 12345)
-(defvar *my-send-buffer* (make-buffer))
-(defvar *my-recv-buffer* (make-buffer))
+(defvar *msg* (make-instance 'message :type :string :value "from client"))
 
 ;; connect
 (let ((server (socket-client-connect "localhost" *port* :timeout 10)))
@@ -12,16 +11,10 @@
       (blt3d-main::exit)))
 
 ;; send/receive
-(serialize :string "Hello world!" :buffer *my-send-buffer*)
-(socket-send :server *my-send-buffer*)
+(message-send :server *msg*)
 
-(with-buffer *my-recv-buffer*
-  (buffer-rewind))
-(socket-receive-all
- *my-recv-buffer*
- #'(lambda (nid buf size)
-     (format t "Message from ~a size ~a.~%" nid size)
-     (format t "Message contents: ~s~%" (unserialize :string :buffer buf)))
- :timeout 10)
+(let ((messages (message-receive-all :timeout 10)))
+  (iter (for (src message) in messages)
+        (format t "Received message: ~s~%" message)))
 
 (blt3d-main::exit)

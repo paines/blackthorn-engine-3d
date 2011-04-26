@@ -29,7 +29,20 @@
     ((kind 
         :accessor input-kind
         :initarg :kind
-        :documentation "Either :keyboard or :xbox")))
+        :documentation "Either :keyboard or :xbox"))
+    (:documentation "Holds the state of the input system."))
+        
+; TODO: Customizable up/down/left/right keys
+        
+(defgeneric input-move-x (system)
+   (:documentation 
+     "Handles x-axis input from either xbox for keyboard. Result is a number in 
+      the range [-1.0, 1.0]."))
+      
+(defgeneric input-move-y (system)
+   (:documentation 
+     "Handles y-axis input from either xbox for keyboard. Result is a number in 
+      the range [-1.0, 1.0]."))
         
 (defmethod input-move-x ((system input-system))
     (with-slots (kind) system
@@ -51,5 +64,9 @@
             (:xbox (/ (xbox360_get_ly 0) 65535))
             (otherwise 0))))
 
+(defgeneric set-controller (system type)
+    (:documentation 
+      "Sets the input system to use either :xbox or :keyboard controls."))
+            
 (defmethod set-controller ((system input-system) type)
     (setf (input-kind system) type))

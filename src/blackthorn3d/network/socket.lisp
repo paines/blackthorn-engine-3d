@@ -112,7 +112,7 @@
       (values (add-nid :server connection) nil))))
 
 ;;;
-;;; Messages
+;;; Buffers
 ;;;
 
 (defun socket-receive-message-size (connection)
@@ -145,7 +145,7 @@
       (write-sequence buffer (socket-stream connection))
       (force-output (socket-stream connection)))))
 
-(defun socket-message-receive-all (buffer callback &key timeout)
+(defun socket-receive-all (buffer callback &key timeout)
   "@short{Receives (and processes) all available messages.}
 
    @arg[buffer]{A userial buffer to store the incomming messages.
@@ -165,7 +165,7 @@
             (funcall callback (socket->nid connection) buffer size)))
     (length ready)))
 
-(defun socket-message-send (destination buffer)
+(defun socket-send (destination buffer)
   "@short{Sends a message.}
 
    @arg[destination]{A destination node ID. Use @code{:server} to send to

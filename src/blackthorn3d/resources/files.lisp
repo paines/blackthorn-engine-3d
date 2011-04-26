@@ -23,16 +23,14 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-resources
-  (:nicknames :blt3d-res)
-  (:use :cl :alexandria :iter :blt3d-utils)
-  (:export
+(in-package :blackthorn3d-resources)
 
-   ;; locate.lisp
-   :add-resource-path
-   :resolve-resource
+(defun file-contents (filename)
+  (with-open-file (filestream filename :direction :input)
+    (let ((string (make-string (file-length filestream))))
+      (read-sequence string filestream)
+      string)))
 
-   ;; files.lisp
-   :file-contents
-
-   ))
+(defun (setf file-contents) (string filename)
+  (with-open-file (filestream filename :direction :output)
+    (write-sequence string filestream)))

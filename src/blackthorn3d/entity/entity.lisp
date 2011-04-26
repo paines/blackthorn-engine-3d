@@ -109,7 +109,7 @@
 
 (make-uint-serializer :oid 4)
 
-(make-vec-serializer :vec3 :float64 3)
+(make-vec-serializer :vec3 :float32 3)
 
 (make-init-slot-serializer :entity-create
                            (make-client-entity) (:oid oid)

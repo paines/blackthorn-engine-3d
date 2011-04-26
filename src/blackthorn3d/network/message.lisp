@@ -23,16 +23,34 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-resources
-  (:nicknames :blt3d-res)
-  (:use :cl :alexandria :iter :blt3d-utils)
-  (:export
+(in-package :blackthorn3d-network)
 
-   ;; locate.lisp
-   :add-resource-path
-   :resolve-resource
+;;;
+;;; Messages
+;;;
 
-   ;; files.lisp
-   :file-contents
+(defvar *message-buffer* (make-buffer))
 
-   ))
+(defun message-send (destination message)
+  (with-buffer *message-buffer*
+    (buffer-rewind)
+    (serialize :message value)
+    (socket-send destination *message-buffer*)))
+
+(defun message-receive-all (&timeout timeout)
+  (let (messages)
+    (labels ((callback (src buffer size)))
+      (with-buffer buffer
+        (push (list src (unserialize :message))))
+      (socket-receive-all *message-buffer* #'callback :timeout timeout)
+      (nreverse messages))))
+
+(defclass message ()
+  ((type
+    :accessor message-type
+    :initarg :type)
+   (value
+    :accessor message-value
+    :initarg :value)))
+
+;(make-enum-serializer )

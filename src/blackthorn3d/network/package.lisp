@@ -34,7 +34,11 @@
    :socket-server-start
    :socket-server-connect
    :socket-client-connect
-   :socket-message-receive-all
-   :socket-message-send
+   :socket-receive-all
+   :socket-send
+
+   ;; message.lisp
+   :message-receive-all
+   :message-send
 
    ))

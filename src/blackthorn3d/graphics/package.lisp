@@ -67,6 +67,10 @@
    :update-fp-camera
    :update-tp-camera
 
+   ;; texture.lisp
+   :load-image
+   :image->texture2d
+
    ;; mesh.lisp
    :mesh
 

@@ -26,15 +26,18 @@
 (in-package :blackthorn3d-graphics)
 
 
-
 (defvar *main-cam* nil)
 (defvar *main-cam-quat* nil)
 (defvar *frustum* nil)
 
 (defparameter cube-mesh nil)
+(defparameter cube-mat nil)
+(defparameter cube-tex nil)
+(defparameter vao-cube nil)
 
 (defun init ()
-  (setf cube-mesh (car (load-dae #p"res/models/room_01.dae")))
+  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+  (setf cube-mesh (car (load-dae #p"res/models/orange-box2.dae")))
   (setf *main-cam* (make-instance 'camera 
                            :position (make-point3 0.0 0.0 5.0)
                            :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
@@ -54,21 +57,39 @@
   (gl:enable :depth-test)
   (gl:depth-func :lequal)
 
+  (setf cube-tex (image->texture2d 
+                  (load-image #p"res/images/test-tex.png")))
+  (setf cube-mat (make-instance 'material
+                                :ambient #(.5 .38 0.0 1.0)
+                                :diffuse #(1.0 .75 0.0 1.0)
+                                :tex cube-tex))
+
   (load-frstm *frustum*)
+
   (gl:load-identity)
 
   (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
   (gl:enable :lighting)
-  (gl:enable :light0))
+  (gl:enable :light0)
+
+  ;(setf vao-cube (make-vao-cube))
+  ;(gfx-init)
+  )
 
 
 (defun render-frame ()
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
-  (gl:color 1.0 .75 0.0)
-
+  (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
+  ;(gl:translate 3.0 0.0 0.0)
+  (gl:rotate -90 1.0 0.0 0.0)
+  (gl:scale .5 .5 .5)
+  (use-material cube-mat)
+  ;(draw-vao-cube vao-cube)
+  ;(gl:bind-texture :texture-2d cube-tex)
   (draw-object cube-mesh)
+  ;(gfx-draw)
 
   (gl:flush)
   (sdl:update-display))

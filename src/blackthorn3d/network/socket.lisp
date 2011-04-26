@@ -25,9 +25,39 @@
 
 (in-package :blackthorn3d-network)
 
+;;;
+;;; Node ID Mappings
+;;;
+
+(defvar *nid->socket* (make-hash-table))
+(defvar *socket->nid* (make-hash-table))
+
+(defun add-nid (nid socket)
+  (multiple-value-bind (value exists) (gethash nid *nid->socket*)
+    (assert (not exists)))
+  (setf (gethash nid *nid->socket*) socket
+        (gethash socket *socket->nid*) nid)
+  nid)
+
+(defun remove-nid (nid socket)
+  (multiple-value-bind (value exists) (gethash nid *nid->socket*)
+    (assert exists))
+  (remhash nid *nid->socket*)
+  (remhash socket *socket->nid*))
+
+(defun nid->socket (nid)
+  (gethash nid *nid->socket*))
+
+(defun socket->nid (socket)
+  (gethash socket *socket->nid*))
+
+;;;
+;;; Connections
+;;;
+
 (defvar *socket-server-listen*)
-(defvar *socket-server-connections* nil)
 (defvar *socket-client-connection*)
+(defvar *socket-connections* nil)
 (defvar *message-size-buffer* (make-buffer 4))
 
 ;; TODO: Bugs!
@@ -52,12 +82,13 @@
    be called once for each client that is to connect.
 
    @arg[timeout]{An integer number of seconds to wait for a connection.}
-   @return{@code{T} on success.}"
+   @return{The node ID for the client that connected.}"
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (when (wait-for-input *socket-server-listen* :timeout timeout :ready-only t)
-    (push (socket-accept *socket-server-listen*) *socket-server-connections*)
-    t))
+    (let ((connection (socket-accept *socket-server-listen*)))
+      (push connection *socket-connections*)
+      (add-nid (gensym (symbol-name 'client)) connection))))
 
 (defun socket-client-connect (host port &key timeout)
   "@short{Connects to the specified server.}
@@ -66,15 +97,23 @@
               a vector (e.g. @code{#(127 0 0 1)}).}
    @arg[port]{A port number.}
    @arg[timeout]{An integer number of seconds to wait for a connection.}
-   @return{@code{T} on success.}"
+   @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (setf *socket-client-connection*
-        (socket-connect host port
-                        :protocol :stream
-                        :element-type '(unsigned-byte 8)
-                        :timeout timeout))
-  t)
+  (handler-bind ((socket-error
+                  #'(lambda (err)
+                      (return-from socket-client-connect (values nil err)))))
+    (let ((connection (socket-connect host port
+                                      :protocol :stream
+                                      :element-type '(unsigned-byte 8)
+                                      :timeout timeout)))
+      (setf *socket-client-connection* connection)
+      (push connection *socket-connections*)
+      (values (add-nid :server connection) nil))))
+
+;;;
+;;; Messages
+;;;
 
 (defun socket-receive-message-size (connection)
   (with-buffer *message-size-buffer*
@@ -106,59 +145,38 @@
       (write-sequence buffer (socket-stream connection))
       (force-output (socket-stream connection)))))
 
-(defun socket-server-receive-message (buffer &key timeout)
-  "@short{Receives a single message.}
-
-   @arg[buffer]{A userial buffer to store the incomming message.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
-   @arg[timeout]{An integer number of seconds to wait for a message.}
-   @return{The number of bytes read into @code{buffer}, or 0 if nothing was
-           available.}"
-  (assert (boundp '*socket-server-listen*))
-  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (let ((ready (wait-for-input *socket-server-connections*
-                               :timeout timeout :ready-only t)))
-    (if ready
-        (socket-receive-message (first ready) buffer)
-        0)))
-
-(defun socket-server-receive-all-messages (buffer callback &key timeout)
+(defun socket-message-receive-all (buffer callback &key timeout)
   "@short{Receives (and processes) all available messages.}
 
    @arg[buffer]{A userial buffer to store the incomming messages.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
    @arg[callback]{A function to the called for each available message. The
-                  function should take two arguments: the buffer, and the
-                  length in bytes of the data written into the buffer.}
+                  function should take three arguments: the source node ID,
+                  the buffer, and the length in bytes of the data written
+                  into the buffer.}
    @arg[timeout]{An integer number of seconds to wait for any messages.}
    @return{The number of messages received.}"
-  (assert (boundp '*socket-server-listen*))
-  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (let ((ready (wait-for-input *socket-server-connections*
+  (assert *socket-connections*)
+  (assert (realp timeout) (timeout) "Please specify a real number timeout.")
+  (let ((ready (wait-for-input *socket-connections*
                                :timeout timeout :ready-only t)))
     (iter (for connection in ready)
           (let ((size (socket-receive-message connection buffer)))
-            (funcall callback buffer size)))
+            (funcall callback (socket->nid connection) buffer size)))
     (length ready)))
 
-(defun socket-client-receive-message (buffer &key timeout)
-  "@short{Receives a single message.}
-
-   @arg[buffer]{A userial buffer to store the incomming message.
-                See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}
-   @arg[timeout]{An integer number of seconds to wait for a message.}
-   @return{The number of bytes read into @code{buffer}, or 0 if nothing was
-           available.}"
-  (assert (boundp '*socket-client-connection*))
-  (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (if (wait-for-input *socket-client-connection* :timeout timeout)
-      (socket-receive-message *socket-client-connection* buffer)
-      0))
-
-(defun socket-client-send-message (buffer)
+(defun socket-message-send (destination buffer)
   "@short{Sends a message.}
 
+   @arg[destination]{A destination node ID. Use @code{:server} to send to
+                     the server from a client, @code{:broadcast} to send to
+                     all clients from the server, or a specific client's
+                     ID to send to that client.}
    @arg[buffer]{A userial buffer with the outgoing message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}"
-  (assert (boundp '*socket-client-connection*))
-  (socket-send-message *socket-client-connection* buffer))
+  (acond ((eql destination :broadcast)
+          (assert (boundp '*socket-server-listen*))
+          (error "unimplemented"))
+         ((nid->socket destination)
+          (socket-send-message it buffer))
+         (t (error "Unknown node ID ~s" destination))))

@@ -67,6 +67,11 @@
                                                (:file "entity")
                                                (:file "event"))
                                               :serial t)
+                                     (:module physics
+                                              :components
+                                              ((:file "package")
+                                               (:file "physics"))
+                                              :serial t)
                                      (:module graphics
                                               :components
                                               ((:file "package")
@@ -86,11 +91,6 @@
                                                (:file "input-control")
                                                #+(or win32 windows)
                                                (:file "xbox360"))
-                                              :serial t)
-                                     (:module physics
-                                              :components
-                                              ((:file "package")
-                                               (:file "physics"))
                                               :serial t)
                                      (:module main
                                               :components

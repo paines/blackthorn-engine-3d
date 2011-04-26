@@ -23,22 +23,34 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-network)
 
-(defpackage :blackthorn3d-network
-  (:nicknames :blt3d-net)
-  (:use :cl :iter :usocket :userial :blt3d-utils)
-  (:export
+;;;
+;;; Messages
+;;;
 
-   ;; socket.lisp
-   :socket-server-start
-   :socket-server-connect
-   :socket-client-connect
-   :socket-receive-all
-   :socket-send
+(defvar *message-buffer* (make-buffer))
 
-   ;; message.lisp
-   :message-receive-all
-   :message-send
+(defun message-send (destination message)
+  (with-buffer *message-buffer*
+    (buffer-rewind)
+    (serialize :message value)
+    (socket-send destination *message-buffer*)))
 
-   ))
+(defun message-receive-all (&timeout timeout)
+  (let (messages)
+    (labels ((callback (src buffer size)))
+      (with-buffer buffer
+        (push (list src (unserialize :message))))
+      (socket-receive-all *message-buffer* #'callback :timeout timeout)
+      (nreverse messages))))
+
+(defclass message ()
+  ((type
+    :accessor message-type
+    :initarg :type)
+   (value
+    :accessor message-value
+    :initarg :value)))
+
+;(make-enum-serializer )

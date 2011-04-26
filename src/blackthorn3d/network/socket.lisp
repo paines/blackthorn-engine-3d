@@ -34,6 +34,7 @@
 
 (defun add-nid (nid socket)
   (multiple-value-bind (value exists) (gethash nid *nid->socket*)
+    (declare (ignore value))
     (assert (not exists)))
   (setf (gethash nid *nid->socket*) socket
         (gethash socket *socket->nid*) nid)
@@ -41,6 +42,7 @@
 
 (defun remove-nid (nid socket)
   (multiple-value-bind (value exists) (gethash nid *nid->socket*)
+    (declare (ignore value))
     (assert exists))
   (remhash nid *nid->socket*)
   (remhash socket *socket->nid*))
@@ -85,10 +87,14 @@
    @return{The node ID for the client that connected.}"
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (when (wait-for-input *socket-server-listen* :timeout timeout :ready-only t)
-    (let ((connection (socket-accept *socket-server-listen*)))
-      (push connection *socket-connections*)
-      (add-nid (gensym (symbol-name 'client)) connection))))
+  (handler-case
+      (when (wait-for-input *socket-server-listen*
+                            :timeout timeout :ready-only t)
+        (let ((connection (socket-accept *socket-server-listen*)))
+          (push connection *socket-connections*)
+          (add-nid (gensym (symbol-name 'client)) connection)))
+    (socket-error (err)
+      (values nil err))))
 
 (defun socket-client-connect (host port &key timeout)
   "@short{Connects to the specified server.}
@@ -100,16 +106,16 @@
    @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
-  (handler-bind ((socket-error
-                  #'(lambda (err)
-                      (return-from socket-client-connect (values nil err)))))
-    (let ((connection (socket-connect host port
-                                      :protocol :stream
-                                      :element-type '(unsigned-byte 8)
-                                      :timeout timeout)))
-      (setf *socket-client-connection* connection)
-      (push connection *socket-connections*)
-      (values (add-nid :server connection) nil))))
+  (handler-case
+      (let ((connection (socket-connect host port
+                                        :protocol :stream
+                                        :element-type '(unsigned-byte 8)
+                                        :timeout timeout)))
+        (setf *socket-client-connection* connection)
+        (push connection *socket-connections*)
+        (values (add-nid :server connection) nil))
+    (socket-error (err)
+      (values nil err))))
 
 ;;;
 ;;; Buffers

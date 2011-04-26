@@ -59,7 +59,8 @@
                                               :components
                                               ((:file "package")
                                                (:file "serializer")
-                                               (:file "socket"))
+                                               (:file "socket")
+                                               (:file "message"))
                                               :serial t)
                                      (:module entity
                                               :components

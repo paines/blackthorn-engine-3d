@@ -54,7 +54,7 @@
 (let ((client-count 0))
     (defun wait-for-clients ()
         (loop
-            (when (eq client-count 1)  ; TODO: should not hard-code # of players
+            (when (eq client-count 2)  ; TODO: should not hard-code # of players
                 (return t))
             ;(format t "Clients: ~a~%" client-count)
             (format t ".")
@@ -65,8 +65,26 @@
     
 (defvar *my-buffer*)
 
-(defun handle-message (b size)
-    (format t "A message of ~a bytes was received.~%" size))
+(defun read-string (b)
+    (userial:with-buffer b
+      (userial:unserialize :string)))
+
+(let ((my-buffer (userial:make-buffer)))
+    (defun send-string (dst str)
+        (userial:with-buffer my-buffer
+           (userial:buffer-rewind)
+           (userial:serialize :string str))
+        (socket-message-send dst my-buffer)))
+
+(defvar *last*)
+        
+(defun handle-message (src b size)
+  (let ((msg (read-string b)))
+    (setf *last* src)
+    (format t "The message from ~a was ~a~%" src msg)
+    (send-string src (concatenate 'string "ACK: " msg))
+    #+disabled
+    (format t "A message of ~a bytes was received.~%" size)))
 
 (defun server-main ()
     ; TODO: Customizable server port
@@ -88,6 +106,9 @@
            (update thing))
            
         ; insert network code call here
-        (socket-server-receive-all-messages *my-buffer* #'handle-message 
+        (socket-message-receive-all *my-buffer* #'handle-message 
             :timeout 0)
+        ;(when (boundp '*last*)
+        ;    (send-string *last* "A message for you"))
+        (sleep 1/120)
 ))

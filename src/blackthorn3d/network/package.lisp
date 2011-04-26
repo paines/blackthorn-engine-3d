@@ -27,16 +27,14 @@
 
 (defpackage :blackthorn3d-network
   (:nicknames :blt3d-net)
-  (:use :cl :iter :usocket :userial)
+  (:use :cl :iter :usocket :userial :blt3d-utils)
   (:export
 
    ;; socket.lisp
    :socket-server-start
    :socket-server-connect
    :socket-client-connect
-   :socket-server-receive-message
-   :socket-server-receive-all-messages
-   :socket-client-receive-message
-   :socket-client-send-message
+   :socket-message-receive-all
+   :socket-message-send
 
    ))

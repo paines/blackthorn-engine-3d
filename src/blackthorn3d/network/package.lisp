@@ -27,8 +27,13 @@
 
 (defpackage :blackthorn3d-network
   (:nicknames :blt3d-net)
-  (:use :cl :iter :usocket :userial :blt3d-utils)
+  (:use :cl :alexandria :iter :usocket :userial :blt3d-utils)
   (:export
+
+   ;; serializer.lisp
+   :make-vec-serializer
+   :make-list-serializer
+   :make-init-slot-serializer
 
    ;; socket.lisp
    :socket-server-start

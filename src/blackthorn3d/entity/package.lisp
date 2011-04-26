@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-entity
   (:nicknames :blt3d-ent)
-  (:use :iter :cl :alexandria :userial)
+  (:use :iter :cl :alexandria :userial :blt3d-net)
   (:export
 
    ;; entity.lisp

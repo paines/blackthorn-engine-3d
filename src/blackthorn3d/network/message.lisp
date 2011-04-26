@@ -34,14 +34,14 @@
 (defun message-send (destination message)
   (with-buffer *message-buffer*
     (buffer-rewind)
-    (serialize :message value)
+    (serialize :message message)
     (socket-send destination *message-buffer*)))
 
 (defun message-receive-all (&timeout timeout)
   (let (messages)
-    (labels ((callback (src buffer size)))
-      (with-buffer buffer
-        (push (list src (unserialize :message))))
+    (labels ((callback (src buffer size)
+               (with-buffer buffer
+                 (push (list src (unserialize :message)) messages))))
       (socket-receive-all *message-buffer* #'callback :timeout timeout)
       (nreverse messages))))
 
@@ -53,4 +53,25 @@
     :accessor message-value
     :initarg :value)))
 
-;(make-enum-serializer )
+(make-enum-serializer :message-type (:string))
+
+(defun make-message (message-type)
+  (make-instance
+   'message
+   :type message-type
+   :value (userialize message-type)))
+
+(make-init-slot-serializer :message
+                           (make-message) (:message-type message-type)
+                           ())
+
+(defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
+  (with-slots (type value) value
+    (serialize :message-type type)
+    (serialize type value)))
+
+(defmethod unserialize ((mtype (eql :message)) &key (buffer *buffer*))
+  (let ((message (make-instance 'message)))
+    (with-slots (type value) message
+      (setf type (unserialize :message-type))
+      (setf value (unserialize type)))))

@@ -153,7 +153,7 @@
                   into the buffer.}
    @arg[timeout]{An integer number of seconds to wait for any messages.}
    @return{The number of messages received.}"
-  (assert (boundp '*socket-server-listen*))
+  (assert *socket-connections*)
   (assert (realp timeout) (timeout) "Please specify a real number timeout.")
   (let ((ready (wait-for-input *socket-connections*
                                :timeout timeout :ready-only t)))

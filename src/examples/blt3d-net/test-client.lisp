@@ -1,0 +1,8 @@
+(ql:quickload :blackthorn3d)
+(in-package :blt3d-net)
+(defvar *port* 12345)
+(format t "Connected to server ~a.~%" (socket-client-connect "localhost" *port* :timeout 10))
+(defvar *my-buffer* (make-buffer))
+(serialize :string "Hello world!" :buffer *my-buffer*)
+(socket-message-send :server *my-buffer*)
+(blt3d-main::exit)

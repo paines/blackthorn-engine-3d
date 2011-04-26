@@ -188,6 +188,8 @@
     gl-array))
 
 ;; constructs a mesh object from an xml-list geometry tag
+;; Builds the *source-ht* table
+;; Returns a mesh object
 (defun build-mesh (geometry-lst)
   (let ((id (get-attribute "id" (attributes geometry-lst)))
         (children (children (find-tag-in-children "mesh" geometry-lst))))

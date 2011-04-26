@@ -39,7 +39,13 @@
     :initarg :dir)
    (veloc
     :accessor veloc
-    :initarg :veloc)))
+    :initarg :veloc)
+   (shape
+    :accessor shape
+    :initarg :shape)
+   (bounding-volume
+    :accessor bounding-volume
+    :initarg :bv)))
 
 (defmacro track-modifed-slots (class &rest slots)
   (with-gensyms (value object modified)

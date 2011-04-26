@@ -82,13 +82,13 @@
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
-  ;(gl:translate 3.0 0.0 0.0)
-  (gl:rotate -90 1.0 0.0 0.0)
-  (gl:scale .5 .5 .5)
-  (use-material cube-mat)
-  ;(draw-vao-cube vao-cube)
-  ;(gl:bind-texture :texture-2d cube-tex)
-  (draw-object cube-mesh)
+  (gl:with-pushed-matrix
+    (gl:rotate -90 1.0 0.0 0.0)
+    (gl:scale .5 .5 .5)
+    (use-material cube-mat)
+    (draw-object cube-mesh))
+  
+  (draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
   ;(gfx-draw)
 
   (gl:flush)

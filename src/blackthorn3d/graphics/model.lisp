@@ -43,7 +43,9 @@
     :accessor model-matrix
     :initarg :matrix
     :initform (make-identity-matrix)
-    :documentation "the matrix that transforms from the model space to the space of the parent (world, unless a child in a scenegraph")
+    :documentation "the matrix that transforms from the model space
+                    to the space of the parent (world, unless a child 
+                    in a scenegraph")
    (material
     :accessor model-mat
     :initarg :material

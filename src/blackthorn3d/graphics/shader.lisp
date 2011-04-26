@@ -30,6 +30,9 @@
 ;;;
 
 (defun make-shader (vert frag) 
+  "@arg[vert]{string of vert shader}
+   @arg[frag]{string of frag shader}
+   @return{the shader program}"
   (let ((vs (gl:create-shader :vertex-shader))
         (fs (gl:create-shader :fragment-shader))
         (shader (gl:create-program)))

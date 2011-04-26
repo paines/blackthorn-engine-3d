@@ -53,7 +53,7 @@
     :accessor message-value
     :initarg :value)))
 
-(make-enum-serializer :message-type (:join :quit :ping :string))
+(make-enum-serializer :message-type (:string))
 
 (defun make-message (message-type)
   (make-instance

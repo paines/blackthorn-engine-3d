@@ -58,12 +58,13 @@
                                      (:module network
                                               :components
                                               ((:file "package")
-                                               (:file "socket"))
+                                               (:file "serializer")
+                                               (:file "socket")
+                                               (:file "message"))
                                               :serial t)
                                      (:module entity
                                               :components
                                               ((:file "package")
-                                               (:file "serializer")
                                                (:file "entity")
                                                (:file "event"))
                                               :serial t)

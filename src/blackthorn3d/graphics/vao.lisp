@@ -26,33 +26,9 @@
 (in-package :blackthorn3d-graphics)
 
 
-(defparameter *vertex-program*
-  "
+(defparameter *vertex-program* nil)
+(defparameter *fragment-program* nil)
 
-layout (location = 0) in vec3 in_Position;
-
-uniform mat4 projectionMatrix;
-uniform mat4 modelViewMatrix;
-
-
-void main()
-{
-    gl_Position = gl_ModelViewProjectionMatrix * vec4(in_Position, 1.0);
-  //gl_Position = projectionMatrix * modelViewMatrix * vec4(in_Position, 1.0);
-} 
-")
-
-
-(defparameter *fragment-program*
-  "
-out vec4 out_Color;
-
-void main() 
-{  
-  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-  //out_Color = vec4(1.0, 1.0, 1.0, 1.0);
-} 
-")
 
 (defvar vbo nil)
 (defvar ibo nil)
@@ -68,6 +44,31 @@ void main()
     gl-arr))
 
 (defun make-vao-cube ()
+  (setf *vertex-program* 
+"#version 330
+
+in vec3 in_Position;
+
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
+
+void main()
+{
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(in_Position, 1.0);
+  //gl_Position = cpmat * cmvmat * vec4(in_Position, 1.0);
+} 
+")
+  (setf *fragment-program* 
+"#version 330
+
+layout (location = 0) out vec4 out_Color;
+
+void main() 
+{  
+  out_Color = vec4(1.0, 1.0, 1.0, 1.0);
+} 
+" )
+
   (setf vbo (car (gl:gen-buffers 1)))
   (setf ibo (car (gl:gen-buffers 1)))
   (setf vao (gl:gen-vertex-array))
@@ -90,7 +91,33 @@ void main()
                    2 0 1 3)
                  :unsigned-short))
 
-  ;; First set up vertex buffer   
+  ;; First we need to create the shader program   
+  (let ((vs (gl:create-shader :vertex-shader))
+        (fs (gl:create-shader :fragment-shader)))
+
+    (print *vertex-program*)
+    (print *fragment-program*)
+    (setf program (gl:create-program))
+    (gl:shader-source vs *vertex-program*)
+    (gl:compile-shader vs)
+    (gl:shader-source fs *fragment-program*)
+    (gl:compile-shader fs)
+
+    (print (gl:get-shader-info-log vs))
+    (print (gl:get-shader-info-log fs))
+
+    (gl:attach-shader program vs)
+    (gl:attach-shader program fs)
+
+    ;; Not sure if I need to use this...
+    ;;(gl:bind-frag-data-location program 0 "out_Color")
+
+    (gl:link-program program)
+    (gl:bind-attrib-location program 0 "in_Position")
+    (gl:use-program program))
+
+
+  ;; Then set up vertex buffer   
   (gl:bind-buffer :array-buffer vbo)
   (gl:buffer-data :array-buffer :static-draw verts)
  
@@ -122,57 +149,46 @@ void main()
   (gl:enable-vertex-attrib-array 0)
   (gl:vertex-attrib-pointer 0 3 :float nil 0 (cffi:null-pointer))
    
-  (gl:bind-buffer :element-array-buffer ibo)
+  ;(gl:bind-buffer :element-array-buffer ibo)
    
   (gl:bind-vertex-array 0)
   (gl:bind-buffer :array-buffer 0)
-  (gl:bind-buffer :element-array-buffer 0)
-
-  ;; Now we need to create the shader program
-   
-  (let ((vs (gl:create-shader :vertex-shader))
-        (fs (gl:create-shader :fragment-shader)))
-
-    (print *vertex-program*)
-    (print *fragment-program*)
-    (setf program (gl:create-program))
-    (gl:shader-source vs *vertex-program*)
-    (gl:compile-shader vs)
-    (gl:shader-source fs *fragment-program*)
-    (gl:compile-shader fs)
-
-    (print (gl:get-shader-info-log vs))
-    (print (gl:get-shader-info-log fs))
-
-    (gl:attach-shader program vs)
-    (gl:attach-shader program fs)
-
-    ;; Not sure if I need to use this...
-    ;;(gl:bind-frag-data-location program 0 "out_Color")
-
-    (gl:link-program program)
-    (gl:use-program program))
-
-    ;; finally return it all
-    )
+  (gl:bind-buffer :element-array-buffer 0))
 
 (defun draw-vao ()
   (gl:use-program program)
 
+ 
   (let ((proj-mat (gl:get-float :projection-matrix)))
     (gl:uniform-matrix
      (gl:get-uniform-location program "projectionMatrix")
      4
-     (vector proj-mat) nil))
+     (vector proj-mat) 
+     nil))
+ #+disabled
+  (gl:uniform-matrix
+   (gl:get-uniform-location program "projectionMatrix")
+   4
+   (vector (frustum-projection-matrix *frustum*))
+   nil)
 
+ 
   (let ((mv-mat (gl:get-float :modelview-matrix)))
     (gl:uniform-matrix
      (gl:get-uniform-location program "modelViewMatrix")
      4
-     (vector mv-mat) nil))
+     (vector mv-mat) 
+     nil))
+ #+disbled
+  (gl:uniform-matrix
+   (gl:get-uniform-location program "modelViewMatrix")
+   4
+   (vector (camera-inverse *main-cam*))
+   nil)
   
   (gl:bind-vertex-array vao)
-  (gl:draw-elements :quads (gl:make-null-gl-array :unsigned-short)))
+  (gl:draw-elements :quads indices);(gl:make-null-gl-array :unsigned-short)
+  )
 
 (defun draw-vbo ()
   (gl:use-program program)
@@ -180,9 +196,9 @@ void main()
   (gl:vertex-attrib-pointer 0 3 :float nil 0 (cffi:null-pointer))
   (gl:enable-vertex-attrib-array 0)
 
-  (gl:bind-buffer :element-array-buffer ibo)
+  ;(gl:bind-buffer :element-array-buffer ibo)
 
-  (gl:draw-elements :quads (gl:make-null-gl-array :unsigned-short))
+  (gl:draw-elements :quads indices);(gl:make-null-gl-array :unsigned-short)
 
   (gl:bind-buffer :array-buffer 0)
   (gl:bind-buffer :element-array-buffer 0))

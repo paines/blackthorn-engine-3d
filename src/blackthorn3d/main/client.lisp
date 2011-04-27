@@ -82,8 +82,14 @@
                 ; this whole block is supposed to be run once per frame
               (progn
                 ; move camera based on keyboard/xbox controller
-                 (let ((rot-amt  (* -1 (input-move-x *input*)))
-                       (step-amt (*  1 (input-move-y *input*))))
+                
+                 (let* ((move-x (input-move-x *input*))
+                        (move-y (input-move-y *input*))
+                        (rot-amt  (* -1 move-x))
+                        (step-amt (*  1 move-y)))
+                       
+                    (send-string :server (format nil "move-x: ~a~%" move-x))
+                    (send-string :server (format nil "move-y: ~a~%" move-y))
                      
                      (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) (quat-rotate-vec
                         (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))

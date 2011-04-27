@@ -34,6 +34,10 @@
 (defvar counter 0)
         
 (defun client-main ()
+    (setup-paths)
+    (load-dlls)
+    (blt3d-gfx:init)
+    
     (setf *my-client-buffer* (userial:make-buffer))
     (setf *random-state* (make-random-state t))
         
@@ -45,10 +49,56 @@
         (format t "Error: Connection refused.~%")
         (return-from client-main)))
         
-    (loop
-      (socket-receive-all *my-client-buffer* #'handle-message-client 
-            :timeout 0)
-      (sleep 1/60)
-      (send-string :server (format nil "Msg #~a (rand: ~a)" counter (random 10)))
-      (incf counter))
+    (setf mt19937:*random-state* (mt19937:make-random-state t))
+        
+    (unwind-protect
+    (catch 'main-init
+      (sdl:with-init ()
+        (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
+                  :title-caption "Test" :icon-caption "Test")
+        (blt3d-gfx:prepare-scene)
+        
+        (let ((input-queue (make-instance 'containers:basic-queue)))
+        (catch 'main-loop
+          (sdl:with-events ()
+            (:quit-event () t)
+            (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
+                (when (sdl:key= k :sdl-key-return)
+                  (if (eql (input-kind *input*) :keyboard)
+                    (set-controller *input* :xbox)
+                    (set-controller *input* :keyboard)))
+                                        ;(containers:enqueue
+                                        ; input-queue
+                                        ; (make-instance 'key-event :host (hostname) :type :key-down :key k
+                                        ;                :mod m :mod-key m-k :unicode u))
+                             )
+            (:key-up-event (:key k :mod m :mod-key m-k :unicode u)
+                                        ;(containers:enqueue
+                                        ; input-queue
+                                        ; (make-instance 'key-event :host (hostname) :type :key-up :key k
+                                        ;                :mod m :mod-key m-k :unicode u))
+                           )
+            (:idle ()
+                ; this whole block is supposed to be run once per frame
+              (progn
+                ; move camera based on keyboard/xbox controller
+                 (let ((rot-amt  (* -1 (input-move-x *input*)))
+                       (step-amt (*  1 (input-move-y *input*))))
+                     
+                     (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) (quat-rotate-vec
+                        (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))
+                        (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
+                     (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                           (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                                  (vec-scale4 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) step-amt)) )
+                     )
+                         
+                (blt3d-gfx:render-frame)
+                
+                (socket-receive-all *my-client-buffer* #'handle-message-client 
+                    :timeout 0)
+                (send-string :server (format nil "Msg #~a (rand: ~a)" counter (random 10)))
+                (incf counter)
+                    
+            ))))))))
 )

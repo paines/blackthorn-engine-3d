@@ -49,4 +49,12 @@
    (material
     :accessor model-mat
     :initarg :material
+    :initform nil
     :documentation "the material to use for the mesh")))
+
+(defmethod draw-object ((this model-shape))
+  (with-slots (material mesh matrix) this
+    (gl:with-pushed-matrix
+        (when matrix (gl:mult-matrix matrix))
+      (when material (use-material material))
+      (draw-object mesh))))

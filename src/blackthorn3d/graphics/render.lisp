@@ -37,6 +37,7 @@
 (defparameter shader nil)
 
 (defun init ()
+  "Called to initialize the graphics subsystem"
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
   (setf cube-mesh (car (load-dae #p"res/models/orange-box2.dae")))
   (setf *main-cam* (make-instance 'camera 
@@ -49,6 +50,8 @@
 
 
 (defun prepare-scene ()
+  "Called after sdl is initialized, before first frame is drawn
+   or when changing the 'scene' settings"
   (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)
@@ -86,6 +89,8 @@
 
 
 (defun render-frame ()
+  "Entry point for renderer, called by game loop.
+   Will clear, draw, and swap buffer"
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
@@ -97,7 +102,7 @@
     (gl:scale .5 .5 .5)
     (use-material cube-mat)
     (draw-object cube-mesh))
-  
+
   ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
   ;(gfx-draw)
   ;(draw-vao)

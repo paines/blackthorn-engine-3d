@@ -81,6 +81,7 @@
                                                (:file "shader")
                                                (:file "material")
                                                (:file "mesh")
+                                               (:file "model")
                                                (:file "xmls-helpers")
                                                (:file "dae-loader")
                                                (:file "draw")

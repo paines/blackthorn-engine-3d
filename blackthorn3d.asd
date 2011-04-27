@@ -53,7 +53,8 @@
                                      (:module resources
                                               :components
                                               ((:file "package")
-                                               (:file "locate"))
+                                               (:file "locate")
+                                               (:file "files"))
                                               :serial t)
                                      (:module network
                                               :components
@@ -77,11 +78,13 @@
                                               :components
                                               ((:file "package")
                                                (:file "texture")
+                                               (:file "shader")
                                                (:file "material")
                                                (:file "mesh")
                                                (:file "xmls-helpers")
                                                (:file "dae-loader")
                                                (:file "draw")
+                                               (:file "vao")
                                                (:file "frustum")
                                                (:file "camera")
                                                (:file "render"))

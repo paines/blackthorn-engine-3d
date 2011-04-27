@@ -34,6 +34,7 @@
 (defparameter cube-mat nil)
 (defparameter cube-tex nil)
 (defparameter vao-cube nil)
+(defparameter shader nil)
 
 (defun init ()
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
@@ -68,13 +69,19 @@
 
   (gl:load-identity)
 
-  (gl:light :light0 :position '(3.0 3.0 0.0 1.0))
+  (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  (gl:enable :lighting)
+  ;(gl:enable :lighting)
   (gl:enable :light0)
 
-  ;(setf vao-cube (make-vao-cube))
-  ;(gfx-init)
+  (setf shader (make-shader (blt3d-res:file-contents
+                             (blt3d-res:resolve-resource 
+                              #p "res/shaders/FinalProjShader.vert"))
+                            (blt3d-res:file-contents
+                             (blt3d-res:resolve-resource
+                              #p "res/shaders/FinalProjShader.frag"))))
+  
+  (make-vao-cube)
   )
 
 
@@ -82,14 +89,19 @@
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
+  ;(gl:use-program shader)
+  (gl:use-program 0)
+  ;#+disabled
   (gl:with-pushed-matrix
     (gl:rotate -90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
     (use-material cube-mat)
     (draw-object cube-mesh))
   
-  (draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
+  ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
   ;(gfx-draw)
-
+  ;(draw-vao)
+  ;(draw-vbo)
+  
   (gl:flush)
   (sdl:update-display))

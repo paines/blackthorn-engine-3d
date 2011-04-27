@@ -141,34 +141,6 @@
   ;(gl:bind-vertex-array 0)
   (gl:flush))
 
-(defparameter *vertices*
-  '(0.0 1.0
-    -1.0 0.0
-    1.0 0.0))
-
-(defvar *buffer-array*)
-(defvar *buffer*)
-
-(defun gfx-draw ()
-  (gl:bind-buffer :array-buffer *buffer*)
-  (gl:enable-client-state :vertex-array)
-  ;(gl:vertex-pointer 2 :float 0 0)
-  (gl:draw-arrays :triangles 0 (length *vertices*))
-  (gl:disable-client-state :vertex-array))
-
-(defun gfx-init ()
-  (setf *buffer-array* (gl:alloc-gl-array :float (length *vertices*)))
-  (loop for v in *vertices*
-       for i from 0 do
-       (setf (gl:glaref *buffer-array* i) v))
-  (setf *buffer* (car (gl:gen-buffers 1)))
-  (gl:bind-buffer :array-buffer *buffer*)
-  ;(gl:buffer-data :array-buffer :stream-draw (gl:gl-array-pointer *buffer-array*))
-  ;(gl:buffer-sub-data :array-buffer *buffer-array*)
-  (gl:bind-buffer :array-buffer 0))
-
-(setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
-
 (defmethod draw-object ((m mesh))
   (with-slots (vert-data index-data) m
     (gl:enable-client-state :vertex-array)

@@ -38,7 +38,6 @@
 
 (defun init ()
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
-  (setf cube-mesh (car (load-dae #p"res/models/orange-box2.dae")))
   (setf *main-cam* (make-instance 'camera 
                            :position (make-point3 0.0 0.0 5.0)
                            :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
@@ -74,6 +73,7 @@
   ;(gl:enable :lighting)
   (gl:enable :light0)
 
+  #+disabled
   (setf shader (make-shader (blt3d-res:file-contents
                              (blt3d-res:resolve-resource 
                               #p "res/shaders/FinalProjShader.vert"))
@@ -88,10 +88,20 @@
 (defun render-frame ()
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
+
+  #+disabled
+  (progn
+    (format t "~%ModelViewMatrix: ~%")
+    (print (gl:get-float :modelview-matrix))
+    (print (camera-inverse *main-cam*))
+    (format t "~%ProjectionMatrix: ~%")
+    (print (gl:get-float :projection-matrix))
+    (print (frustum-projection-matrix *frustum*)))
+
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   ;(gl:use-program shader)
-  (gl:use-program 0)
-  ;#+disabled
+  ;(gl:use-program 0)
+  #+disabled
   (gl:with-pushed-matrix
     (gl:rotate -90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
@@ -100,7 +110,7 @@
   
   ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
   ;(gfx-draw)
-  ;(draw-vao)
+  (draw-vao)
   ;(draw-vbo)
   
   (gl:flush)

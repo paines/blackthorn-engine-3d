@@ -246,3 +246,26 @@
       (let ((new-mat (make-matrix size)))
         (iter (for i below new-sz)
               (setf (row-major-aref new-mat i) (row-major-aref mat i)))))))
+
+(defun make-projection (left right top bottom near far)
+  (if (and (= top (- bottom))
+           (= left (- right)))
+      ;; Symetrical frustum (yay!)
+      (make-matrix4x4
+       `(( ,(/ near right) 0.0 0.0 0.0 )
+         ( 0.0 ,(/ near top) 0.0 0.0 )
+         ( 0.0 0.0 ,(/ (- (+ far near)) (- far near)) -1.0 )
+         ( 0.0 0.0 ,(/ (- (* 2 far near)) (- far near)) 0.0 )))
+      ;; Significantly less yay...
+      (let ((n2 (* near 2))
+            (r-l (- right left))
+            (t-b (- top bottom))
+            (f-n (- far near)))
+        (make-matrix4x4
+         `(( ,(/ n2 r-l) 0.0 0.0 0.0)
+           ( 0.0 ,(/ n2 t-b) 0.0 0.0)
+           ( ,(/ (+ right left) r-l) 
+              ,(/ (+ top bottom) t-b) 
+              ,(/ (- (+ far near)) f-n) 
+              -1.0)
+           ( 0.0 0.0 ,(/ (- (* 2 far near)) f-n) 0.0))))))

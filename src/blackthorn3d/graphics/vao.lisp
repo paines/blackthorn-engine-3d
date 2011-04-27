@@ -55,7 +55,6 @@ uniform mat4 modelViewMatrix;
 void main()
 {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(in_Position, 1.0);
-  //gl_Position = cpmat * cmvmat * vec4(in_Position, 1.0);
 } 
 ")
   (setf *fragment-program* 
@@ -109,9 +108,6 @@ void main()
     (gl:attach-shader program vs)
     (gl:attach-shader program fs)
 
-    ;; Not sure if I need to use this...
-    ;;(gl:bind-frag-data-location program 0 "out_Color")
-
     (gl:link-program program)
     (gl:bind-attrib-location program 0 "in_Position")
     (gl:use-program program))
@@ -120,36 +116,22 @@ void main()
   ;; Then set up vertex buffer   
   (gl:bind-buffer :array-buffer vbo)
   (gl:buffer-data :array-buffer :static-draw verts)
- 
-  (let ((arr (gl:map-buffer-to-gl-array :array-buffer :read-only :float)))
-    (iter (for i below 24)
-          (format t "~A: ~A~%" i (gl:glaref arr i)))
-    (gl:unmap-buffer :array-buffer))
-
   (gl:bind-buffer :array-buffer 0)
 
   ;; Now the element buffer   
   (gl:bind-buffer :element-array-buffer ibo)
   (gl:buffer-data :element-array-buffer :static-draw indices)
-
-  (let ((arr (gl:map-buffer-to-gl-array :element-array-buffer 
-                                        :read-only 
-                                        :unsigned-short)))
-    (format t "and now the elements~%")
-    (iter (for i below 24)
-          (format t "~A: ~A~%" i (gl:glaref arr i)))
-    (gl:unmap-buffer :element-array-buffer))
-
   (gl:bind-buffer :element-array-buffer 0)
 
   ;; Now we setup the vertex array object
-  (gl:bind-vertex-array vao)
-    
-  (gl:bind-buffer :array-buffer vbo)   
+  (gl:bind-vertex-array vao)    
+  (gl:bind-buffer :array-buffer vbo)
   (gl:enable-vertex-attrib-array 0)
   (gl:vertex-attrib-pointer 0 3 :float nil 0 (cffi:null-pointer))
    
-  ;(gl:bind-buffer :element-array-buffer ibo)
+  ;; This doesn't seem to work...it's fine if you pass in a 
+  ;; gl-array to draw-elements, using a vertex buffer is not
+  ;;(gl:bind-buffer :element-array-buffer ibo)
    
   (gl:bind-vertex-array 0)
   (gl:bind-buffer :array-buffer 0)
@@ -157,8 +139,6 @@ void main()
 
 (defun draw-vao ()
   (gl:use-program program)
-
- 
   (let ((proj-mat (gl:get-float :projection-matrix)))
     (gl:uniform-matrix
      (gl:get-uniform-location program "projectionMatrix")
@@ -171,7 +151,6 @@ void main()
    4
    (vector (frustum-projection-matrix *frustum*))
    nil)
-
  
   (let ((mv-mat (gl:get-float :modelview-matrix)))
     (gl:uniform-matrix
@@ -188,6 +167,7 @@ void main()
   
   (gl:bind-vertex-array vao)
   (gl:draw-elements :quads indices);(gl:make-null-gl-array :unsigned-short)
+  (gl:bind-vertex-array 0)
   )
 
 (defun draw-vbo ()

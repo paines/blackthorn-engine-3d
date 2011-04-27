@@ -37,9 +37,9 @@
         (fs (gl:create-shader :fragment-shader))
         (shader (gl:create-program)))
                          
-    (gl:shader-source vs (vert))
+    (gl:shader-source vs vert)
     (gl:compile-shader vs)
-    (gl:shader-source fs (frag))
+    (gl:shader-source fs frag)
     (gl:compile-shader fs)
 
     (print (gl:get-shader-info-log vs))

@@ -81,7 +81,7 @@
                              (blt3d-res:resolve-resource
                               #p "res/shaders/FinalProjShader.frag"))))
   
-  (make-vao-cube)
+  ;(make-vao-cube)
   )
 
 
@@ -100,8 +100,8 @@
 
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   ;(gl:use-program shader)
-  ;(gl:use-program 0)
-  #+disabled
+  (gl:use-program 0)
+  ;#+disabled
   (gl:with-pushed-matrix
     (gl:rotate -90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
@@ -110,7 +110,7 @@
   
   ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
   ;(gfx-draw)
-  (draw-vao)
+  ;(draw-vao)
   ;(draw-vbo)
   
   (gl:flush)

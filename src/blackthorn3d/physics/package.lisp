@@ -27,11 +27,13 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial)
+  (:use :iter :cl :alexandria :userial :blt3d-math)
   (:export
 
    ;; physics.lisp
    :sphere
    :collide-p
+   :find-bounding-points
+   :make-bounding-volume
 
    ))

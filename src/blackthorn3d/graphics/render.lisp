@@ -39,8 +39,10 @@
 (defun init ()
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
   (setf *main-cam* (make-instance 'camera 
-                           :position (make-point3 0.0 0.0 5.0)
-                           :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
+                           :position (make-point3 0.0 50.0 0.0)
+                           :direction (make-vec3 0.0 -1.0 0.0)
+                           :up (make-vec3 0.0 0.0 1.0)
+                           #+disabled(norm4 (vec4- (make-vec3 0.0 0.0 0.0)
                                                     (make-vec3 0.0 0.0 5.0)))
                            :mode :third-person ))
   (setf *main-cam-quat* (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100)))
@@ -66,12 +68,11 @@
                                 :tex cube-tex))
 
   (load-frstm *frustum*)
-
   (gl:load-identity)
 
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  ;(gl:enable :lighting)
+  (gl:enable :lighting)
   (gl:enable :light0)
 
   #+disabled
@@ -86,33 +87,31 @@
   )
 
 
-(defun render-frame ()
+(defun render-frame (entities)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
-
-  #+disabled
-  (progn
-    (format t "~%ModelViewMatrix: ~%")
-    (print (gl:get-float :modelview-matrix))
-    (print (camera-inverse *main-cam*))
-    (format t "~%ProjectionMatrix: ~%")
-    (print (gl:get-float :projection-matrix))
-    (print (frustum-projection-matrix *frustum*)))
 
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   ;(gl:use-program shader)
   (gl:use-program 0)
-  ;#+disabled
+ 
+  (dolist (e entities)
+    (with-slots ((pos blt3d-ent:pos) 
+                 (dir blt3d-ent:dir) 
+                 (up blt3d-ent:up) 
+                 (shape blt3d-ent:shape)) e
+      (let ((x (cross up dir)))
+        (gl:with-pushed-matrix
+          (gl:mult-matrix (make-ortho-basis x up dir))
+          (gl:translate (x pos) (y pos) (z pos))
+          (draw-object shape)))))
+
+  #+disabled
   (gl:with-pushed-matrix
     (gl:rotate 90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
     (use-material cube-mat)
     (draw-object cube-mesh))
-  
-  ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
-  ;(gfx-draw)
-  ;(draw-vao)
-  ;(draw-vbo)
   
   (gl:flush)
   (sdl:update-display))

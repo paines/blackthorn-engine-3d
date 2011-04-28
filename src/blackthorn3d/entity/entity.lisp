@@ -37,15 +37,15 @@
    (dir
     :accessor dir
     :initarg :dir)
+   (up
+    :accessor up
+    :initarg :up)
    (veloc
     :accessor veloc
     :initarg :veloc)
    (shape
     :accessor shape
-    :initarg :shape)
-   (bounding-volume
-    :accessor bounding-volume
-    :initarg :bv)))
+    :initarg :shape)))
 
 (defmacro track-modifed-slots (class &rest slots)
   (with-gensyms (value object modified)
@@ -60,7 +60,10 @@
 
 (defclass entity-server (entity)
   ((oid
-    :initform (make-server-oid))))
+    :initform (make-server-oid))
+   (bounding-volume
+    :accessor bounding-volume
+    :initarg :bv)))
 
 (defclass entity-client (entity)
   ((oid

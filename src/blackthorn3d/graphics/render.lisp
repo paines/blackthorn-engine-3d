@@ -44,7 +44,8 @@
                                                     (make-vec3 0.0 0.0 5.0)))
                            :mode :third-person ))
   (setf *main-cam-quat* (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100)))
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
+  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
+  (setf cube-mesh (car (load-dae #p "res/models/orange-box2.dae"))))
 
 
 (defun prepare-scene ()
@@ -103,7 +104,7 @@
   (gl:use-program 0)
   ;#+disabled
   (gl:with-pushed-matrix
-    (gl:rotate -90 1.0 0.0 0.0)
+    (gl:rotate 90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
     (use-material cube-mat)
     (draw-object cube-mesh))

@@ -43,20 +43,29 @@
 (in-suite blackthorn3d-phy)
 
 (test collide-p
-  (let ((s1 (make-instance 'sphere :x 0 :y 0 :z 0 :r 5))
-        (s2 (make-instance 'sphere :x 1 :y 1 :z 1 :r 2)))
+  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 5))
+        (s2 (make-instance 'sphere :pos (make-vector3 1 1 1) :rad 2)))
     (is (eql (collide-p s1 s2) t)))
     ; expect T
-  (let ((s1 (make-instance 'sphere :x 0 :y 0 :z 0 :r 1))
-        (s2 (make-instance 'sphere :x 3 :y 3 :z 3 :r 2)))
+  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 1))
+        (s2 (make-instance 'sphere :pos (make-vector3 3 3 3) :rad 2)))
     (is (eql (collide-p s1 s2) nil)))
     ; expect NIL
-  (let ((s1 (make-instance 'sphere :x 0 :y 0 :z 0 :r 1))
-        (s2 (make-instance 'sphere :x 0 :y 2 :z 0 :r 1)))
-    (is (eql (collide-p s1 s2) nil
-         )))
+  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 1))
+        (s2 (make-instance 'sphere :pos (make-vector3 0 2 0) :rad 1)))
+    (is (eql (collide-p s1 s2) nil)))
     ; expect NIL
-  (let ((s1 (make-instance 'sphere :x 0 :y 0 :z 0 :r 1))
-        (s2 (make-instance 'sphere :x 0 :y 1.9 :z 0 :r 1)))
+  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0)   :rad 1))
+        (s2 (make-instance 'sphere :pos (make-vector3 0 1.9 0) :rad 1)))
     (is (eql (collide-p s1 s2) t))))
     ; expect T
+
+(test find-bounding-points
+      (let* ((vert-array (vector (make-vector3 1 1 1)
+                                 (make-vector3 0 2 2)
+                                 (make-vector3 3 0 3)
+                                 (make-vector3 3 1 0)))
+             (pos-list (find-bounding-points vert-array)))
+        (is (equalp (aref pos-list 0) #(0 0 0)))
+	(is (equalp (aref pos-list 1) #(3 2 3)))) )
+	

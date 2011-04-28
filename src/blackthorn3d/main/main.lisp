@@ -124,7 +124,14 @@
       (blt3d-gfx:prepare-scene)
       
       ;; Main loop:
-      (let ((input-queue (make-instance 'containers:basic-queue)))
+      (let ((input-queue (make-instance 'containers:basic-queue))
+            (box-entity (make-server-entity 'entity-server 
+                                            :pos (make-point3 0.0 0.0 0.0)
+                                            :dir (make-vec3 1.0 0.0 0.0) 
+                                            :up  (make-vec3 0.0 1.0 0.0)
+                                            :shape (make-instance 'blt3d-gfx:model-shape
+                                                                  :mesh (car (blt3d-gfx:load-dae #p "res/models/orange-box2.dae"))))))
+
         ;(camera-orbit! cam 0.0 -0.2 5.0)
         (catch 'main-loop
                                         ;(net-game-start #'main-loop-abort-handler)
@@ -156,6 +163,7 @@
                      (xbox360_poll 0)
                                                      
                      ; move camera based on keyboard/xbox controller
+                     #+disabled
                      (let ((rot-amt  (* -1 (input-move-x *input*)))
                            (step-amt (*  1 (input-move-y *input*))))
                          
@@ -166,8 +174,11 @@
                                (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
                                       (vec-scale4 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) step-amt)) )
                          )
-                    
-                    (blt3d-gfx:render-frame)
+                     (let ((z-amt (input-move-x *input*))
+                           (x-amt (input-move-y *input*)))
+                       (setf (pos box-entity) (vec4+ (pos box-entity) (make-vec3 (float x-amt) 0.0 (float z-amt)))))
+
+                     (blt3d-gfx:render-frame (list box-entity))
                     
                      #+disabled
                      (let ((x (* 2 (abs (xbox360_get_lx 0))))

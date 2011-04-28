@@ -39,14 +39,16 @@
 (defun init ()
   "Called to initialize the graphics subsystem"
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
-  (setf cube-mesh (car (load-dae #p"res/models/orange-box2.dae")))
   (setf *main-cam* (make-instance 'camera 
-                           :position (make-point3 0.0 0.0 5.0)
-                           :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
+                           :position (make-point3 0.0 50.0 0.0)
+                           :direction (make-vec3 0.0 -1.0 0.0)
+                           :up (make-vec3 0.0 0.0 1.0)
+                           #+disabled(norm4 (vec4- (make-vec3 0.0 0.0 0.0)
                                                     (make-vec3 0.0 0.0 5.0)))
                            :mode :third-person ))
   (setf *main-cam-quat* (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100)))
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
+  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
+  (setf cube-mesh (car (load-dae #p "res/models/orange-box2.dae"))))
 
 
 (defun prepare-scene ()
@@ -69,14 +71,14 @@
                                 :tex cube-tex))
 
   (load-frstm *frustum*)
-
   (gl:load-identity)
 
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  ;(gl:enable :lighting)
+  (gl:enable :lighting)
   (gl:enable :light0)
 
+  #+disabled
   (setf shader (make-shader (blt3d-res:file-contents
                              (blt3d-res:resolve-resource 
                               #p "res/shaders/FinalProjShader.vert"))
@@ -84,29 +86,35 @@
                              (blt3d-res:resolve-resource
                               #p "res/shaders/FinalProjShader.frag"))))
   
-  (make-vao-cube)
+  ;(make-vao-cube)
   )
 
 
-(defun render-frame ()
-  "Entry point for renderer, called by game loop.
-   Will clear, draw, and swap buffer"
+(defun render-frame (entities)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:load-matrix (camera-inverse *main-cam*))
+
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
   ;(gl:use-program shader)
   (gl:use-program 0)
-  ;#+disabled
+ 
+  (dolist (e entities)
+    (with-slots ((pos blt3d-ent:pos) 
+                 (dir blt3d-ent:dir) 
+                 (up blt3d-ent:up) 
+                 (shape blt3d-ent:shape)) e
+      (let ((x (cross up dir)))
+        (gl:with-pushed-matrix
+          (gl:mult-matrix (make-ortho-basis x up dir))
+          (gl:translate (x pos) (y pos) (z pos))
+          (draw-object shape)))))
+
+  #+disabled
   (gl:with-pushed-matrix
-    (gl:rotate -90 1.0 0.0 0.0)
+    (gl:rotate 90 1.0 0.0 0.0)
     (gl:scale .5 .5 .5)
     (use-material cube-mat)
     (draw-object cube-mesh))
-
-  ;(draw-sphere (make-point3 0.0 -1.0 0.0) 3.0 (make-point3 1.0 0.7 0.0) 50)
-  ;(gfx-draw)
-  ;(draw-vao)
-  ;(draw-vbo)
   
   (gl:flush)
   (sdl:update-display))

@@ -63,6 +63,17 @@
     (gl:matrix-mode :projection)
     (gl:load-identity)
     (gl:frustum (svref tl 1) (svref br 1)
-                (svref tl 0) (svref br 0)
+                (svref br 0) (svref tl 0)
                 near far)
     (gl:matrix-mode :modelview)))
+
+(defmethod frustum-projection-matrix ((this frustum))
+  (with-slots ((near near-dist)
+               (far far-dist)
+               (tl top-left)
+               (br bottom-right)) this
+    (let ((left (svref tl 1))
+          (right (svref br 1))
+          (top (svref tl 0))
+          (bottom (svref br 0)))
+      (make-projection left right top bottom near far))))

@@ -73,6 +73,9 @@
 
    ;; mesh.lisp
    :mesh
+   
+   ;; model.lisp
+   :model-shape
 
    ;; dae-loader.lisp
    :load-dae

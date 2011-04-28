@@ -55,7 +55,7 @@
    :make-matrix
    :make-matrix3x3
    :make-matrix4x4
-   :make-identity
+   :make-identity-matrix
    :make-translate
    :make-scale
    :make-x-rot :make-y-rot :make-z-rot

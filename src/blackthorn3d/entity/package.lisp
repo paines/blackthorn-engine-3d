@@ -36,7 +36,9 @@
    :oid
    :pos
    :dir
+   :up
    :veloc
+   :shape
    :make-server-entity
    :make-client-entity
    :lookup-entity

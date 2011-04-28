@@ -174,7 +174,7 @@
   (assert (realp timeout) (timeout) "Please specify a real number timeout.")
   (labels ((receive-all (timeout)
              (socket-receive-buffer-all
-                               *socket-connections* buffer callback timeout)))
+              *socket-connections* buffer callback timeout)))
     (let ((initial (receive-all timeout)))
       (if (zerop initial)
           initial

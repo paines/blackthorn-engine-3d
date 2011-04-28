@@ -61,5 +61,12 @@
    ;; Also assuming we only have one primitive per mesh
    (primitive-type 
     :accessor mesh-primitive-type
-    :initarg :primitive
-    :initform :triangles)))
+    :initarg :primitive)))
+
+(defmethod draw-object ((m mesh))
+  (with-slots (vert-data index-data primitive-type) m
+    (gl:enable-client-state :vertex-array)
+    (gl:enable-client-state :normal-array)
+    (gl:enable-client-state :texture-coord-array)
+    (gl:bind-gl-vertex-array vert-data)
+    (gl:draw-elements :triangles index-data)))

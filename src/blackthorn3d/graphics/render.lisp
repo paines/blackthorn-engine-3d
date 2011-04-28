@@ -37,6 +37,7 @@
 (defparameter shader nil)
 
 (defun init ()
+  "Called to initialize the graphics subsystem"
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
   (setf *main-cam* (make-instance 'camera 
                            :position (make-point3 0.0 50.0 0.0)
@@ -51,6 +52,8 @@
 
 
 (defun prepare-scene ()
+  "Called after sdl is initialized, before first frame is drawn
+   or when changing the 'scene' settings"
   (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)

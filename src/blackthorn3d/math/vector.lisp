@@ -42,6 +42,14 @@
 (gen-vec-accessors x y z w)
 (gen-vec-accessors r g b a)
 
+(defun make-color (r g b &optional (a 1.0))
+  "@short{Create a vector4 for color}
+   @arg[r]{red component, float [0 1]}
+   @arg[g]{green component, float [0 1]}
+   @arg[b]{blue component, float [0 1]}
+   @arg[a]{optional alpha defaults to 1}"
+  (make-vector4 r g b a))
+
 (defun make-vector4 (x y z w)
   "@short{Creates a vector of length 4 of floats}
    @arg[x]{element at index 0}

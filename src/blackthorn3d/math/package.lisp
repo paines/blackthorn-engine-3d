@@ -51,6 +51,7 @@
    :norm4
    :norm3
    :magnitude
+   :spherical->cartesian
    
    ;; matrix.lisp
    :make-matrix
@@ -71,6 +72,8 @@
    :vector-multiply-m
    :transpose
    :reshape
+   :look-at-matrix
+   :rt-inverse
 
    ;; quaternion.lisp
    :make-quat

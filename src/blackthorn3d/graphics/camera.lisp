@@ -39,17 +39,34 @@
     :accessor cam-dir
     :initarg :direction
     :initform (make-vec3 0.0 0.0 -1.0)
-    :documentation "the current direction the camera is pointing. Used in 1st person mode")
+    :documentation "the current direction the camera is pointing. 
+                    Used in 1st person mode")
    (up
     :accessor cam-up
     :initarg :up
     :initform (make-vec3 0.0 1.0 0.0)
     :documentation "the current up direction of the camera")
+   (veloc
+    :accessor cam-veloc
+    :initarg :veloc
+    :initform (make-vec3 0.0 0.0 0.0)
+    :documentation "the current velocity vector of the camera")
+   (ideal-coord
+    :accessor cam-ideal
+    :initarg :ideal-coord
+    :initform (list 0.0 (cos (/ pi 6.0)) 5.0 )
+    :documentation "The ideal spherical coordinates of the camera relative to 
+                    the target.  tuple is (phi theta dist)")
+   (spring-k
+    :accessor cam-ks
+    :initarg :ks
+    :initform 1.0)
    (target
     :accessor cam-target
     :initarg :target
     :initform (make-point3 0.0 0.0 0.0)
-    :documentation "the desired target of the camera. Used in 3rd person mode")
+    :documentation "the desired target of the camera. 
+                    Used in 3rd person mode")
    (mode
     :accessor cam-mode
     :initarg :mode
@@ -58,32 +75,51 @@
     :accessor cam-matrix)))
 
 
-(defmethod update-fp-camera ((c camera))
+(defmethod update-fp-camera ((c camera) time)
   (setf (cam-matrix c) (camera-inverse c)))
 
-(defmethod update-tp-camera ((c camera))
-  (setf (cam-matrix c) (camera-inverse c)))
+(defmethod update-tp-camera ((c camera) time)
+  (with-slots (ideal-coord target pos veloc up dir spring-k) c
+    ;; Update the ideal azimuth (phi) based on the camera's
+    ;; position relative to the target
+    ;; note: this allows the camera to lazily rotate around
+    ;;   the character, like in many platform games, as opposed
+    ;;   to strafing with the character, as in many shooter games
+    ;#+disabled
+    (setf (elt ideal-coord 0) (atan (- (x pos) (x target))
+                                    (- (z pos) (z target))))
+
+    ;; calculate the camera's movement
+    (let* ((ideal-pos (vec4+ target (spherical->cartesian ideal-coord)))
+           (displace-vec (vec4- pos ideal-pos))
+           (spring-accel (vec4-
+                          (vec-scale4 displace-vec (- spring-k))
+                          (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
+      (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
+      (setf pos (vec4+ pos (vec-scale4 veloc time))))
+    (setf (cam-matrix c) (look-at-matrix pos target up))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 
 ;; the matrix when it changes
-(defmethod update-camera ((c camera))
+(defmethod update-camera ((c camera) time)
   (with-slots (mode) c
     (case mode
-        (:first-person update-fp-camera c)
-        (:third-person update-tp-camera c))))
+      (:first-person (update-fp-camera c time))
+      (:third-person (update-tp-camera c time)))))
 
 (defmethod camera-matrix ((c camera))
   "@return{A 4x4 matrix representing a camera's location and direction}"
   (with-slots (pos dir up) c
-    (let* ((cam-matrix (make-matrix4x4))
-           (z (norm4 (vec-neg4 dir)))
+    (let* ((z (norm4 (vec-neg4 dir)))
            (x (norm4 (cross up z)))
-           (y (cross z x)))
+           (y (cross z x))
+           (cam-matrix (make-matrix4x4)))
       (setf (col cam-matrix 0) x)
       (setf (col cam-matrix 1) y)
       (setf (col cam-matrix 2) z)
-      (setf (col cam-matrix 3) pos)
+      (setf (col cam-matrix 3) (make-point3 0.0 0.0 0.0))
+      (setf (col cam-matrix 3) (matrix-multiply-v cam-matrix pos))
       cam-matrix)))
 
 (defmethod camera-inverse ((c camera))

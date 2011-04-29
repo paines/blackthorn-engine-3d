@@ -149,8 +149,8 @@
                           (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                           step-amt))))
 
-          (let ((z-amt (input-move-x *input*))
-                (x-amt (input-move-y *input*)))
+          (let ((x-amt (input-move-x *input*))
+                (z-amt (input-move-y *input*)))
             (setf (pos box-entity)
                   (vec4+ (pos box-entity)
                          (make-vec3 (float x-amt) 0.0 (float z-amt)))))

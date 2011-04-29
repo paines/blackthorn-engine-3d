@@ -69,7 +69,8 @@
     (send-string src (concatenate 'string "ACK: " str))))
 
 (defun handle-disconnect (client)
-  (format t "Client ~a disconnected.~%" client))
+  (decf *client-count*)
+  (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
 
 (defun server-main ()
   ;; TODO: Customizable server port

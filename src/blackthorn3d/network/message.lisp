@@ -54,14 +54,11 @@
     :accessor message-value
     :initarg :value)))
 
+(defun make-message (type value)
+  (make-instance 'message :type type :value value))
+
 ;; Note: The bogus enum entry was needed to make this take up more than 0 bits.
 (make-enum-serializer :message-type (:string :something-else))
-
-(defun make-message (message-type)
-  (make-instance
-   'message
-   :type message-type
-   :value (userialize message-type)))
 
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
   (with-buffer buffer
@@ -74,4 +71,5 @@
     (with-buffer buffer
       (with-slots (type value) message
         (setf type (unserialize :message-type))
-        (setf value (unserialize type))))))
+        (setf value (unserialize type))
+        message))))

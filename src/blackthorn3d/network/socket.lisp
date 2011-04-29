@@ -61,6 +61,7 @@
 (defvar *socket-client-connection*)
 (defvar *socket-connections* nil)
 (defvar *message-size-buffer* (make-buffer 4))
+(defvar *disconnect-callback-functions* nil)
 
 ;; TODO: Bugs!
 ;; Handle client error due to connection failure.
@@ -75,7 +76,8 @@
    @return{@code{T} on success.}"
   (assert (not (boundp '*socket-server-listen*)))
   (setf *socket-server-listen*
-        (socket-listen *wildcard-host* port :element-type '(unsigned-byte 8)))
+        (usocket:socket-listen
+         usocket:*wildcard-host* port :element-type '(unsigned-byte 8)))
   t)
 
 (defun socket-server-connect (&key timeout)
@@ -88,12 +90,12 @@
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (handler-case
-      (when (wait-for-input *socket-server-listen*
-                            :timeout timeout :ready-only t)
-        (let ((connection (socket-accept *socket-server-listen*)))
+      (when (usocket:wait-for-input *socket-server-listen*
+                                    :timeout timeout :ready-only t)
+        (let ((connection (usocket:socket-accept *socket-server-listen*)))
           (push connection *socket-connections*)
           (add-nid (gensym (symbol-name 'client)) connection)))
-    (socket-error (err)
+    (usocket:socket-error (err)
       (values nil err))))
 
 (defun socket-client-connect (host port &key timeout)
@@ -107,15 +109,55 @@
   (assert (not (boundp '*socket-client-connection*)))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (handler-case
-      (let ((connection (socket-connect host port
-                                        :protocol :stream
-                                        :element-type '(unsigned-byte 8)
-                                        :timeout timeout)))
+      (let ((connection (usocket:socket-connect
+                         host port
+                         :protocol :stream
+                         :element-type '(unsigned-byte 8)
+                         :timeout timeout)))
         (setf *socket-client-connection* connection)
         (push connection *socket-connections*)
         (values (add-nid :server connection) nil))
-    (socket-error (err)
+    (usocket:socket-error (err)
       (values nil err))))
+
+(defun socket-disconnect-callback (callback)
+  "@short{Registers a socket disconnect callback.}
+
+   @arg[callback]{A function of one argument, a node ID, which is called
+                  when a socket gets disconnected.}"
+  (push callback *disconnect-callback-functions*))
+
+(defun handle-socket-disconnect (connection)
+  (multiple-value-bind (nid exists) (socket->nid connection)
+    (when exists
+      (handler-case
+          (usocket:socket-close connection)
+        (stream-error ()))
+      (remove-nid nid connection)
+      (if (and (boundp '*socket-client-connection*)
+               (eql connection *socket-client-connection*))
+          (makunbound '*socket-client-connection*))
+      (setf *socket-connections* (remove connection *socket-connections*))
+      (iter (for callback in *disconnect-callback-functions*)
+            (funcall callback nid)))))
+
+(defun handle-socket-multiple-disconnect (disconnected-stream connections)
+  (handle-socket-disconnect
+   (find disconnected-stream connections :key #'usocket:socket-stream)))
+
+(defmacro with-handle-socket-disconnect (connection &body body)
+  `(handler-case
+       ,@body
+    (stream-error ()
+      (handle-socket-disconnect ,connection))))
+
+(defmacro with-handle-socket-multiple-disconnect (connections &body body)
+  (with-gensyms (err)
+    `(handler-case
+         ,@body
+       (stream-error (,err)
+         (handle-socket-multiple-disconnect
+          (stream-error-stream ,err) ,connections)))))
 
 ;;;
 ;;; Buffers
@@ -125,7 +167,7 @@
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (buffer-advance :amount 4)
-    (read-sequence *message-size-buffer* (socket-stream connection))
+    (read-sequence *message-size-buffer* (usocket:socket-stream connection))
     (buffer-rewind)
     (unserialize :uint32)))
 
@@ -133,30 +175,34 @@
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (serialize :uint32 size)
-    (write-sequence *message-size-buffer* (socket-stream connection))))
+    (write-sequence *message-size-buffer*
+                    (usocket:socket-stream connection))))
 
 (defun socket-receive-buffer (connection buffer)
   (let ((size (socket-receive-buffer-size connection)))
     (with-buffer buffer
       (buffer-rewind)
       (buffer-advance :amount size)
-      (read-sequence buffer (socket-stream connection))
+      (read-sequence buffer (usocket:socket-stream connection))
       (buffer-rewind)
       size)))
 
 (defun socket-send-buffer (connection buffer)
-  (with-buffer buffer
-    (let ((size (buffer-length)))
-      (socket-send-buffer-size connection size)
-      (write-sequence buffer (socket-stream connection))
-      (force-output (socket-stream connection)))))
+  (with-handle-socket-disconnect connection
+    (with-buffer buffer
+      (let ((size (buffer-length)))
+        (socket-send-buffer-size connection size)
+        (write-sequence buffer (usocket:socket-stream connection))
+        (force-output (usocket:socket-stream connection))))))
 
 (defun socket-receive-buffer-all (connections buffer callback timeout)
-  (let ((ready (wait-for-input connections
-                               :timeout timeout :ready-only t)))
+  (let ((ready (with-handle-socket-multiple-disconnect connections
+                 (usocket:wait-for-input connections
+                                         :timeout timeout :ready-only t))))
     (iter (for connection in ready)
-          (let ((size (socket-receive-buffer connection buffer)))
-            (funcall callback (socket->nid connection) buffer size)))
+          (with-handle-socket-disconnect connection
+              (let ((size (socket-receive-buffer connection buffer)))
+                (funcall callback (socket->nid connection) buffer size))))
     (length ready)))
 
 (defun socket-receive-all (buffer callback &key timeout)
@@ -170,17 +216,18 @@
                   into the buffer.}
    @arg[timeout]{An integer number of seconds to wait for any messages.}
    @return{The number of messages received.}"
-  (assert *socket-connections*)
   (assert (realp timeout) (timeout) "Please specify a real number timeout.")
   (labels ((receive-all (timeout)
              (socket-receive-buffer-all
               *socket-connections* buffer callback timeout)))
-    (let ((initial (receive-all timeout)))
-      (if (zerop initial)
-          initial
-          (+ initial (iter (for subsequent next (receive-all 0))
-                           (summing subsequent)
-                           (until (zerop subsequent))))))))
+    (when *socket-connections*
+      (let ((initial (receive-all timeout)))
+        (if (or (zerop initial) (not *socket-connections*))
+            initial
+            (+ initial (iter (for subsequent next (receive-all 0))
+                             (summing subsequent)
+                             (until (or (zerop subsequent)
+                                        (not *socket-connections*))))))))))
 
 (defun socket-send (destination buffer)
   "@short{Sends a message.}
@@ -192,7 +239,6 @@
    @arg[buffer]{A userial buffer with the outgoing message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}"
   (acond ((eql destination :broadcast)
-          (assert (boundp '*socket-server-listen*))
           (error "unimplemented"))
          ((nid->socket destination)
           (socket-send-buffer it buffer))

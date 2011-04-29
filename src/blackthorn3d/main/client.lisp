@@ -26,10 +26,21 @@
 (in-package :blackthorn3d-main)
 
 (defun handle-message-client (src message)
-  (let ((str (read-string message)))
-    (format t "Msg from ~a was ~a~%" src str)))
+  (ecase (message-type message)
+    (:string
+     (let ((str (read-string message)))
+       (format t "Msg from ~a was ~a~%" src str)))
+    (:event-entity-create
+     (iter (for entity in (message-value message))
+           ;; TODO: Don't hard code the model, send it's in the message...
+           (setf (shape entity)
+                 (make-instance
+                  'blt3d-gfx:model-shape
+                  :mesh
+                  (car (blt3d-gfx:load-dae
+                        #p"res/models/orange-box2.dae"))))))))
 
-(defvar *counter* 0)
+(defvar *message-counter* 0)
 
 (defun client-main ()
   (setup-paths)
@@ -81,12 +92,12 @@
                         (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                         step-amt))))
 
-        (blt3d-gfx:render-frame nil)
+        (blt3d-gfx:render-frame (list-entities))
 
         (iter (for (src message) in (message-receive-all :timeout 0))
               (handle-message-client src message))
 
         (send-string
          :server
-         (format nil "Msg #~a (rand: ~a)" *counter* (random 10)))
-        (incf *counter*)))))
+         (format nil "Msg #~a (rand: ~a)" *message-counter* (random 10)))
+        (incf *message-counter*)))))

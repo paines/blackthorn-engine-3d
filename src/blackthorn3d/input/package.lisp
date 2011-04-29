@@ -34,6 +34,8 @@
    :input-system
    :input-move-x
    :input-move-y
+   :input-view-x
+   :input-view-y
    :set-controller
    :input-kind
    

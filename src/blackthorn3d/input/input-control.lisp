@@ -70,3 +70,33 @@
             
 (defmethod set-controller ((system input-system) type)
     (setf (input-kind system) type))
+
+(defgeneric input-view-x (system)
+    (:documentation
+      "Handles x-axis of view stick on xbox controller, or corresponding keys
+       from moving view horizontally on keyboard."))
+       
+(defmethod input-view-x ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard
+                (+ (if (sdl:get-key-state :sdl-key-a) -1.0 0)
+                   (if (sdl:get-key-state :sdl-key-d)  1.0 0)))
+            #+windows
+            (:xbox (/ (xbox360_get_rx 0) 65535))
+            (otherwise 0))))
+            
+(defgeneric input-view-y (system)
+    (:documentation
+      "Handles y-axis of view stick on xbox controller, or corresponding keys
+       from moving view vertically on keyboard."))
+       
+(defmethod input-view-y ((system input-system))
+    (with-slots (kind) system
+        (case kind
+            (:keyboard
+                (+ (if (sdl:get-key-state :sdl-key-w) 1.0 0)
+                   (if (sdl:get-key-state :sdl-key-s) -1.0 0)))
+            #+windows
+            (:xbox (/ (xbox360_get_ry 0) 65535))
+            (otherwise 0))))

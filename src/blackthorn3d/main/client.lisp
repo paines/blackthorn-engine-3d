@@ -54,7 +54,7 @@
   (setf *random-state* (make-random-state t))
 
   ;; TODO: Don't hard code connection information
-  (unless (socket-client-connect "192.168.1.101" 9001 :timeout 1.0)
+  (unless (socket-client-connect "127.0.0.1" 9001 :timeout 1.0)
     (format t "Error: Failed to connect.~%")
     (return-from client-main))
 
@@ -103,8 +103,8 @@
                         (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                         step-amt))))
 
-        (let ((x (float (input-move-x *input*)))
-              (y (float (input-move-y *input*))))
+        (let ((x (float (input-view-x *input*)))
+              (y (float (input-view-y *input*))))
           (message-send :server (make-event :input :x x :y y)))
 
         (blt3d-gfx:render-frame (list-entities))

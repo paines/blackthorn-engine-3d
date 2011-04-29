@@ -26,24 +26,43 @@
 (defclass material ()
   ((shader
     :accessor mat-shader
-    :initarg :shader)
+    :initarg :shader
+    :documentation "A handle to the shader program, ie, what is
+                    returned by make-shader")
    (ambient
     :initarg :ambient
-    :initform #(0.0 0.0 0.0 1.0))
+    :initform #(0.0 0.0 0.0 1.0)
+    :documentation "ambient color of the material: the color when there
+                    is no lighting.  This should generally not be used.
+                    Instead use lights' ambient.  Glow will (probably)
+                    be implemented separately")
    (diffuse
     :initarg :diffuse
-    :initform #(1.0 1.0 1.0 1.0))
+    :initform #(1.0 1.0 1.0 1.0)
+    :documentation "The lambert reflectance of the material. multiplied by any
+                    texture color")
    (specular
     :initarg :specular
-    :initform #(0.0 0.0 0.0 1.0))
+    :initform #(0.0 0.0 0.0 1.0)
+    :documentation "Specular color: the color of specular highlights for
+                    specularity > 0.0")
+   (specularity
+    :initarg :specularity
+    :initform 0.0
+    :documentation "Higher specularity gives sharper highlights, lower
+                   duller highlights, simulating more rough materials")
    (texture
     :accessor mat-texture
-    :initarg :tex)))
+    :initarg :tex
+    :initform nil
+    :documentation "The texture handle that will be loaded. Will add
+                    support for multi-textures later (??)")))
 
 
 (defmethod use-material ((this material))
+  "loads a material into opengl state"
   (with-slots (ambient diffuse specular texture) this
     (gl:material :front :ambient ambient)
     (gl:material :front :diffuse diffuse)
     (gl:material :front :specular specular)
-    (gl:bind-texture :texture-2d texture)))
+    (when texture (gl:bind-texture :texture-2d texture))))

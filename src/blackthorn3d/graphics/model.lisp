@@ -55,6 +55,6 @@
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh matrix material) this
     (gl:with-pushed-matrix
-      (when matrix (gl:mult-matrix matrix))
+      (when matrix   (gl:mult-matrix matrix))
       (when material (use-material material))
       (draw-object mesh))))

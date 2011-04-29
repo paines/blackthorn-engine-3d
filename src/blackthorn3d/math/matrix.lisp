@@ -58,7 +58,8 @@
          (n-col (get-ncols mat))
          (copy  (make-matrix (list n-row n-col))))
     (iter (for i below (* n-row n-col))
-         (setf (row-major-aref copy i) (row-major-aref mat i)))))
+         (setf (row-major-aref copy i) (row-major-aref mat i)))
+    copy))
 
 (defun col (mat c)
   "@arg[mat]{matrix of any size}
@@ -194,9 +195,9 @@
    @return{a 4x4 matrix that will convert coordinates from the default
            basis to the one defined by u v w}"
   (make-matrix4x4 
-    (iter (for i below 4) 
-      (collect
-        (list (svref u i) (svref v i) (svref w i) (if (= i 3) 1.0 0.0))))))
+   (iter (for i below 4) 
+         (collect
+             (list (svref u i) (svref v i) (svref w i) (if (= i 3) 1.0 0.0))))))
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
@@ -270,3 +271,21 @@
               ,(/ (- (+ far near)) f-n) 
               -1.0)
            ( 0.0 0.0 ,(/ (- (* 2 far near)) f-n) 0.0))))))
+
+(defun look-at-matrix (from to up)
+  (let* ((dir (vec4- from to)))
+    (setf (w dir) 0.0)
+    (let* ((w (norm4 dir))
+           (u (norm4 (cross up w)))
+           (v (cross w u))
+           (la-mat (make-ortho-basis u v w)))
+      (setf (col la-mat 3) (matrix-multiply-v la-mat (vec-neg4 from)))
+      la-mat)))
+
+(defun rt-inverse (mat)
+  (let ((Rmat (copy-matrix mat))
+        (Tvec (vec-neg4 (col mat 3))))
+    (setf (col Rmat 3) (make-point3 0.0 0.0 0.0))
+    (setf Rmat (transpose Rmat))
+    (setf (col Rmat 3) Tvec)
+    Rmat))

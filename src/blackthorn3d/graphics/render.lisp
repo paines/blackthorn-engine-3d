@@ -39,13 +39,22 @@
 (defun init ()
   "Called to initialize the graphics subsystem"
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+  #+disabled
   (setf *main-cam* (make-instance 'camera 
-                           :position (make-point3 0.0 50.0 0.0)
-                           :direction (make-vec3 0.0 -1.0 0.0)
-                           :up (make-vec3 0.0 0.0 1.0)
-                           #+disabled(norm4 (vec4- (make-vec3 0.0 0.0 0.0)
-                                                    (make-vec3 0.0 0.0 5.0)))
+                           :position (make-point3 10.0 20.0 10.0)
+                           :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
+                                                    (make-vec3 10.0 20.0 10.0)))
+                           :up (make-vec3 0.0 1.0 0.0)
+                           
                            :mode :third-person ))
+  ;#+disabled
+  (setf *main-cam* (make-instance 'camera
+                                  :target (make-point3 0.0 1.0 0.0)
+                                  :up (make-vec3 0.0 1.0 0.0)
+                                  :ideal-coord (list 0.0 (/ pi 6) 15.0)
+                                  :ks 100.0
+                                  :mode :third-person))
+
   (setf *main-cam-quat* (axis-rad->quat (make-vec3 0.0 1.0 0.0) (/ pi 100)))
   (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
   (setf cube-mesh (car (load-dae #p "res/models/orange-box2.dae"))))
@@ -72,10 +81,9 @@
 
   (load-frstm *frustum*)
   (gl:load-identity)
-
-  (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
+  (gl:light :light0 :position '(20.0 20.0 20.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  (gl:enable :lighting)
+ ; (gl:enable :lighting)
   (gl:enable :light0)
 
   #+disabled
@@ -92,10 +100,13 @@
 
 (defun render-frame (entities)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
-  (gl:load-matrix (camera-inverse *main-cam*))
+  ;(gl:load-matrix (rt-inverse (camera-matrix *main-cam*)))
+  ;(gl:load-matrix (camera-inverse *main-cam*))
+  #+disabled(gl:load-matrix (look-at-matrix (make-point3 15.0 20.0 15.0)
+                                  (make-point3 0.0 0.0 0.0)
+                                  (make-vec3 0.0 1.0 0.0)))
 
-  (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
-  ;(gl:use-program shader)
+    ;(gl:use-program shader)
   (gl:use-program 0)
  
   (dolist (e entities)
@@ -104,9 +115,20 @@
                  (up blt3d-ent:up) 
                  (shape blt3d-ent:shape)) e
       (let ((x (cross up dir)))
+        (setf (cam-target *main-cam*) pos)
+        (update-camera *main-cam* (/ 1.0 (sdl:frame-rate)))
+        (gl:load-matrix (cam-matrix *main-cam*))
+
+        (gl:light :light0 :position '(6.0 6.0 6.0 1.0))
+
+        (gl:color 1.0 0.0 0.0)
+        (draw-plane 20)
+        (gl:color 0.0 1.0 1.0)
+
         (gl:with-pushed-matrix
-          (gl:mult-matrix (make-ortho-basis x up dir))
           (gl:translate (x pos) (y pos) (z pos))
+          (gl:scale .1 .1 .1)
+          ;(gl:mult-matrix (make-ortho-basis x up dir))
           (draw-object shape)))))
 
   #+disabled

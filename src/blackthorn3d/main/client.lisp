@@ -99,7 +99,7 @@
 
         (let ((x (input-move-x *input*))
               (y (input-move-y *input*)))
-          (message-send :server (make-event :input :x y :y y)))
+          (message-send :server (make-event :input :x x :y y)))
 
         (blt3d-gfx:render-frame (list-entities))
 

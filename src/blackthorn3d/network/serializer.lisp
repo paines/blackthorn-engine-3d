@@ -54,7 +54,7 @@
                                  &key (,buffer *buffer*))
            (let ((,count (unserialize ,count-type :buffer ,buffer)))
              (iter (repeat ,count)
-                   (unserialize ,elt-type :buffer ,buffer))))))))
+                   (collect (unserialize ,elt-type :buffer ,buffer)))))))))
 
 ;; Hoping that this abomination will be unnecessary in a future version
 ;; of userial....

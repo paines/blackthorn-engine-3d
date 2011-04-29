@@ -26,10 +26,25 @@
 (in-package :blackthorn3d-main)
 
 (defun handle-message-client (src message)
-  (let ((str (read-string message)))
-    (format t "Msg from ~a was ~a~%" src str)))
+  (ecase (message-type message)
+    (:string
+     (let ((str (read-string message)))
+       (format t "Msg from ~a was ~a~%" src str)))
+    (:event-entity-create
+     (iter (for entity in (message-value message))
+           ;; TODO: Don't hard code the model, send it's in the message...
+           (setf (shape entity)
+                 (make-instance
+                  'blt3d-gfx:model-shape
+                  :mesh
+                  (car (blt3d-gfx:load-dae
+                        #p"res/models/orange-box2.dae"))))))
+    (:event-entity-update
+     ;; Nothing needs to be done, unserializing the message already
+     ;; updated the entity state.
+     )))
 
-(defvar *counter* 0)
+(defvar *message-counter* 0)
 
 (defun client-main ()
   (setup-paths)
@@ -62,6 +77,7 @@
         ;; this whole block runs once per frame
 
         ;; move camera based on keyboard/xbox controller
+        #+disabled
         (let* ((move-x (input-move-x *input*))
                (move-y (input-move-y *input*))
                (rot-amt  (* -1 move-x))
@@ -81,12 +97,16 @@
                         (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                         step-amt))))
 
-        (blt3d-gfx:render-frame nil)
+        (let ((x (float (input-move-x *input*)))
+              (y (float (input-move-y *input*))))
+          (message-send :server (make-event :input :x x :y y)))
+
+        (blt3d-gfx:render-frame (list-entities))
 
         (iter (for (src message) in (message-receive-all :timeout 0))
               (handle-message-client src message))
 
         (send-string
          :server
-         (format nil "Msg #~a (rand: ~a)" *counter* (random 10)))
-        (incf *counter*)))))
+         (format nil "Msg #~a (rand: ~a)" *message-counter* (random 10)))
+        (incf *message-counter*)))))

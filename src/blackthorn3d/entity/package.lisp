@@ -42,6 +42,12 @@
    :make-server-entity
    :make-client-entity
    :lookup-entity
+   :list-entities
    :forget-server-entity-changes
+
+   ;; event.lisp
+   :make-event
+   :input-type
+   :input-amount
 
    ))

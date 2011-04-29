@@ -239,7 +239,8 @@
    @arg[buffer]{A userial buffer with the outgoing message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}"
   (acond ((eql destination :broadcast)
-          (error "unimplemented"))
+          (iter (for connection in *socket-connections*)
+                (socket-send-buffer connection buffer)))
          ((nid->socket destination)
           (socket-send-buffer it buffer))
          (t (error "Unknown node ID ~s" destination))))

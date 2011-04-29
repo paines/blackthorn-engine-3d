@@ -25,6 +25,15 @@
 
 (in-package :blackthorn3d-entity)
 
+(defmacro track-modifed-slots (class &rest slots)
+  (with-gensyms (value object modified)
+    `(progn
+       ,@(iter (for slot in slots)
+               (collect
+                   `(defmethod (setf ,slot) :after (,value (,object ,class))
+                      (with-slots ((,modified modified)) ,object
+                        (setf ,modified t))))))))
+
 (defclass entity ()
   ((oid
     :accessor oid)
@@ -40,23 +49,11 @@
    (up
     :accessor up
     :initarg :up)
-   (veloc
-    :accessor veloc
-    :initarg :veloc)
    (shape
     :accessor shape
     :initarg :shape)))
 
-(defmacro track-modifed-slots (class &rest slots)
-  (with-gensyms (value object modified)
-    `(progn
-       ,@(iter (for slot in slots)
-               (collect
-                   `(defmethod (setf ,slot) :after (,value (,object ,class))
-                      (with-slots ((,modified modified)) ,object
-                        (setf ,modified t))))))))
-
-(track-modifed-slots entity pos dir veloc)
+(track-modifed-slots entity pos dir up)
 
 (defclass entity-server (entity)
   ((oid
@@ -77,12 +74,25 @@
   (defun make-server-oid ()
     (incf next-oid)))
 
+(defun oid-in-use-p (oid)
+  (multiple-value-bind (previous exists)
+      (gethash oid *global-oid-table*)
+    (declare (ignore previous))
+    exists))
+
+(defun lookup-entity (oid)
+  (multiple-value-bind (object exists) (gethash oid *global-oid-table*)
+    (unless exists (error "No object for oid ~a." oid))
+    object))
+
 (defun intern-entity (object)
   (with-slots (oid) object
+    (assert (not (oid-in-use-p oid)))
     (setf (gethash oid *global-oid-table*) object)))
 
 (defun unintern-entity (object)
   (with-slots (oid) object
+    (assert (eql (lookup-entity oid) object))
     (remhash oid *global-oid-table*)))
 
 (defun remember-created-server-entity (object)
@@ -94,9 +104,11 @@
   object)
 
 (defun forget-server-entity-changes ()
-  ;; TODO: wipe all entities modified state
   (setf *recently-created-server-entities* nil
-        *recently-removed-server-entities* nil))
+        *recently-removed-server-entities* nil)
+  (iter (for (nil entity) in-hashtable *global-oid-table*)
+        (with-slots (modified) entity
+          (setf modified nil))))
 
 (defun make-server-entity (class &rest initargs)
   (remember-created-server-entity
@@ -105,23 +117,23 @@
 (defun make-client-entity (oid &rest initargs)
   (intern-entity (apply #'make-instance 'entity-client :oid oid initargs)))
 
-(defun lookup-entity (oid)
-  (multiple-value-bind (object exists) (gethash oid *global-oid-table*)
-    (unless exists (error "No object for oid ~a." oid))
-    object))
+(defun list-entities ()
+  (iter (for (nil entity) in-hashtable *global-oid-table*)
+        (collect entity)))
 
 (make-uint-serializer :oid 4)
 
 (make-vec-serializer :vec3 :float32 3)
+(make-vec-serializer :vec4 :float32 4)
 
 (make-init-slot-serializer :entity-create
                            (make-client-entity) (:oid oid)
-                           (:vec3 pos
-                            :vec3 dir
-                            :vec3 veloc))
+                           (:vec4 pos
+                            :vec4 dir
+                            :vec4 up))
 
-(make-init-slot-serializer :entity-update-fields
+(make-init-slot-serializer :entity-update
                            (lookup-entity) (:oid oid)
-                           (:vec3 pos
-                            :vec3 dir
-                            :vec3 veloc))
+                           (:vec4 pos
+                            :vec4 dir
+                            :vec4 up))

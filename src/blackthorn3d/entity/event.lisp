@@ -26,4 +26,53 @@
 (in-package :blackthorn3d-entity)
 
 (make-list-serializer :event-entity-create :entity-create)
-(make-list-serializer :event-entity-update-fields :entity-update-fields)
+(make-list-serializer :event-entity-update :entity-update)
+(make-list-serializer :event-entity-remove :entity-remove)
+
+(defgeneric make-event (type &key))
+
+(defmethod make-event ((type (eql :entity-create)) &key include-all)
+  (let ((entities
+         (if include-all
+             (iter (for (nil entity) in-hashtable *global-oid-table*)
+                   (collect entity))
+             *recently-created-server-entities*)))
+    (make-message :event-entity-create entities)))
+
+(defmethod make-event ((type (eql :entity-update)) &key)
+  (let ((entities
+         (iter (for (nil entity) in-hashtable *global-oid-table*)
+               (with-slots (modified) entity
+                 (when modified (collect entity))))))
+    (make-message :event-entity-update entities)))
+
+(defmethod make-event ((type (eql :entity-remove)) &key)
+  (let ((entities *recently-removed-server-entities*))
+    (make-message :event-entity-remove entities)))
+
+;; TODO: MOVE ELSEWHERE!!! (E.g. input package, hint hint.)
+(defclass input-event ()
+  ((input-type
+    :accessor input-type
+    :initarg :input-type)
+   (input-amount
+    :accessor input-amount
+    :initarg :input-amount)))
+
+(make-enum-serializer :input-type (:x :y))
+
+(make-slot-serializer :input
+                      (make-instance 'input-event)
+                      (:input-type input-type
+                       :float32 input-amount))
+
+(make-list-serializer :event-input :input)
+
+(defmethod make-event ((type (eql :input)) &key x y)
+  (make-message :event-input
+                (list (make-instance 'input-event
+                                     :input-type :x
+                                     :input-amount x)
+                      (make-instance 'input-event
+                                     :input-type :y
+                                     :input-amount y))))

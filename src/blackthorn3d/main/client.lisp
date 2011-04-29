@@ -99,7 +99,7 @@
                                   (vec-scale4 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) step-amt)) )
                      )
                          
-                (blt3d-gfx:render-frame)
+                (blt3d-gfx:render-frame nil)
                 
                 (socket-receive-all *my-client-buffer* #'handle-message-client 
                     :timeout 0)

@@ -75,15 +75,6 @@
 ;;;
 
 (defparameter *input* (make-instance 'input-system :kind :keyboard))
-    
-(defun main-init-abort-handler ()
-  (throw 'main-init nil))
-
-(defun main-loop-abort-handler ()
-  (throw 'main-loop nil))
-
-(defun main-process-event (event)
-  (send *game* event))
 
 (defun main (&key (exit-when-done t))
   "Main entry point for the game. Deals with initialization, finalization, and the main game loop."

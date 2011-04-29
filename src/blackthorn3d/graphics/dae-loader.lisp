@@ -170,6 +170,11 @@
                               (cons (car input) (cdr fn)))
                           input-lst fns))))
 
+
+;;;
+;;; Model loading-specific code.
+;;;
+
 ;; combines arrays into one large 2-d array
 (defun interleave (arrays)
   (let* ((size (length (cdar arrays)))
@@ -220,7 +225,7 @@
                                         ;(cons indices (interleave arrays))
                                         ;#+disabled
       (make-instance 'mesh 
-                     :id (intern id)
+                     :id id
                      :vert-data (blt-mesh-array->gl-array 
                                  (interleave arrays))
                      :indices (indices->gl-array indices)
@@ -250,20 +255,20 @@
   (let ((scene (first-child scene-library))
         (scene-table (make-hash-table)))
     (iter (for node in (children-with-tag "node" scene))
-          (let ((node-id (intern (get-attribute "id" (attributes node))))
+          (let ((node-id (get-attribute "id" (attributes node)))
                 (transform (matrix-tag->matrix (first-child node)))
                 (geometry-id (get-url 
                                 (find-tag-in-children +instance-geometry+ 
                                                       node))))
-            (setf (gethash node-id scene-table) (cons geometry-id transform))))
+            (setf (gethash node-id scene-table) (list transform geometry-id transform))))
     scene-table))
 
 (defun effect-xmls->material (effect)
   )
 
+
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)
-  #+disabled
   (let ((images-ht (make-hash-table :test #'equal))
         (effects-ht (make-hash-table :test #'equal))
         (materials-ht (make-hash-table :test #'equal)))
@@ -277,25 +282,21 @@
     ;; construct effects table
     (iter (for effect in (children effect-library))
           (when (consp effect)
-            (setf (gethash (get-attribute "id" (attributes effect))
-                           effects-ht)
-                  (make-instance 
-                   'material
-                   :ambient 
-                   (string->sv (third (find-tag "ambient" (children effect))))
-                   :diffuse 
-                   (string->sv (third (find-tag "diffuse" (children effect))))
-                   :specular 
-                   (string->sv (third (find-tag "specular" (children effect))))
-                   :specularity 
-                   (string->sv (third (find-tag "shininess" (children effect))))
-                   :texture 
-                   (image->texture (load-image
-                                             (gethash
-                                              (get-attribute "texture"
-                                                             (find-tag "texture" 
-                                                                       (children effect)))
-                                              images-ht)))))))
+            (labels ((mat-prop-finder (attrib e)
+                      (aif (find-tag attrib (children e))
+                        (string->sv (third it))
+                        nil)))
+              (setf (gethash (get-attribute "id" (attributes effect))
+                             effects-ht)
+                    (make-instance 
+                     'material
+                     :ambient     (mat-prop-finder "ambient" effect)
+                     :diffuse     (mat-prop-finder "diffuse" effect)
+                     :specular    (mat-prop-finder "specular" effect)
+                     :specularity (mat-prop-finder "shininess" effect)
+                     :tex (aif (find-tag "texture" (children effect))
+                               (load-image (gethash (get-attribute "texture" it) images-ht))
+                               nil))))))
     
     ;; Finally the materials
     (iter (for material in (children mat-library))
@@ -303,7 +304,8 @@
             (setf (gethash (get-attribute "id" (attributes material))
                            materials-ht)
                   (gethash (get-url (first-child material))
-                           effects-ht))))))
+                           effects-ht))))
+    materials-ht))
 
 (defun build-models (&key geometry scenes lights materials)
   "This is called last by load-dae to take the data parsed from

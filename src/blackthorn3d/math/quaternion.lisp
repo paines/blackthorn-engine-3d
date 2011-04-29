@@ -93,6 +93,12 @@
             (vec-scale3 r-v q-w))
      (- (* q-w r-w) (dot q-v r-v)))))
 
+(defun quat-scale (s q)
+  (make-quat (* s (x q))
+             (* s (y q))
+             (* s (z q))
+             (* s (w q))))
+
 (defun quat-conjugate (q)
   (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
 
@@ -134,3 +140,13 @@
          (radical (sqrt (* 2.0 (+ 1.0 e)))))
     (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical)) ; qv
                          (/ radical 2.0))))             ; qw
+
+(defun quat-slerp (q1 q2 s)
+  (let ((phi (iter (for a in-vector q1)
+                   (for b in-vector q2)
+                   (sum (* a b))))
+        (sin-phi (sin phi)))
+    (quat+ (quat-scale (/ (sin (* phi (- 1 s))) 
+                          sin-phi) q1)
+           (quat-scale (/ (sin (* phi s)) 
+                          sin-phi) q2))))

@@ -235,14 +235,14 @@
 ;; Helper function to construct a 4x4 matrix (should probably be
 ;; extended to support arbitrary sized matrices
 (defun matrix-tag->matrix (xml-lst)
-  (reshape (string->sv (third xml-lst)) '(4 4)))
+  (transpose (reshape (string->sv (third xml-lst)) '(4 4))))
 
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)
   "parses the geometry items in the dae file, building a hash table of the 
    meshes (hashed by id)
    @arg[geom-library]{the xml-list of the geometry library}"
-  (let ((mesh-table (make-hash-table)))
+  (let ((mesh-table (make-hash-table :test #'equal)))
     (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
           (let ((new-mesh (build-mesh geom-xml)))
             (setf (gethash (mesh-id new-mesh) mesh-table) new-mesh)))
@@ -253,14 +253,14 @@
 ;; we start looking at character animation.  Then...who knows.
 (defun process-scene (scene-library)
   (let ((scene (first-child scene-library))
-        (scene-table (make-hash-table)))
+        (scene-table (make-hash-table :test #'equal)))
     (iter (for node in (children-with-tag "node" scene))
           (let ((node-id (get-attribute "id" (attributes node)))
                 (transform (matrix-tag->matrix (first-child node)))
                 (geometry-id (get-url 
                                 (find-tag-in-children +instance-geometry+ 
                                                       node))))
-            (setf (gethash node-id scene-table) (list transform geometry-id transform))))
+            (setf (gethash node-id scene-table) (list transform geometry-id))))
     scene-table))
 
 (defun effect-xmls->material (effect)
@@ -269,6 +269,7 @@
 
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)
+  
   (let ((images-ht (make-hash-table :test #'equal))
         (effects-ht (make-hash-table :test #'equal))
         (materials-ht (make-hash-table :test #'equal)))
@@ -312,10 +313,15 @@
    the dae file and construct the objects to pass to the game,
    or store in level files, or wherever
    @return{this may change.  a list of objects for the game}"
-  (iter (for (node-id (geom-id transform)) in-hashtable scenes)
+  (iter (for (node-id (transform geom-id)) in-hashtable scenes)
+        (print node-id)
+        (print geom-id)
+        (print (gethash geom-id geometry))
+        (print transform)
         (collect (make-instance 'model-shape
                                 :mesh (gethash geom-id geometry)
-                                :matrix transform))))
+                                ;:matrix transform
+                                ))))
 
 (defun load-dae (filename)
   "Loads the objects from a dae file"

@@ -245,7 +245,8 @@
     (unless (/= new-sz mat-sz)
       (let ((new-mat (make-matrix size)))
         (iter (for i below new-sz)
-              (setf (row-major-aref new-mat i) (row-major-aref mat i)))))))
+              (setf (row-major-aref new-mat i) (row-major-aref mat i)))
+        new-mat))))
 
 (defun make-projection (left right top bottom near far)
   (if (and (= top (- bottom))

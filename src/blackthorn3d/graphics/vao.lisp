@@ -34,7 +34,7 @@
 
 (defclass vao-mesh ()
   ((vao
-    :acessor vao
+    :accessor vao
     :initarg :vao
     :initform nil)
    (indices

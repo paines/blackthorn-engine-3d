@@ -26,4 +26,26 @@
 (in-package :blackthorn3d-entity)
 
 (make-list-serializer :event-entity-create :entity-create)
-(make-list-serializer :event-entity-update-fields :entity-update-fields)
+(make-list-serializer :event-entity-update :entity-update)
+(make-list-serializer :event-entity-remove :entity-remove)
+
+(defgeneric make-event (type &key))
+
+(defmethod make-event ((type (eql :entity-create)) &key include-all)
+  (let ((entities
+         (if include-all
+             (iter (for (nil entity) in-hashtable *global-oid-table*)
+                   (collect entity))
+             *recently-created-server-entities*)))
+    (make-message :event-entity-create entities)))
+
+(defmethod make-event ((type (eql :entity-update)) &key)
+  (let ((entities
+         (iter (for (nil entity) in-hashtable *global-oid-table*)
+               (with-slots (modified) entity
+                 (when modified (collect entity))))))
+    (make-message :event-entity-update entities)))
+
+(defmethod make-event ((type (eql :entity-remove)) &key)
+  (let ((entities *recently-removed-server-entities*))
+    (make-message :event-entity-remove entities)))

@@ -35,6 +35,7 @@
   (format t "I am ball #~a. I am at ~a~%" (oid b) (pos b))
   (incf (pos b)))
 
+#+disabled ; TODO: Is this really what we want to do?
 (defvar *living-things*
   (list
    (make-server-entity 'ball :pos 0)
@@ -50,9 +51,8 @@
   (let ((client (socket-server-connect :timeout 0)))
     (when client
       (incf *client-count*)
-      (format t "Client ~a joined! (Total: ~a)~%" client *client-count*))))
-
-(defvar *my-buffer*)
+      (format t "Client ~a joined! (Total: ~a)~%" client *client-count*))
+    client))
 
 (defun read-string (msg)
   (message-value msg))
@@ -60,13 +60,15 @@
 (defun send-string (dst str)
   (message-send dst (make-message :string str)))
 
-(defvar *last*)
+(defun send-all-entities (destination)
+  (message-send destination (make-event :entity-create :include-all t)))
 
-(defun handle-message (src message)
-  (let ((str (read-string message)))
-    (setf *last* src)
-    (format t "The message from ~a was ~a~%" src str)
-    (send-string src (concatenate 'string "ACK: " str))))
+(defun handle-message-server (src message)
+  (ecase (message-type message)
+    (:string
+     (let ((str (read-string message)))
+       (format t "The message from ~a was ~a~%" src str)
+       (send-string src (concatenate 'string "ACK: " str))))))
 
 (defun handle-disconnect (client)
   (decf *client-count*)
@@ -81,19 +83,25 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Join when ready.~%")
 
-  (loop
-     (next-frame)
-     (iter (for thing in *living-things*)
-           (update thing)) 
+  (let ((box
+         (make-server-entity
+          'entity-server 
+          :pos (make-point3 0.0 0.0 0.0)
+          :dir (make-vec3 1.0 0.0 0.0) 
+          :up  (make-vec3 0.0 1.0 0.0))))
 
-     ;; check for clients to join
-     (check-for-clients)
+    (loop
+       (next-frame)
+       #+disabled           ; TODO: Is this really what we want to do?
+       (iter (for thing in *living-things*)
+             (update thing)) 
 
-     ;; insert network code call here
-     (iter (for (src message) in (message-receive-all :timeout 0))
-           (handle-message src message))
+       ;; check for clients to join
+       (let ((new-client (check-for-clients)))
+         (when new-client (send-all-entities new-client)))
 
-     ;; this causes all kinds of interesting problems!
-     ;;(when (boundp '*last*)
-     ;;    (send-string *last* "A message for you"))
-     (sleep 1/120)))
+       ;; insert network code call here
+       (iter (for (src message) in (message-receive-all :timeout 0))
+             (handle-message-server src message))
+
+       (sleep 1/120))))

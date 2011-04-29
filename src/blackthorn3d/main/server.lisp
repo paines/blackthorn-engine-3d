@@ -44,63 +44,49 @@
   "Reset the state of things to begin processing the next frame"
   (forget-server-entity-changes))
 
+(defvar *client-count* 0)
 
-(let ((client-count 0))
-  (defun wait-for-clients ()
-    (loop
-       (when (eq client-count 2)  ; TODO: should not hard-code # of players
-         (return t))
-       ;;(format t "Clients: ~a~%" client-count)
-       (format t ".")
-       (when (socket-server-connect :timeout 1.0)
-         (format t "~%Client joined!~%")
-         (incf client-count)))))
+(defun check-for-clients ()
+  (when (socket-server-connect :timeout 0)
+    (incf *client-count*)
+    (format t "Client joined! (Total: ~a)~%" *client-count*)))
 
 (defvar *my-buffer*)
 
-(defun read-string (b)
-  (userial:with-buffer b
-    (userial:unserialize :string)))
+(defun read-string (msg)
+  (message-value msg))
 
-(let ((my-buffer (userial:make-buffer)))
-  (defun send-string (dst str)
-    (userial:with-buffer my-buffer
-      (userial:buffer-rewind)
-      (userial:serialize :string str))
-    (socket-send dst my-buffer)))
+(defun send-string (dst str)
+  (message-send dst (make-message :string str)))
 
 (defvar *last*)
-        
-(defun handle-message (src b size)
-  (let ((msg (read-string b)))
+
+(defun handle-message (src message)
+  (let ((str (read-string message)))
     (setf *last* src)
-    (format t "The message from ~a was ~a~%" src msg)
-    (send-string src (concatenate 'string "ACK: " msg))
-    #+disabled
-    (format t "A message of ~a bytes was received.~%" size)))
+    (format t "The message from ~a was ~a~%" src str)
+    (send-string src (concatenate 'string "ACK: " str))))
 
 (defun server-main ()
   ;; TODO: Customizable server port
   (format t "Please wait while the server starts up...~%")
-  (setf *my-buffer* (userial:make-buffer 4096))    
   (when (not (socket-server-start 9001))
     (format t "Unable to start the server~%")
-    (exit))
-
-  ;; wait for clients to join
-  (format t "Waiting for clients to join~%")
-  (wait-for-clients)
-  (format t "All clients joined. Beginning game...~%")
+    (return-from server-main))
+  (format t "Join when ready.~%")
 
   (loop
      (next-frame)
      (iter (for thing in *living-things*)
-           (update thing))
-           
+           (update thing)) 
+
+     ;; check for clients to join
+     (check-for-clients)
+
      ;; insert network code call here
-     (socket-receive-all *my-buffer* #'handle-message 
-                         :timeout 0)
-            
+     (iter (for (src message) in (message-receive-all :timeout 0))
+           (handle-message src message))
+
      ;; this causes all kinds of interesting problems!
      ;;(when (boundp '*last*)
      ;;    (send-string *last* "A message for you"))

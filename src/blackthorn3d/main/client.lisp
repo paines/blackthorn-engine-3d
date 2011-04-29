@@ -25,20 +25,17 @@
 
 (in-package :blackthorn3d-main)
 
-(defvar *my-client-buffer*)
+(defun handle-message-client (src message)
+  (let ((str (read-string message)))
+    (format t "Msg from ~a was ~a~%" src str)))
 
-(defun handle-message-client (src b size)
-  (let ((msg (read-string b)))
-    (format t "Msg from ~a was ~a~%" src msg)))
-
-(defvar counter 0)
+(defvar *counter* 0)
 
 (defun client-main ()
   (setup-paths)
   (load-dlls)
   (blt3d-gfx:init)
 
-  (setf *my-client-buffer* (userial:make-buffer))
   (setf *random-state* (make-random-state t))
 
   ;; TODO: Don't hard code connection information
@@ -70,8 +67,8 @@
                (rot-amt  (* -1 move-x))
                (step-amt (*  1 move-y)))
                        
-          (send-string :server (format nil "move-x: ~a~%" move-x))
-          (send-string :server (format nil "move-y: ~a~%" move-y))
+          (send-string :server (format nil "move-x: ~a" move-x))
+          (send-string :server (format nil "move-y: ~a" move-y))
                      
           (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                 (quat-rotate-vec
@@ -86,10 +83,10 @@
 
         (blt3d-gfx:render-frame nil)
 
-        (socket-receive-all *my-client-buffer*
-                            #'handle-message-client
-                            :timeout 0)
+        (iter (for (src message) in (message-receive-all :timeout 0))
+              (handle-message-client src message))
+
         (send-string
          :server
-         (format nil "Msg #~a (rand: ~a)" counter (random 10)))
-        (incf counter)))))
+         (format nil "Msg #~a (rand: ~a)" *counter* (random 10)))
+        (incf *counter*)))))

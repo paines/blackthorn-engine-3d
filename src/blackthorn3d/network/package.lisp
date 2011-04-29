@@ -39,6 +39,7 @@
    :socket-server-start
    :socket-server-connect
    :socket-client-connect
+   :socket-disconnect-callback
    :socket-receive-all
    :socket-send
 

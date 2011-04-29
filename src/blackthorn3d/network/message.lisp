@@ -59,8 +59,10 @@
 
 ;; Note: The bogus enum entry was needed to make this take up more than 0 bits.
 (make-enum-serializer :message-type (:string
+                                     :event-input
                                      :event-entity-create
-                                     :event-entity-update))
+                                     :event-entity-update
+                                     :event-entity-remove))
 
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
   (with-buffer buffer

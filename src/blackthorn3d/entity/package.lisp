@@ -47,5 +47,7 @@
 
    ;; event.lisp
    :make-event
+   :input-type
+   :input-amount
 
    ))

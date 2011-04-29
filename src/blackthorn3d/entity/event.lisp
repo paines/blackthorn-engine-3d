@@ -49,3 +49,30 @@
 (defmethod make-event ((type (eql :entity-remove)) &key)
   (let ((entities *recently-removed-server-entities*))
     (make-message :event-entity-remove entities)))
+
+;; TODO: MOVE ELSEWHERE!!! (E.g. input package, hint hint.)
+(defclass input-event ()
+  ((input-type
+    :accessor input-type
+    :initarg :input-type)
+   (input-amount
+    :accessor input-amount
+    :initarg :input-amount)))
+
+(make-enum-serializer :input-type (:x :y))
+
+(make-slot-serializer :input
+                      (make-instance 'input-event)
+                      (:input-type input-type
+                       :float32 input-amount))
+
+(make-list-serializer :event-input :input)
+
+(defmethod make-event ((type (eql :input)) &key x y)
+  (make-message :event-input
+                (list (make-instance 'input-event
+                                     :input-type :x
+                                     :input-amount x)
+                      (make-instance 'input-event
+                                     :input-type :y
+                                     :input-amount y))))

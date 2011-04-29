@@ -171,3 +171,12 @@
                     (gl:vertex (* (sin theta) (cos (+ phi step))) 
                                (* (sin theta) (sin (+ phi step))) 
                                (cos theta))))))))
+
+(defun draw-plane (size)
+  (gl:with-pushed-matrix
+    (gl:scale size size size)
+    (gl:with-primitives :quads
+      (gl:vertex -1.0 0.0 1.0)
+      (gl:vertex 1.0 0.0 1.0)
+      (gl:vertex 1.0 0.0 -1.0)
+      (gl:vertex -1.0 0.0 -1.0))))

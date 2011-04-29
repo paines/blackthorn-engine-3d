@@ -88,125 +88,132 @@
 (defun main (&key (exit-when-done t))
   "Main entry point for the game. Deals with initialization, finalization, and the main game loop."
   
-  ; switch to server mode, or else continue based on command line args
+  ;; switch to server mode, or else continue based on command line args
   (let ((modes (cli-get-mode)))
-      (when (eq (first modes) :server)
-        (server-main)
-        (exit))
-      (when (eq (first modes) :client)
-        (client-main)
-        (exit))
-   )
-  
+    (when (eq (first modes) :server)
+      (server-main)
+      (exit))
+    (when (eq (first modes) :client)
+      (client-main)
+      (exit)))
+
   ;; Initialization:
   (setup-paths)
   (load-dlls)
   (blt3d-gfx:init)
 
-  ;(unless *game* (error "No game specified.~%"))
+  ;;(unless *game* (error "No game specified.~%"))
 
-  ;(apply #'net-init (cli-get-mode))
+  ;;(apply #'net-init (cli-get-mode))
 
   (setf mt19937:*random-state* (mt19937:make-random-state t))
 
   (unwind-protect
   (catch 'main-init
-    ;(net-game-connect #'main-init-abort-handler)
+    ;;(net-game-connect #'main-init-abort-handler)
 
     (sdl:with-init ()
-      ;(init-mixer)
-      ;(game-init *game* :player (hostname) :players (hostnames))
+      ;;(init-mixer)
+      ;;(game-init *game* :player (hostname) :players (hostnames))
 
-      ; TODO: temporary code, abstract this away
+      ;; TODO: temporary code, abstract this away
       (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
 
       (blt3d-gfx:prepare-scene)
-      
+
       ;; Main loop:
       (let ((input-queue (make-instance 'containers:basic-queue))
-            (box-entity (make-server-entity 'entity-server 
-                                            :pos (make-point3 0.0 0.0 0.0)
-                                            :dir (make-vec3 1.0 0.0 0.0) 
-                                            :up  (make-vec3 0.0 1.0 0.0)
-                                            :shape (make-instance 'blt3d-gfx:model-shape
-                                                                  :mesh (car (blt3d-gfx:load-dae #p "res/models/orange-box2.dae"))))))
+            (box-entity (make-server-entity
+                         'entity-server 
+                         :pos (make-point3 0.0 0.0 0.0)
+                         :dir (make-vec3 1.0 0.0 0.0) 
+                         :up  (make-vec3 0.0 1.0 0.0)
+                         :shape (make-instance
+                                 'blt3d-gfx:model-shape
+                                 :mesh
+                                 (car (blt3d-gfx:load-dae
+                                       #p"res/models/orange-box2.dae"))))))
 
-        ;(camera-orbit! cam 0.0 -0.2 5.0)
+        ;;(camera-orbit! cam 0.0 -0.2 5.0)
         (catch 'main-loop
-                                        ;(net-game-start #'main-loop-abort-handler)
+          ;;(net-game-start #'main-loop-abort-handler)
 
           (sdl:with-events ()
             (:quit-event ()
-                                        ;(net-game-quit)
-                         t)
+              ;;(net-game-quit)
+              t)
             (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
-                (when (sdl:key= k :sdl-key-return)
-                  (if (eql (input-kind *input*) :keyboard)
+              (when (sdl:key= k :sdl-key-return)
+                (if (eql (input-kind *input*) :keyboard)
                     (set-controller *input* :xbox)
                     (set-controller *input* :keyboard)))
-                                        ;(containers:enqueue
-                                        ; input-queue
-                                        ; (make-instance 'key-event :host (hostname) :type :key-down :key k
-                                        ;                :mod m :mod-key m-k :unicode u))
+                ;;(containers:enqueue
+              ;; input-queue
+              ;; (make-instance 'key-event :host (hostname) :type :key-down :key k
+              ;;                :mod m :mod-key m-k :unicode u))
                              )
             (:key-up-event (:key k :mod m :mod-key m-k :unicode u)
-                                        ;(containers:enqueue
-                                        ; input-queue
-                                        ; (make-instance 'key-event :host (hostname) :type :key-up :key k
-                                        ;                :mod m :mod-key m-k :unicode u))
-                           )
+              ;;(containers:enqueue
+              ;; input-queue
+              ;; (make-instance 'key-event :host (hostname) :type :key-up :key k
+              ;;                :mod m :mod-key m-k :unicode u))
+              )
             (:idle ()
-                   
-                   (progn
-                   #+windows
-                     (xbox360_poll 0)
-                                                     
-                     ; move camera based on keyboard/xbox controller
-                     #+disabled
-                     (let ((rot-amt  (* -1 (input-move-x *input*)))
-                           (step-amt (*  1 (input-move-y *input*))))
-                         
-                         (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) (quat-rotate-vec
-                            (axis-rad->quat (make-vec3 0.0 1.0 0.0) (deg->rad (* 2.7 rot-amt)))
-                            (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
-                         (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
-                               (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
-                                      (vec-scale4 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*) step-amt)) )
-                         )
-                     (let ((z-amt (input-move-x *input*))
-                           (x-amt (input-move-y *input*)))
-                       (setf (pos box-entity) (vec4+ (pos box-entity) (make-vec3 (float x-amt) 0.0 (float z-amt)))))
+              #+windows
+              (xbox360_poll 0)
 
-                     (blt3d-gfx:render-frame (list box-entity))
-                    
-                     #+disabled
-                     (let ((x (* 2 (abs (xbox360_get_lx 0))))
-                           (y (* 2 (abs (xbox360_get_ly 0))))) 
-                       (xbox360-vibrate 0 x y)))
-                   
-                   ;; Rotate the camera around the target each frame
-                   #+disabled
-                   (camera-orbit! cam (/ pi 100) 0.0 5.0)
+              ;; move camera based on keyboard/xbox controller
+              #+disabled
+              (let ((rot-amt  (* -1 (input-move-x *input*)))
+                    (step-amt (*  1 (input-move-y *input*))))
 
-                   #+blt-debug
-                   (let ((connection (or swank::*emacs-connection*
-                                         (swank::default-connection))))
-                     (when (and connection
-                                (not (eql swank:*communication-style* :spawn)))
-                       (swank::handle-requests connection t)))
+                (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
+                      (quat-rotate-vec
+                       (axis-rad->quat (make-vec3 0.0 1.0 0.0)
+                                       (deg->rad (* 2.7 rot-amt)))
+                       (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
+                (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                      (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+                             (vec-scale4
+                              (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
+                              step-amt))))
 
-                                        ;(net-game-update input-queue #'main-process-event
-                                        ;                 #'main-loop-abort-handler)
-                                        ;(game-update *game*)
-                   )))))
-    ;#-clozure ;; FIXME: This causes a crash on Clozure builds on Windows.
-    ;(unload-graphics)
-    ;(unload-mixer)
+              (let ((z-amt (input-move-x *input*))
+                    (x-amt (input-move-y *input*)))
+                (setf (pos box-entity)
+                      (vec4+ (pos box-entity)
+                             (make-vec3 (float x-amt) 0.0 (float z-amt)))))
+
+              (blt3d-gfx:render-frame (list box-entity))
+
+              #+disabled
+              (let ((x (* 2 (abs (xbox360_get_lx 0))))
+                    (y (* 2 (abs (xbox360_get_ly 0))))) 
+                (xbox360-vibrate 0 x y))
+
+              ;; Rotate the camera around the target each frame
+              #+disabled
+              (camera-orbit! cam (/ pi 100) 0.0 5.0)
+
+              #+blt-debug
+              (let ((connection (or swank::*emacs-connection*
+                                    (swank::default-connection))))
+                (when (and connection
+                           (not (eql swank:*communication-style* :spawn)))
+                  (swank::handle-requests connection t)))
+
+              ;;(net-game-update input-queue #'main-process-event
+              ;;                 #'main-loop-abort-handler)
+              ;;(game-update *game*)
+              )))))
+    ;;#-clozure ;; FIXME: This causes a crash on Clozure builds on Windows.
+    ;;(unload-graphics)
+    ;;(unload-mixer)
     )
 
   ;; Finalization:
-  ;(net-exit)
+  ;;(net-exit)
   #+windows (xbox360-vibrate 0 0 0)
   )
   (when exit-when-done

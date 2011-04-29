@@ -34,7 +34,8 @@
            (assert (= (length ,value) ,count))
            (iter (for ,component in-vector ,value)
                  (serialize ,elt-type ,component :buffer ,buffer)))
-         (defmethod unserialize ((type (eql ,vec-type)) &key (,buffer *buffer*))
+         (defmethod unserialize ((type (eql ,vec-type))
+                                 &key (,buffer *buffer*))
            (iter (repeat ,count)
                  (collect (unserialize ,elt-type :buffer ,buffer)
                           result-type 'vector)))))))
@@ -45,11 +46,12 @@
     (let ((buffer (make-symbol (symbol-name 'buffer))))
       `(progn
          (defmethod serialize ((,type (eql ,list-type)) ,value
-                               &key ,buffer)
+                               &key (,buffer *buffer*))
            (serialize ,count-type (length ,value) :buffer ,buffer)
            (iter (for ,item in ,value)
                  (serialize ,elt-type ,item :buffer ,buffer)))
-         (defmethod unserialize ((,type (eql ,list-type)) &key ,buffer)
+         (defmethod unserialize ((,type (eql ,list-type))
+                                 &key (,buffer *buffer*))
            (let ((,count (unserialize ,count-type :buffer ,buffer)))
              (iter (repeat ,count)
                    (unserialize ,elt-type :buffer ,buffer))))))))
@@ -74,7 +76,8 @@
                                    &key (buffer *buffer*))
                (with-slots ,(append init-slots slots) value
                  ,@(mapcar #'(lambda (type slot)
-                               `(serialize ,type ,slot :buffer buffer))
+                               `(serialize ,type ,slot
+                                                   :buffer buffer))
                            (append init-types types)
                            (append init-slots slots)))
                buffer)

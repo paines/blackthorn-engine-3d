@@ -76,7 +76,8 @@
    @return{@code{T} on success.}"
   (assert (not (boundp '*socket-server-listen*)))
   (setf *socket-server-listen*
-        (socket-listen *wildcard-host* port :element-type '(unsigned-byte 8)))
+        (usocket:socket-listen
+         usocket:*wildcard-host* port :element-type '(unsigned-byte 8)))
   t)
 
 (defun socket-server-connect (&key timeout)
@@ -89,12 +90,12 @@
   (assert (boundp '*socket-server-listen*))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (handler-case
-      (when (wait-for-input *socket-server-listen*
-                            :timeout timeout :ready-only t)
-        (let ((connection (socket-accept *socket-server-listen*)))
+      (when (usocket:wait-for-input *socket-server-listen*
+                                    :timeout timeout :ready-only t)
+        (let ((connection (usocket:socket-accept *socket-server-listen*)))
           (push connection *socket-connections*)
           (add-nid (gensym (symbol-name 'client)) connection)))
-    (socket-error (err)
+    (usocket:socket-error (err)
       (values nil err))))
 
 (defun socket-client-connect (host port &key timeout)
@@ -108,14 +109,15 @@
   (assert (not (boundp '*socket-client-connection*)))
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (handler-case
-      (let ((connection (socket-connect host port
-                                        :protocol :stream
-                                        :element-type '(unsigned-byte 8)
-                                        :timeout timeout)))
+      (let ((connection (usocket:socket-connect
+                         host port
+                         :protocol :stream
+                         :element-type '(unsigned-byte 8)
+                         :timeout timeout)))
         (setf *socket-client-connection* connection)
         (push connection *socket-connections*)
         (values (add-nid :server connection) nil))
-    (socket-error (err)
+    (usocket:socket-error (err)
       (values nil err))))
 
 (defun socket-disconnect-callback (callback)
@@ -129,7 +131,7 @@
   (multiple-value-bind (nid exists) (socket->nid connection)
     (when exists
       (handler-case
-          (socket-close connection)
+          (usocket:socket-close connection)
         (stream-error ()))
       (remove-nid nid connection)
       (if (and (boundp '*socket-client-connection*)
@@ -141,7 +143,7 @@
 
 (defun handle-socket-multiple-disconnect (disconnected-stream connections)
   (handle-socket-disconnect
-   (find disconnected-stream connections :key #'socket-stream)))
+   (find disconnected-stream connections :key #'usocket:socket-stream)))
 
 (defmacro with-handle-socket-disconnect (connection &body body)
   `(handler-case
@@ -165,7 +167,7 @@
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (buffer-advance :amount 4)
-    (read-sequence *message-size-buffer* (socket-stream connection))
+    (read-sequence *message-size-buffer* (usocket:socket-stream connection))
     (buffer-rewind)
     (unserialize :uint32)))
 
@@ -173,14 +175,15 @@
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (serialize :uint32 size)
-    (write-sequence *message-size-buffer* (socket-stream connection))))
+    (write-sequence *message-size-buffer*
+                    (usocket:socket-stream connection))))
 
 (defun socket-receive-buffer (connection buffer)
   (let ((size (socket-receive-buffer-size connection)))
     (with-buffer buffer
       (buffer-rewind)
       (buffer-advance :amount size)
-      (read-sequence buffer (socket-stream connection))
+      (read-sequence buffer (usocket:socket-stream connection))
       (buffer-rewind)
       size)))
 
@@ -189,13 +192,13 @@
     (with-buffer buffer
       (let ((size (buffer-length)))
         (socket-send-buffer-size connection size)
-        (write-sequence buffer (socket-stream connection))
-        (force-output (socket-stream connection))))))
+        (write-sequence buffer (usocket:socket-stream connection))
+        (force-output (usocket:socket-stream connection))))))
 
 (defun socket-receive-buffer-all (connections buffer callback timeout)
   (let ((ready (with-handle-socket-multiple-disconnect connections
-                 (wait-for-input connections
-                                 :timeout timeout :ready-only t))))
+                 (usocket:wait-for-input connections
+                                         :timeout timeout :ready-only t))))
     (iter (for connection in ready)
           (with-handle-socket-disconnect connection
               (let ((size (socket-receive-buffer connection buffer)))

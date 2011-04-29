@@ -38,7 +38,11 @@
                   'blt3d-gfx:model-shape
                   :mesh
                   (car (blt3d-gfx:load-dae
-                        #p"res/models/orange-box2.dae"))))))))
+                        #p"res/models/orange-box2.dae"))))))
+    (:event-entity-update
+     ;; Nothing needs to be done, unserializing the message already
+     ;; updated the entity state.
+     )))
 
 (defvar *message-counter* 0)
 
@@ -73,6 +77,7 @@
         ;; this whole block runs once per frame
 
         ;; move camera based on keyboard/xbox controller
+        #+disabled
         (let* ((move-x (input-move-x *input*))
                (move-y (input-move-y *input*))
                (rot-amt  (* -1 move-x))
@@ -91,6 +96,10 @@
                        (vec-scale4
                         (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                         step-amt))))
+
+        (let ((x (input-move-x *input*))
+              (y (input-move-y *input*)))
+          (message-send :server (make-event :input :x y :y y)))
 
         (blt3d-gfx:render-frame (list-entities))
 

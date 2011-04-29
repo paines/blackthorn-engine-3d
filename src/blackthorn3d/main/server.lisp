@@ -46,6 +46,7 @@
   (forget-server-entity-changes))
 
 (defvar *client-count* 0)
+(defvar *box-server-entity*)
 
 (defun check-for-clients ()
   (let ((client (socket-server-connect :timeout 0)))
@@ -68,7 +69,14 @@
     (:string
      (let ((str (read-string message)))
        (format t "The message from ~a was ~a~%" src str)
-       (send-string src (concatenate 'string "ACK: " str))))))
+       (send-string src (concatenate 'string "ACK: " str))))
+    (:event-input
+     (let* ((inputs (message-value message))
+            (z-amt (input-amount (find :x inputs :key #'input-type)))
+            (x-amt (input-amount (find :y inputs :key #'input-type))))
+       (setf (pos *box-server-entity*)
+             (vec4+ (pos *box-server-entity*)
+                    (make-vec3 (float x-amt) 0.0 (float z-amt))))))))
 
 (defun handle-disconnect (client)
   (decf *client-count*)
@@ -83,25 +91,26 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Join when ready.~%")
 
-  (let ((box
-         (make-server-entity
-          'entity-server 
-          :pos (make-point3 0.0 0.0 0.0)
-          :dir (make-vec3 1.0 0.0 0.0) 
-          :up  (make-vec3 0.0 1.0 0.0))))
+  (setf *box-server-entity*
+        (make-server-entity
+         'entity-server 
+         :pos (make-point3 0.0 0.0 0.0)
+         :dir (make-vec3 1.0 0.0 0.0) 
+         :up  (make-vec3 0.0 1.0 0.0)))
 
-    (loop
-       (next-frame)
-       #+disabled           ; TODO: Is this really what we want to do?
-       (iter (for thing in *living-things*)
-             (update thing)) 
+  (loop
+     (next-frame)
+     #+disabled             ; TODO: Is this really what we want to do?
+     (iter (for thing in *living-things*)
+           (update thing))
+       
+     ;; check for clients to join
+     (let ((new-client (check-for-clients)))
+       (when new-client (send-all-entities new-client)))
 
-       ;; check for clients to join
-       (let ((new-client (check-for-clients)))
-         (when new-client (send-all-entities new-client)))
+     ;; insert network code call here
+     (iter (for (src message) in (message-receive-all :timeout 0))
+           (handle-message-server src message))
+     (message-send :broadcast (make-event :entity-update))
 
-       ;; insert network code call here
-       (iter (for (src message) in (message-receive-all :timeout 0))
-             (handle-message-server src message))
-
-       (sleep 1/120))))
+     (sleep 1/120)))

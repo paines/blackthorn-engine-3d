@@ -65,6 +65,3 @@
 	 (rad-vector (vec-scale3 (vec- max-point min-point) 0.5)))
     (make-instance 'sphere :pos (vec3+ min-point rad-vector)
 		           :rad (mag rad-vector))))
-				 
-				 
-		    

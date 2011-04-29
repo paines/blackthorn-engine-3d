@@ -121,7 +121,7 @@
 ;;; Buffers
 ;;;
 
-(defun socket-receive-message-size (connection)
+(defun socket-receive-buffer-size (connection)
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (buffer-advance :amount 4)
@@ -129,14 +129,14 @@
     (buffer-rewind)
     (unserialize :uint32)))
 
-(defun socket-send-message-size (connection size)
+(defun socket-send-buffer-size (connection size)
   (with-buffer *message-size-buffer*
     (buffer-rewind)
     (serialize :uint32 size)
     (write-sequence *message-size-buffer* (socket-stream connection))))
 
-(defun socket-receive-message (connection buffer)
-  (let ((size (socket-receive-message-size connection)))
+(defun socket-receive-buffer (connection buffer)
+  (let ((size (socket-receive-buffer-size connection)))
     (with-buffer buffer
       (buffer-rewind)
       (buffer-advance :amount size)
@@ -144,12 +144,20 @@
       (buffer-rewind)
       size)))
 
-(defun socket-send-message (connection buffer)
+(defun socket-send-buffer (connection buffer)
   (with-buffer buffer
     (let ((size (buffer-length)))
-      (socket-send-message-size connection size)
+      (socket-send-buffer-size connection size)
       (write-sequence buffer (socket-stream connection))
       (force-output (socket-stream connection)))))
+
+(defun socket-receive-buffer-all (connections buffer callback timeout)
+  (let ((ready (wait-for-input connections
+                               :timeout timeout :ready-only t)))
+    (iter (for connection in ready)
+          (let ((size (socket-receive-buffer connection buffer)))
+            (funcall callback (socket->nid connection) buffer size)))
+    (length ready)))
 
 (defun socket-receive-all (buffer callback &key timeout)
   "@short{Receives (and processes) all available messages.}
@@ -164,12 +172,15 @@
    @return{The number of messages received.}"
   (assert *socket-connections*)
   (assert (realp timeout) (timeout) "Please specify a real number timeout.")
-  (let ((ready (wait-for-input *socket-connections*
-                               :timeout timeout :ready-only t)))
-    (iter (for connection in ready)
-          (let ((size (socket-receive-message connection buffer)))
-            (funcall callback (socket->nid connection) buffer size)))
-    (length ready)))
+  (labels ((receive-all (timeout)
+             (socket-receive-buffer-all
+              *socket-connections* buffer callback timeout)))
+    (let ((initial (receive-all timeout)))
+      (if (zerop initial)
+          initial
+          (+ initial (iter (for subsequent next (receive-all 0))
+                           (summing subsequent)
+                           (until (zerop subsequent))))))))
 
 (defun socket-send (destination buffer)
   "@short{Sends a message.}
@@ -184,5 +195,5 @@
           (assert (boundp '*socket-server-listen*))
           (error "unimplemented"))
          ((nid->socket destination)
-          (socket-send-message it buffer))
+          (socket-send-buffer it buffer))
          (t (error "Unknown node ID ~s" destination))))

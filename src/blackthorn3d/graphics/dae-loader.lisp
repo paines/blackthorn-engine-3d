@@ -25,6 +25,10 @@
 
 (in-package :blackthorn3d-graphics)
 
+;;;
+;;; Collada Tag names
+;;;
+
 (defvar +geometry-library+ "library_geometries")
 (defvar +material-library+ "library_materials")
 (defvar +image-library+    "library_images")
@@ -44,6 +48,10 @@
 
 (defparameter *file* nil)
 (defparameter *source-ht* nil)
+
+;;;
+;;; Collada helper functions
+;;;
 
 (defun make-accessor (accessor-lst)
   (let ((stride (parse-integer 
@@ -82,17 +90,20 @@
                    :components (make-components accessor-lst))))
 
 (defun hash-sources (xml-lsts)
-  (let ((src-lst (mapcar #'make-source
-                         (remove-if-not #'(lambda (x)
-                                            (and (consp x)
-                                                 (string-equal (tag-name x) "source")))
-                                        xml-lsts))))
+  (let ((src-lst 
+         (mapcar #'make-source
+                 (remove-if-not 
+                  #'(lambda (x)
+                      (and (consp x)
+                           (string-equal (tag-name x) "source")))
+                                xml-lsts))))
     (iter (for src in src-lst)
           (setf (gethash (src-id src) *source-ht*) src))))
 
 (defun set-vertices (vert-lst)
   (setf (gethash (get-attribute "id" (attributes vert-lst)) *source-ht*)
-        (gethash (subseq (get-attribute "source" (attributes (first-child vert-lst))) 1) 
+        (gethash (subseq (get-attribute "source" 
+                                        (attributes (first-child vert-lst))) 1) 
                  *source-ht*)))
 
 (defun input->source (str)
@@ -127,6 +138,7 @@
                  attrib-vec)))))
 
 ;; this function is going to need some serious refactoring ... >_<
+;; ... yup, it will...
 (defun process-indices (tri-lst)
   (let* ((input-lst (build-input-lst (children tri-lst)))
          (num-inputs (length input-lst))
@@ -142,21 +154,21 @@
          (indices (make-array num-vert :fill-pointer 0)))
     ;; For each index section: If it's already been seen before get that index
     ;; otherwise create a new index and set the arrays
-   (iter (for i below (length prim-arr) by num-inputs)
+    (iter (for i below (length prim-arr) by num-inputs)
           (let ((vertex (subseq prim-arr i (+ i num-inputs))))
             (aif (gethash vertex vertex-ht)
-                (vector-push it indices)
-                (progn
-                  (setf (gethash vertex vertex-ht) curr-index)
-                  (vector-push curr-index indices)
-                  (iter (for f in fns)
-                        (for i in-vector vertex)
-                        (funcall (car f) i))
-                  (incf curr-index)))))
+                 (vector-push it indices)
+                 (progn
+                   (setf (gethash vertex vertex-ht) curr-index)
+                   (vector-push curr-index indices)
+                   (iter (for f in fns)
+                         (for i in-vector vertex)
+                         (funcall (car f) i))
+                   (incf curr-index)))))
     ;; we return a list of each attribute array with it's semantic
-   (cons indices (mapcar #'(lambda (input fn)
-                             (cons (car input) (cdr fn)))
-                         input-lst fns))))
+    (cons indices (mapcar #'(lambda (input fn)
+                              (cons (car input) (cdr fn)))
+                          input-lst fns))))
 
 ;; combines arrays into one large 2-d array
 (defun interleave (arrays)
@@ -247,39 +259,51 @@
     scene-table))
 
 (defun effect-xmls->material (effect)
-  (make-instance 
-   'material
-   :ambient (string->sv (third (find-tag "ambient" (children effect))))
-   :diffuse (string->sv (third (find-tag "diffuse" (children effect))))
-   :specular (string->sv (third (find-tag "specular" (children effect))))
-   :specularity (string->sv (third (find-tag "shininess" (children effect))))
-   :texture (image->texture (load-image
-                             (gethash
-                              (get-attribute "texture"
-                                             (find-tag "texture" 
-                                                       (children effect)))
-                              images-ht)))))
+  )
 
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)
-  (let ((images-ht (make-hashtable :test #'equal))
-        (effects-ht (make-hashtable :test #'equal))
-        (materials-ht (make-hashtable :test #'equal)))
+  #+disabled
+  (let ((images-ht (make-hash-table :test #'equal))
+        (effects-ht (make-hash-table :test #'equal))
+        (materials-ht (make-hash-table :test #'equal)))
 
     ;; construct image table
     (iter (for image in (children image-library))
-          (let ((image-id (get-attribute "id" (attributes image))))
-            (setf (gethash image-id images-ht) (third (first-child image)))))
+          (when (consp image)
+            (let ((image-id (get-attribute "id" (attributes image))))
+              (setf (gethash image-id images-ht) (third (first-child image))))))
 
     ;; construct effects table
     (iter (for effect in (children effect-library))
-          (setf (gethash (get-attribute "id" (attributes effect))
-                         effects-ht)
-                (effect-xmls->material effect)))
+          (when (consp effect)
+            (setf (gethash (get-attribute "id" (attributes effect))
+                           effects-ht)
+                  (make-instance 
+                   'material
+                   :ambient 
+                   (string->sv (third (find-tag "ambient" (children effect))))
+                   :diffuse 
+                   (string->sv (third (find-tag "diffuse" (children effect))))
+                   :specular 
+                   (string->sv (third (find-tag "specular" (children effect))))
+                   :specularity 
+                   (string->sv (third (find-tag "shininess" (children effect))))
+                   :texture 
+                   (image->texture (load-image
+                                             (gethash
+                                              (get-attribute "texture"
+                                                             (find-tag "texture" 
+                                                                       (children effect)))
+                                              images-ht)))))))
     
     ;; Finally the materials
     (iter (for material in (children mat-library))
-          (setf (gethash )))))
+          (when (consp material)
+            (setf (gethash (get-attribute "id" (attributes material))
+                           materials-ht)
+                  (gethash (get-url (first-child material))
+                           effects-ht))))))
 
 (defun build-models (&key geometry scenes lights materials)
   "This is called last by load-dae to take the data parsed from

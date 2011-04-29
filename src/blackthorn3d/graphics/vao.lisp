@@ -26,6 +26,23 @@
 (in-package :blackthorn3d-graphics)
 
 
+;;;
+;;; VAO-MESH: a mesh object that uses a vertex-array-object to
+;;; store it's data and state
+;;; The tricky part about these is going to be syncing the 
+;;;
+
+(defclass vao-mesh ()
+  ((vao
+    :acessor vao
+    :initarg :vao
+    :initform nil)
+   (indices
+    :accessor indices
+    :initarg :indices
+    :initform nil
+    :documentation "Because we can't use a vertex buffer")))
+
 (defparameter *vertex-program* nil)
 (defparameter *fragment-program* nil)
 

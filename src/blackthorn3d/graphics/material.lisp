@@ -27,6 +27,7 @@
   ((shader
     :accessor mat-shader
     :initarg :shader
+    :initform nil
     :documentation "A handle to the shader program, ie, what is
                     returned by make-shader")
    (ambient
@@ -58,11 +59,11 @@
     :documentation "The texture handle that will be loaded. Will add
                     support for multi-textures later (??)")))
 
-
 (defmethod use-material ((this material))
   "loads a material into opengl state"
   (with-slots (ambient diffuse specular texture) this
-    (gl:material :front :ambient ambient)
-    (gl:material :front :diffuse diffuse)
-    (gl:material :front :specular specular)
+    (when shader (enable-shader shader))
+    (when ambient (gl:material :front :ambient ambient))
+    (when diffuse (gl:material :front :diffuse diffuse))
+    (when specular (gl:material :front :specular specular))
     (when texture (gl:bind-texture :texture-2d texture))))

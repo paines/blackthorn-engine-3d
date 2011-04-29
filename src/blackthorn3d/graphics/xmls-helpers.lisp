@@ -75,5 +75,8 @@
                  (until (eql val :eof))
                  (collect val)))))
 
+(defun uri-indirect (uri)
+  (subseq uri 1))
+
 (defun get-url (xml-lst)
-  (intern (subseq (get-attribute "url" (attributes xml-lst)) 1)))
+  (uri-indirect (get-attribute "url" (attributes xml-lst))))

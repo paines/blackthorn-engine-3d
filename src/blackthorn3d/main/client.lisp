@@ -97,8 +97,8 @@
                         (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                         step-amt))))
 
-        (let ((x (input-move-x *input*))
-              (y (input-move-y *input*)))
+        (let ((x (float (input-move-x *input*)))
+              (y (float (input-move-y *input*))))
           (message-send :server (make-event :input :x x :y y)))
 
         (blt3d-gfx:render-frame (list-entities))

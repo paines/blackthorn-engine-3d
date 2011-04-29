@@ -83,12 +83,14 @@
   (let ((modes (cli-get-mode)))
     (when (eq (first modes) :server)
       (server-main)
-      (when exit-when-done
-        (exit)))
+      (if exit-when-done
+          (exit)
+          (return-from main)))
     (when (eq (first modes) :client)
       (client-main)
-      (when exit-when-done
-        (exit))))
+      (if exit-when-done
+          (exit)
+          (return-from main))))
 
   ;; Initialization:
   (setup-paths)

@@ -44,6 +44,9 @@
    :socket-send
 
    ;; message.lisp
+   :make-message
+   :message-type
+   :message-value
    :message-receive-all
    :message-send
 

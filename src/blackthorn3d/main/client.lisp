@@ -54,7 +54,7 @@
   (setf *random-state* (make-random-state t))
 
   ;; TODO: Don't hard code connection information
-  (unless (socket-client-connect "127.0.0.1" 9001 :timeout 1.0)
+  (unless (socket-client-connect "192.168.1.101" 9001 :timeout 1.0)
     (format t "Error: Failed to connect.~%")
     (return-from client-main))
 
@@ -71,12 +71,18 @@
         (when (sdl:key= k :sdl-key-return)
           (if (eql (input-kind *input*) :keyboard)
               (set-controller *input* :xbox)
-              (set-controller *input* :keyboard))))
+              (set-controller *input* :keyboard)))
+              
+        (when (sdl:key= k :sdl-key-escape)
+            (return-from client-main)))
       (:key-up-event (:key k :mod m :mod-key m-k :unicode u))
       (:idle ()
         ;; this whole block runs once per frame
 
         ;; move camera based on keyboard/xbox controller
+        #+windows
+        (xbox360_poll 0)
+        
         #+disabled
         (let* ((move-x (input-move-x *input*))
                (move-y (input-move-y *input*))

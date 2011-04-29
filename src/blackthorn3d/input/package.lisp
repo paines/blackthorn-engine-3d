@@ -34,6 +34,8 @@
    :input-system
    :input-move-x
    :input-move-y
+   :set-controller
+   :input-kind
    
    ;; xbox360.lisp
    :xbox360-vibrate

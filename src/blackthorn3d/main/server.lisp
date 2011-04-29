@@ -47,9 +47,10 @@
 (defvar *client-count* 0)
 
 (defun check-for-clients ()
-  (when (socket-server-connect :timeout 0)
-    (incf *client-count*)
-    (format t "Client joined! (Total: ~a)~%" *client-count*)))
+  (let ((client (socket-server-connect :timeout 0)))
+    (when client
+      (incf *client-count*)
+      (format t "Client ~a joined! (Total: ~a)~%" client *client-count*))))
 
 (defvar *my-buffer*)
 
@@ -67,12 +68,16 @@
     (format t "The message from ~a was ~a~%" src str)
     (send-string src (concatenate 'string "ACK: " str))))
 
+(defun handle-disconnect (client)
+  (format t "Client ~a disconnected.~%" client))
+
 (defun server-main ()
   ;; TODO: Customizable server port
   (format t "Please wait while the server starts up...~%")
   (when (not (socket-server-start 9001))
     (format t "Unable to start the server~%")
     (return-from server-main))
+  (socket-disconnect-callback #'handle-disconnect)
   (format t "Join when ready.~%")
 
   (loop

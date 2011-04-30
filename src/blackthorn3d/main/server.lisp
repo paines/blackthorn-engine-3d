@@ -82,14 +82,14 @@
   (decf *client-count*)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
 
-(defun server-main ()
-  ;; TODO: Customizable server port
-  (format t "Please wait while the server starts up...~%")
-  (when (not (socket-server-start 9001))
+(defun server-main (host port)
+  (declare (ignore host))
+
+  (when (not (socket-server-start port))
     (format t "Unable to start the server~%")
     (return-from server-main))
   (socket-disconnect-callback #'handle-disconnect)
-  (format t "Join when ready.~%")
+  (format t "Server running on port ~a.~%" port)
 
   (setf *box-server-entity*
         (make-server-entity

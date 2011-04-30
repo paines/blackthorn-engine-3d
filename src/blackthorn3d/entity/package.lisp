@@ -43,6 +43,7 @@
    :make-client-entity
    :lookup-entity
    :list-entities
+   :remove-entity
    :forget-server-entity-changes
 
    ;; event.lisp

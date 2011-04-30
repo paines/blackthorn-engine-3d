@@ -121,6 +121,10 @@
   (iter (for (nil entity) in-hashtable *global-oid-table*)
         (collect entity)))
 
+(defun remove-entity (object)
+  (unintern-entity object)
+  (remember-removed-server-entity object))
+
 (make-uint-serializer :oid 4)
 
 (make-vec-serializer :vec3 :float32 3)

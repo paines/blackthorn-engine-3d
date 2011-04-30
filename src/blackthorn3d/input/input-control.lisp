@@ -48,8 +48,8 @@
     (with-slots (kind) system
         (case kind
             (:keyboard 
-              (+ (if (sdl:get-key-state :sdl-key-right) 1.0  0)
-                 (if (sdl:get-key-state :sdl-key-left) -1.0  0)))
+              (+ (if (sdl:get-key-state :sdl-key-d) 1.0  0)
+                 (if (sdl:get-key-state :sdl-key-a) -1.0  0)))
             #+windows
             (:xbox (/ (xbox360_get_lx 0) 65535))
             (otherwise 0))))
@@ -58,8 +58,8 @@
     (with-slots (kind) system
         (case kind
             (:keyboard
-               (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
-                  (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
+               (+ (if (sdl:get-key-state :sdl-key-w) 1.0 0)
+                  (if (sdl:get-key-state :sdl-key-s) -1.0 0)))
             #+windows
             (:xbox (/ (xbox360_get_ly 0) 65535))
             (otherwise 0))))
@@ -80,8 +80,8 @@
     (with-slots (kind) system
         (case kind
             (:keyboard
-                (+ (if (sdl:get-key-state :sdl-key-a) -1.0 0)
-                   (if (sdl:get-key-state :sdl-key-d)  1.0 0)))
+                (+ (if (sdl:get-key-state :sdl-key-left) -1.0 0)
+                   (if (sdl:get-key-state :sdl-key-right)  1.0 0)))
             #+windows
             (:xbox (/ (xbox360_get_rx 0) 65535))
             (otherwise 0))))
@@ -95,8 +95,8 @@
     (with-slots (kind) system
         (case kind
             (:keyboard
-                (+ (if (sdl:get-key-state :sdl-key-w) 1.0 0)
-                   (if (sdl:get-key-state :sdl-key-s) -1.0 0)))
+                (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
+                   (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
             #+windows
             (:xbox (/ (xbox360_get_ry 0) 65535))
             (otherwise 0))))

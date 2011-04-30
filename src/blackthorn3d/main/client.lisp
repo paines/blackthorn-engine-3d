@@ -46,7 +46,7 @@
 
 (defvar *message-counter* 0)
 
-(defun client-main ()
+(defun client-main (host port)
   (setup-paths)
   (load-dlls)
   (blt3d-gfx:init)
@@ -54,7 +54,7 @@
   (setf *random-state* (make-random-state t))
 
   ;; TODO: Don't hard code connection information
-  (unless (socket-client-connect "127.0.0.1" 9001 :timeout 1.0)
+  (unless (socket-client-connect host port :timeout 1.0)
     (format t "Error: Failed to connect.~%")
     (return-from client-main))
 

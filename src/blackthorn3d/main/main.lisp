@@ -55,8 +55,7 @@
 (defparameter *cli-options*
   '((("server" #\s) :type string :optional t)
     (("connect" #\c) :type string :optional t)
-    (("port" #\P) :type integer :initial-value 12345)
-    (("players") :type integer :initial-value 2)))
+    (("port" #\P) :type integer :initial-value 12345)))
 
 (defun cli-get-mode ()
   (let* ((args (command-line-arguments:get-command-line-arguments))
@@ -66,9 +65,8 @@
                              (nthcdr (1+ it) args)))))
     (append (or (aif (getf opts :server) (list :server it))
                 (aif (getf opts :connect) (list :client it))
-                (list :normal nil))
-            (list (getf opts :port)
-                  (getf opts :players)))))
+                (list :offline nil))
+            (list (getf opts :port)))))
 
 ;;;
 ;;; Main Game Driver
@@ -81,13 +79,13 @@
   
   ;; switch to server mode, or else continue based on command line args
   (let ((modes (cli-get-mode)))
-    (when (eq (first modes) :server)
-      (server-main)
+    (when (eql (first modes) :server)
+      (apply #'server-main (rest modes))
       (if exit-when-done
           (exit)
           (return-from main)))
-    (when (eq (first modes) :client)
-      (client-main)
+    (when (eql (first modes) :client)
+      (apply #'client-main (rest modes))
       (if exit-when-done
           (exit)
           (return-from main))))

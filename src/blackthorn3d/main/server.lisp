@@ -30,10 +30,16 @@
 
 (defgeneric update (a-server-entity))
 
+(defmethod update ((e entity-server))
+  (declare (ignore e)))
+
 (defmethod update ((b ball))
   #+disabled
   (format t "I am ball #~a. I am at ~a~%" (oid b) (pos b))
   (incf (pos b)))
+
+(defmethod update ((c blt3d-gfx:camera))
+  (blt3d-gfx:update-camera c (/ 1.0 120.0)))
 
 #+disabled ; TODO: Is this really what we want to do?
 (defvar *living-things*
@@ -95,21 +101,15 @@
         (make-server-entity
          'entity-server 
          :pos (make-point3 0.0 0.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0) 
-         :up  (make-vec3 0.0 1.0 0.0)))
+         :dir (make-vec3 1.0 0.0 0.0)
+         :up  (make-vec3 0.0 1.0 0.0))
+
+        )
 
   (loop
      (next-frame)
-     #+disabled             ; TODO: Is this really what we want to do?
-     (iter (for thing in *living-things*)
+     (iter (for thing in (list-entities))
            (update thing))
-       
-     ;; check for clients to join
-     (let ((new-client (check-for-clients))
-           #+disabled (camera nil)) ; TODO: Create a camera for new client.
-       (when new-client (send-all-entities new-client))
-       #+disabled
-       (message-send new-client (make-event :camera camera)))
 
      ;; insert network code call here
      (iter (for (src message) in (message-receive-all :timeout 0))
@@ -117,5 +117,19 @@
      (message-send :broadcast (make-event :entity-create))
      (message-send :broadcast (make-event :entity-update))
      (message-send :broadcast (make-event :entity-remove))
+       
+     ;; check for clients to join
+     (let ((new-client (check-for-clients)))
+       (when new-client
+         (let ((camera (make-server-entity
+                    'blt3d-gfx:camera
+                    :pos (make-point3 0.0 0.0 0.0)
+                    :dir (make-vec3 1.0 0.0 0.0)
+                    :up  (make-vec3 0.0 1.0 0.0)
+                    :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
+                    :target *box-server-entity*
+                    :mode :third-person)))
+           (send-all-entities new-client)
+           (message-send new-client (make-event :camera :camera camera)))))
 
      (sleep 1/120)))

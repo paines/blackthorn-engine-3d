@@ -269,7 +269,6 @@
 
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)
-  
   (let ((images-ht (make-hash-table :test #'equal))
         (effects-ht (make-hash-table :test #'equal))
         (materials-ht (make-hash-table :test #'equal)))
@@ -320,7 +319,7 @@
         (print transform)
         (collect (make-instance 'model-shape
                                 :mesh (gethash geom-id geometry)
-                                ;:matrix transform
+                                :matrix transform
                                 ))))
 
 (defun load-dae (filename)

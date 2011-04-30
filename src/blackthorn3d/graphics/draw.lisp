@@ -176,7 +176,11 @@
   (gl:with-pushed-matrix
     (gl:scale size size size)
     (gl:with-primitives :quads
+      (gl:normal 0.0 1.0 0.0)
       (gl:vertex -1.0 0.0 1.0)
+      (gl:normal 0.0 1.0 0.0)
       (gl:vertex 1.0 0.0 1.0)
+      (gl:normal 0.0 1.0 0.0)
       (gl:vertex 1.0 0.0 -1.0)
+      (gl:normal 0.0 1.0 0.0)
       (gl:vertex -1.0 0.0 -1.0))))

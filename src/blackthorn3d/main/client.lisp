@@ -47,10 +47,8 @@
      ;; TODO: Do it.
      )
     (:event-camera
-     ;; TODO: Update camera.
      (let ((camera (camera-event-camera (message-value message))))
-       ;; set the graphics camera to camera
-       ))))
+       (blt3d-gfx:set-camera camera)))))
 
 (defvar *message-counter* 0)
 

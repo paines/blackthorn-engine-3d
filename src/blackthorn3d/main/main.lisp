@@ -148,7 +148,7 @@
                           step-amt))))
 
           (let ((x-amt (input-move-x *input*))
-                (z-amt (input-move-y *input*)))
+                (z-amt (* -1.0 (input-move-y *input*))))
             (setf (pos box-entity)
                   (vec4+ (pos box-entity)
                          (make-vec3 (float x-amt) 0.0 (float z-amt)))))

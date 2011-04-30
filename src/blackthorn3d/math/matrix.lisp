@@ -197,7 +197,9 @@
   (make-matrix4x4 
    (iter (for i below 4) 
          (collect
-             (list (svref u i) (svref v i) (svref w i) (if (= i 3) 1.0 0.0))))))
+             (if (< i 3)
+                 (list (svref u i) (svref v i) (svref w i) 0.0)
+                 (list 0.0 0.0 0.0 1.0))))))
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
@@ -281,6 +283,14 @@
            (la-mat (make-ortho-basis u v w)))
       (setf (col la-mat 3) (matrix-multiply-v la-mat (vec-neg4 from)))
       la-mat)))
+
+(defun look-dir-matrix (from dir up)
+  (let* ((w (norm4 dir))
+         (u (norm4 (cross up w)))
+         (v (cross w u))
+         (ld-mat (make-ortho-basis u v w)))
+    (setf (col ld-mat 3) (matrix-multiply-v ld-mat (vec-neg4 from)))
+    ld-mat))
 
 (defun rt-inverse (mat)
   (let ((Rmat (copy-matrix mat))

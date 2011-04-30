@@ -72,7 +72,8 @@
                                      (:module physics
                                               :components
                                               ((:file "package")
-                                               (:file "physics"))
+                                               (:file "shapes")
+                                               (:file "collision"))
                                               :serial t)
                                      (:module graphics
                                               :components

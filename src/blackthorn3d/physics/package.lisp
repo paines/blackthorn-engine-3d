@@ -30,10 +30,24 @@
   (:use :iter :cl :alexandria :userial :blt3d-math)
   (:export
 
-   ;; physics.lisp
-   :sphere
-   :collide-p
+   ;; shapes.lisp
+   ; bounding-sphere
+   :bounding-sphere
+   :pos
+   :rad
+
+   ; aa-bounding-box
+   :aa-bounding-box
+   :a-min
+   :a-max
+   
    :find-bounding-points
+   :make-bounding-box
+   :make-bounding-sphere
    :make-bounding-volume
+
+   ;; collision.lisp
+   :collide-p
+   
 
    ))

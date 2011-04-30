@@ -43,29 +43,57 @@
 (in-suite blackthorn3d-phy)
 
 (test collide-p
-  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 5))
-        (s2 (make-instance 'sphere :pos (make-vector3 1 1 1) :rad 2)))
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 5))
+        (s2 (make-instance 'bounding-sphere :pos (make-point3 1 1 1) :rad 2)))
     (is (eql (collide-p s1 s2) t)))
     ; expect T
-  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 1))
-        (s2 (make-instance 'sphere :pos (make-vector3 3 3 3) :rad 2)))
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 1))
+        (s2 (make-instance 'bounding-sphere :pos (make-point3 3 3 3) :rad 2)))
     (is (eql (collide-p s1 s2) nil)))
     ; expect NIL
-  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0) :rad 1))
-        (s2 (make-instance 'sphere :pos (make-vector3 0 2 0) :rad 1)))
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 1))
+        (s2 (make-instance 'bounding-sphere :pos (make-point3 0 2 0) :rad 1)))
     (is (eql (collide-p s1 s2) nil)))
     ; expect NIL
-  (let ((s1 (make-instance 'sphere :pos (make-vector3 0 0 0)   :rad 1))
-        (s2 (make-instance 'sphere :pos (make-vector3 0 1.9 0) :rad 1)))
-    (is (eql (collide-p s1 s2) t))))
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
+       (s2 (make-instance 'bounding-sphere :pos (make-point3 0 1.9 0) :rad 1)))
+    (is (eql (collide-p s1 s2) t)))
     ; expect T
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 -1 -1 -1) 
+			                    :a-max (make-point3 1 1 1))))
+    (is (eql (collide-p s1 s2) t)))
+    ; expect T
+  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1 0 0) 
+			                    :a-max (make-point3 1 2 0))))
+    (is (eql (collide-p s1 s2) nil))))
+    ; expect NIL
 
 (test find-bounding-points
-      (let* ((vert-array (vector (make-vector3 1 1 1)
+      (let* ((vect-array (vector (make-vector3 1 1 1)
                                  (make-vector3 0 2 2)
                                  (make-vector3 3 0 3)
                                  (make-vector3 3 1 0)))
-             (pos-list (find-bounding-points vert-array)))
-        (is (equalp (aref pos-list 0) #(0 0 0)))
-	(is (equalp (aref pos-list 1) #(3 2 3)))) )
+             (pos-list (find-bounding-points vect-array)))
+        (is (equalp (aref pos-list 0) (make-point3 0 0 0)))
+	(is (equalp (aref pos-list 1) (make-point3 3 2 3)))))
+
+(test make-bounding-box
+      (let* ((vect-array (vector (make-vector3 1 1 1)
+                                 (make-vector3 0 3 2)
+                                 (make-vector3 3 0 3)
+                                 (make-vector3 3 1 0)))
+             (b-box (make-bounding-box vect-array)))
+        (is (equalp (a-min b-box) (make-point3 0 0 0)))
+	(is (equalp (a-max b-box) (make-point3 3 3 3)))))
+
+(test make-bounding-sphere
+      (let* ((vect-array (vector (make-vector3 1 1 4)
+                                 (make-vector3 0 3 2)
+                                 (make-vector3 4 0 3)
+                                 (make-vector3 3 4 0)))
+             (b-sphere (make-bounding-sphere vect-array)))
+	(is (equalp (pos b-sphere) (make-point3 2 2 2)))
+	(is (equalp (rad b-sphere) (sqrt 12)))))
 	

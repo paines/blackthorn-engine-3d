@@ -23,63 +23,44 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-math)
 
-(defpackage :blackthorn3d-graphics
-  (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent)
-  (:export
+;;;
+;;; 1D curves
+;;;
 
-   ;; draw.lisp
-   :draw-triangle
-   :draw-cube
-   :make-cube
-   :draw-vert-array
-   :make-vao-cube
-   :draw-vao-cube
-   :gfx-init
-   :gfx-draw
-   :draw-object
+(defvar herm-mat
+  #2A ((2.0 -3.0 0.0 1.0)
+       (-2.0 3.0 0.0 0.0)
+       (1.0 -2.0 1.0 0.0)
+       (1.0 -1.0 0.0 0.0)))
 
-   ; render.lisp
-   :init
-   :prepare-scene
-   :*main-cam*
-   :set-camera
-   :*main-cam-quat*
-   :render-frame
+(defmacro inv-lerp (time t0 t1)
+  (once-only (time t0 t1)
+             `(/ (- ,time ,t0) (- ,t1 ,t0))))
 
-   ;; frustum.lisp
-   :frustum
-   :make-frstm
-   :load-frstm
+#+disabled
+(defmacro t-vec (time)
+  (once-only (time)
+             `#(,(expt time 3) 
+                ,(expt time 2) 
+                ,time 
+                1.0)))
 
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :camera-move!
-   :camera-rotate!
-   :camera-lookat!
-   :camera-orbit!
-   :update-camera
-   :move-player
+;; Returns #(a b c d)
+(defun calc-1d-hermite-coefs (p0 p1 v0 v1 dt)
+  (let ((right-vec (make-vector4 p0 
+                                 p1 
+                                 (* dt v0) 
+                                 (* dt v1))))
+    (matrix-multiply-v herm-mat right-vec)))
 
-   ;; texture.lisp
-   :load-image
-   :image->texture2d
-
-   ;; mesh.lisp
-   :mesh
-   
-   ;; model.lisp
-   :model-shape
-
-   ;; dae-loader.lisp
-   :load-dae
-   ))
-        
-        
-        
+;; Returns a float
+(defun eval-1d-cubic (coefs time)
+  (let ((a (svref coefs 0))
+        (b (svref coefs 1))
+        (c (svref coefs 2))
+        (d (svref coefs 3)))
+    ;; optimized dot product type deal
+    ;; [t^3 t^2 t 1].[a b c d]
+    (+ d (* time (+ c (* time (+ b (* u a))))))))

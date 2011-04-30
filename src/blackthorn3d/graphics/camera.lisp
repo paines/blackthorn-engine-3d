@@ -48,22 +48,23 @@
     :documentation "the desired target(entity) of the camera. 
                     Used in 3rd person mode")
    (mode
-    :accessor cam-mode
+    :accessor mode
     :initarg :mode
     :initform :first-person)
    (matrix 
     :accessor matrix)))
 
-
-(defmethod update-fp-camera ((c camera) time)
+(defmethod update-fp-camera ((c camera) time input-vec)
   (setf (matrix c) (camera-inverse c)))
 
-(defmethod update-tp-camera ((c camera) time)
+(defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
-    (with-slots ((t-pos pos)) target
+    (with-slots ((t-pos pos)
+                 (t-dir dir)) target
       ;; Update the ideal azimuth (phi) based on the camera's
       ;; position relative to the target
-      ;; note: this allows the camera to lazily rotate around
+      ;; note1: x is 'aligned' with the target, z to the right
+      ;; note2: this allows the camera to lazily rotate around
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
                                         ;#+disabled
@@ -79,16 +80,17 @@
         (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
         (setf (pos c) (vec4+ pos (vec-scale4 veloc time)))
         (setf (dir c) (norm4 (vec4- t-pos pos))))
-      (setf (matrix c) (look-at-matrix pos t-pos up)))))
+      ;(setf (matrix c) (look-at-matrix pos t-pos up))
+      )))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 
 ;; the matrix when it changes
-(defmethod update-camera ((c camera) time)
+(defmethod update-camera ((c camera) time input-vec)
   (with-slots (mode) c
     (case mode
-      (:first-person (update-fp-camera c time))
-      (:third-person (update-tp-camera c time)))))
+      (:first-person (update-fp-camera c time input-vec))
+      (:third-person (update-tp-camera c time input-vec)))))
 
 (defmethod camera-matrix ((c camera))
   "@return{A 4x4 matrix representing a camera's location and direction}"
@@ -112,6 +114,22 @@
            (cam-inv (make-ortho-basis x y z)))
       (setf (col cam-inv 3) (matrix-multiply-v cam-inv (vec-neg4 pos)))
       cam-inv)))
+
+(defmethod generate-move-vector ((c camera) input-vec)
+  (with-slots ((c-up up) (c-dir dir) target) c
+    (with-slots ((t-up up) (t-dir dir)) target
+      (let* ((x-axis (norm4 (cross c-dir t-up)))
+             (y-axis (cross t-up x-axis)))
+        (vec4+ (vec-scale4 x-axis (x input-vec))
+               (vec-scale4 y-axis (y input-vec)))))))
+
+(defmethod move-player ((c camera) input-vec)
+  (with-slots (target (c-up up) (x2 dir) (c-pos pos)) c
+    (with-slots ((t-up up) (x1 dir) (t-pos pos) client) target
+      (let ((z1 (cross x1 t-up))
+            (z2 (cross x2 c-up)))
+        (setf (pos target) 
+              (vec4+ t-pos (generate-move-vector c input-vec)))))))
 
 (defmethod camera-move! ((c camera) vec4)
   "translates the camera by vec3. This is sort of temporary, as once we

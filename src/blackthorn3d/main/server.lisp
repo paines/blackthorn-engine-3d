@@ -90,6 +90,7 @@
 
 (defmethod update ((p Player))
     (with-slots (client) p
+      #+disabled
       (setf (pos p)
         (vec4+ (pos p)
                (make-vec3 (float (s-input-move-x client)) 
@@ -103,7 +104,11 @@
   (incf (pos b)))
 
 (defmethod update ((c blt3d-gfx:camera))
-  (blt3d-gfx:update-camera c (/ 1.0 120.0)))
+  (let ((client (player-client (blt3d-gfx:target c))))
+    (blt3d-gfx:move-player c (vector (s-input-move-x client)
+                                     (s-input-move-y client)))
+    (blt3d-gfx:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
+                                                     (s-input-view-y client)))))
 
 #+disabled ; TODO: Is this really what we want to do?
 (defvar *living-things*

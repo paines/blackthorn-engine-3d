@@ -142,10 +142,10 @@
                          (/ radical 2.0))))             ; qw
 
 (defun quat-slerp (q1 q2 s)
-  (let ((phi (iter (for a in-vector q1)
-                   (for b in-vector q2)
-                   (sum (* a b))))
-        (sin-phi (sin phi)))
+  (let* ((phi (iter (for a in-vector q1)
+                    (for b in-vector q2)
+                    (sum (* a b))))
+         (sin-phi (sin phi)))
     (quat+ (quat-scale q1 (/ (sin (* phi (- 1 s))) 
                              sin-phi))
            (quat-scale q2 (/ (sin (* phi s)) 

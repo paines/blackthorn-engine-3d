@@ -43,30 +43,52 @@
 (in-suite blackthorn3d-phy)
 
 (test collide-p
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 5))
-        (s2 (make-instance 'bounding-sphere :pos (make-point3 1 1 1) :rad 2)))
-    (is (eql (collide-p s1 s2) t)))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 5.0))
+        (s2 (make-instance 'bounding-sphere
+                           :pos (make-point3 1.0 1.0 1.0)
+                           :rad 2.0)))
+    (is (eql (collide-p s1 s2) t))
+    )
     ; expect T
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 1))
-        (s2 (make-instance 'bounding-sphere :pos (make-point3 3 3 3) :rad 2)))
-    (is (eql (collide-p s1 s2) nil)))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+        (s2 (make-instance 'bounding-sphere
+                           :pos (make-point3 3.0 3.0 3.0)
+                           :rad 2.0)))
+    (is (eql (collide-p s1 s2) nil))
+    )
     ; expect NIL
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0) :rad 1))
-        (s2 (make-instance 'bounding-sphere :pos (make-point3 0 2 0) :rad 1)))
-    (is (eql (collide-p s1 s2) nil)))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+        (s2 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 2.0 0.0)
+                           :rad 1.0)))
+    (is (eql (collide-p s1 s2) nil))    )
     ; expect NIL
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
-       (s2 (make-instance 'bounding-sphere :pos (make-point3 0 1.9 0) :rad 1)))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+        (s2 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 1.9 0.0)
+                           :rad 1.0)))
     (is (eql (collide-p s1 s2) t)))
     ; expect T
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
-	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 -1 -1 -1) 
-			                    :a-max (make-point3 1 1 1))))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 -1.0 -1.0 -1.0) 
+			                    :a-max (make-point3 1.0 1.0 1.0))))
     (is (eql (collide-p s1 s2) t)))
     ; expect T
-  (let ((s1 (make-instance 'bounding-sphere :pos (make-point3 0 0 0)   :rad 1))
-	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1 0 0) 
-			                    :a-max (make-point3 1 2 0))))
+  (let ((s1 (make-instance 'bounding-sphere
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1.1 0.0 0.0) 
+			                    :a-max (make-point3 1.1 2.0 0.0))))
     (is (eql (collide-p s1 s2) nil))))
     ; expect NIL
 

@@ -275,6 +275,8 @@
            ( 0.0 0.0 ,(/ (- (* 2 far near)) f-n) 0.0))))))
 
 (defun look-at-matrix (from to up)
+  "Returns a matrix that transforms points and vectors to a coordinate
+   system that looks at TO from FROM with UP as the up orientation"
   (let* ((dir (vec4- from to)))
     (setf (w dir) 0.0)
     (let* ((w (norm4 dir))
@@ -285,6 +287,8 @@
       la-mat)))
 
 (defun look-dir-matrix (from dir up)
+  "Returns a matrix that transforms points and vectors to a coordinate
+   system that looks from FROM in direction DIR with UP as up"
   (let* ((w (vec-neg4 (norm4 dir)))
          (u (norm4 (cross up w)))
          (v (cross w u))
@@ -299,3 +303,25 @@
     (setf Rmat (transpose Rmat))
     (setf (col Rmat 3) Tvec)
     Rmat))
+
+(defun vec-cols->matrix (vecs)
+  (let* ((n-rows (iter (for vec in-vector vecs)
+                       (minimizing (length vec))))
+         (n-cols (length vecs))
+         (n-mat (make-matrix (list n-cols n-rows))))
+    (iter (for i below (* n-rows n-cols) by n-rows)
+          (for vec in-vector vecs)
+          (iter (for j below n-rows)
+                (setf (row-major-aref n-mat (+ i j)) (svref vec j))))
+    n-mat))
+
+(defun vec-rows->matrix (vecs)
+  (let* ((n-cols (iter (for vec in-vector vecs)
+                       (minimizing (length vec))))
+         (n-rows (length vecs))
+         (n-mat (make-matrix (list n-cols n-rows))))
+    (iter (for i below (* n-rows n-cols) by n-rows)
+          (iter (for j below n-rows)
+                (for vec in-vector vecs)
+                (setf (row-major-aref n-mat (+ i j)) (svref vec j))))
+    n-mat))

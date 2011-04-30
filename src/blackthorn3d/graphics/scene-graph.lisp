@@ -23,63 +23,38 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-graphics)
 
-(defpackage :blackthorn3d-graphics
-  (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent)
-  (:export
+;;;
+;;; Scene graph/tree
+;;;
+;;;  a simple implementation of a list-based tree with some utility
+;;;  functions. 
+;;; Structure of a node:
+;;;  (WORLD-MATRIX OBJECT LEFT-CHILD RIGHT-CHILD)
+;;;  WORLD-MATRIX - the matrix used to transform local coordinates
+;;;                 at this node to world coordinates
+;;;  OBJECT - a place to store some other data, a model, or joint data
+;;;  LEFT-CHILD - either another node or nil
+;;;  RIGHT-CHILD - either another node or ni
+;;;
 
-   ;; draw.lisp
-   :draw-triangle
-   :draw-cube
-   :make-cube
-   :draw-vert-array
-   :make-vao-cube
-   :draw-vao-cube
-   :gfx-init
-   :gfx-draw
-   :draw-object
+(defstruct node
+  (world-mat (make-identity-matrix))
+  obj
+  (l nil)
+  (r nil))
 
-   ; render.lisp
-   :init
-   :prepare-scene
-   :*main-cam*
-   :set-camera
-   :*main-cam-quat*
-   :render-frame
-
-   ;; frustum.lisp
-   :frustum
-   :make-frstm
-   :load-frstm
-
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :camera-move!
-   :camera-rotate!
-   :camera-lookat!
-   :camera-orbit!
-   :update-camera
-   :move-player
-
-   ;; texture.lisp
-   :load-image
-   :image->texture2d
-
-   ;; mesh.lisp
-   :mesh
-   
-   ;; model.lisp
-   :model-shape
-
-   ;; dae-loader.lisp
-   :load-dae
-   ))
-        
-        
-        
+#+disabled
+(defun dfs (scene fn &key (order :in))
+  (when (consp scene)
+    (case order
+      (:pre (fn scene) 
+            (dfs (node-l scene)) 
+            (dfs (node-r scene)))
+      (:in (dfs (node-l scene))
+           (fn scene)
+           (dfs (node-r scene)))
+      (:post (dfs (node-l scene))
+             (dfs (node-r scene))
+             (fn scene)))))

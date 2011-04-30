@@ -75,6 +75,8 @@
    :look-at-matrix
    :look-dir-matrix
    :rt-inverse
+   :vec-cols->matrix
+   :vec-rows->matrix
 
    ;; quaternion.lisp
    :make-quat
@@ -90,5 +92,9 @@
 
    ;; utils.lisp
    :deg->rad
+
+   ;; curves.lisp
+   :calc-1d-hermite-coefs
+   :eval-1d-curve
 
    ))

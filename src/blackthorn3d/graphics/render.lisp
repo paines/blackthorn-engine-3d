@@ -82,9 +82,10 @@
 
   (load-frstm *frustum*)
   (gl:load-identity)
+
   (gl:light :light0 :position '(20.0 20.0 20.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  ;(gl:enable :lighting)
+  (gl:enable :lighting)
   (gl:enable :light0)
 
   #+disabled
@@ -104,7 +105,8 @@
   (when *main-cam*
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)
-                                     (up  *main-cam*))))
+                                     (up  *main-cam*)))
+    ())
   (gl:light :light0 :position '(6.0 6.0 6.0 1.0))   
   (gl:use-program 0)
  
@@ -112,7 +114,7 @@
     (when (shape e)
       (with-slots (pos dir up shape) e
         (let ((x (cross up dir)))
-          (gl:color 1.0 0.3 0.3)
+          (gl:color 1.0 0.1 0.1)
           (draw-plane 20)
           (gl:color 0.0 1.0 1.0)
           (gl:with-pushed-matrix

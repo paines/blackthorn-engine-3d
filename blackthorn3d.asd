@@ -48,7 +48,8 @@
                                                (:file "vector")
                                                (:file "matrix")
                                                (:file "quaternion")
-                                               (:file "utils"))
+                                               (:file "utils")
+                                               (:file "curves"))
                                               :serial t)
                                      (:module resources
                                               :components

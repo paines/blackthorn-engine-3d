@@ -147,13 +147,17 @@
        (send-string src (concatenate 'string "ACK: " str))))
     (:event-input
      (let* ((inputs (message-value message))
-            (z-amt (input-amount (find :x inputs :key #'input-type)))
-            (x-amt (input-amount (find :y inputs :key #'input-type))))
+            (move-x-amt (input-amount (find :move-x inputs :key #'input-type)))
+            (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
+            (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
+            (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
         (format t "Input update: ~a; has client? ~a~%" src (getf *client-controllers* src))    
             
         (when (getf *client-controllers* src)
-          (setf (move-x (getf *client-controllers* src)) z-amt)
-          (setf (move-y (getf *client-controllers* src)) x-amt))
+          (setf (move-x (getf *client-controllers* src)) move-x-amt)
+          (setf (move-y (getf *client-controllers* src)) move-y-amt)
+          (setf (view-x (getf *client-controllers* src)) view-x-amt)
+          (setf (view-y (getf *client-controllers* src)) view-y-amt))
        ))))
 
 (defun handle-disconnect (client)

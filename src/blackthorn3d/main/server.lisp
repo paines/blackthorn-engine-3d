@@ -105,12 +105,17 @@
            (update thing))
        
      ;; check for clients to join
-     (let ((new-client (check-for-clients)))
-       (when new-client (send-all-entities new-client)))
+     (let ((new-client (check-for-clients))
+           #+disabled (camera nil)) ; TODO: Create a camera for new client.
+       (when new-client (send-all-entities new-client))
+       #+disabled
+       (message-send new-client (make-event :camera camera)))
 
      ;; insert network code call here
      (iter (for (src message) in (message-receive-all :timeout 0))
            (handle-message-server src message))
+     (message-send :broadcast (make-event :entity-create))
      (message-send :broadcast (make-event :entity-update))
+     (message-send :broadcast (make-event :entity-remove))
 
      (sleep 1/120)))

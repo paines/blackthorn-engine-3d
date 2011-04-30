@@ -42,7 +42,15 @@
     (:event-entity-update
      ;; Nothing needs to be done, unserializing the message already
      ;; updated the entity state.
-     )))
+     )
+    (:event-entity-remove
+     ;; TODO: Do it.
+     )
+    (:event-camera
+     ;; TODO: Update camera.
+     (let ((camera (camera-event-camera (message-value message))))
+       ;; set the graphics camera to camera
+       ))))
 
 (defvar *message-counter* 0)
 
@@ -82,26 +90,6 @@
         ;; move camera based on keyboard/xbox controller
         #+windows
         (xbox360_poll 0)
-        
-        #+disabled
-        (let* ((move-x (input-move-x *input*))
-               (move-y (input-move-y *input*))
-               (rot-amt  (* -1 move-x))
-               (step-amt (*  1 move-y)))
-                       
-          (send-string :server (format nil "move-x: ~a" move-x))
-          (send-string :server (format nil "move-y: ~a" move-y))
-                     
-          (setf (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
-                (quat-rotate-vec
-                 (axis-rad->quat (make-vec3 0.0 1.0 0.0)
-                                 (deg->rad (* 2.7 rot-amt)))
-                 (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
-          (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
-                (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
-                       (vec-scale4
-                        (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
-                        step-amt))))
 
         (let ((x (float (input-view-x *input*)))
               (y (float (input-view-y *input*))))

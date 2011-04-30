@@ -137,3 +137,7 @@
                            (:vec4 pos
                             :vec4 dir
                             :vec4 up))
+
+(make-init-slot-serializer :entity-oid
+                           (lookup-entity) (:oid oid)
+                           ())

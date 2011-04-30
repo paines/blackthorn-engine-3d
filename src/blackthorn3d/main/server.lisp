@@ -185,13 +185,8 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  ;(setf *box-server-entity*
-  ;      (new-player)
-  ;
-  ;      )
-
   (loop
-     (next-frame)
+    (next-frame)
      (iter (for thing in (list-entities))
            (update thing))
 
@@ -203,11 +198,15 @@
      (message-send :broadcast (make-event :entity-remove))
        
      ;; check for clients to join
+     ;; TODO: Check this for errors. It seems very likely to be missing cases...
+     ;; Note -- The concurrency constraints make this very tricky to write!
+     (forget-server-entity-changes)
      (let ((new-client (check-for-clients)))
        (when new-client
          (new-server-controller new-client)
+         (send-all-entities new-client)
          (let ((camera (new-camera (new-player new-client))))
-           (send-all-entities new-client)
+           (message-send :broadcast (make-event :entity-create))
            (message-send new-client (make-event :camera :camera camera)))))
 
      (sleep 1/120)))

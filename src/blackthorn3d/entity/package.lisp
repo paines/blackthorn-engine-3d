@@ -49,5 +49,6 @@
    :make-event
    :input-type
    :input-amount
+   :camera-event-camera
 
    ))

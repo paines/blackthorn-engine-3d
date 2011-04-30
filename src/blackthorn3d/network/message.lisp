@@ -62,7 +62,8 @@
                                      :event-input
                                      :event-entity-create
                                      :event-entity-update
-                                     :event-entity-remove))
+                                     :event-entity-remove
+                                     :event-camera))
 
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
   (with-buffer buffer

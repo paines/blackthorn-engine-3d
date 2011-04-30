@@ -76,3 +76,15 @@
                       (make-instance 'input-event
                                      :input-type :y
                                      :input-amount y))))
+
+(defclass camera-event ()
+  ((camera
+    :accessor camera-event-camera
+    :initarg :camera)))
+
+(make-slot-serializer :camera
+                      (make-instance 'camera-event)
+                      (:entity-oid camera))
+
+(defmethod make-event ((type (eql :camera)) &key camera)
+  (make-message :event-camera camera))

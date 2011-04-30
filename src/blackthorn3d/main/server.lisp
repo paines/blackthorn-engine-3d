@@ -48,7 +48,7 @@
       (:documentation "Represents state of a client's controller"))
       
 (defun new-server-controller (client)
-    (let (sc (make-instance 'server-controller))
+    (let ((sc (make-instance 'server-controller)))
         (setf (getf *client-controllers* client) sc)))
         
 (defun remove-server-controller (client)
@@ -56,28 +56,24 @@
         
 (flet ((with-controller (client-id f)
     (let ((controller (getf *client-controllers* client-id)))
-      (cond ((eq controller nil) 0)
-            (t (apply f controller))))))
+      (if (eq controller nil) 0
+          (funcall f controller)))))
     
     (defun s-input-move-x (client-id)
-      (with-controller client-id #'(lambda (c)
-        (move-x c))))
+      (with-controller client-id #'move-x))
     (defun s-input-move-y (client-id)
-      (with-controller client-id #'(lambda (c)
-        (move-y c))))
+      (with-controller client-id #'move-y))
     (defun s-input-view-x (client-id)
-      (with-controller client-id #'(lambda (c)
-        (view-x c))))
+      (with-controller client-id #'view-x))
     (defun s-input-view-y (client-id)
-      (with-controller client-id #'(lambda (c)
-        (view-y c)))))
+      (with-controller client-id #'view-y)))
         
 ; END: move this to input handling
 
 (defclass Player (entity-server)
   ((client
         :accessor player-client
-        :initarg nil
+        :initarg :client
         :documentation "The socket symbol for the player's client")))
 
 (defvar *client->player* '())
@@ -148,6 +144,7 @@
      (let* ((inputs (message-value message))
             (z-amt (input-amount (find :x inputs :key #'input-type)))
             (x-amt (input-amount (find :y inputs :key #'input-type))))
+        (format t "Input update: ~a; has client? ~a~%" src (getf *client-controllers* src))    
             
         (when (getf *client-controllers* src)
           (setf (move-x (getf *client-controllers* src)) z-amt)
@@ -162,7 +159,8 @@
 
 (defun new-player (client-id)
     (let ((p (make-server-entity
-         'entity-server 
+         'Player
+         :client client-id
          :pos (make-point3 0.0 0.0 0.0)
          :dir (make-vec3 1.0 0.0 0.0)
          :up  (make-vec3 0.0 1.0 0.0))))
@@ -207,6 +205,7 @@
      ;; check for clients to join
      (let ((new-client (check-for-clients)))
        (when new-client
+         (new-server-controller new-client)
          (let ((camera (new-camera (new-player new-client))))
            (send-all-entities new-client)
            (message-send new-client (make-event :camera :camera camera)))))

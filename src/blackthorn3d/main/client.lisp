@@ -89,9 +89,15 @@
         #+windows
         (xbox360_poll 0)
 
-        (let ((x (float (input-view-x *input*)))
-              (y (float (input-view-y *input*))))
-          (message-send :server (make-event :input :x (* 0.1 x) :y (* 0.1 y))))
+        (let ((mx (float (input-move-x *input*)))
+              (my (float (input-move-y *input*)))
+              (vx (float (input-view-x *input*)))
+              (vy (float (input-view-y *input*))))
+          (message-send :server (make-event :input 
+            :move-x (* 0.1 mx) 
+            :move-y (* 0.1 my)
+            :view-x (* 0.1 vx)
+            :view-y (* 0.1 vy))))
 
         (blt3d-gfx:render-frame (list-entities))
 

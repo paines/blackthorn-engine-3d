@@ -96,3 +96,9 @@
                                                            :buffer buffer)))
                              types slots))
                  (values ,obj-sym buffer)))))))))
+
+(defmethod serialize ((type (eql :single-float)) value &key (buffer *buffer*))
+  (serialize :float32 (coerce value 'single-float) :buffer buffer))
+
+(defmethod unserialize ((type (eql :single-float)) &key (buffer *buffer*))
+  (unserialize :float32 :buffer buffer))

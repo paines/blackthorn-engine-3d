@@ -91,7 +91,7 @@
 
         (let ((x (float (input-view-x *input*)))
               (y (float (input-view-y *input*))))
-          (message-send :server (make-event :input :x x :y y)))
+          (message-send :server (make-event :input :x (* 0.1 x) :y (* 0.1 y))))
 
         (blt3d-gfx:render-frame (list-entities))
 

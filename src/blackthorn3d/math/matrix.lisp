@@ -285,7 +285,7 @@
       la-mat)))
 
 (defun look-dir-matrix (from dir up)
-  (let* ((w (norm4 dir))
+  (let* ((w (vec-neg4 (norm4 dir)))
          (u (norm4 (cross up w)))
          (v (cross w u))
          (ld-mat (make-ortho-basis u v w)))

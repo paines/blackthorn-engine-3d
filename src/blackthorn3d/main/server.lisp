@@ -25,16 +25,84 @@
 
 (in-package :blackthorn3d-main)
 
-(defclass ball (entity-server)
-  ())
+; move this to somewhere in input handling eventually
+(defvar *client-controllers* nil)
 
+(defclass server-controller ()
+    ((move-x
+        :accessor move-x
+        :initform 0
+        :documentation "the state of the move-x axis")
+     (move-y
+        :accessor move-y
+        :initform 0
+        :documentation "the state of the move-y axis")
+     (view-x
+        :accessor view-x
+        :initform 0
+        :documentation "the state of the view-x axis")
+     (view-y
+        :accessor view-y
+        :initform 0
+        :documentation "the state of the view-y axis"))
+      (:documentation "Represents state of a client's controller"))
+      
+(defun new-server-controller (client)
+    (let (sc (make-instance 'server-controller))
+        (setf (getf *client-controllers* client) sc)))
+        
+(defun remove-server-controller (client)
+    (remf *client-controllers* client))
+        
+(flet ((with-controller (client-id f)
+    (let ((controller (getf *client-controllers* client-id)))
+      (cond ((eq controller nil) 0)
+            (t (apply f controller))))))
+    
+    (defun s-input-move-x (client-id)
+      (with-controller client-id #'(lambda (c)
+        (move-x c))))
+    (defun s-input-move-y (client-id)
+      (with-controller client-id #'(lambda (c)
+        (move-y c))))
+    (defun s-input-view-x (client-id)
+      (with-controller client-id #'(lambda (c)
+        (view-x c))))
+    (defun s-input-view-y (client-id)
+      (with-controller client-id #'(lambda (c)
+        (view-y c)))))
+        
+; END: move this to input handling
+
+(defclass Player (entity-server)
+  ((client
+        :accessor player-client
+        :initarg nil
+        :documentation "The socket symbol for the player's client")))
+
+(defvar *client->player* '())
+(defun register-player (p c)
+    (setf (getf *client->player* c) p))
+(defun remove-player (client)
+    ; FIXME: Need to remove player entity as well!
+    (remf *client->player* client))
+        
 (defgeneric update (a-server-entity))
 
 (defmethod update ((e entity-server))
-  (declare (ignore e)))
+    (declare (ignore e)))
 
+(defmethod update ((p Player))
+    (with-slots (client) p
+      (setf (pos p)
+        (vec4+ (pos p)
+               (make-vec3 (float (s-input-move-x client)) 
+                          0.0 
+                          (float (s-input-move-y client))))))
+)
+
+#+disabled
 (defmethod update ((b ball))
-  #+disabled
   (format t "I am ball #~a. I am at ~a~%" (oid b) (pos b))
   (incf (pos b)))
 
@@ -52,7 +120,7 @@
   (forget-server-entity-changes))
 
 (defvar *client-count* 0)
-(defvar *box-server-entity*)
+;(defvar *box-server-entity*)
 
 (defun check-for-clients ()
   (let ((client (socket-server-connect :timeout 0)))
@@ -80,14 +148,36 @@
      (let* ((inputs (message-value message))
             (z-amt (input-amount (find :x inputs :key #'input-type)))
             (x-amt (input-amount (find :y inputs :key #'input-type))))
-       (setf (pos *box-server-entity*)
-             (vec4+ (pos *box-server-entity*)
-                    (make-vec3 (float x-amt) 0.0 (float z-amt))))))))
+            
+        (when (getf *client-controllers* src)
+          (setf (move-x (getf *client-controllers* src)) z-amt)
+          (setf (move-y (getf *client-controllers* src)) x-amt))
+       ))))
 
 (defun handle-disconnect (client)
+  (remove-server-controller client)
+  (remove-player client)
   (decf *client-count*)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
 
+(defun new-player (client-id)
+    (let ((p (make-server-entity
+         'entity-server 
+         :pos (make-point3 0.0 0.0 0.0)
+         :dir (make-vec3 1.0 0.0 0.0)
+         :up  (make-vec3 0.0 1.0 0.0))))
+    (register-player p client-id)))
+  
+(defun new-camera (player-entity)
+    (make-server-entity
+        'blt3d-gfx:camera
+        :pos (make-point3 0.0 0.0 0.0)
+        :dir (make-vec3 1.0 0.0 0.0)
+        :up  (make-vec3 0.0 1.0 0.0)
+        :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
+        :target player-entity
+        :mode :third-person))
+  
 (defun server-main (host port)
   (declare (ignore host))
 
@@ -97,14 +187,10 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  (setf *box-server-entity*
-        (make-server-entity
-         'entity-server 
-         :pos (make-point3 0.0 0.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0))
-
-        )
+  ;(setf *box-server-entity*
+  ;      (new-player)
+  ;
+  ;      )
 
   (loop
      (next-frame)
@@ -121,14 +207,7 @@
      ;; check for clients to join
      (let ((new-client (check-for-clients)))
        (when new-client
-         (let ((camera (make-server-entity
-                    'blt3d-gfx:camera
-                    :pos (make-point3 0.0 0.0 0.0)
-                    :dir (make-vec3 1.0 0.0 0.0)
-                    :up  (make-vec3 0.0 1.0 0.0)
-                    :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
-                    :target *box-server-entity*
-                    :mode :third-person)))
+         (let ((camera (new-camera (new-player new-client))))
            (send-all-entities new-client)
            (message-send new-client (make-event :camera :camera camera)))))
 

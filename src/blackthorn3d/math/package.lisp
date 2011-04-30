@@ -73,6 +73,7 @@
    :transpose
    :reshape
    :look-at-matrix
+   :look-dir-matrix
    :rt-inverse
 
    ;; quaternion.lisp

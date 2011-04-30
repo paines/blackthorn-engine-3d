@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math)
+  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent)
   (:export
 
    ;; draw.lisp
@@ -45,6 +45,7 @@
    :init
    :prepare-scene
    :*main-cam*
+   :set-camera
    :*main-cam-quat*
    :render-frame
 
@@ -64,8 +65,7 @@
    :camera-rotate!
    :camera-lookat!
    :camera-orbit!
-   :update-fp-camera
-   :update-tp-camera
+   :update-camera
 
    ;; texture.lisp
    :load-image

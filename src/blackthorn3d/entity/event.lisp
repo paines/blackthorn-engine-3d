@@ -87,4 +87,10 @@
                       (:entity-oid camera))
 
 (defmethod make-event ((type (eql :camera)) &key camera)
-  (make-message :event-camera camera))
+  (make-message :event-camera (make-instance 'camera-event :camera camera)))
+
+(defmethod serialize ((type (eql :event-camera)) value &key (buffer *buffer*))
+  (serialize :camera value :buffer buffer))
+
+(defmethod unserialize ((type (eql :event-camera)) &key (buffer *buffer*))
+  (unserialize :camera :buffer buffer))

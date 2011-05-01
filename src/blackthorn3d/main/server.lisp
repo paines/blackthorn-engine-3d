@@ -116,6 +116,81 @@
    (make-server-entity 'ball :pos 0)
    (make-server-entity 'ball :pos -1000)))
 
+   
+; simple monster experiment
+
+(defclass alarm (entity-server)
+    ((time-left
+       :accessor time-left
+       :initarg :time-left
+       :documentation "How long until alarm is triggered, in seconds.")
+     (then
+       :accessor then
+       :initform (get-internal-real-time))
+     (callback
+       :accessor callback
+       :initarg :callback
+       :documentation "Called when alarm goes off.")))
+       
+(defun kill (object)
+    (declare (ignore object))) ;todo: implement object death
+       
+(defmethod update ((a alarm))
+    (let* ((now (get-internal-real-time))
+           (elapsed (- now (then a))))
+   
+        (when (> elapsed 0)
+            (setf (then a) now)
+            (setf (time-left a) 
+              (- (time-left a) (/ elapsed internal-time-units-per-second))))
+              
+        (when (< (time-left a) 0)
+            (if (not (eq (callback a) nil))
+              (funcall (callback a)))
+            (setf (callback a) nil)
+            (kill a))))
+       
+(defclass cyclic-alarm (entity-server)
+    ((alarm
+      :accessor alarm
+      :initarg :alarm)))
+      
+(defmacro make-server-only (type &rest options)
+  `(make-server-entity ,type 
+      ; init w/ bogus values since these fields are not needed for server obj
+      :pos (make-point3 0.0 0.0 0.0)  
+      :dir (make-vec3 1.0 0.0 0.0)
+      :up  (make-vec3 0.0 1.0 0.0)
+      ,@options))
+      
+      
+(defun make-cyclic-alarm (period callback)
+    (let ((external-alarm (make-server-only 'cyclic-alarm
+                             :alarm nil)))
+        (labels ((indirect-callback ()
+            (setf (alarm external-alarm) (make-server-only 'alarm
+                :time-left period
+                :callback #'indirect-callback))
+            (funcall callback)
+            ))
+            
+            (setf (alarm external-alarm) (make-server-only 'alarm
+                :time-left period
+                :callback #'indirect-callback)))
+            external-alarm))
+
+;(defclass simple-monster (entity-server)
+;    ())
+
+; end: simple monster experiment
+   
+   
+   
+   
+   
+   
+   
+   
 (defun next-frame ()
   "Reset the state of things to begin processing the next frame"
   (forget-server-entity-changes))
@@ -193,9 +268,14 @@
         (progn ,@body)
      (finalize-server)))
 
+(defun hello ()
+    (format t "hello~%"))
+     
 (defun server-main (host port)
   (declare (ignore host))
 
+  (make-cyclic-alarm 2.0 #'hello)
+  
   (when (not (socket-server-start port))
     (format t "Unable to start the server~%")
     (return-from server-main))

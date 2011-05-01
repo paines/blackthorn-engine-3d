@@ -67,8 +67,7 @@
 
   (setf *random-state* (make-random-state t))
 
-  ;; TODO: Don't hard code connection information
-  (unless (socket-client-connect host port :timeout 1.0)
+  (unless (socket-client-connect host port #-allegro :timeout #-allegro 1.0)
     (format t "Error: Failed to connect.~%")
     (return-from client-main))
 

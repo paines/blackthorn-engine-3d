@@ -58,7 +58,7 @@
   (setf (matrix c) (camera-inverse c)))
 
 (defvar +phi-scale+ nil)
-(setf +phi-scale+ 1.0)
+(setf +phi-scale+ 15.0)
 
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
@@ -72,7 +72,7 @@
                                         ;#+disabled
       (setf (elt ideal-coord 0) (+ (atan (- (x pos) (x t-pos))
                                          (- (z pos) (z t-pos)))
-                                   (x input-vec)))
+                                   (* +phi-scale+ (x input-vec))))
 
       ;; calculate the camera's movement
       (let* ((ideal-pos (vec4+ t-pos (spherical->cartesian ideal-coord)))

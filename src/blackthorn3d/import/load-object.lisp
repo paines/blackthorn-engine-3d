@@ -178,10 +178,6 @@
 ;; If there is a semantic in ORDER that is not found
 ;; in ARRAYS then it will be set to 0.0
 (defun interleave (arrays order)
-  (format t "~%Interleaving~%")
-  (iter (for a in arrays)
-        (for (sem . el) in order)
-        (format t "array sem: ~a   order sem: ~a~%" (car a) sem))
   (let* ((size (iter (for (sem comp array) in arrays)
                      (minimizing (length array))))
          (depth (iter (for (sem . sz) in order)
@@ -193,7 +189,6 @@
           (iter (for (semantic . el-sz) in order)
                 (aif (find semantic arrays :key #'car :test #'equal)
                      (let ((i 0))
-                       ;(print it)
                        (iter (for elt in-vector (aref (third it) j))
                              (setf (row-major-aref interleaved index) elt)
                              (incf i) (incf index))

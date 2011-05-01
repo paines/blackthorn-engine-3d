@@ -77,9 +77,6 @@
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
 
-    (iter (for (key src) in-hashtable source-table)
-          (format t "source: ~a : ~a~%" key src))
-
     (make-instance 
      'load-mesh
      :id id

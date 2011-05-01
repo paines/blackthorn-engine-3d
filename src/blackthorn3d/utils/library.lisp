@@ -89,6 +89,6 @@
   (load-sdl-image-dlls)
   (load-sdl-mixer-dlls)
   #+windows (load-xbox))
-  
+
 (eval-when (:load-toplevel)
   (load-dlls))

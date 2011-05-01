@@ -107,13 +107,14 @@
    @arg[timeout]{An integer number of seconds to wait for a connection.}
    @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
+  #-allegro ; Usocket on Allegro doesn't support timeout
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
   (handler-case
       (let ((connection (usocket:socket-connect
                          host port
                          :protocol :stream
                          :element-type '(unsigned-byte 8)
-                         :timeout timeout)))
+                         #-allegro :timeout #-allegro timeout)))
         (setf *socket-client-connection* connection)
         (push connection *socket-connections*)
         (values (add-nid :server connection) nil))

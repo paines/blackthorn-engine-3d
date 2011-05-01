@@ -40,8 +40,11 @@
 ;; Add any directories in build/libs to the registry
 (let ((dir (merge-pathnames "../../" (loaded-file-directory))))
   (pushnew dir asdf:*central-registry* :test #'equal))
-(dolist (dir (directory (merge-pathnames "../libs/*/" (loaded-file-directory))
-              #+clozure :directories #+clozure t))
+(dolist (dir (directory (merge-pathnames #-allegro "../libs/*/"
+                                         #+allegro "../libs/"
+                                         (loaded-file-directory))
+              #+clozure :directories #+clozure t
+              #+allegro :directories-are-files #+allegro nil))
   (pushnew dir asdf:*central-registry* :test #'equal))
 
 ;; Inject native library paths for cffi

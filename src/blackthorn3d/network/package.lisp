@@ -40,6 +40,7 @@
    :socket-server-connect
    :socket-client-connect
    :socket-disconnect-callback
+   :socket-disconnect-all
    :socket-receive-all
    :socket-send
 

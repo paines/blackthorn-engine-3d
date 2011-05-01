@@ -184,7 +184,15 @@
         :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
         :target player-entity
         :mode :third-person))
-  
+
+(defun finalize-server ()
+  (socket-disconnect-all))
+
+(defmacro with-finalize-server (() &body body)
+  `(unwind-protect
+        (progn ,@body)
+     (finalize-server)))
+
 (defun server-main (host port)
   (declare (ignore host))
 
@@ -194,28 +202,29 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  (loop
-    (next-frame)
-     (iter (for thing in (list-entities))
-           (update thing))
+  (with-finalize-server ()
+    (loop
+       (next-frame)
+       (iter (for thing in (list-entities))
+             (update thing))
 
-     ;; insert network code call here
-     (iter (for (src message) in (message-receive-all :timeout 0))
-           (handle-message-server src message))
-     (message-send :broadcast (make-event :entity-create))
-     (message-send :broadcast (make-event :entity-update))
-     (message-send :broadcast (make-event :entity-remove))
+       ;; insert network code call here
+       (iter (for (src message) in (message-receive-all :timeout 0))
+             (handle-message-server src message))
+       (message-send :broadcast (make-event :entity-create))
+       (message-send :broadcast (make-event :entity-update))
+       (message-send :broadcast (make-event :entity-remove))
        
-     ;; check for clients to join
-     ;; TODO: Check this for errors. It seems very likely to be missing cases...
-     ;; Note -- The concurrency constraints make this very tricky to write!
-     (forget-server-entity-changes)
-     (let ((new-client (check-for-clients)))
-       (when new-client
-         (new-server-controller new-client)
-         (send-all-entities new-client)
-         (let ((camera (new-camera (new-player new-client))))
-           (message-send :broadcast (make-event :entity-create))
-           (message-send new-client (make-event :camera :camera camera)))))
+       ;; check for clients to join
+       ;; TODO: Check this for errors. It seems very likely to be missing cases...
+       ;; Note -- The concurrency constraints make this very tricky to write!
+       (forget-server-entity-changes)
+       (let ((new-client (check-for-clients)))
+         (when new-client
+           (new-server-controller new-client)
+           (send-all-entities new-client)
+           (let ((camera (new-camera (new-player new-client))))
+             (message-send :broadcast (make-event :entity-create))
+             (message-send new-client (make-event :camera :camera camera)))))
 
-     (sleep 1/120)))
+       (sleep 1/120))))

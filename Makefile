@@ -60,7 +60,7 @@ tempfile := .tmp
 
 # A command which can be used to get an ASDF system property.
 ifeq (${cl}, allegro)
-	get-property = $(shell alisp +B +s ${prop} -e "(defparameter *driver-system* '|${system}|)" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))" -e "(load \"${quicklisp-setup}\")")
+	get-property = $(shell alisp +B +s ${prop} -e "(defparameter *driver-system* :${system})" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))" -L "${quicklisp-setup}")
 else
 ifeq (${cl}, sbcl)
 	get-property = $(shell sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
@@ -114,7 +114,7 @@ load:
 
 .PHONY: load-allegro
 load-allegro:
-	alisp +B +s ${driver} -e "(defparameter *driver-system* '|${system}|)" -e "(load (symbol-name '|${quicklisp-setup}|))" -- ${args}
+	alisp +B +s ${driver} -e "(defparameter *driver-system* :${system})" -L "${quicklisp-setup}" -- ${args}
 
 .PHONY: load-sbcl
 load-sbcl:

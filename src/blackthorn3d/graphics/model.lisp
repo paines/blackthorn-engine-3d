@@ -58,3 +58,36 @@
       (when matrix   (gl:mult-matrix matrix))
       (when material (use-material material))
       (draw-object mesh))))
+
+(defparameter +mesh-components+ '((:vertex . 3)
+                                  (:normal . 3)
+                                  (:tex-coord . 2)))
+
+(defun indices->gl-array (indices)
+  (let* ((count (length indices))
+         (gl-array (gl:alloc-gl-array :unsigned-short count)))
+    (iter (for i below count)
+          (setf (gl:glaref gl-array i) (aref indices i)))
+    gl-array))
+
+;; temp behavior is to only load the first element, until I
+;; change the way mesh works
+(defmethod load-obj->models ((this load-object))
+  (format t "loading object to models~%")
+  (iter (for mesh-data in (lo-meshes this))
+        (destructuring-bind ((element &rest dc) vertex-data) 
+            (unify-indices mesh-data)
+          (let* ((indices (elem-indices element))
+                 (interleaved (interleave vertex-data +mesh-components+))
+                 (mesh (make-instance 
+                        'mesh
+                        :id (id mesh-data)
+                        :vert-data (blt-mesh-array->gl-array interleaved)
+                        :indices (indices->gl-array indices)
+                        :array-format 'blt-vnt-mesh)))
+            ;(print vertex-data)
+            ;(print interleaved)
+            (collect
+                (make-instance 'model-shape
+                               :mesh mesh
+                               :matrix (transform mesh-data)))))))

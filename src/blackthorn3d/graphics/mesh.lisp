@@ -63,6 +63,16 @@
     :accessor mesh-primitive-type
     :initarg :primitive)))
 
+(defun blt-mesh-array->gl-array (array)
+  (let* ((count (array-dimension array 0))
+         (vertex-size (array-dimension array 1))
+         (gl-array (gl:alloc-gl-array 'blt-vnt-mesh count)))
+    (iter (for i below count)
+          (iter (for j below vertex-size)
+                (for c in *blt-mesh-components*)
+                (setf (gl:glaref gl-array i c) (aref array i j))))
+    gl-array))
+
 (defmethod draw-object ((m mesh))
   (with-slots (vert-data index-data primitive-type) m
     (gl:enable-client-state :vertex-array)

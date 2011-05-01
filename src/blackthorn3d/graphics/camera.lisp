@@ -57,19 +57,22 @@
 (defmethod update-fp-camera ((c camera) time input-vec)
   (setf (matrix c) (camera-inverse c)))
 
+(defvar +phi-scale+ nil)
+(setf +phi-scale+ 1.0)
+
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
     (with-slots ((t-pos pos)
                  (t-dir dir)) target
       ;; Update the ideal azimuth (phi) based on the camera's
       ;; position relative to the target
-      ;; note1: x is 'aligned' with the target, z to the right
       ;; note2: this allows the camera to lazily rotate around
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
                                         ;#+disabled
-      (setf (elt ideal-coord 0) (atan (- (x pos) (x t-pos))
-                                      (- (z pos) (z t-pos))))
+      (setf (elt ideal-coord 0) (+ (atan (- (x pos) (x t-pos))
+                                         (- (z pos) (z t-pos)))
+                                   (x input-vec)))
 
       ;; calculate the camera's movement
       (let* ((ideal-pos (vec4+ t-pos (spherical->cartesian ideal-coord)))

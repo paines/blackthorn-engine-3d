@@ -23,64 +23,19 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-import)
 
-(defpackage :blackthorn3d-graphics
-  (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-imp)
-  (:export
-
-   ;; draw.lisp
-   :draw-triangle
-   :draw-cube
-   :make-cube
-   :draw-vert-array
-   :make-vao-cube
-   :draw-vao-cube
-   :gfx-init
-   :gfx-draw
-   :draw-object
-
-   ; render.lisp
-   :init
-   :prepare-scene
-   :*main-cam*
-   :set-camera
-   :*main-cam-quat*
-   :render-frame
-
-   ;; frustum.lisp
-   :frustum
-   :make-frstm
-   :load-frstm
-
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :camera-move!
-   :camera-rotate!
-   :camera-lookat!
-   :camera-orbit!
-   :update-camera
-   :move-player
-
-   ;; texture.lisp
-   :load-image
-   :image->texture2d
-
-   ;; mesh.lisp
-   :mesh
-   
-   ;; model.lisp
-   :model-shape
-   :load-obj->models
-
-   ;; dae-loader.lisp
-   :load-dae
-   ))
-        
-        
-        
+;; Build a table of scene nodes.  This is assuming a flat graph, which
+;; so far is all that max has given me.  SO it should be fine, until
+;; we start looking at character animation.  Then...who knows.
+(defun process-scene (scene-library)
+  (let ((scene (first-child scene-library))
+        (scene-table (make-id-table)))
+    (iter (for node in (children-with-tag "node" scene))
+          (let ((node-id (get-attribute "id" (attributes node)))
+                (transform (matrix-tag->matrix (first-child node)))
+                (geometry-id (get-url 
+                                (find-tag-in-children +instance-geometry+ 
+                                                      node))))
+            (setf (gethash node-id scene-table) (list transform geometry-id))))
+    scene-table))

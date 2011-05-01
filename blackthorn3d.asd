@@ -70,6 +70,17 @@
                                                (:file "entity")
                                                (:file "event"))
                                               :serial t)
+                                     (:module import
+                                              :components
+                                              ((:file "package")
+                                               (:file "load-object")
+                                               (:file "xmls-helpers")
+                                               (:file "dae-general")
+                                               (:file "dae-geometry")
+                                               (:file "dae-material")
+                                               (:file "dae-scene")
+                                               (:file "dae-loader"))
+                                              :serial t)
                                      (:module physics
                                               :components
                                               ((:file "package")
@@ -84,8 +95,6 @@
                                                (:file "material")
                                                (:file "mesh")
                                                (:file "model")
-                                               (:file "xmls-helpers")
-                                               (:file "dae-loader")
                                                (:file "draw")
                                                (:file "vao")
                                                (:file "frustum")

@@ -25,62 +25,33 @@
 
 (in-package :cl-user)
 
-(defpackage :blackthorn3d-graphics
-  (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-imp)
+(defpackage :blackthorn3d-import
+  (:nicknames :blt3d-imp)
+  (:use :iter :cl :blt3d-utils :blt3d-math)
   (:export
-
-   ;; draw.lisp
-   :draw-triangle
-   :draw-cube
-   :make-cube
-   :draw-vert-array
-   :make-vao-cube
-   :draw-vao-cube
-   :gfx-init
-   :gfx-draw
-   :draw-object
-
-   ; render.lisp
-   :init
-   :prepare-scene
-   :*main-cam*
-   :set-camera
-   :*main-cam-quat*
-   :render-frame
-
-   ;; frustum.lisp
-   :frustum
-   :make-frstm
-   :load-frstm
-
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :camera-move!
-   :camera-rotate!
-   :camera-lookat!
-   :camera-orbit!
-   :update-camera
-   :move-player
-
-   ;; texture.lisp
-   :load-image
-   :image->texture2d
-
-   ;; mesh.lisp
-   :mesh
-   
-   ;; model.lisp
-   :model-shape
-   :load-obj->models
 
    ;; dae-loader.lisp
    :load-dae
+
+   ;; load-object.lisp
+   :load-object
+   :lo-meshes
+
+   :load-mesh
+   :id
+   :sources
+   :elements
+   :controller
+   :transform
+
+   :elem
+   :elem-indices
+   :elem-material
+
+   :source
+   :src-accessor
+   :src-array
+
+   :unify-indices
+   :interleave
    ))
-        
-        
-        

@@ -54,8 +54,7 @@
                                   :spring-k 100.0
                                   :mode :third-person))
 
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
-  (setf cube-mesh (car (load-dae #p "res/models/orange-box2.dae"))))
+  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
 
 
 (defun set-camera (cam)
@@ -85,7 +84,7 @@
 
   (gl:light :light0 :position '(20.0 20.0 20.0 1.0))
   (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  (gl:enable :lighting)
+  ;(gl:enable :lighting)
   (gl:enable :light0)
 
   #+disabled

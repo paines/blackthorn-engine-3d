@@ -34,11 +34,8 @@
      (iter (for entity in (message-value message))
            ;; TODO: Don't hard code the model, send it's in the message...
            (setf (shape entity)
-                 (make-instance
-                  'blt3d-gfx:model-shape
-                  :mesh
-                  (car (blt3d-gfx:load-dae
-                        #p"res/models/orange-box2.dae"))))))
+                 (car (blt3d-gfx:load-obj->models (blt3d-imp:load-dae
+                                                   #p"res/models/orange-box2.dae"))))))
     (:event-entity-update
      ;; Nothing needs to be done, unserializing the message already
      ;; updated the entity state.

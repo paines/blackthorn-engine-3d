@@ -47,6 +47,14 @@
      (let ((camera (camera-event-camera (message-value message))))
        (blt3d-gfx:set-camera camera)))))
 
+(defun finalize-client ()
+  (socket-disconnect-all))
+
+(defmacro with-finalize-client (() &body body)
+  `(unwind-protect
+        (progn ,@body)
+     (finalize-client)))
+
 (defvar *message-counter* 0)
 
 (defun client-main (host port)
@@ -56,52 +64,52 @@
 
   (setf *random-state* (make-random-state t))
 
-  ;; TODO: Don't hard code connection information
   (unless (socket-client-connect host port :timeout 1.0)
     (format t "Error: Failed to connect.~%")
     (return-from client-main))
 
   (setf mt19937:*random-state* (mt19937:make-random-state t))
 
-  (sdl:with-init ()
-    (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
-                :title-caption "Test" :icon-caption "Test")
-    (blt3d-gfx:prepare-scene)
-        
-    (sdl:with-events ()
-      (:quit-event () t)
-      (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
-        (when (sdl:key= k :sdl-key-return)
-          (if (eql (input-kind *input*) :keyboard)
-              (set-controller *input* :xbox)
-              (set-controller *input* :keyboard)))
-              
-        (when (sdl:key= k :sdl-key-escape)
+  (with-finalize-client ()
+    (sdl:with-init ()
+      (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
+                  :title-caption "Test" :icon-caption "Test")
+      (blt3d-gfx:prepare-scene)
+
+      (sdl:with-events ()
+        (:quit-event () t)
+        (:key-down-event (:key k :mod m :mod-key m-k :unicode u)
+          (when (sdl:key= k :sdl-key-return)
+            (if (eql (input-kind *input*) :keyboard)
+                (set-controller *input* :xbox)
+                (set-controller *input* :keyboard)))
+
+          (when (sdl:key= k :sdl-key-escape)
             (return-from client-main)))
-      (:key-up-event (:key k :mod m :mod-key m-k :unicode u))
-      (:idle ()
-        ;; this whole block runs once per frame
+        (:key-up-event (:key k :mod m :mod-key m-k :unicode u))
+        (:idle ()
+          ;; this whole block runs once per frame
 
-        ;; move camera based on keyboard/xbox controller
-        #+windows
-        (xbox360_poll 0)
+          ;; move camera based on keyboard/xbox controller
+          #+windows
+         (xbox360_poll 0)
 
-        (let ((mx (float (input-move-x *input*)))
-              (my (float (input-move-y *input*)))
-              (vx (float (input-view-x *input*)))
-              (vy (float (input-view-y *input*))))
-          (message-send :server (make-event :input 
-            :move-x (* 0.1 mx) 
-            :move-y (* 0.1 my)
-            :view-x (* 0.1 vx)
-            :view-y (* 0.1 vy))))
+         (let ((mx (float (input-move-x *input*)))
+               (my (float (input-move-y *input*)))
+               (vx (float (input-view-x *input*)))
+               (vy (float (input-view-y *input*))))
+           (message-send :server (make-event :input 
+                                             :move-x (* 0.1 mx) 
+                                             :move-y (* 0.1 my)
+                                             :view-x (* 0.1 vx)
+                                             :view-y (* 0.1 vy))))
 
-        (blt3d-gfx:render-frame (list-entities))
+         (blt3d-gfx:render-frame (list-entities))
 
-        (iter (for (src message) in (message-receive-all :timeout 0))
-              (handle-message-client src message))
+         (iter (for (src message) in (message-receive-all :timeout 0))
+               (handle-message-client src message))
 
-        (send-string
-         :server
-         (format nil "Msg #~a (rand: ~a)" *message-counter* (random 10)))
-        (incf *message-counter*)))))
+         (send-string
+          :server
+          (format nil "Msg #~a (rand: ~a)" *message-counter* (random 10)))
+         (incf *message-counter*))))))

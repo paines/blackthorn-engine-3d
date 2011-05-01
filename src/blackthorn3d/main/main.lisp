@@ -62,7 +62,8 @@
          (opts (command-line-arguments:process-command-line-options
                         *cli-options*
                         (aif (position "--" args :test #'equal)
-                             (nthcdr (1+ it) args)))))
+                             (nthcdr (1+ it) args)
+                             args))))
     (append (or (aif (getf opts :server) (list :server it))
                 (aif (getf opts :connect) (list :client it))
                 (list :offline nil))

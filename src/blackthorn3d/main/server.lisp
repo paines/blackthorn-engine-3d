@@ -116,6 +116,81 @@
    (make-server-entity 'ball :pos 0)
    (make-server-entity 'ball :pos -1000)))
 
+   
+; simple monster experiment
+
+(defclass alarm (entity-server)
+    ((time-left
+       :accessor time-left
+       :initarg :time-left
+       :documentation "How long until alarm is triggered, in seconds.")
+     (then
+       :accessor then
+       :initform (get-internal-real-time))
+     (callback
+       :accessor callback
+       :initarg :callback
+       :documentation "Called when alarm goes off.")))
+       
+(defun kill (object)
+    (declare (ignore object))) ;todo: implement object death
+       
+(defmethod update ((a alarm))
+    (let* ((now (get-internal-real-time))
+           (elapsed (- now (then a))))
+   
+        (when (> elapsed 0)
+            (setf (then a) now)
+            (setf (time-left a) 
+              (- (time-left a) (/ elapsed internal-time-units-per-second))))
+              
+        (when (< (time-left a) 0)
+            (if (not (eq (callback a) nil))
+              (funcall (callback a)))
+            (setf (callback a) nil)
+            (kill a))))
+       
+(defclass cyclic-alarm (entity-server)
+    ((alarm
+      :accessor alarm
+      :initarg :alarm)))
+      
+(defmacro make-server-only (type &rest options)
+  `(make-server-entity ,type 
+      ; init w/ bogus values since these fields are not needed for server obj
+      :pos (make-point3 0.0 0.0 0.0)  
+      :dir (make-vec3 1.0 0.0 0.0)
+      :up  (make-vec3 0.0 1.0 0.0)
+      ,@options))
+      
+      
+(defun make-cyclic-alarm (period callback)
+    (let ((external-alarm (make-server-only 'cyclic-alarm
+                             :alarm nil)))
+        (labels ((indirect-callback ()
+            (setf (alarm external-alarm) (make-server-only 'alarm
+                :time-left period
+                :callback #'indirect-callback))
+            (funcall callback)
+            ))
+            
+            (setf (alarm external-alarm) (make-server-only 'alarm
+                :time-left period
+                :callback #'indirect-callback)))
+            external-alarm))
+
+;(defclass simple-monster (entity-server)
+;    ())
+
+; end: simple monster experiment
+   
+   
+   
+   
+   
+   
+   
+   
 (defun next-frame ()
   "Reset the state of things to begin processing the next frame"
   (forget-server-entity-changes))
@@ -184,38 +259,52 @@
         :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
         :target player-entity
         :mode :third-person))
-  
+
+(defun finalize-server ()
+  (socket-disconnect-all))
+
+(defmacro with-finalize-server (() &body body)
+  `(unwind-protect
+        (progn ,@body)
+     (finalize-server)))
+
+(defun hello ()
+    (format t "hello~%"))
+     
 (defun server-main (host port)
   (declare (ignore host))
 
+  (make-cyclic-alarm 2.0 #'hello)
+  
   (when (not (socket-server-start port))
     (format t "Unable to start the server~%")
     (return-from server-main))
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  (loop
-    (next-frame)
-     (iter (for thing in (list-entities))
-           (update thing))
+  (with-finalize-server ()
+    (loop
+       (next-frame)
+       (iter (for thing in (list-entities))
+             (update thing))
 
-     ;; insert network code call here
-     (iter (for (src message) in (message-receive-all :timeout 0))
-           (handle-message-server src message))
-     (message-send :broadcast (make-event :entity-create))
-     (message-send :broadcast (make-event :entity-update))
-     (message-send :broadcast (make-event :entity-remove))
+       ;; insert network code call here
+       (iter (for (src message) in (message-receive-all :timeout 0))
+             (handle-message-server src message))
+       (message-send :broadcast (make-event :entity-create))
+       (message-send :broadcast (make-event :entity-update))
+       (message-send :broadcast (make-event :entity-remove))
        
-     ;; check for clients to join
-     ;; TODO: Check this for errors. It seems very likely to be missing cases...
-     ;; Note -- The concurrency constraints make this very tricky to write!
-     (forget-server-entity-changes)
-     (let ((new-client (check-for-clients)))
-       (when new-client
-         (new-server-controller new-client)
-         (send-all-entities new-client)
-         (let ((camera (new-camera (new-player new-client))))
-           (message-send :broadcast (make-event :entity-create))
-           (message-send new-client (make-event :camera :camera camera)))))
+       ;; check for clients to join
+       ;; TODO: Check this for errors. It seems very likely to be missing cases...
+       ;; Note -- The concurrency constraints make this very tricky to write!
+       (forget-server-entity-changes)
+       (let ((new-client (check-for-clients)))
+         (when new-client
+           (new-server-controller new-client)
+           (send-all-entities new-client)
+           (let ((camera (new-camera (new-player new-client))))
+             (message-send :broadcast (make-event :entity-create))
+             (message-send new-client (make-event :camera :camera camera)))))
 
-     (sleep 1/120)))
+       (sleep 1/120))))

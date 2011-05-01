@@ -95,6 +95,8 @@
         (let ((connection (usocket:socket-accept *socket-server-listen*)))
           (push connection *socket-connections*)
           (add-nid (gensym (symbol-name 'client)) connection)))
+    ;; TODO: This has been fixed in the usocket 0.5.x branch in svn.
+    ;; Shouldn't need to catch this error any more.
     (usocket:socket-error (err)
       (values nil err))))
 
@@ -107,13 +109,18 @@
    @arg[timeout]{An integer number of seconds to wait for a connection.}
    @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
+  ;; usocket:socket-connect doesn't support timeout on Allegro or CLISP
+  #-(or allegro clisp)
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
+  #+(or allegro clisp)
+  (warn "Timeout not supported by usocket:socket-connect on Allegro or CLISP")
   (handler-case
       (let ((connection (usocket:socket-connect
                          host port
                          :protocol :stream
                          :element-type '(unsigned-byte 8)
-                         :timeout timeout)))
+                         #-(or allegro clisp) :timeout
+                         #-(or allegro clisp) timeout)))
         (setf *socket-client-connection* connection)
         (push connection *socket-connections*)
         (values (add-nid :server connection) nil))
@@ -130,9 +137,7 @@
 (defun handle-socket-disconnect (connection)
   (multiple-value-bind (nid exists) (socket->nid connection)
     (when exists
-      (handler-case
-          (usocket:socket-close connection)
-        (stream-error ()))
+      (usocket:socket-close connection)
       (remove-nid nid connection)
       (if (and (boundp '*socket-client-connection*)
                (eql connection *socket-client-connection*))
@@ -159,17 +164,37 @@
          (handle-socket-multiple-disconnect
           (stream-error-stream ,err) ,connections)))))
 
+(defun socket-disconnect-all (&key (remove-disconnect-callbacks t))
+  "@short{Closes all open connections, stops the server listen socket
+   (if applicable), and removes disconnect callbacks (by default).}
+
+   @arg[remove-disconnect-callbacks]{A generalized boolean. If true, removes
+   all disconnect callbacks. This happens before any connections are closed.}"
+  (when remove-disconnect-callbacks
+    (setf *disconnect-callback-functions* nil))
+  (iter (for connection in *socket-connections*)
+        (handle-socket-disconnect connection))
+  (when (boundp '*socket-server-listen*)
+    (usocket:socket-close *socket-server-listen*)
+    (makunbound '*socket-server-listen*)))
+
 ;;;
 ;;; Buffers
 ;;;
 
 (defun socket-receive-buffer-size (connection)
-  (with-buffer *message-size-buffer*
-    (buffer-rewind)
-    (buffer-advance :amount 4)
-    (read-sequence *message-size-buffer* (usocket:socket-stream connection))
-    (buffer-rewind)
-    (unserialize :uint32)))
+  (let ((expected-size 4))
+    (with-buffer *message-size-buffer*
+      (buffer-rewind)
+      (buffer-advance :amount expected-size)
+      (let ((actual-size
+             (read-sequence *buffer* (usocket:socket-stream connection))))
+        (unless (= actual-size expected-size)
+          (signal (make-condition
+                   'end-of-file
+                   :stream (usocket:socket-stream connection)))))
+      (buffer-rewind)
+      (unserialize :uint32))))
 
 (defun socket-send-buffer-size (connection size)
   (with-buffer *message-size-buffer*
@@ -179,13 +204,18 @@
                     (usocket:socket-stream connection))))
 
 (defun socket-receive-buffer (connection buffer)
-  (let ((size (socket-receive-buffer-size connection)))
+  (let ((expected-size (socket-receive-buffer-size connection)))
     (with-buffer buffer
       (buffer-rewind)
-      (buffer-advance :amount size)
-      (read-sequence buffer (usocket:socket-stream connection))
-      (buffer-rewind)
-      size)))
+      (buffer-advance :amount expected-size)
+      (let ((actual-size
+             (read-sequence *buffer* (usocket:socket-stream connection))))
+        (unless (= actual-size expected-size)
+          (signal (make-condition
+                   'end-of-file
+                   :stream (usocket:socket-stream connection))))
+        (buffer-rewind)
+        actual-size))))
 
 (defun socket-send-buffer (connection buffer)
   (with-handle-socket-disconnect connection

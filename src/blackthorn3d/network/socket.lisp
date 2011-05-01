@@ -137,7 +137,10 @@
 (defun handle-socket-disconnect (connection)
   (multiple-value-bind (nid exists) (socket->nid connection)
     (when exists
-      (usocket:socket-close connection)
+      (handler-case
+          (usocket:socket-close connection)
+        ;; It's possible to get errors here. At any rate, we don't care.
+        (usocket:socket-error ()))
       (remove-nid nid connection)
       (if (and (boundp '*socket-client-connection*)
                (eql connection *socket-client-connection*))

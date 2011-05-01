@@ -107,13 +107,18 @@
    @arg[timeout]{An integer number of seconds to wait for a connection.}
    @return{The node ID for the server that connected.}"
   (assert (not (boundp '*socket-client-connection*)))
+  ;; usocket:socket-connect doesn't support timeout on Allegro or CLISP
+  #-(or allegro clisp)
   (assert (realp timeout) (timeout) "Please specify an integral timeout.")
+  #+(or allegro clisp)
+  (warn "Timeout not supported by usocket:socket-connect on Allegro or CLISP")
   (handler-case
       (let ((connection (usocket:socket-connect
                          host port
                          :protocol :stream
                          :element-type '(unsigned-byte 8)
-                         :timeout timeout)))
+                         #-(or allegro clisp) :timeout
+                         #-(or allegro clisp) timeout)))
         (setf *socket-client-connection* connection)
         (push connection *socket-connections*)
         (values (add-nid :server connection) nil))

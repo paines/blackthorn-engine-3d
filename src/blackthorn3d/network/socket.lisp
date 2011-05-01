@@ -95,6 +95,8 @@
         (let ((connection (usocket:socket-accept *socket-server-listen*)))
           (push connection *socket-connections*)
           (add-nid (gensym (symbol-name 'client)) connection)))
+    ;; TODO: This has been fixed in the usocket 0.5.x branch in svn.
+    ;; Shouldn't need to catch this error any more.
     (usocket:socket-error (err)
       (values nil err))))
 

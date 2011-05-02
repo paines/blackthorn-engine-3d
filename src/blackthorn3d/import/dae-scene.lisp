@@ -33,9 +33,12 @@
         (scene-table (make-id-table)))
     (iter (for node in (children-with-tag "node" scene))
           (let ((node-id (get-attribute "id" (attributes node)))
-                (transform (matrix-tag->matrix (first-child node)))
+                (transform (matrix-tag->matrix (find-tag-in-children
+                                                "matrix" node)))
                 (geometry-id (get-url 
                                 (find-tag-in-children +instance-geometry+ 
                                                       node))))
-            (setf (gethash node-id scene-table) (list transform geometry-id))))
+            (when geometry-id
+              (setf (gethash node-id scene-table) 
+                    (list transform geometry-id)))))
     scene-table))

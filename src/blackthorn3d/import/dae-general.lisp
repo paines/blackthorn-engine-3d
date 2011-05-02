@@ -101,4 +101,5 @@
 ;; extended to support arbitrary sized matrices
 ;; note that collada gives us row-major matrices
 (defun matrix-tag->matrix (xml-lst)
-  (transpose (reshape (string->sv (third xml-lst)) '(4 4))))
+  (when (equal "matrix" (tag-name xml-lst))
+    (transpose (reshape (string->sv (third xml-lst)) '(4 4)))))

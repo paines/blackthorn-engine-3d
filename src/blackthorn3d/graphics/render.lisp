@@ -98,9 +98,10 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
   (gl:use-program 0)
- 
+  (gl:bind-texture :texture-2d cube-tex)
+
   (dolist (e entities)
-    (when (shape e)
+    (when (and (shape e) (not (eql e *main-cam*)))
       (with-slots (pos dir up shape) e
         (let ((z-axis (cross dir up)))
           (gl:color 1.0 0.1 0.1)
@@ -108,7 +109,7 @@
           (gl:color 0.0 1.0 1.0)
           (gl:with-pushed-matrix
             (gl:translate (x pos) (y pos) (z pos))
-            (gl:scale .1 .1 .1)
+            ;(gl:scale .1 .1 .1)
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
 

@@ -43,7 +43,7 @@
   (second xml-lst))
 
 (defun tag-name (xml-lst)
-  (caar xml-lst))
+  (when (consp xml-lst) (caar xml-lst)))
 
 (defun find-tag (tag lst) 
   (if (consp lst)
@@ -79,7 +79,7 @@
                  (collect val)))))
 
 (defun uri-indirect (uri)
-  (subseq uri 1))
+  (and (simple-string-p uri) (subseq uri 1)))
 
 (defun get-url (xml-lst)
   (uri-indirect (get-attribute "url" (attributes xml-lst))))

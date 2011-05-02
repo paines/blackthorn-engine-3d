@@ -256,7 +256,7 @@
         :pos (make-point3 0.0 0.0 0.0)
         :dir (make-vec3 1.0 0.0 0.0)
         :up  (make-vec3 0.0 1.0 0.0)
-        :ideal-coord (list 0.0 (cos (/ pi 6.0)) 15.0)
+        :ideal-coord (list 0.0 (cos (/ pi 2.5)) 7.0)
         :target player-entity
         :mode :third-person))
 

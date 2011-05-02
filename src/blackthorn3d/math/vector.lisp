@@ -178,12 +178,14 @@
 (defun norm4 (v)
   "Normalize a vector4, see normalize for general normalize fn"
   (let ((magv (mag v)))
-    (unless (zerop magv) (vec-scale4 v (/ magv)))))
+    (if (zerop magv) v
+        (vec-scale4 v (/ magv)))))
 
 (defun norm3 (v)
   "Normalize a vector3."
   (let ((magv (mag v)))
-    (unless (zerop magv) (vec-scale3 v (/ magv)))))
+    (if (zerop magv) v
+        (vec-scale3 v (/ magv)))))
 
 (defun normalize (v)
   "Normalize a vector of any length"

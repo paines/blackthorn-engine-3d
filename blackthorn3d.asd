@@ -91,6 +91,7 @@
                                               :components
                                               ((:file "package")
                                                (:file "texture")
+                                               (:file "light")
                                                (:file "shader")
                                                (:file "material")
                                                (:file "mesh")

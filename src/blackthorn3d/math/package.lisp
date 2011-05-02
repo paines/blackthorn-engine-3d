@@ -62,6 +62,7 @@
    :make-scale
    :make-x-rot :make-y-rot :make-z-rot
    :make-ortho-basis
+   :make-inv-ortho-basis
    :make-projection
    :col
    :row

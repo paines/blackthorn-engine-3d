@@ -58,7 +58,7 @@
   (setf (matrix c) (camera-inverse c)))
 
 (defvar +phi-scale+ nil)
-(setf +phi-scale+ 15.0)
+(setf +phi-scale+ -0.2)
 
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
@@ -70,21 +70,22 @@
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
                                         ;#+disabled
-      (setf (elt ideal-coord 0) (+ (atan (- (x pos) (x t-pos))
-                                         (- (z pos) (z t-pos)))
-                                   (* +phi-scale+ (x input-vec))))
-
-      ;; calculate the camera's movement
-      (let* ((ideal-pos (vec4+ t-pos (spherical->cartesian ideal-coord)))
-             (displace-vec (vec4- pos ideal-pos))
-             (spring-accel (vec4-
-                            (vec-scale4 displace-vec (- spring-k))
-                            (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
-        (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
-        (setf (pos c) (vec4+ pos (vec-scale4 veloc time)))
-        (setf (dir c) (norm4 (vec4- t-pos pos))))
-      ;(setf (matrix c) (look-at-matrix pos t-pos up))
-      )))
+      (let ((look-at (vec4+ t-pos (make-vec3 0.0 2.0 0.0))))
+        (setf (elt ideal-coord 0)
+              (aif (/= 0 (x input-vec))
+                   (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
+                   (+ (atan (- (x pos) (x look-at))
+                            (- (z pos) (z look-at))))))
+        
+        ;; calculate the camera's movement
+        (let* ((ideal-pos (vec4+ look-at (spherical->cartesian ideal-coord)))
+               (displace-vec (vec4- pos ideal-pos))
+               (spring-accel (vec4-
+                              (vec-scale4 displace-vec (- spring-k))
+                              (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
+          (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
+          (setf (pos c) ideal-pos #+disabled(vec4+ pos (vec-scale4 veloc time)))
+          (setf (dir c) (norm4 (vec4- look-at pos))))))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 
@@ -129,10 +130,14 @@
 (defmethod move-player ((c camera) input-vec)
   (with-slots (target (c-up up) (x2 dir) (c-pos pos)) c
     (with-slots ((t-up up) (x1 dir) (t-pos pos) client) target
-      (let ((z1 (cross x1 t-up))
-            (z2 (cross x2 c-up)))
-        (setf (pos target) 
-              (vec4+ t-pos (generate-move-vector c input-vec)))))))
+      (let* ((z1 (cross x1 t-up))
+             (z2 (cross x2 c-up))
+             (move-vec (generate-move-vector c input-vec)))
+        (setf (pos target)
+              (vec4+ t-pos move-vec))
+        (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
+          (setf (dir target) (norm4 move-vec)))
+        ))))
 
 (defmethod camera-move! ((c camera) vec4)
   "translates the camera by vec3. This is sort of temporary, as once we

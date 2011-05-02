@@ -28,32 +28,17 @@
 
 (defvar *main-cam* nil)
 (defvar *frustum* nil)
+(defvar *main-light* nil)
 
-(defparameter cube-mesh nil)
-(defparameter cube-mat nil)
-(defparameter cube-tex nil)
 (defparameter vao-cube nil)
 (defparameter shader nil)
 
 (defun init ()
   "Called to initialize the graphics subsystem"
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
-  #+disabled
-  (setf *main-cam* (make-instance 'camera 
-                           :position (make-point3 10.0 20.0 10.0)
-                           :direction (norm4 (vec4- (make-vec3 0.0 0.0 0.0)
-                                                    (make-vec3 10.0 20.0 10.0)))
-                           :up (make-vec3 0.0 1.0 0.0)
-                           
-                           :mode :third-person ))
-  #+disabled
-  (setf *main-cam* (make-instance 'camera
-                                  :target (make-point3 0.0 1.0 0.0)
-                                  :up (make-vec3 0.0 1.0 0.0)
-                                  :ideal-coord (list 0.0 (/ pi 6) 15.0)
-                                  :spring-k 100.0
-                                  :mode :third-person))
-
+ 
+  (setf *main-light* (make-instance 'light
+                                    :position (make-point3 0.0 10.0 0.0)))
   (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
 
 
@@ -82,10 +67,11 @@
   (load-frstm *frustum*)
   (gl:load-identity)
 
-  (gl:light :light0 :position '(20.0 20.0 20.0 1.0))
-  (gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
-  ;(gl:enable :lighting)
+  ;(gl:light :light0 :position '(20.0 20.0 20.0 1.0))
+  ;(gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
+  (gl:enable :lighting)
   (gl:enable :light0)
+  (gl:enable :rescale-normal)
 
   #+disabled
   (setf shader (make-shader (blt3d-res:file-contents
@@ -106,20 +92,24 @@
                                      (dir *main-cam*)
                                      (up  *main-cam*)))
     ())
-  (gl:light :light0 :position '(6.0 6.0 6.0 1.0))   
+  ;(gl:light :light0 :position '(6.0 6.0 6.0 1.0))   
+  (init-light *main-light* :light0)
+
+  (gl:color-material :front :diffuse)
+  (gl:enable :color-material)
   (gl:use-program 0)
  
   (dolist (e entities)
     (when (shape e)
       (with-slots (pos dir up shape) e
-        (let ((x (cross up dir)))
+        (let ((z-axis (cross dir up)))
           (gl:color 1.0 0.1 0.1)
           (draw-plane 20)
           (gl:color 0.0 1.0 1.0)
           (gl:with-pushed-matrix
             (gl:translate (x pos) (y pos) (z pos))
             (gl:scale .1 .1 .1)
-            ;;(gl:mult-matrix (make-ortho-basis x up dir))
+            (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
 
   (gl:flush)

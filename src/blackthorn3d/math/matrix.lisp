@@ -201,6 +201,11 @@
                  (list (svref u i) (svref v i) (svref w i) 0.0)
                  (list 0.0 0.0 0.0 1.0))))))
 
+(defun make-inv-ortho-basis (u v w)
+  "@return{a 4x4 matrix that will convert coordinates of the basis
+   formed by uvw to the standard basis"
+  (transpose (make-ortho-basis u v w)))
+
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
   (setf (col (make-identity-matrix) 3) v))

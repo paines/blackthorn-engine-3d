@@ -350,7 +350,7 @@ information."
                  "unknown")))
     ;; FIXME: Be more configurable, and take/set the version from
     ;; somewhere else.
-    (format nil "quicklisp-client/2011032000 ~A/~A"
+    (format nil "quicklisp-client/2011040600 ~A/~A"
             (encode (lisp-implementation-type))
             (version-string (lisp-implementation-version)))))
 
@@ -732,12 +732,12 @@ the indexes in the header accordingly."
                           :if-exists if-exists
                           :element-type 'octet)
     (let ((content-length (content-length header)))
-      (cond (content-length
+      (cond ((chunkedp header)
+             (save-chunk-response stream cbuf))
+            (content-length
              (call-for-n-octets content-length
                                 (make-stream-writer stream)
                                 cbuf))
-            ((chunkedp header)
-             (save-chunk-response stream cbuf))
             (t
              (call-until-end (make-stream-writer stream) cbuf))))))
 

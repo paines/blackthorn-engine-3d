@@ -55,7 +55,6 @@
                            (find-tag-in-children +geometry-library+ dae-file)))
           (scene-table    (process-scene 
                            (find-tag-in-children +scene-library+ dae-file)))
-          #+disabled
           (material-table (process-materials
                            (find-tag-in-children +material-library+ dae-file)
                            (find-tag-in-children +image-library+ dae-file)

@@ -25,8 +25,8 @@
 
 (in-package :blackthorn3d-import)
 
+
 ;; Build a hash table of materials (hashed by id)
-#+disabled
 (defun process-materials (mat-library image-library effect-library)
   (let ((images-ht (make-id-table))
         (effects-ht (make-id-table))
@@ -47,17 +47,17 @@
             (when (consp effect)
               (setf (gethash (get-attribute "id" (attributes effect))
                              effects-ht)
-                    (make-instance 
-                     'material
+                    (make-instance
+                     'blt-material
                      :ambient     (mat-prop-finder "ambient" effect)
                      :diffuse     (mat-prop-finder "diffuse" effect)
                      :specular    (mat-prop-finder "specular" effect)
-                     :specularity (mat-prop-finder "shininess" effect)
-                     :tex (aif (find-tag "texture" (children effect))
-                               (load-image (gethash 
-                                            (get-attribute "texture" it) 
-                                            images-ht))
-                               nil))))))
+                     :shininess   (mat-prop-finder "shininess" effect)
+                     :textures (aif (find-tag "texture" (children effect))
+                                    (load-image (gethash
+                                                 (get-attribute "texture" it) 
+                                                 images-ht))
+                                    nil))))))
     
     ;; Finally the materials
     (iter (for material in (children mat-library))

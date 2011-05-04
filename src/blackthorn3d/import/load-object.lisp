@@ -75,6 +75,30 @@
     :initarg :unifiedp
     :initform nil)))
 
+(defclass blt-material ()
+  ((ambient
+    :initarg :ambient
+    :initform #(0.0 0.0 0.0 1.0))
+   (diffuse
+    :initarg :diffuse
+    :initform #(1.0 1.0 1.0 1.0))
+   (specular
+    :initarg :specular
+    :initform #(0.0 0.0 0.0 1.0))
+   (shininess
+    :initarg :shininess
+    :initform 0.0)
+   (textures
+    :initarg :textures
+    :initform nil)))
+
+;; This is going to be our generic mesh object. It's what we load 
+;; other formats into, and is converted by the graphics subsystem into
+;; appropriate objects for rendering.  
+;; It will need to have vertex and index information, as well as skinning,and
+;; whatever else
+;; I think I want to store the vertexes unified, if not interleaved.
+;; Unfortunately this makes life harder for the dae-geometry section.
 (defclass load-mesh ()
   ((id
     :accessor id
@@ -97,7 +121,11 @@
    (elements
     :accessor elements
     :initarg :elements
-    :documentation "A list of elems")))
+    :documentation "A list of elems")
+   (bounding-volume
+    :accessor bounding-volume
+    :initarg :bounding-volume
+    :documentation "For kicks, but I think we're going to need this")))
 
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
 ;; fn is designed to take in index to a source and add the corresponding value

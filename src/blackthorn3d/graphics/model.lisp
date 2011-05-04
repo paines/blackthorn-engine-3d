@@ -55,10 +55,10 @@
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this
-    (gl:with-pushed-matrix
-      (when matrix   (gl:mult-matrix matrix))
-      (when material (use-material material))
-      (iter (for node in mesh-graph)
+    (when matrix   (gl:mult-matrix matrix))
+    (when material (use-material material))
+    (iter (for node in mesh-graph)
+          (gl:with-pushed-matrix
             (aif (node-xform node) (gl:mult-matrix it))
             (draw-object (node-obj node))))))
 
@@ -76,7 +76,15 @@
    'elem
    :indices (indices->gl-array (elem-indices element))
    ;; TODO: load textures to open-gl
-   :material (elem-material element)))
+   :material (elem-material element)
+   #+disabled
+   (with-slots (ambient diffuse specular shininess textures) 
+       (elem-material element)
+     (make-instance 'material
+                    :ambient ambient
+                    :diffuse diffuse
+                    :specular specular
+                    :shininess shininess))))
 
 ;; temp behavior is to only load the first element, until I
 ;; change the way mesh works

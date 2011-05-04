@@ -36,13 +36,19 @@
     (iter (for image in (children image-library))
           (when (consp image)
             (let ((image-id (get-attribute "id" (attributes image))))
-              (setf (gethash image-id images-ht) (third (first-child image))))))
+              (setf (gethash image-id images-ht)
+                    (third (first-child image))))))
 
     ;; construct effects table
     (labels ((mat-prop-finder (attrib e)
                (aif (find-tag attrib (children e))
-                    (string->sv (third it))
-                    nil)))
+                    (let ((value (first-child it)))
+                      (cond 
+                        ((equal "color" (tag-name value))
+                         (string->sv (third value)))
+                        ((equal "float" (tag-name value))
+                         (float (read-from-string (third value))))
+                        (t nil))))))
       (iter (for effect in (children effect-library))
             (when (consp effect)
               (setf (gethash (get-attribute "id" (attributes effect))

@@ -25,20 +25,88 @@
 
 (in-package :blackthorn3d-import)
 
+(defvar +instance-material+ "instance_material")
+(defvar +bind-material+ "bind_material")
+
+(defun create-xform (node-tag)
+  
+  (reduce 
+   #'matrix-multiply-m
+   (remove-if 
+    #'null
+    (iter (for tag in (tag-children node-tag))
+          (collect
+              (cond
+                ((equal "matrix" (tag-name tag)) 
+                 (matrix-tag->matrix tag))
+                
+                ((equal "translate" (tag-name tag)) 
+                 (make-translate (string->sv (third tag))))
+                
+                ((equal "scale" (tag-name tag))
+                 (make-scale (string->sv (third tag))))
+                
+                ((equal "rotate" (tag-name tag))
+                 (let ((r-vec (string->sv (third tag))))
+                   ;(make-z-rot (* (/ pi 180.0) (w r-vec)))
+                   ;#+disabled
+                   (format t "~%rotation values: ~a~%" r-vec)
+                   (quat->matrix (axis-rad->quat
+                                  (make-vec3 (x r-vec)
+                                             (y r-vec)
+                                             (z r-vec))
+                                  ;(w r-vec)
+                                  (* (w r-vec) (/ pi 180.0))
+                                  ))))))))
+   :initial-value (make-identity-matrix))
+#+disabled
+  (let ((xform (make-identity-matrix)))
+    (iter (for tag in (tag-children node-tag))
+          (when (member (tag-name tag) '("translate" "matrix") :test #'equal)
+            (setf xform
+                  (matrix-multiply-m 
+                   xform
+                   (cond
+                     ((equal "matrix" (tag-name tag)) 
+                      (matrix-tag->matrix tag))
+                     ((equal "translate" (tag-name tag)) 
+                      (make-translate (string->sv (third tag))))
+                     ((equal "scale" (tag-name tag))
+                      (make-scale val))
+                     #+disabled
+                     ((equal "rotate" (tag-name tag))
+                      (let ((r-vec (string->sv (third-tag))))
+                        (quat->matrix (axis-rad->quat
+                                       (make-vec3 (x r-vec)
+                                                  (y r-vec)
+                                                  (z r-vec))
+                                       (* (/ pi 180.0) (w r-vec)))))))))))
+    xform))
+
+(defun map-materials (bind-tag)
+  (iter 
+    (for mat in (children-with-tag +instance-material+ (first-child bind-tag)))
+    (collect (list (get-attribute "symbol" (attributes mat))
+                   (uri-indirect (get-attribute "target" (attributes mat)))))))
+
 ;; Build a table of scene nodes.  This is assuming a flat graph, which
 ;; so far is all that max has given me.  SO it should be fine, until
 ;; we start looking at character animation.  Then...who knows.
 (defun process-scene (scene-library)
+  (format t "   Loading Scene ...~%")
   (let ((scene (first-child scene-library))
         (scene-table (make-id-table)))
     (iter (for node in (children-with-tag "node" scene))
           (let ((node-id (get-attribute "id" (attributes node)))
-                (transform (matrix-tag->matrix (find-tag-in-children
-                                                "matrix" node)))
-                (geometry-id (get-url 
-                                (find-tag-in-children +instance-geometry+ 
-                                                      node))))
-            (when geometry-id
-              (setf (gethash node-id scene-table) 
-                    (list transform geometry-id)))))
+                (transform (create-xform node))
+                (geometry-tag (find-tag-in-children +instance-geometry+ 
+                                                   node)))
+            (when geometry-tag
+              (let ((geom-id (get-url geometry-tag))
+                    (material-map 
+                     (map-materials (find-tag-in-children +bind-material+ 
+                                                          geometry-tag))))
+                (print transform)
+                (setf (gethash node-id scene-table) 
+                      (list transform geom-id material-map))))))
     scene-table))

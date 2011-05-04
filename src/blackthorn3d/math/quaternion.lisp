@@ -53,7 +53,8 @@
   (make-quat (x p) (y p) (z p) 0.0))
   
 (defun axis-rad->quat (axis rad)
-  (make-quat-from-vw (vec-scale4 axis (sin rad)) (cos rad)))
+  (make-quat-from-vw (vec-scale4 axis (sin (/ rad 2.0)))
+                     (cos (/ rad 2.0))))
   
 (defun euler->quat (roll pitch yaw)
   "Takes euler angles (roll pitch and yaw and converts them
@@ -118,17 +119,19 @@
   (let ((m11 (- 1.0 (* 2.0 (+ (sq (y q)) (sq (z q))))))
         (m12 (* 2.0 (- (* (x q) (y q)) (* (w q) (z q)))))
         (m13 (* 2.0 (+ (* (x q) (z q)) (* (w q) (y q)))))
-        (m21 (* 2.0 (+ (* (x q) (z q)) (* (w q) (z q)))))
+
+        (m21 (* 2.0 (+ (* (x q) (y q)) (* (w q) (z q)))))
         (m22 (- 1.0 (* 2.0 (+ (sq (x q)) (sq (z q))))))
         (m23 (* 2.0 (- (* (y q) (z q)) (* (w q) (x q)))))
+
         (m31 (* 2.0 (- (* (x q) (z q)) (* (w q) (y q)))))
         (m32 (* 2.0 (+ (* (y q) (z q)) (* (w q) (x q)))))
         (m33 (- 1.0 (* 2.0 (+ (sq (x q)) (sq (y q)))))))
-  (make-matrix4x4
-    `((,m11 ,m21 ,m31 0.0)
-      (,m12 ,m22 ,m32 0.0)
-      (,m13 ,m23 ,m33 0.0)
-      (0.0  0.0  0.0  1.0)))))
+    (make-matrix4x4
+     `((,m11 ,m21 ,m31 0.0)
+       (,m12 ,m22 ,m32 0.0)
+       (,m13 ,m23 ,m33 0.0)
+       (0.0  0.0  0.0  1.0)))))
 
 (defun quat-rotate-to-vec (srcVec destVec)
   "Creates a quaternion that will reorient a vector pointing in

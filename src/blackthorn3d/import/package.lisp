@@ -53,6 +53,12 @@
    :vs-stride
    :vs-stream
 
+   :blt-material
+   :ambient
+   :diffuse
+   :specular
+   :shininess
+
    :organize-streams
    :interleave
    ))

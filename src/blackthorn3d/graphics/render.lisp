@@ -32,6 +32,7 @@
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
+(defparameter level nil)
 
 (defun init ()
   "Called to initialize the graphics subsystem"
@@ -39,7 +40,11 @@
  
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
+  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
+  (setf plane-mat (make-instance
+                   'blt-material
+                   :ambient #(.5 .2 .2 1.0)
+                   :diffuse #(1.0 0.0 0.0 1.0))))
 
 
 (defun set-camera (cam)
@@ -56,6 +61,8 @@
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test)
   (gl:depth-func :lequal)
+
+  (setf level (load-obj->models (load-dae #p "res/models/PlatformRoom.dae")))
 
   (setf cube-tex (image->texture2d 
                   (load-image #p"res/images/test-tex.png")))
@@ -81,7 +88,8 @@
                              (blt3d-res:resolve-resource
                               #p "res/shaders/FinalProjShader.frag"))))
   
-  ;(make-vao-cube)
+
+    ;(make-vao-cube)
   )
 
 
@@ -98,18 +106,25 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
   (gl:use-program 0)
-  (gl:bind-texture :texture-2d cube-tex)
+  ;(gl:bind-texture :texture-2d cube-tex)
+
+  (gl:with-pushed-matrix
+    (use-material plane-mat)
+    ;;(draw-plane 20)
+    (gl:scale .05 .05 .05)
+    ;#+disabled
+    (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                                          (make-point3 0.0 0.0 1.0)
+                                          (make-point3 0.0 1.0 0.0)))
+    (draw-object level)
+    )
 
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))
       (with-slots (pos dir up shape) e
         (let ((z-axis (cross dir up)))
-          (gl:color 1.0 0.1 0.1)
-          (draw-plane 20)
-          (gl:color 0.0 1.0 1.0)
           (gl:with-pushed-matrix
             (gl:translate (x pos) (y pos) (z pos))
-            ;(gl:scale .1 .1 .1)
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
 

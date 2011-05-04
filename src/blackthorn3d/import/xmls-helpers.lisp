@@ -35,6 +35,9 @@
 (defun children (xml-lst)
   (cddr xml-lst))
 
+(defun tag-children (xml-lst)
+  (remove-if-not #'consp (children xml-lst)))
+
 ;; Returns first xml child of xml-lst
 (defun first-child (xml-lst)
   (find-if #'consp (children xml-lst)))

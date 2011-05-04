@@ -47,8 +47,8 @@
     :initform #(0.0 0.0 0.0 1.0)
     :documentation "Specular color: the color of specular highlights for
                     specularity > 0.0")
-   (specularity
-    :initarg :specularity
+   (shininess
+    :initarg :shininess
     :initform 0.0
     :documentation "Higher specularity gives sharper highlights, lower
                    duller highlights, simulating more rough materials")
@@ -61,9 +61,25 @@
 
 (defmethod use-material ((this material))
   "loads a material into opengl state"
-  (with-slots (ambient diffuse specular texture) this
-    (when shader (enable-shader shader))
-    (when ambient (gl:material :front :ambient ambient))
-    (when diffuse (gl:material :front :diffuse diffuse))
-    (when specular (gl:material :front :specular specular))
-    (when texture (gl:bind-texture :texture-2d texture))))
+  (with-slots (ambient diffuse specular shininess texture) this
+    (when shader 
+      (enable-shader shader))
+    (when ambient 
+      (gl:material :front :ambient ambient))
+    (when diffuse 
+      (gl:material :front :diffuse diffuse))
+    (when specular 
+      (gl:material :front :specular specular)
+      (gl:material :front :shininess shininess))
+    (when texture 
+      (gl:bind-texture :texture-2d texture))))
+
+(defmethod use-material ((this blt-material))
+  (with-slots (ambient diffuse specular shininess textures) this
+    (when ambient 
+      (gl:material :front :ambient ambient))
+    (when diffuse 
+      (gl:material :front :diffuse diffuse))
+    (when specular 
+      (gl:material :front :specular specular)
+      (gl:material :front :shininess shininess))))

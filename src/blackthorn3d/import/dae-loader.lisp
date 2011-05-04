@@ -38,14 +38,16 @@
   (make-instance 
    'load-object
    :meshes 
-   (iter (for (node (xform mesh-id)) in-hashtable scenes)
+   (iter (for (node (xform mesh-id mats)) in-hashtable scenes)
          ;; T0D0: stuff
          (let ((mesh (gethash mesh-id geometry)))
            (setf (transform mesh) xform)
            (iter (for elt in (elements mesh))
-                 (setf (elem-material elt) 
-                       (gethash (elem-material elt) materials))
-                 (print (elem-amterial elt)))
+                 (with-slots ((mat-id material)) elt
+                   (setf mat-id
+                         (aif (find mat-id mats :test #'equal :key #'car)
+                              (gethash (second it) materials)
+                              nil))))
            (collect mesh)))))
 
 ;; Returns an intermediate representation of the dae file
@@ -67,6 +69,7 @@
       (compile-dae-data :geometry geometry-table
                         :scenes   scene-table
                         ;; TODO: poor materials aren't ready yet
+                        :materials material-table
                         ))))
 
 (defun build-models (obj-lst)

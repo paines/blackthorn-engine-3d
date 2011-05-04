@@ -173,7 +173,7 @@
          (new-mat (make-matrix (list n-rows n-cols))))
     (iter (for i below n-cols)
           (iter (for j below n-rows)
-                (setf (aref new-mat j i)
+                (setf (aref new-mat i j)
                       (inner-product (row A j)
                                      (col B i)))))
 	new-mat))
@@ -208,11 +208,18 @@
 
 (defun make-translate (v)
   "@return{a translation matrix that will translate points by v}"
-  (setf (col (make-identity-matrix) 3) v))
+  (let ((mat (make-identity-matrix)))
+    (setf (col mat 3) v)
+    (setf (aref mat 3 3) 1.0)
+    mat))
 
 (defun make-scale (v)
   "@return{a scaling matrix that will scale points by v}"
-  (matrix-multiply-v (make-identity-matrix) v))
+  (make-matrix4x4
+   `((,(x v) 0.0 0.0 0.0)
+     (0.0 ,(y v) 0.0 0.0)
+     (0.0 0.0 ,(z v) 0.0)
+     (0.0 0.0 0.0 1.0))))
 
 (defun make-x-rot (r)
   "@arg[r]{radians to rotate around x-axis (counter-clockwise)}

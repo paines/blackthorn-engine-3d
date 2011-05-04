@@ -226,7 +226,6 @@
             (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
             (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
             (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
-        (format t "Input update: ~a; has client? ~a~%" src (getf *client-controllers* src))    
             
         (when (getf *client-controllers* src)
           (setf (move-x (getf *client-controllers* src)) move-x-amt)

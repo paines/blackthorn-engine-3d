@@ -167,7 +167,7 @@
           (finally (setf size s) (setf depth d)))
     (let ((interleaved (make-array (list size depth)))
           (index 0))
-      (format t "size: ~a depth: ~a~%" size depth)
+      ;(format t "size: ~a depth: ~a~%" size depth)
       ;; For each vertex
       (iter (for i below size)
             (iter (for vs in vertex-streams)
@@ -175,7 +175,6 @@
                         (setf (row-major-aref interleaved index)
                               (float elt))
                         (incf index))))
-      (format t "~a~%" interleaved)
       (values
        interleaved
        #'(lambda (index) 

@@ -41,28 +41,15 @@
 (defvar +vertices+  "vertices")
 (defvar +triangles+ "triangles")
 
-
-
 (defun set-vertices (vert-lst source-table)
   (setf (gethash (get-attribute "id" (attributes vert-lst)) source-table)
         (gethash (uri-indirect 
                   (get-attribute "source" (attributes (first-child vert-lst))))
                  source-table)))
 
-;; NOTE
-;; We probably won't use this in the initial loading process
-;; it seems the way to go is to build a lispy intermediary representation
-;; and then process that. By lispy i mean using hash-tables and lots of lists
-
-
-
-;; Instead the approach will be to add a list of the sources and semantics
-;; that make each mesh and hash that in the geometry table
-
-
 ;; constructs a load-mesh object from an xml-list geometry tag
 ;; Returns a load-mesh object
-(defun build-load-mesh (geometry-lst)
+(defun build-blt-mesh (geometry-lst)
   "From a single geometry tag, builds a load-mesh object. That is, read in
    all the vertice data (position, normal, tex-coord) store it in an object
    for future reference
@@ -73,27 +60,21 @@
          (children (children mesh-lst))
          (source-table (hash-sources mesh-lst))
          (elements-list nil))
-    
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
+    (destructuring-bind (elements vertex-streams)
+        (unify-indices 
+         (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
+               (collect 
+                (make-instance 
+                 'elem
+                 :indices (string->sv (third (find-tag "p" (children tri-lst))))
+                 :material (get-attribute "material" (attributes tri-lst)))))
+         (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
+                          source-table))
 
-    (make-instance 
-     'load-mesh
-     :id id
-
-     :sources 
-     ;; NOTE that this call is assuming all elements have the same input
-     ;; streams. if they don't you're doing it wrong.
-     (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
-                      source-table)
-
-     :elements 
-     (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
-           (collect 
-            (make-instance 
-             'elem
-             :indices (string->sv (third (find-tag "p" (children tri-lst))))
-             :material (get-attribute "material" (attributes tri-lst))))))))
+      (make-instance 
+       'blt-mesh :id id :vertex-streams vertex-streams :elements elements))))
 
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)
@@ -102,7 +83,7 @@
    @arg[geom-library]{the xml-list of the geometry library}"
   (let ((mesh-table (make-id-table)))
     (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
-          (let ((new-mesh (build-load-mesh geom-xml)))
+          (let ((new-mesh (build-blt-mesh geom-xml)))
             (setf (gethash (id new-mesh) mesh-table) new-mesh)))
     mesh-table))
 

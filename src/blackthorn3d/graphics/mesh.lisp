@@ -52,9 +52,11 @@
    (vert-data 
     :accessor mesh-vert-data
     :initarg :vert-data)
-   (index-data 
-    :accessor mesh-indices
-    :initarg :indices)
+   (elements
+    :accessor mesh-elements
+    :initarg :elements
+    :documentation "A list of elem objects containing index and material data
+                    for drawing a portion, or all, of the mesh")
    (array-format 
     :accessor mesh-array-format
     :initarg :array-format)
@@ -63,7 +65,7 @@
     :accessor mesh-primitive-type
     :initarg :primitive)))
 
-(defun blt-mesh-array->gl-array (array)
+(defun vnt-array->gl-array (array)
   (let* ((count (array-dimension array 0))
          (vertex-size (array-dimension array 1))
          (gl-array (gl:alloc-gl-array 'blt-vnt-mesh count)))
@@ -74,9 +76,11 @@
     gl-array))
 
 (defmethod draw-object ((m mesh))
-  (with-slots (vert-data index-data primitive-type) m
+  (with-slots (vert-data elements primitive-type) m
     (gl:enable-client-state :vertex-array)
     (gl:enable-client-state :normal-array)
     (gl:enable-client-state :texture-coord-array)
     (gl:bind-gl-vertex-array vert-data)
-    (gl:draw-elements :triangles index-data)))
+    (iter (for elt in elements)
+          (when (elem-material elt) (use-material (elem-material elt)))
+          (gl:draw-elements :triangles (elem-indices elt)))))

@@ -33,11 +33,12 @@
 ;;; with the textures and shaders they require to render
 ;;;
 
+
 ;; However, for now let's just get a mesh with transform
 (defclass model-shape ()  
-  ((mesh
-    :accessor model-mesh
-    :initarg :mesh
+  ((mesh-graph
+    :accessor model-mesh-graph
+    :initarg :mesh-graph
     :documentation "The 3d geometry data comprising the model")
    (matrix
     :accessor model-matrix
@@ -53,15 +54,15 @@
     :documentation "the material to use for the mesh")))
 
 (defmethod draw-object ((this model-shape))
-  (with-slots (mesh matrix material) this
+  (with-slots (mesh-graph matrix material) this
     (gl:with-pushed-matrix
       (when matrix   (gl:mult-matrix matrix))
       (when material (use-material material))
-      (draw-object mesh))))
+      (iter (for node in mesh-graph)
+            (aif (node-xform node) (gl:mult-matrix it))
+            (draw-object (node-obj node))))))
 
-(defparameter +mesh-components+ '((:vertex . 3)
-                                  (:normal . 3)
-                                  (:tex-coord . 2)))
+(defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 
 (defun indices->gl-array (indices)
   (let* ((count (length indices))
@@ -70,24 +71,37 @@
           (setf (gl:glaref gl-array i) (aref indices i)))
     gl-array))
 
+(defun elem->gl-elem (element)
+  (make-instance
+   'elem
+   :indices (indices->gl-array (elem-indices element))
+   ;; TODO: load textures to open-gl
+   :material (elem-material element)))
+
 ;; temp behavior is to only load the first element, until I
 ;; change the way mesh works
 (defmethod load-obj->models ((this load-object))
   (format t "loading object to models~%")
-  (iter (for mesh-data in (lo-meshes this))
-        (destructuring-bind ((element &rest dc) vertex-data) 
-            (unify-indices mesh-data)
-          (let* ((indices (elem-indices element))
-                 (interleaved (interleave vertex-data +mesh-components+))
-                 (mesh (make-instance 
-                        'mesh
-                        :id (id mesh-data)
-                        :vert-data (blt-mesh-array->gl-array interleaved)
-                        :indices (indices->gl-array indices)
-                        :array-format 'blt-vnt-mesh)))
-            ;(print vertex-data)
-            ;(print interleaved)
-            (collect
-                (make-instance 'model-shape
-                               :mesh mesh
-                               :matrix (transform mesh-data)))))))
+  (make-instance 
+   'model-shape
+   :mesh-graph 
+   (iter (for blt-mesh in (lo-meshes this))
+         (let* ((interleaved (interleave
+                              (vertex-streams blt-mesh)
+                              #+disabled
+                              (organize-streams (vertex-streams blt-mesh)
+                                                +mesh-components+)))
+                (elements
+                 (iter (for elt in (elements blt-mesh))
+                       (collect (elem->gl-elem elt))))
+                (mesh
+                 (make-instance
+                  'mesh
+                  :id (id blt-mesh)
+                  :vert-data (vnt-array->gl-array interleaved)
+                  :elements elements
+                  :array-format 'blt-vnt-mesh)))
+           (collect 
+            (make-instance 'node
+                           :xform (transform blt-mesh)
+                           :obj mesh))))))

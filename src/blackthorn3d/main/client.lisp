@@ -34,9 +34,9 @@
      (iter (for entity in (message-value message))
            ;; TODO: Don't hard code the model, send it's in the message...
            (setf (shape entity)
-                 (car (blt3d-gfx:load-obj->models 
-                       (blt3d-imp:load-dae
-                        #p"res/models/wedge-dummy.dae"))))))
+                 (blt3d-gfx:load-obj->models 
+                  (blt3d-imp:load-dae
+                   #p"res/models/wedge-dummy.dae")))))
     (:event-entity-update
      ;; Nothing needs to be done, unserializing the message already
      ;; updated the entity state.

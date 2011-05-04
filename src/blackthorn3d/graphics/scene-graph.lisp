@@ -39,22 +39,31 @@
 ;;;  RIGHT-CHILD - either another node or ni
 ;;;
 
-(defstruct node
-  (world-mat (make-identity-matrix))
-  obj
-  (l nil)
-  (r nil))
+(defclass node ()
+  ((xform
+    :accessor node-xform
+    :initarg :xform)
+   (obj
+    :accessor node-obj
+    :initarg :obj)
+   (children
+    :accessor node-children
+    :initarg :children
+    :initform nil)))
 
-#+disabled
-(defun dfs (scene fn &key (order :in))
-  (when (consp scene)
+(defun scene-dfs (node fn &key (order :pre))
+  (when node
     (case order
-      (:pre (fn scene) 
-            (dfs (node-l scene)) 
-            (dfs (node-r scene)))
-      (:in (dfs (node-l scene))
-           (fn scene)
-           (dfs (node-r scene)))
-      (:post (dfs (node-l scene))
-             (dfs (node-r scene))
-             (fn scene)))))
+      (:pre 
+       (funcall fn node) 
+       (iter (for c in (node-children node)) (scene-dfs c fn order)))
+      (:post 
+       (iter (for c in (node-children node)) (scene-dfs c fn order))
+       (funcall fn node)))))
+
+(defun scene-bfs (node fn)
+  (when node
+    (iter (for c in (node-children node))
+          (funcall fn c))
+    (iter (for c in (node-children node))
+          (scene-bfs c fn))))

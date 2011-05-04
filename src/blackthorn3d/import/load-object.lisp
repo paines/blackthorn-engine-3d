@@ -42,23 +42,26 @@
     :accessor lo-meshes
     :initarg :meshes)))
 
-(defclass source ()
-  ((id 
-    :accessor src-id
-    :initarg :id)
-   (array 
-    :accessor src-array
-    :initarg :array)
-   (stride 
-    :initarg :stride
-    :initform 1)
-   (components 
-    :accessor src-components
-    :initarg :components)))
+(defclass vertex-stream ()
+  ((semantic
+    :accessor vs-semantic
+    :initarg :semantic)
+   (stream
+    :accessor vs-stream
+    :initarg :stream)
+   (stride
+    :accessor vs-stride
+    :initarg :stride)))
 
-(defun src-accessor (src index)
-  (with-slots (stride array) src
-    (subseq array (* index stride) (+ (* index stride) stride))))
+(defun vs-ref (vs index)
+  (with-slots (stream stride) vs
+    (subseq stream (* index stride) (+ (* index stride) stride))))
+
+(defun (setf vs-ref) (vec vs index)
+  (with-slots (stream stride) vs
+    (iter (for elt in-vector vec)
+          (for i below stride)
+          (setf (svref stream (+ i (* index stride))) elt))))
 
 (defclass elem ()
   ((indices
@@ -99,15 +102,14 @@
 ;; whatever else
 ;; I think I want to store the vertexes unified, if not interleaved.
 ;; Unfortunately this makes life harder for the dae-geometry section.
-(defclass load-mesh ()
+(defclass blt-mesh ()
   ((id
     :accessor id
     :initarg :id)
-   (sources
-    :accessor sources
-    :initarg :sources
-    :documentation "A list of sources, which are lists of 
-                   (SEMANTIC DATA)")
+   (vertex-streams
+    :accessor vertex-streams
+    :initarg :vertex-streams
+    :documentation "A list of vertex-stream objects")
    (controller
     :accessor controller
     :initarg :controller
@@ -117,115 +119,66 @@
    (transform
     :accessor transform
     :initarg :transform
-    :initform nil)
+    :initform nil
+    :documentation "Base object->world transform")
    (elements
     :accessor elements
     :initarg :elements
-    :documentation "A list of elems")
+    :documentation "A list of elem objects")
    (bounding-volume
     :accessor bounding-volume
     :initarg :bounding-volume
     :documentation "For kicks, but I think we're going to need this")))
 
-;; Returns a list of (fn . array) where calling fn with an index modifies array
-;; fn is designed to take in index to a source and add the corresponding value
-;; to array. 
-(defun get-source-functions (sources)
-  (iter (for src in sources)
-        (collect 
-         (let* ((source (second src))
-                (attrib-len (/ (length (src-array source)) 
-                               (length (src-components source))))
-                (attrib-vec (make-array attrib-len 
-                                        :fill-pointer 0
-                                        :adjustable t)))
-           (cons #'(lambda (index)
-                     (vector-push-extend 
-                      (src-accessor source index)
-                      attrib-vec))
-                 attrib-vec)))))
 
-(defun make-src-arrays (sources)
-  (iter (for input in sources)
-        (let* ((source (second input))
-               (attrib-len (/ (length (src-array source))
-                              (length (src-components source)))))
-          (collect (make-array attrib-len 
-                               :fill-pointer 0
-                               :adjustable t)))))
 
 
 ;;;
 ;;; Model loading-specific code.
 ;;;
 
-;; Takes the elements of a load mesh and returns 
-;; the unified arrays (in the format (SEMANTIC COMPONENTS ARRAY)
-;; the array is an array of arrays
-(defmethod unify-indices ((this load-mesh))
-  (with-slots (sources controller elements) this
-    (let ((n-inputs (length sources))
-          (src-fns (get-source-functions sources))
-          #+disabled(unified-arrs (make-src-arrays sources))
-          (vertex-ht (make-hash-table :test #'equalp)))
-      (list 
-       (iter 
-        (for elt in elements)
-        (let* ((indices (elem-indices elt))
-               (n-verts (/ (length indices) n-inputs))
-               (curr-index 0)
-               (new-indices (make-array n-verts :fill-pointer 0)))
-          (iter (for i below (length indices) by n-inputs)
-                (let ((vertex (subseq indices i (+ i n-inputs))))
-                  (aif (gethash vertex vertex-ht)
-                       (vector-push it new-indices)
-                       (progn
-                         (setf (gethash vertex vertex-ht)
-                               curr-index)
-                         (vector-push curr-index new-indices)
-                         (iter (for f in src-fns)
-                               (for i in-vector vertex)
-                               (funcall (car f) i))
-                         (incf curr-index)))))
-          (collect (make-instance
-                    'elem
-                    :indices new-indices
-                    :material (elem-material elt)))))
-       (iter (for (semantic source) in sources)
-             (for fn in src-fns)
-             (collect 
-              (list semantic 
-                    (src-components source) 
-                    (cdr fn))))))))
+;; Note that this assumes that all the semantics in order exist in 
+;; vertex-streams. The behavior is currently incorrect if this isn't true
+;; It is fine to have extra semantics in vertex-streams, they will
+;; be dropped
+(defun organize-streams (vertex-streams order)
+  "@arg[order]{A list of form (SEMANTIC SEMANTIC ... ) specifiying
+               a desired order for the streams}"
+  (iter (for vs in vertex-streams)
+        (for o in order)
+        (format t "order semantic: ~a   VS semantic: ~a~%" o (vs-semantic vs)))
+  (iter (for o in order)
+        (collect (find o vertex-streams :key #'(lambda (vs) (vs-semantic vs))))))
 
-;; combines arrays into one large 2-d array
-;; input ARAYS are of format (SEMANTIC COMPONENTS ARRAY)
-;; ORDER is a list of format ((SEMANTIC . SIZE) (SEMANTIC . SIZE) ... )
-;; that defines the order in which to interleave and how many
-;; elements for each one
-;; If there is a semantic in ORDER that is not found
-;; in ARRAYS then it will be set to 0.0
-(defun interleave (arrays order)
-  (let* ((size (iter (for (sem comp array) in arrays)
-                     (minimizing (length array))))
-         (depth (iter (for (sem . sz) in order)
-                      (sum sz)))
-         (interleaved (make-array (list size depth)))
-         (index 0))
-    ;; For each vertex
-    (iter (for j below size)
-          (iter (for (semantic . el-sz) in order)
-                (aif (find semantic arrays :key #'car :test #'equal)
-                     (let ((i 0))
-                       (iter (for elt in-vector (aref (third it) j))
-                             (for k below el-sz)
-                             (setf (row-major-aref interleaved index) 
-                                   (float elt))
-                             (incf i) (incf index))
-                       (iter (for k from i below el-sz)
-                             (setf (row-major-aref interleaved index) 0.0)
-                             (incf index)))
-                     (iter (for k below el-sz)
-                           (setf (row-major-aref interleaved index) 0.0)
-                           (incf index)))))
-    interleaved))
+;; combines vertex-streams into one large 2-d array
+;; If you want a specific order, re-order/prune the data before
+;; calling this function on it.
+;; Returns (2d-array indexing-fn)
+;; indexing-fn is a function that returns a list
+;; containing (SEMANTIC VECTOR) elements for each stream that
+;; was interleaved into the array
+(defun interleave (vertex-streams)
+  (let ((size 0)
+        (depth 0))
+    (iter (for vs in vertex-streams)
+          (minimizing (/ (length (vs-stream vs))
+                         (vs-stride vs)) into s)
+          (sum (vs-stride vs) into d)
+          (finally (setf size s) (setf depth d)))
+    (let ((interleaved (make-array (list size depth)))
+          (index 0))
+      (format t "size: ~a depth: ~a~%" size depth)
+      ;; For each vertex
+      (iter (for i below size)
+            (iter (for vs in vertex-streams)
+                  (iter (for elt in-vector (vs-ref vs i))
+                        (setf (row-major-aref interleaved index)
+                              (float elt))
+                        (incf index))))
+      (format t "~a~%" interleaved)
+      (values
+       interleaved
+       #'(lambda (index) 
+           (iter (for vs in vertex-streams)
+                 (collect 
+                     (list (vs-semantic vs) (vs-ref vs index)))))))))

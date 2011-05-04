@@ -37,9 +37,9 @@
    :load-object
    :lo-meshes
 
-   :load-mesh
+   :blt-mesh
    :id
-   :sources
+   :vertex-streams
    :elements
    :controller
    :transform
@@ -48,10 +48,11 @@
    :elem-indices
    :elem-material
 
-   :source
-   :src-accessor
-   :src-array
+   :vertex-stream
+   :vs-semantic
+   :vs-stride
+   :vs-stream
 
-   :unify-indices
+   :organize-streams
    :interleave
    ))

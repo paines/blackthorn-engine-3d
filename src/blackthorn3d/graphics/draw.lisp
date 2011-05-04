@@ -141,14 +141,6 @@
   ;(gl:bind-vertex-array 0)
   (gl:flush))
 
-(defmethod draw-object ((m mesh))
-  (with-slots (vert-data index-data) m
-    (gl:enable-client-state :vertex-array)
-    (gl:enable-client-state :normal-array)
-    (gl:enable-client-state :texture-coord-array)
-    (gl:bind-gl-vertex-array vert-data)
-    (gl:draw-elements :triangles index-data)
-    (gl:flush)))
 
 (defun draw-sphere (pos r &optional (color #(1.0 1.0 1.0)) (segs 8))
   (gl:with-pushed-matrix

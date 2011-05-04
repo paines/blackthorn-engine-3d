@@ -90,6 +90,7 @@
                                      (:module graphics
                                               :components
                                               ((:file "package")
+                                               (:file "scene-graph")
                                                (:file "texture")
                                                (:file "light")
                                                (:file "shader")

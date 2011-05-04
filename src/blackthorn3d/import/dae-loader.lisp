@@ -43,7 +43,9 @@
          (let ((mesh (gethash mesh-id geometry)))
            (setf (transform mesh) xform)
            (iter (for elt in (elements mesh))
-                 (setf (elem-material elt) nil))
+                 (setf (elem-material elt) 
+                       (gethash (elem-material elt) materials))
+                 (print (elem-amterial elt)))
            (collect mesh)))))
 
 ;; Returns an intermediate representation of the dae file

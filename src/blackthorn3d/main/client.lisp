@@ -110,7 +110,9 @@
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))
 
+         #+disabled
          (send-string
           :server
           (format nil "Msg #~a (rand: ~a)" *message-counter* (random 10)))
+         #+disabled
          (incf *message-counter*))))))

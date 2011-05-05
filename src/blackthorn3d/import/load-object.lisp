@@ -55,13 +55,13 @@
 
 (defun vs-ref (vs index)
   (with-slots (stream) vs
-    (svref stream index)))
+    (aref stream index)))
 
 ;; for now i'm going to assume no one is being dumb and putting
 ;; wrong things in streams
 (defun (setf vs-ref) (vec vs index)
   (with-slots (stream stride) vs
-    (setf (svref stream index) vec)
+    (setf (aref stream index) vec)
     #+disabled
     (iter (for elt in-vector vec)
           (for i below stride)
@@ -192,8 +192,7 @@
   (let ((size 0)
         (depth 0))
     (iter (for vs in vertex-streams)
-          (minimizing (/ (length (vs-stream vs))
-                         (vs-stride vs)) into s)
+          (minimizing (length (vs-stream vs))  into s)
           (sum (vs-stride vs) into d)
           (finally (setf size s) (setf depth d)))
     (let ((interleaved (make-array (list size depth)))

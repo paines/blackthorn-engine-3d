@@ -59,9 +59,10 @@
          (mesh-lst (find-tag-in-children "mesh" geometry-lst))
          (children (children mesh-lst))
          (source-table (hash-sources mesh-lst))
-         (elements-list nil))
+)
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
+
     (destructuring-bind (elements vertex-streams)
         (unify-indices 
          (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
@@ -69,12 +70,15 @@
                 (make-instance 
                  'elem
                  :indices (string->sv (third (find-tag "p" (children tri-lst))))
-                 :material (get-attribute "material" (attributes tri-lst)))))
+                 :material (get-attribute "material" (attributes tri-lst))
+                 :count (get-attribute "count" (attributes tri-lst)))))
          (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
                           source-table))
 
-      (make-instance 
-       'blt-mesh :id id :vertex-streams vertex-streams :elements elements))))
+      (make-blt-mesh 
+       :id id 
+       :vertex-streams vertex-streams 
+       :elements elements))))
 
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)

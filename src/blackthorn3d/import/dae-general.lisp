@@ -129,12 +129,15 @@
   (iter (for src in sources)
         (collect 
          (let* ((source (second src))
-                (attrib-len (/ (length (src-array source)) 
+                (attrib-len (/ (length (src-array source))
                                (length (src-components source))))
-                (attrib-vec (make-array attrib-len 
+                (attrib-vec (make-array attrib-len
                                         :fill-pointer 0
                                         :adjustable t)))
            (cons #'(lambda (index)
+                     (let ((src-vec (src-accessor source index)))
+                       (vector-push-extend src-vec attrib-vec))
+                     #+disabled
                      (iter (for elt in-vector (src-accessor source index))
                            (vector-push-extend elt attrib-vec)))
                  attrib-vec)))))
@@ -148,12 +151,15 @@
         (src-fns (get-source-functions inputs))
         (vertex-ht (make-hash-table :test #'equalp)))
     (list 
+     ;; ELEMENTS
      (iter 
       (for elt in elements)
       (let* ((indices (elem-indices elt))
              (n-verts (/ (length indices) n-inputs))
              (curr-index 0)
              (new-indices (make-array n-verts :fill-pointer 0)))
+        ;; for each index in this element, build the array of unified 
+        ;; vertex streams
         (iter (for i below (length indices) by n-inputs)
               (let ((vertex (subseq indices i (+ i n-inputs))))
                 (aif (gethash vertex vertex-ht)
@@ -170,8 +176,9 @@
                   'elem
                   :indices new-indices
                   :material (elem-material elt)
-                  ;; TODO: add other important information
-                  ))))
+                  :count (/ (length new-indices) 3)))))
+
+     ;; VERTEX-STREAMS
      (iter (for (semantic source) in inputs)
            (for fn in src-fns)
            (collect 

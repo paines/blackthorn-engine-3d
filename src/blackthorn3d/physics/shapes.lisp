@@ -47,7 +47,7 @@
   (with-slots (a-min a-max) b-box
     (setf pos (vec-scale4 (vec4+ a-min a-max) 2))))
 
-#+disabled
+;#+disabled
 (defclass o-bounding-box ()
   ((center
     :accessor center
@@ -56,11 +56,11 @@
    (axes
     :accessor axes
     :initarg :axes
-    :initform (make-identity-matrix)
-    (half-lengths
+    :initform (make-identity-matrix))
+   (half-lengths
     :accessor half-lengths
     :initarg :half-lengths
-    :initform (make-vector3 1.0 1.0 1.0)))))
+    :initform (make-vector3 1.0 1.0 1.0))))
 
 (defmethod find-bounding-points (vect-array)
   (iter (for i in-vector vect-array)
@@ -89,3 +89,9 @@
 
 (defmethod make-bounding-volume (vect-array)
   (make-bounding-sphere vect-array))
+
+#+disabled
+(defmethod transform-bounding-volume ((this bounding-sphere) xform)
+  (with-slots (rad pos) this
+    (setf pos (matrix-multiply-v xform pos)
+          rad (* rad scale-factor xform))))

@@ -70,34 +70,43 @@
 (defmethod collide-p ((sph bounding-sphere) (aabb aa-bounding-box))
   (collide-p aabb sph))
 
+;;;
+;;; Oriented Bounding Box
+;;;
+
+(defun axis-proj (obb axis)
+    (iter (for i below 3)
+     (sum (* (svref (half-lengths obb) i)
+             (abs (dot (col (axes obb) i) axis))))))
+
+(defun separating-axis-p (axis obb1 obb2)
+  (> (abs (dot Tvec axis)) 
+     (+ (axis-proj bv1 axis)
+        (axis-proj bv2 axis))))
+
 ;; o-bounding-boxes
 ;; slow(er) way of doing things (for now)
-#+disabled
+;#+disabled
 (defmethod collide-p ((bv1 o-bounding-box) (bv2 o-bounding-box))
-  (let (#+disabled(Rmat (make-ortho-basis (vec4- (u bv2) (u bv1))
-                                (vec4- (v bv2) (v bv1))
-                                (vec4- (w bv2) (w bv1))))
+  (let* ((Rmat (make-ortho-basis (vec4- (u bv2) (u bv1))
+                                 (vec4- (v bv2) (v bv1))
+                                 (vec4- (w bv2) (w bv1))))
         (Tvec (vec4- (center bv2) (center bv1))))
-    (labels ((axis-proj (obb axis)
-               (iter (for i below 3)
-                     (sum (* (svref (half-lengths obb) i)
-                             (abs (dot (col (axes obb) i) axis))))))
-             ;; used to test an axis of separation parallel to
+    (labels (;; used to test an axis of separation parallel to
              ;; one of the basis axes of bv1 (A)
              (A-face-test (axis)
-               (> (abs (dot Tvec axis)) 
-                  (+ (axis-proj bv1 axis)
-                     (axis-proj bv2 axis))))
+               (separating-axis-p axis bv1 bv2))
 
              ;; used to test an axis if separation parallel to
              ;; one of the basis axes of bv2 (B)
              (B-face-test (axis)
-               (A-face-test axis))
+               (separating-axis-p axis bv1 bv2))
              
              ;; used for testing axes parallel to the cross product
              ;; of an edge of A and an edge of B
              (AB-edge-test (i j)
-               (A-face-test (cross (col (axes bv1) i) (col (axes bv2) j)))))
+               (separating-axis-p (cross (col (axes bv1) i) (col (axes bv2) j))
+                                  bv1 bv2)))
 
       ;; First we test the faces of A
       (iter (for i below 3)
@@ -113,4 +122,7 @@
       (iter (for i below 3)
             (iter (for j below 3)
                   (if (AB-edge-test i j)
-                      (return-from collide-p nil)))))))
+                      (return-from collide-p nil))))
+
+      ;; If they all intersect, then we return true
+      t)))

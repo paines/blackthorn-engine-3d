@@ -337,3 +337,35 @@
                 (for vec in-vector vecs)
                 (setf (row-major-aref n-mat (+ i j)) (svref vec j))))
     n-mat))
+
+#+disabled
+(defun Q-R-decomp (mat)
+  (labels ((proj (e a) (vec-scale 
+                        e (/ (inner-product e a)
+                             (inner-product e e)))))
+    (let  ((e-lst
+            (iter (for k in (n-cols mat))
+                  (for a-k = (col mat k))
+                  (for u-k first a-k 
+                       then (iter (for e in e-lst)
+                                  (sum (proj e a-k) into s)
+                                  (finally (return (- a-k s)))))
+                  (collect u-k into u-lst)
+                  (collect (normalize u-k)))))
+      (values (apply #'vec-cols->matrix e-lst)
+              (let ((Rmat 
+                     (make-matrix (list (n-cols mat)
+                                        (n-rows mat))
+                                  ))))))))
+#+disabled
+(defun scale-factor (mat)
+  "Extract the scale factors of an affine transform
+   @return{a vec3 with the scale along each axis}"
+  (make-vec3
+   (mag (col mat 0))
+   (mag (col mat 1))
+   (mag (col mat 2)))
+  
+  (labels ((proj (e a) (vec-scale ))))
+  (let* ((e1 (col mat 0))
+         ())))

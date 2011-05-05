@@ -56,9 +56,9 @@
     (case order
       (:pre 
        (funcall fn node) 
-       (iter (for c in (node-children node)) (scene-dfs c fn order)))
+       (iter (for c in (node-children node)) (scene-dfs c fn :order order)))
       (:post 
-       (iter (for c in (node-children node)) (scene-dfs c fn order))
+       (iter (for c in (node-children node)) (scene-dfs c fn :order order))
        (funcall fn node)))))
 
 (defun scene-bfs (node fn)

@@ -54,11 +54,15 @@
     :initarg :stride)))
 
 (defun vs-ref (vs index)
-  (with-slots (stream stride) vs
-    (subseq stream (* index stride) (+ (* index stride) stride))))
+  (with-slots (stream) vs
+    (svref stream index)))
 
+;; for now i'm going to assume no one is being dumb and putting
+;; wrong things in streams
 (defun (setf vs-ref) (vec vs index)
   (with-slots (stream stride) vs
+    (setf (svref stream index) vec)
+    #+disabled
     (iter (for elt in-vector vec)
           (for i below stride)
           (setf (svref stream (+ i (* index stride))) elt))))
@@ -128,14 +132,41 @@
    (bounding-volume
     :accessor bounding-volume
     :initarg :bounding-volume
-    :documentation "For kicks, but I think we're going to need this")))
+    :documentation "For narrow-phase collision detection
+                   to start we can use something coarse like a sphere
+                   but eventually might be something shiny, like bsp,
+                   or heirarchy of bvs")))
 
 
+(defun make-blt-mesh (&key id vertex-streams elements transform)
+  (make-instance 'blt-mesh
+                 :id id
+                 :vertex-streams vertex-streams
+                 :elements elements
+                 :transform transform))
 
-
+#+disabled
+(defmethod finalize ((this blt-mesh) &key (xform-bv t))
+  (with-slots (vertex-streams elements transform bounding-volume) this
+    (setf bounding-volume (transform-bounding-volume 
+                           (make-bounding-volume 
+                            (vs-stream
+                             (find :vertex vertex-streams :key #'vs-semantic)))
+                           transform))))
 ;;;
 ;;; Model loading-specific code.
 ;;;
+
+;; multiply each vertex and normal by TRANSFORM, and sets TRANSFORM
+;; to NIL
+;; if XFORM is supplied, will use that matrix instead and keep
+;; TRANSFORM
+;; NOTE: this SHOULD NOT be used on rigged objects, it will 
+;; screw up the bone binding. Instead use bake-skeleton.
+(defmethod bake-transform ((this blt-mesh) &optional (xform 
+                                                      (make-identity-matrix)
+                                                      xform-p))
+  )
 
 ;; Note that this assumes that all the semantics in order exist in 
 ;; vertex-streams. The behavior is currently incorrect if this isn't true
@@ -181,3 +212,60 @@
            (iter (for vs in vertex-streams)
                  (collect 
                      (list (vs-semantic vs) (vs-ref vs index)))))))))
+
+;;;
+;;; Triangle access
+;;;
+
+;; I will represent a triangle using 3 vertices and a face normal
+;; This will be represented by an array #(v0 v1 v2 n)
+;;
+
+(defun make-triangle (v0 v1 v2)
+  (let ((normal (cross (vec4- v1 v0)
+                       (vec4- v2 v0))))
+    (vector v0 v1 v2 normal)))
+
+;; Returns the triangle at index from the blt-mesh
+;; If the mesh has multiple elements, the indexes are treated
+;; as incrementing accross elements. The first element has 
+;; indices [0 elem1.count) the next one has [elem1.count elem2.count)
+;; etc.
+
+(defun tri-in-elt (elem vs index)
+  (let ((i (* 3 index)))
+    (make-triangle
+     (v0 (vs-ref vertices i))
+     (v1 (vs-ref vertices (+ i 1)))
+     (v2 (vs-ref vertices (+ i 2))))))
+
+(defmethod triangle ((this blt-mesh) index)
+  (with-slots (elements vertex-streams) this
+    ;; First find the element we're in
+    (multiple-value-bind (element start-index)
+        (iter (for elt in elements)
+              (for s first 0 then (+ s (elem-count elt)))
+              (for last-s previous s initially 0)
+              (finding elt such-that (> s index))
+              (finally (return (values elt (- index last-s))))))
+    (let ((vertices (find :vertex vertex-streams :key #'vs-semantic)))
+      ;; MUST have vertex positions!
+      (unless (null vertices)
+        (tri-in-elt element vertices start-index)))))
+
+(defmethod build-triangle-array ((this blt-mesh))
+  (with-slots (elements vertex-streams) this
+    (let ((vertices (find :vertex vertex-streams :key #'vs-semantic))
+          (triangles (make-array (/ (iter (for elt in elements)
+                                          (sum (elem-count elt))) 3)))
+          (index 0))
+      (iter (for element in elements)
+            (iter (for i below (elem-count element))
+                  (setf (svref triangles index) 
+                        (tri-in-elt element vertices i)))))))
+
+
+;;;
+;;; Bounding Volume stuff herr
+;;;
+

@@ -78,7 +78,7 @@
   ;(gl:light :light0 :diffuse (make-vec3 1.0 1.0 1.0))
   (gl:enable :lighting)
   (gl:enable :light0)
-  (gl:enable :rescale-normal)
+  ;(gl:enable :rescale-normal)
 
   #+disabled
   (setf shader (make-shader (blt3d-res:file-contents
@@ -106,7 +106,7 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
   (gl:use-program 0)
-  ;(gl:bind-texture :texture-2d cube-tex)
+  (gl:bind-texture :texture-2d cube-tex)
 
   (gl:with-pushed-matrix
     (use-material plane-mat)

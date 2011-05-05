@@ -57,6 +57,11 @@
     :initarg :elements
     :documentation "A list of elem objects containing index and material data
                     for drawing a portion, or all, of the mesh")
+   (bounding-volume
+    :accessor mesh-bv
+    :initarg :bounding-volume
+    :documentation "a bv for this mesh. this is for culling, etc, client side
+                    only :)")
    (array-format 
     :accessor mesh-array-format
     :initarg :array-format)

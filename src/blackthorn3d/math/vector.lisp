@@ -150,6 +150,12 @@
     (* s (y v))
     (* s (z v))))
 
+(defun vec-scale (v s)
+  (make-array (length v)
+              :initial-contents
+              (iter (for e in-vector v)
+                    (* e s))))
+
 (defun vec-neg4 (v)
   (make-vector4 
     (- (x v))

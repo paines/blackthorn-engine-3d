@@ -64,11 +64,22 @@
                                                (:file "socket")
                                                (:file "message"))
                                               :serial t)
+                                     (:module animation
+                                              :components
+                                              ((:file "package")
+                                               (:file "channels"))
+                                              :serial t)
                                      (:module entity
                                               :components
                                               ((:file "package")
                                                (:file "entity")
                                                (:file "event"))
+                                              :serial t)
+                                     (:module physics
+                                              :components
+                                              ((:file "package")
+                                               (:file "shapes")
+                                               (:file "collision"))
                                               :serial t)
                                      (:module import
                                               :components
@@ -80,12 +91,6 @@
                                                (:file "dae-material")
                                                (:file "dae-scene")
                                                (:file "dae-loader"))
-                                              :serial t)
-                                     (:module physics
-                                              :components
-                                              ((:file "package")
-                                               (:file "shapes")
-                                               (:file "collision"))
                                               :serial t)
                                      (:module graphics
                                               :components

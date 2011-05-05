@@ -30,68 +30,6 @@
 ;;;
 
 ;;;
-;;; Keyframing
-;;;
-
-(defstruct keyframe
-  time
-  value
-  tan-in
-  tan-out
-  interp)
-
-;; Channels
-(defstruct span
-  t0
-  ;; this may not be needed, since it's in coefs (d @ index 3)
-  value
-  coefs
-  t1-t0)
-
-(defstruct channel
-  data
-  min-extrap-mode min-extrap-data
-  max-extrap-mode max-extrap-data)
-
-;; takes 2 keyframes and spits out a span
-(defun bake-keyframe (key1 key2)
-  (let ((dt (- (keyframe-time key2) (keyframe-time key1))))
-    (make-span
-     :t0 (keyframe-time key1)
-     :t1-t0 dt
-     :value (keyframe-value key1)
-     :coefs (calc-1d-hermite-coefs (keyframe-value key1)
-                                   (keyframe-value key2)
-                                   (keyframe-tan-out key1)
-                                   (keyframe-tan-in key2)
-                                   dt))))
-
-;; array of keyframes -> array of spans
-(defun bake-keyframes (key-arr &key 
-                       (tmin-extrap :const)
-                       (tmax-extrap :const))
-  (let ((n-keys (length key-arr))
-        (spans (make-array (1- n-keys))))
-    (iter (for k below (1- n-keys))
-          (setf (aref spans k)
-                (bake-keyframe (aref key-arr k)
-                               (aref key-arr (1+ k)))))
-    ;; TODO- something about the extrapolation so we can has loop
-    ))
-
-(defun evaluate-channel (c time)
-  ;; For now we can do with sequential access
-  ;; eventually we will want to cache most recent
-  ;; span in the animating object
-  (let ((span (iter (for span in-vector (channel-data c))
-                    (finding span 
-                             such-that (< time (+ (span-t0 span) 
-                                                  (span-t1-t0 span)))))))
-    ;; TODO- Handle two cases where time is outside the range of the
-    ;; spans (ie, extrapolation cases
-    (eval-1d-curve (span-coefs span) time)))
-
-;;;
 ;;; Skeletons
 ;;;
 

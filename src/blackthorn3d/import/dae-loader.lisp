@@ -52,11 +52,9 @@
                               nil))
                    ;(setf mat-id (car mat-id))
                    ))
-           (collect
-               (make-instance 'mesh-instance
-                              :transform xform
-                              :material-array mat-array
-                              :mesh mesh)))
+           (collect (make-mesh-instance :transform xform
+                                        :material-array mat-array
+                                        :mesh mesh)))
          ;; T0D0: stuff
          )))
 

@@ -106,7 +106,7 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
   (gl:use-program 0)
-  (gl:bind-texture :texture-2d cube-tex)
+  ;(gl:bind-texture :texture-2d cube-tex)
 
   (gl:with-pushed-matrix
     (use-material plane-mat)

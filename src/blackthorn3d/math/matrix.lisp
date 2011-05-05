@@ -343,29 +343,34 @@
   (labels ((proj (e a) (vec-scale 
                         e (/ (inner-product e a)
                              (inner-product e e)))))
-    (let  ((e-lst
-            (iter (for k in (n-cols mat))
-                  (for a-k = (col mat k))
-                  (for u-k first a-k 
-                       then (iter (for e in e-lst)
-                                  (sum (proj e a-k) into s)
-                                  (finally (return (- a-k s)))))
-                  (collect u-k into u-lst)
-                  (collect (normalize u-k)))))
+    (destructuring-bind (e-lst R-lst)
+      (iter (for k in (n-cols mat))
+            (for a-k = (col mat k))
+            (for u-k first a-k 
+                 then (iter (for e in e-lst)
+                            (sum (proj e a-k) into s)
+                            (finally (return (- a-k s)))))
+            (collect u-k into u-lst)
+            (collect (normalize u-k) into e-lst)
+            (collect 
+             (append 
+              (iter (for e-i in e-lst)
+                    (collect (inner-product e-i a-k)))
+              (iter (for i from (length e-lst) below (- (n-rows mat) 
+                                                        (length e-lst)))
+                    (collect 0.0))) into R-mat)
+            (finally (return (list e-lst R-mat))))
       (values (apply #'vec-cols->matrix e-lst)
-              (let ((Rmat 
-                     (make-matrix (list (n-cols mat)
-                                        (n-rows mat))
-                                  ))))))))
-#+disabled
-(defun scale-factor (mat)
+              (make-matrix (list (n-cols mat) (n-rows mat))
+                           R-lst)))))
+;#+disabled
+(defun extract-scale (mat)
   "Extract the scale factors of an affine transform
    @return{a vec3 with the scale along each axis}"
   (make-vec3
-   (mag (col mat 0))
-   (mag (col mat 1))
-   (mag (col mat 2)))
-  
-  (labels ((proj (e a) (vec-scale ))))
-  (let* ((e1 (col mat 0))
-         ())))
+   (mag (row mat 0))
+   (mag (row mat 1))
+   (mag (row mat 2))))
+
+(defun extract-translate (mat)
+  (col mat 3))

@@ -48,6 +48,11 @@
    :elem-indices
    :elem-material
 
+   :mesh-instance
+   :mesh
+   :transform
+   :material-array
+
    :vertex-stream
    :vs-semantic
    :vs-stride

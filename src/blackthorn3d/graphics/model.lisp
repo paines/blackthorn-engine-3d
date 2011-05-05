@@ -46,21 +46,19 @@
     :initform nil
     :documentation "the matrix that transforms from the model space
                     to the space of the parent (world, unless a child 
-                    in a scenegraph")
-   (material
-    :accessor model-mat
-    :initarg :material
-    :initform nil
-    :documentation "the material to use for the mesh")))
+                    in a scenegraph")))
+
+(defvar *material-array* nil)
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this
     (when matrix   (gl:mult-matrix matrix))
-    (when material (use-material material))
-    (iter (for node in mesh-graph)
+    ;(when material (use-material material))
+    (iter (for instance in mesh-graph)
           (gl:with-pushed-matrix
-            (aif (node-xform node) (gl:mult-matrix it))
-            (draw-object (node-obj node))))))
+            (aif (transform instance) (gl:mult-matrix it))
+            (let ((*material-array* (material-array instance)))
+              (draw-object (mesh instance)))))))
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 
@@ -86,30 +84,27 @@
                     :specular specular
                     :shininess shininess))))
 
-;; temp behavior is to only load the first element, until I
-;; change the way mesh works
+
+
 (defmethod load-obj->models ((this load-object))
   (format t "loading object to models~%")
   (make-instance 
    'model-shape
    :mesh-graph 
-   (iter (for blt-mesh in (lo-meshes this))
-         (let* ((interleaved (interleave
-                              (vertex-streams blt-mesh)
-                              #+disabled
-                              (organize-streams (vertex-streams blt-mesh)
-                                                +mesh-components+)))
-                (elements
-                 (iter (for elt in (elements blt-mesh))
-                       (collect (elem->gl-elem elt))))
-                (mesh
-                 (make-instance
-                  'mesh
-                  :id (id blt-mesh)
-                  :vert-data (vnt-array->gl-array interleaved)
-                  :elements elements
-                  :array-format 'blt-vnt-mesh)))
-           (collect 
-            (make-instance 'node
-                           :xform (transform blt-mesh)
-                           :obj mesh))))))
+   (iter (for instance in (lo-meshes this))
+         (with-slots (mesh transform) instance
+           (let ((interleaved (interleave
+                               (vertex-streams mesh)
+                               #+disabled
+                               (organize-streams (vertex-streams mesh)
+                                                 +mesh-components+)))
+                 (elements
+                  (iter (for elt in (elements mesh))
+                        (collect (elem->gl-elem elt)))))
+             (setf mesh (make-instance
+                         'mesh
+                         :id (id mesh)
+                         :vert-data (vnt-array->gl-array interleaved)
+                         :elements elements
+                         :array-format 'blt-vnt-mesh))
+             (collect instance))))))

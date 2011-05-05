@@ -32,6 +32,7 @@
 (defvar +instance-geometry+ "instance_geometry")
 
 
+
 ;; Responsible for taking the table in the tables
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials)
@@ -39,16 +40,31 @@
    'load-object
    :meshes 
    (iter (for (node (xform mesh-id mats)) in-hashtable scenes)
-         ;; T0D0: stuff
-         (let ((mesh (gethash mesh-id geometry)))
-           (setf (transform mesh) xform)
+         (let* ((mesh (gethash mesh-id geometry))
+                (mat-array (make-array (length (elements mesh)))))
+           ;; Build the material-array
            (iter (for elt in (elements mesh))
                  (with-slots ((mat-id material)) elt
-                   (setf mat-id
-                         (aif (find mat-id mats :test #'equal :key #'car)
+                   (setf (aref mat-array (car mat-id)) 
+                         (aif (find (cdr mat-id) 
+                                    mats :test #'equal :key #'car)
                               (gethash (second it) materials)
-                              nil))))
-           (collect mesh)))))
+                              nil))
+                   ;(setf mat-id (car mat-id))
+                   ))
+           (collect
+               (make-instance 'mesh-instance
+                              :transform xform
+                              :material-array mat-array
+                              :mesh mesh)))
+         ;; T0D0: stuff
+         )))
+
+
+
+(defvar *geometry-table* nil)
+(defvar *scene-table* nil)
+(defvar *material-table* nil)
 
 ;; Returns an intermediate representation of the dae file
 (defun load-dae (filename)
@@ -57,19 +73,22 @@
                    #+disabled(blt3d-res:resolve-resource filename) 
                                    (cxml-xmls:make-xmls-builder))))
     
-    (let ((geometry-table (process-geometry 
-                           (find-tag-in-children +geometry-library+ dae-file)))
-          (scene-table    (process-scene 
-                           (find-tag-in-children +scene-library+ dae-file)))
-          (material-table (process-materials
-                           (find-tag-in-children +material-library+ dae-file)
-                           (find-tag-in-children +image-library+ dae-file)
-                           (find-tag-in-children +effect-library+ dae-file))))
+    (let ((*material-table* 
+           (process-materials
+            (find-tag-in-children +material-library+ dae-file)
+            (find-tag-in-children +image-library+ dae-file)
+            (find-tag-in-children +effect-library+ dae-file)))
+          (*geometry-table* 
+           (process-geometry 
+            (find-tag-in-children +geometry-library+ dae-file)))
+          (*scene-table*    
+           (process-scene 
+            (find-tag-in-children +scene-library+ dae-file))))
       ;; Combine all the tables into a list of model-shape objects
-      (compile-dae-data :geometry geometry-table
-                        :scenes   scene-table
+      (compile-dae-data :geometry *geometry-table*
+                        :scenes   *scene-table*
                         ;; TODO: poor materials aren't ready yet
-                        :materials material-table
+                        :materials *material-table*
                         ))))
 
 (defun build-models (obj-lst)

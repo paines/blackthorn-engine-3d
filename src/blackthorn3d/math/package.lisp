@@ -78,6 +78,8 @@
    :rt-inverse
    :vec-cols->matrix
    :vec-rows->matrix
+   :extract-scale
+   :extract-translate
 
    ;; quaternion.lisp
    :make-quat

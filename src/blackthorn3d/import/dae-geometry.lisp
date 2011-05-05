@@ -58,19 +58,22 @@
   (let* ((id (get-attribute "id" (attributes geometry-lst)))
          (mesh-lst (find-tag-in-children "mesh" geometry-lst))
          (children (children mesh-lst))
-         (source-table (hash-sources mesh-lst))
-)
+         (source-table (hash-sources mesh-lst)))
+
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
 
     (destructuring-bind (elements vertex-streams)
         (unify-indices 
          (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
+               (for mat-index upfrom 0)
                (collect 
                 (make-instance 
                  'elem
                  :indices (string->sv (third (find-tag "p" (children tri-lst))))
-                 :material (get-attribute "material" (attributes tri-lst))
+                 :material 
+                 (cons mat-index
+                      (get-attribute "material" (attributes tri-lst)))
                  :count (get-attribute "count" (attributes tri-lst)))))
          (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
                           source-table))

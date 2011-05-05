@@ -35,3 +35,11 @@
     (is (= (y vec) 2.0))
     (is (= (z vec) 3.0))
     (is (= (w vec) 4.0))))
+
+(test scale-factor
+  (let* ((scale-vec (make-vec3 5.0 5.0 5.0))
+         (scale-mat (make-scale scale-vec))
+         (ex-scale (extract-scale scale-mat)))
+    (is (= (x ex-scale) (x scale-vec)))
+    (is (= (y ex-scale) (y scale-vec)))
+    (is (= (z ex-scale) (z scale-vec)))))

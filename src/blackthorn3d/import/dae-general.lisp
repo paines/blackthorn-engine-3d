@@ -176,7 +176,8 @@
                   'elem
                   :indices new-indices
                   :material (elem-material elt)
-                  :count (/ (length new-indices) 3)))))
+                  :count (elem-count elt)
+                  ))))
 
      ;; VERTEX-STREAMS
      (iter (for (semantic source) in inputs)

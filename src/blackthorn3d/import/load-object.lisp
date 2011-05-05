@@ -99,17 +99,6 @@
     :initarg :textures
     :initform nil)))
 
-;; Used to wrap
-(defclass mesh-instance ()
-  ((transform
-    :accessor transform
-    :initarg :transform)
-   (material-array
-    :accessor material-array
-    :initarg :material-array)
-   (mesh
-    :accessor mesh
-    :initarg :mesh)))
 
 ;; This is going to be our generic mesh object. It's what we load 
 ;; other formats into, and is converted by the graphics subsystem into
@@ -151,6 +140,34 @@
                  :vertex-streams vertex-streams
                  :elements elements))
 
+(defmethod get-stream (stream (this blt-mesh))
+  (aif (find stream (vertex-streams this) :key #'vs-semantic)
+       (vs-stream it)))
+
+
+
+(defclass mesh-instance ()
+  ((transform
+    :accessor transform
+    :initarg :transform)
+   (material-array
+    :accessor material-array
+    :initarg :material-array)
+   (mesh
+    :accessor mesh
+    :initarg :mesh)
+   (bounding-volume
+    :accessor bounding-volume
+    :initarg :bounding-volume)))
+
+(defun make-mesh-instance (&key transform material-array mesh)
+  (make-instance 'mesh-instance
+                 :transform transform
+                 :material-array material-array
+                 :mesh mesh
+                 :bounding-volume (blt3d-phy:make-bounding-volume
+                                   (get-stream :vertex mesh))))
+
 #+disabled
 (defmethod finalize ((this blt-mesh) &key (xform-bv t))
   (with-slots (vertex-streams elements transform bounding-volume) this
@@ -164,22 +181,12 @@
 ;;; Model loading-specific code.
 ;;;
 
-;; multiply each vertex and normal by TRANSFORM, and sets TRANSFORM
-;; to NIL
-;; if XFORM is supplied, will use that matrix instead and keep
-;; TRANSFORM
-;; NOTE: this SHOULD NOT be used on rigged objects, it will 
-;; screw up the bone binding. Instead use bake-skeleton.
-(defmethod bake-transform ((this blt-mesh) &optional (xform 
-                                                      (make-identity-matrix)
-                                                      xform-p))
-  )
 
 ;; Note that this assumes that all the semantics in order exist in 
 ;; vertex-streams. The behavior is currently incorrect if this isn't true
 ;; It is fine to have extra semantics in vertex-streams, they will
 ;; be dropped
-(defun organize-streams (vertex-streams order)
+(defun order-streams (vertex-streams order)
   "@arg[order]{A list of form (SEMANTIC SEMANTIC ... ) specifiying
                a desired order for the streams}"
   (iter (for vs in vertex-streams)

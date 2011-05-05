@@ -43,6 +43,7 @@
    :elements
    :controller
    :transform
+   :vertices
 
    :elem
    :elem-indices

@@ -64,11 +64,6 @@
                                                (:file "socket")
                                                (:file "message"))
                                               :serial t)
-                                     (:module animation
-                                              :components
-                                              ((:file "package")
-                                               (:file "channels"))
-                                              :serial t)
                                      (:module entity
                                               :components
                                               ((:file "package")

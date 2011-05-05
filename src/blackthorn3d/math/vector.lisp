@@ -57,7 +57,7 @@
    @arg[z]{element at index 2}
    @arg[w]{element at index 3}"
   (make-array 4 :element-type 'float :initial-contents
-    (list x y z w)))
+              (list (float x) (float y) (float z) (float w))))
 
 
 (defun make-vector3 (x y z)

@@ -72,4 +72,5 @@
                            materials-ht)
                   (gethash (get-url (first-child material))
                            effects-ht))))
+
     materials-ht))

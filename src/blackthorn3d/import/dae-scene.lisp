@@ -48,8 +48,6 @@
                 
                 ((equal "rotate" (tag-name tag))
                  (let ((r-vec (string->sv (third tag))))
-                   ;(make-z-rot (* (/ pi 180.0) (w r-vec)))
-                   ;#+disabled
                    (format t "~%rotation values: ~a~%" r-vec)
                    (quat->matrix (axis-rad->quat
                                   (make-vec3 (x r-vec)
@@ -58,30 +56,7 @@
                                   ;(w r-vec)
                                   (* (w r-vec) (/ pi 180.0))
                                   ))))))))
-   :initial-value (make-identity-matrix))
-#+disabled
-  (let ((xform (make-identity-matrix)))
-    (iter (for tag in (tag-children node-tag))
-          (when (member (tag-name tag) '("translate" "matrix") :test #'equal)
-            (setf xform
-                  (matrix-multiply-m 
-                   xform
-                   (cond
-                     ((equal "matrix" (tag-name tag)) 
-                      (matrix-tag->matrix tag))
-                     ((equal "translate" (tag-name tag)) 
-                      (make-translate (string->sv (third tag))))
-                     ((equal "scale" (tag-name tag))
-                      (make-scale val))
-                     #+disabled
-                     ((equal "rotate" (tag-name tag))
-                      (let ((r-vec (string->sv (third-tag))))
-                        (quat->matrix (axis-rad->quat
-                                       (make-vec3 (x r-vec)
-                                                  (y r-vec)
-                                                  (z r-vec))
-                                       (* (/ pi 180.0) (w r-vec)))))))))))
-    xform))
+   :initial-value (make-identity-matrix)))
 
 (defun map-materials (bind-tag)
   (iter 

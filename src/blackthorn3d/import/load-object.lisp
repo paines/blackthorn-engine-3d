@@ -99,6 +99,18 @@
     :initarg :textures
     :initform nil)))
 
+;; Used to wrap
+(defclass mesh-instance ()
+  ((transform
+    :accessor transform
+    :initarg :transform)
+   (material-array
+    :accessor material-array
+    :initarg :material-array)
+   (mesh
+    :accessor mesh
+    :initarg :mesh)))
+
 ;; This is going to be our generic mesh object. It's what we load 
 ;; other formats into, and is converted by the graphics subsystem into
 ;; appropriate objects for rendering.  
@@ -120,11 +132,6 @@
     :documentation "Rigged models need a control element to attach
                    the vertices to bone data.  See dae-controller.lisp
                    for more details")
-   (transform
-    :accessor transform
-    :initarg :transform
-    :initform nil
-    :documentation "Base object->world transform")
    (elements
     :accessor elements
     :initarg :elements
@@ -142,8 +149,7 @@
   (make-instance 'blt-mesh
                  :id id
                  :vertex-streams vertex-streams
-                 :elements elements
-                 :transform transform))
+                 :elements elements))
 
 #+disabled
 (defmethod finalize ((this blt-mesh) &key (xform-bv t))
@@ -153,6 +159,7 @@
                             (vs-stream
                              (find :vertex vertex-streams :key #'vs-semantic)))
                            transform))))
+
 ;;;
 ;;; Model loading-specific code.
 ;;;
@@ -181,7 +188,7 @@
   (iter (for o in order)
         (collect (find o vertex-streams :key #'(lambda (vs) (vs-semantic vs))))))
 
-;; combines vertex-streams into one large 2-d array
+;; combines unified vertex-streams into one large 2-d array
 ;; If you want a specific order, re-order/prune the data before
 ;; calling this function on it.
 ;; Returns (2d-array indexing-fn)

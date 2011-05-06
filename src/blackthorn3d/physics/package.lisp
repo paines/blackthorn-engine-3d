@@ -41,6 +41,7 @@
    :a-min
    :a-max
    
+   :move-bounding-volume
    :find-bounding-points
    :make-bounding-box
    :make-bounding-sphere

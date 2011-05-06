@@ -151,11 +151,16 @@
  (message-send :broadcast (make-event :entity-update))
  (message-send :broadcast (make-event :entity-remove)))
      
+(defun update-entities ()
+  (iter (for thing in (list-entities))
+        (update thing)))
+     
 (defun server-main (host port)
   (declare (ignore host))
 
   (make-cyclic-alarm 2.0 #'hello)
   
+  ;; Start the server, or print a message and quit if we can't use desired port
   (when (not (socket-server-start port))
     (format t "Unable to start the server~%")
     (return-from server-main))
@@ -166,10 +171,7 @@
     (loop
        (next-frame)
        (check-for-new-clients)
-       
-       (iter (for thing in (list-entities))
-             (update thing))
-
+       (update-entities)
        (synchronize-clients)
 
        )))

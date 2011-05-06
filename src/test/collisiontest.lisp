@@ -97,12 +97,20 @@
     (is (eql (collide-p nil s1) nil))))
     ; expect NIL
 
-(test move-bounding-volume
+(test move-bounding-volume-set
+  (let* ((s1 (make-instance 'bounding-sphere 
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+	 (vec1 (make-vector3 1.0 2.0 3.0))
+	 (s2 (move-bounding-volume s1 vec1)))
+    (is (equalp (pos s2) (make-point3 1 2 3)))))
+
+(test move-bounding-volume-set
   (let ((s1 (make-instance 'bounding-sphere 
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
 	(vec1 (make-vector3 1.0 2.0 3.0)))
-    (move-bounding-volume s1 vec1)
+    (move-bounding-volume-set s1 vec1)
     (is (equalp (pos s1) (make-point3 1 2 3)))))
     
 

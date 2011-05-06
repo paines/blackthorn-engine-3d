@@ -62,7 +62,13 @@
     :initarg :half-lengths
     :initform (make-vector3 1.0 1.0 1.0))))
 
-(defmethod move-bounding-volume ((bv bounding-shape) move-vec)
+(defmethod move-bounding-volume ((bv bounding-sphere) move-vec)
+  (with-slots (pos rad) bv
+    (make-instance 'bounding-sphere
+		   :pos (vec4+ pos move-vec)
+		   :rad rad)))
+
+(defmethod move-bounding-volume-set ((bv bounding-shape) move-vec)
   (setf (pos bv) (vec4+ (pos bv) move-vec)))
 
 (defmethod find-bounding-points (vect-array)

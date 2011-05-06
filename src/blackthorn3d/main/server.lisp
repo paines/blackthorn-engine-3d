@@ -128,9 +128,6 @@
   `(unwind-protect
         (progn ,@body)
      (finalize-server)))
-
-(defun hello ()
-    (format t "hello~%"))
      
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
@@ -157,8 +154,6 @@
      
 (defun server-main (host port)
   (declare (ignore host))
-
-  (make-cyclic-alarm 2.0 #'hello)
   
   ;; Start the server, or print a message and quit if we can't use desired port
   (when (not (socket-server-start port))

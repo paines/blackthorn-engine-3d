@@ -42,6 +42,7 @@
    :a-max
    
    :move-bounding-volume
+   :move-bounding-volume-set
    :find-bounding-points
    :make-bounding-box
    :make-bounding-sphere

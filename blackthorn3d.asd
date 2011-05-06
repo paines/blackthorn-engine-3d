@@ -116,6 +116,7 @@
                                               ((:file "package")
                                                (:file "player")
                                                (:file "server")
+                                               (:file "alarm")
                                                (:file "client")
                                                (:file "main"))
                                               :serial t)

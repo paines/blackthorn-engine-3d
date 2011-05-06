@@ -25,48 +25,17 @@
 
 (in-package :cl-user)
 
-(defpackage :blackthorn3d-import
-  (:nicknames :blt3d-imp)
-  (:use :iter :cl :blt3d-utils :blt3d-math)
+(defpackage :blackthorn3d-animation
+  (:nicknames :blt3d-ani)
+  (:use :iter :cl :alexandria :userial :blt3d-math)
   (:export
+   ;; channels.lisp
+   :channel
+   :make-channel
+   :frames
 
-   ;; dae-loader.lisp
-   :load-dae
-
-   ;; load-object.lisp
-   :load-object
-   :lo-meshes
-
-   :blt-mesh
-   :id
-   :vertex-streams
-   :elements
-   :controller
-   :transform
-   :vertices
-
-   :elem
-   :elem-indices
-   :elem-material
-
-   :model-node
-   :mesh
-   :transform
-   :material-array
-   :bounding-volume
-   :child-nodes
-
-   :vertex-stream
-   :vs-semantic
-   :vs-stride
-   :vs-stream
-
-   :blt-material
-   :ambient
-   :diffuse
-   :specular
-   :shininess
-
-   :organize-streams
-   :interleave
+   ;; animation.lisp
+   :anim-controller
+   :update
+   :play-clip
    ))

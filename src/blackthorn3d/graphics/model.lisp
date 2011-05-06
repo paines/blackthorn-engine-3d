@@ -52,13 +52,18 @@
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this
-    (when matrix   (gl:mult-matrix matrix))
-    ;(when material (use-material material))
-    (iter (for instance in mesh-graph)
-          (gl:with-pushed-matrix
-            (aif (transform instance) (gl:mult-matrix it))
-            (let ((*material-array* (material-array instance)))
-              (draw-object (mesh instance)))))))
+    (gl:with-pushed-matrix
+        (when matrix (gl:mult-matrix matrix))
+      (iter (for node in mesh-graph)
+            (draw-object node)))))
+
+(defmethod draw-object ((this model-node))
+  (gl:with-pushed-matrix
+      (aif (transform this) (gl:mult-matrix it))
+    (let ((*material-array* (material-array this)))
+      (draw-object (mesh this))
+      (iter (for node in (child-nodes this))
+            (draw-object node)))))
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 

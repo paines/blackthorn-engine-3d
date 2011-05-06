@@ -37,29 +37,74 @@
 ;; part of the channel, will check collada spec for their choice)
 ;; 
 
-(defclass channel-instance ()
-  ((channel-ref)
-   (prev-frame)
-   (modify-fn)))
-
 (defclass animation-clip ()
-  ((channel-lst
+  ((id
+    :accessor id
+    :initarg :id)
+   (channel-lst
     :accessor channel-lst
     :initarg :channel-lst)
+   (t-start
+    :accessor start-time
+    :initarg t-start)
+   (t-end
+    :accessor end-time
+    :initarg t-end)
    (ref-time
-    :documentation "the time to use as a reference for getting channel
-                    data.  channel-time = time - ref-time.
-                    This may be abstracted up to a higher level object")))
+    :documentation "the time used as a reference to game time 
+                    may get abstracted to higher up")))
 
-(defun make-animation-clip (&key channels))
 
 ;; called to update the fields this clip controls.
 ;; time should be game-time
 (defmethod update-clip ((this animation-clip) time)
-  (let ((dt (- time ref-time)))
-    (iter (for ch in channel-lst)
-          (destructuring-bind (modify-fn channel prev-frame) ch
-            (funcall modify-fn (evaluate-channel channel dt prev-frame))))))
+  (with-slots (channel-lst t-start t-end ref-time) this
+    (let ((c-time (+ t-start (- time ref-time))))
+      (iter (for ch in channel-lst)
+            (with-slots (modify-fn) ch
+              (funcall modify-fn (evaluate-channel ch c-time)))))))
 
 
+;; every animated model should have one of these...
+(defclass anim-controller ()
+  ((current-clip
+    :accessor current-clip
+    :initarg :current-clip)
+   (next-clip
+    :initform nil)
+   (t0
+    :accessor t0)
+   (state
+    :accessor state
+    :initarg :state
+    :initform :stop)))
 
+(defun set-next-clip (controller clip)
+  (with-slots (current-clip next-clip state) controller
+    (if current-clip
+        (setf next-clip clip)
+        (setf current-clip clip))))
+
+(defmethod play-clip ((this anim-controller) clip)
+  (set-next-clip this clip)
+  (setf (state this) :run))
+
+;; Updates the animation state controlled by this controller
+;; there are two states (possibly three later):
+;;   :run - animation playes current-clip until it stops
+;;          then will run next-clip if there is one
+;;   :stop - does nothing
+(defmethod update ((this anim-controller) time)
+  (with-slots (current-clip next-clip t0 state) this
+    (let ((c-time (- time t0)))
+      (when (> c-time (end-time current-clip))
+        (setf current-clip next-clip)
+        (setf next-clip nil)
+        (setf t0 time)
+        (setf c-time 0.0))
+      (case state
+        (:run 
+         (if current-clip
+             (update-clip current-clip c-time)
+             (setf state :stop)))
+        (:stop nil)))))

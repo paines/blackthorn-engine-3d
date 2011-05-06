@@ -49,43 +49,12 @@
                                                      (s-input-view-y client)))))
 
    
-; simple monster experiment
 
-(defclass alarm (entity-server)
-    ((time-left
-       :accessor time-left
-       :initarg :time-left
-       :documentation "How long until alarm is triggered, in seconds.")
-     (then
-       :accessor then
-       :initform (get-internal-real-time))
-     (callback
-       :accessor callback
-       :initarg :callback
-       :documentation "Called when alarm goes off.")))
        
 (defun kill (object)
     (declare (ignore object))) ;todo: implement object death
        
-(defmethod update ((a alarm))
-    (let* ((now (get-internal-real-time))
-           (elapsed (- now (then a))))
-   
-        (when (> elapsed 0)
-            (setf (then a) now)
-            (setf (time-left a) 
-              (- (time-left a) (/ elapsed internal-time-units-per-second))))
-              
-        (when (< (time-left a) 0)
-            (if (not (eq (callback a) nil))
-              (funcall (callback a)))
-            (setf (callback a) nil)
-            (kill a))))
-       
-(defclass cyclic-alarm (entity-server)
-    ((alarm
-      :accessor alarm
-      :initarg :alarm)))
+
       
 (defmacro make-server-only (type &rest options)
   `(make-server-entity ,type 
@@ -96,20 +65,6 @@
       ,@options))
       
       
-(defun make-cyclic-alarm (period callback)
-    (let ((external-alarm (make-server-only 'cyclic-alarm
-                             :alarm nil)))
-        (labels ((indirect-callback ()
-            (setf (alarm external-alarm) (make-server-only 'alarm
-                :time-left period
-                :callback #'indirect-callback))
-            (funcall callback)
-            ))
-            
-            (setf (alarm external-alarm) (make-server-only 'alarm
-                :time-left period
-                :callback #'indirect-callback)))
-            external-alarm))
 
 
 (defun next-frame ()

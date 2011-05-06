@@ -68,8 +68,8 @@
 
 
 (defun next-frame ()
-  "Reset the state of things to begin processing the next frame"
-  (forget-server-entity-changes))
+  (sleep 1/120)
+  )
 
 (defvar *client-count* 0)
 
@@ -132,6 +132,25 @@
 (defun hello ()
     (format t "hello~%"))
      
+(defun check-for-new-clients ()
+  (forget-server-entity-changes)
+         (let ((new-client (check-for-clients)))
+           (when new-client
+             (new-server-controller new-client)
+             (send-all-entities new-client)
+             (let ((camera (new-camera (new-player new-client))))
+               (message-send :broadcast (make-event :entity-create))
+               (message-send new-client (make-event :camera :camera camera)))))
+         (forget-server-entity-changes))
+     
+(defun synchronize-clients ()
+  (iter (for (src message) in (message-receive-all :timeout 0))
+               (handle-message-server src message))
+               
+ (message-send :broadcast (make-event :entity-create))
+ (message-send :broadcast (make-event :entity-update))
+ (message-send :broadcast (make-event :entity-remove)))
+     
 (defun server-main (host port)
   (declare (ignore host))
 
@@ -146,26 +165,11 @@
   (with-finalize-server ()
     (loop
        (next-frame)
+       (check-for-new-clients)
+       
        (iter (for thing in (list-entities))
              (update thing))
 
-       ;; insert network code call here
-       (iter (for (src message) in (message-receive-all :timeout 0))
-             (handle-message-server src message))
-       (message-send :broadcast (make-event :entity-create))
-       (message-send :broadcast (make-event :entity-update))
-       (message-send :broadcast (make-event :entity-remove))
-       
-       ;; check for clients to join
-       ;; TODO: Check this for errors. It seems very likely to be missing cases...
-       ;; Note -- The concurrency constraints make this very tricky to write!
-       (forget-server-entity-changes)
-       (let ((new-client (check-for-clients)))
-         (when new-client
-           (new-server-controller new-client)
-           (send-all-entities new-client)
-           (let ((camera (new-camera (new-player new-client))))
-             (message-send :broadcast (make-event :entity-create))
-             (message-send new-client (make-event :camera :camera camera)))))
+       (synchronize-clients)
 
-       (sleep 1/120))))
+       )))

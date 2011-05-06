@@ -25,18 +25,6 @@
 
 (in-package :blackthorn3d-main)
 
-(defclass Player (entity-server)
-  ((client
-        :accessor player-client
-        :initarg :client
-        :documentation "The socket symbol for the player's client")))
-
-(defvar *client->player* '())
-(defun register-player (p c)
-    (setf (getf *client->player* c) p))
-(defun remove-player (client)
-    ; FIXME: Need to remove player entity as well!
-    (remf *client->player* client))
         
 (defgeneric update (a-server-entity))
 
@@ -167,15 +155,6 @@
   (remove-player client)
   (decf *client-count*)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
-
-(defun new-player (client-id)
-    (let ((p (make-server-entity
-         'Player
-         :client client-id
-         :pos (make-point3 0.0 0.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0))))
-    (register-player p client-id)))
   
 (defun new-camera (player-entity)
     (make-server-entity

@@ -114,6 +114,7 @@
                                      (:module main
                                               :components
                                               ((:file "package")
+                                               (:file "player")
                                                (:file "server")
                                                (:file "client")
                                                (:file "main"))

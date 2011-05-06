@@ -39,6 +39,15 @@
    :set-controller
    :input-kind
    
+   ;; server-control.lisp
+   :new-server-controller
+   :remove-server-controller
+   :s-input-update
+   :s-input-move-x
+   :s-input-move-y
+   :s-input-view-x
+   :s-input-view-y
+   
    ;; xbox360.lisp
    :xbox360-vibrate
    :xbox360_poll

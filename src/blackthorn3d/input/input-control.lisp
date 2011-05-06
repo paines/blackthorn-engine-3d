@@ -100,3 +100,11 @@
             #+windows
             (:xbox (/ (xbox360_get_ry 0) 65535))
             (otherwise 0))))
+            
+            
+(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt)
+    (when (getf *client-controllers* src)
+              (setf (move-x (getf *client-controllers* src)) move-x-amt)
+              (setf (move-y (getf *client-controllers* src)) move-y-amt)
+              (setf (view-x (getf *client-controllers* src)) view-x-amt)
+              (setf (view-y (getf *client-controllers* src)) view-y-amt)))

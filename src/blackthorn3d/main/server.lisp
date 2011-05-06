@@ -26,47 +26,7 @@
 (in-package :blackthorn3d-main)
 
 ; move this to somewhere in input handling eventually
-(defvar *client-controllers* nil)
 
-(defclass server-controller ()
-    ((move-x
-        :accessor move-x
-        :initform 0
-        :documentation "the state of the move-x axis")
-     (move-y
-        :accessor move-y
-        :initform 0
-        :documentation "the state of the move-y axis")
-     (view-x
-        :accessor view-x
-        :initform 0
-        :documentation "the state of the view-x axis")
-     (view-y
-        :accessor view-y
-        :initform 0
-        :documentation "the state of the view-y axis"))
-      (:documentation "Represents state of a client's controller"))
-      
-(defun new-server-controller (client)
-    (let ((sc (make-instance 'server-controller)))
-        (setf (getf *client-controllers* client) sc)))
-        
-(defun remove-server-controller (client)
-    (remf *client-controllers* client))
-        
-(flet ((with-controller (client-id f)
-    (let ((controller (getf *client-controllers* client-id)))
-      (if (eq controller nil) 0
-          (funcall f controller)))))
-    
-    (defun s-input-move-x (client-id)
-      (with-controller client-id #'move-x))
-    (defun s-input-move-y (client-id)
-      (with-controller client-id #'move-y))
-    (defun s-input-view-x (client-id)
-      (with-controller client-id #'view-x))
-    (defun s-input-view-y (client-id)
-      (with-controller client-id #'view-y)))
         
 ; END: move this to input handling
 
@@ -227,11 +187,7 @@
             (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
             (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
             
-        (when (getf *client-controllers* src)
-          (setf (move-x (getf *client-controllers* src)) move-x-amt)
-          (setf (move-y (getf *client-controllers* src)) move-y-amt)
-          (setf (view-x (getf *client-controllers* src)) view-x-amt)
-          (setf (view-y (getf *client-controllers* src)) view-y-amt))
+        (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt)
        ))))
 
 (defun handle-disconnect (client)

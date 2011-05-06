@@ -103,14 +103,18 @@
 ;;  that uses the input-source model)
 
 (defun input->source (str source-table)
-  (gethash (subseq str 1) source-table))
+  (gethash str source-table))
 
 (defun build-input-lst (prim-lst sources)
   (iter (for input in (children-with-tag "input" prim-lst))
         (let ((attribs (attributes input)))
           (collect (list (intern (get-attribute "semantic" attribs) "KEYWORD")
-                         (input->source (get-attribute "source" attribs)
+                         (input->source (uri-indirect 
+                                         (get-attribute "source" attribs))
                                         sources))))))
+
+(defun input-by-semantic (semantic inputs)
+  (second (find semantic inputs :key #'car)))
 
 ;; Other...
 

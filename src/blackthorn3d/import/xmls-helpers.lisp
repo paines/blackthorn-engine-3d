@@ -82,7 +82,15 @@
                  (collect val)))))
 
 (defun uri-indirect (uri)
-  (and (simple-string-p uri) (subseq uri 1)))
+  ;(format t "uri: ~a~%" uri)
+  (if (and (simple-string-p uri)
+           (char= (char uri 0)) #\#)
+      (progn ;(format t "un-uri: ~a~%" (subseq uri 1)) 
+             (subseq uri 1))
+      uri))
+
+(defun get-uri (name attribs)
+  (uri-indirect (get-attribute name attribs)))
 
 (defun get-url (xml-lst)
   (uri-indirect (get-attribute "url" (attributes xml-lst))))

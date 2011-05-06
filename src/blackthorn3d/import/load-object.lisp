@@ -146,7 +146,7 @@
 
 
 
-(defclass mesh-instance ()
+(defclass model-node ()
   ((transform
     :accessor transform
     :initarg :transform)
@@ -158,10 +158,14 @@
     :initarg :mesh)
    (bounding-volume
     :accessor bounding-volume
-    :initarg :bounding-volume)))
+    :initarg :bounding-volume)
+   (child-nodes
+    :accessor child-nodes
+    :initarg :child-nodes
+    :initform nil)))
 
-(defun make-mesh-instance (&key transform material-array mesh)
-  (make-instance 'mesh-instance
+(defun make-model-node (&key transform material-array mesh)
+  (make-instance 'model-node
                  :transform transform
                  :material-array material-array
                  :mesh mesh

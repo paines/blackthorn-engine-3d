@@ -25,11 +25,6 @@
 
 (in-package :blackthorn3d-main)
 
-; move this to somewhere in input handling eventually
-
-        
-; END: move this to input handling
-
 (defclass Player (entity-server)
   ((client
         :accessor player-client
@@ -58,23 +53,12 @@
                           (float (s-input-move-y client))))))
 )
 
-#+disabled
-(defmethod update ((b ball))
-  (format t "I am ball #~a. I am at ~a~%" (oid b) (pos b))
-  (incf (pos b)))
-
 (defmethod update ((c blt3d-gfx:camera))
   (let ((client (player-client (blt3d-gfx:target c))))
     (blt3d-gfx:move-player c (vector (s-input-move-x client)
                                      (s-input-move-y client)))
     (blt3d-gfx:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))))
-
-#+disabled ; TODO: Is this really what we want to do?
-(defvar *living-things*
-  (list
-   (make-server-entity 'ball :pos 0)
-   (make-server-entity 'ball :pos -1000)))
 
    
 ; simple monster experiment
@@ -139,24 +123,12 @@
                 :callback #'indirect-callback)))
             external-alarm))
 
-;(defclass simple-monster (entity-server)
-;    ())
 
-; end: simple monster experiment
-   
-   
-   
-   
-   
-   
-   
-   
 (defun next-frame ()
   "Reset the state of things to begin processing the next frame"
   (forget-server-entity-changes))
 
 (defvar *client-count* 0)
-;(defvar *box-server-entity*)
 
 (defun check-for-clients ()
   (let ((client (socket-server-connect :timeout 0)))

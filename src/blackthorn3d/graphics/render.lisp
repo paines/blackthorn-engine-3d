@@ -32,7 +32,6 @@
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
-(defparameter level nil)
 
 (defun init ()
   "Called to initialize the graphics subsystem"
@@ -62,7 +61,7 @@
   (gl:enable :depth-test)
   (gl:depth-func :lequal)
 
-  (setf level (load-obj->models (load-dae #p "res/models/PlatformRoom.dae")))
+  
 
   (setf cube-tex (image->texture2d 
                   (load-image #p"res/images/test-tex.png")))
@@ -93,7 +92,7 @@
   )
 
 
-(defun render-frame (entities)
+(defun render-frame (entities level)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (when *main-cam*
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
@@ -108,16 +107,16 @@
   (gl:use-program 0)
   ;(gl:bind-texture :texture-2d cube-tex)
 
-  (gl:with-pushed-matrix
-    (use-material plane-mat)
-    ;;(draw-plane 20)
-    (gl:scale .05 .05 .05)
-    ;#+disabled
-    (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                                          (make-point3 0.0 0.0 1.0)
-                                          (make-point3 0.0 1.0 0.0)))
-    (draw-object level)
-    )
+  (when level
+    (gl:with-pushed-matrix
+        (use-material plane-mat)
+      ;;(draw-plane 20)
+      (gl:scale .05 .05 .05)
+      ;;#+disabled
+      (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                                            (make-point3 0.0 0.0 1.0)
+                                            (make-point3 0.0 1.0 0.0)))
+      (draw-object level)))
 
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))

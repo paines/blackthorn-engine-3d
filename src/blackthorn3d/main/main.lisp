@@ -115,7 +115,7 @@
                        :shape (make-instance
                                'blt3d-gfx:model-shape
                                :mesh
-                               (car (blt3d-gfx:load-dae
+                               (car (blt3d-imp:load-dae
                                      #p"res/models/orange-box2.dae"))))))
 
       ;;(camera-orbit! cam 0.0 -0.2 5.0)

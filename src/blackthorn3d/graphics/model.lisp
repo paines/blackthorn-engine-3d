@@ -90,13 +90,12 @@
                     :shininess shininess))))
 
 
-
-(defmethod load-obj->models ((this load-object))
+(defmethod load-obj->models ((this blt-model))
   (format t "loading object to models~%")
   (make-instance 
    'model-shape
    :mesh-graph 
-   (iter (for instance in (lo-meshes this))
+   (iter (for instance in (mesh-nodes this))
          (with-slots (mesh transform) instance
            (let ((interleaved (interleave
                                (vertex-streams mesh)

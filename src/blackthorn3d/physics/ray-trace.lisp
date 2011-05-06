@@ -1,5 +1,3 @@
-;;;; Blackthorn -- Lisp Game Engine
-;;;;
 ;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
@@ -23,14 +21,12 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-physics)
 
-(defpackage :blackthorn3d-import
-  (:nicknames :blt3d-imp)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-gfx)
-  (:export
+;;;
+;;; Ray tracing related stuff.  Here so i don't mess other things up
+;;; feel free to refactor elsewhere
+;;;
 
-   ;; dae-loader.lisp
-   :load-dae
 
-   ))
+

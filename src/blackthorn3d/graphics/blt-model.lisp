@@ -23,13 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-import)
-
-;;;
-;;; The Intermediate Representation
-;;; and processing tools
-;;;
-
+(in-package :blackthorn3d-graphics)
 
 ;; This is our intermediate representation, basically just a 
 ;; representation/organization of all the data we loaded from
@@ -37,10 +31,13 @@
 ;;
 ;; In it's current state, it only holds dae-mesh objects
 ;; (ie, no scene data).
-(defclass load-object ()
-  ((meshes
-    :accessor lo-meshes
-    :initarg :meshes)))
+(defclass blt-model ()
+  ((mesh-nodes
+    :accessor mesh-nodes
+    :initarg :nodes)
+   (animations
+    :accessor model-animations
+    :initarg :animations)))
 
 (defclass vertex-stream ()
   ((semantic
@@ -99,6 +96,13 @@
     :initarg :textures
     :initform nil)))
 
+(defun make-blt-material (&key ambient diffuse specular shininess textures)
+  (make-instance 'blt-material
+                 :ambient ambient
+                 :diffuse diffuse
+                 :specular specular
+                 :shininess shininess
+                 :textures textures))
 
 ;; This is going to be our generic mesh object. It's what we load 
 ;; other formats into, and is converted by the graphics subsystem into
@@ -131,19 +135,23 @@
     :documentation "For narrow-phase collision detection
                    to start we can use something coarse like a sphere
                    but eventually might be something shiny, like bsp,
-                   or heirarchy of bvs")))
+                   or hierarchy of bvs")))
 
-
-(defun make-blt-mesh (&key id vertex-streams elements transform)
+(defun make-blt-mesh (&key id vertex-streams elements)
   (make-instance 'blt-mesh
                  :id id
                  :vertex-streams vertex-streams
-                 :elements elements))
+                 :elements elements
+                 :bounding-volume 
+                 (blt3d-phy:make-bounding-volume 
+                  (vs-get-stream :vertex vertex-streams))))
 
-(defmethod get-stream (stream (this blt-mesh))
-  (aif (find stream (vertex-streams this) :key #'vs-semantic)
+(defun vs-get-stream (stream vs-lst)
+  (aif (find stream vs-lst :key #'vs-semantic)
        (vs-stream it)))
 
+(defmethod get-stream (stream (this blt-mesh))
+  (vs-get-stream stream (vertex-streams this)))
 
 
 (defclass model-node ()
@@ -158,7 +166,8 @@
     :initarg :mesh)
    (bounding-volume
     :accessor bounding-volume
-    :initarg :bounding-volume)
+    :initarg :bounding-volume
+    :documentation "bounding volume encompassing all children??")
    (child-nodes
     :accessor child-nodes
     :initarg :child-nodes
@@ -185,7 +194,6 @@
 ;;; Model loading-specific code.
 ;;;
 
-
 ;; Note that this assumes that all the semantics in order exist in 
 ;; vertex-streams. The behavior is currently incorrect if this isn't true
 ;; It is fine to have extra semantics in vertex-streams, they will
@@ -197,7 +205,8 @@
         (for o in order)
         (format t "order semantic: ~a   VS semantic: ~a~%" o (vs-semantic vs)))
   (iter (for o in order)
-        (collect (find o vertex-streams :key #'(lambda (vs) (vs-semantic vs))))))
+        (collect (find o vertex-streams 
+                       :key #'(lambda (vs) (vs-semantic vs))))))
 
 ;; combines unified vertex-streams into one large 2-d array
 ;; If you want a specific order, re-order/prune the data before
@@ -235,13 +244,14 @@
 ;;;
 
 ;; I will represent a triangle using 3 vertices and a face normal
-;; This will be represented by an array #(v0 v1 v2 n)
+;; This will be represented by an array #(v0 v1 v2 n centroid)
 ;;
 
 (defun make-triangle (v0 v1 v2)
-  (let ((normal (cross (vec4- v1 v0)
-                       (vec4- v2 v0))))
-    (vector v0 v1 v2 normal)))
+  (let ((normal (norm3 (cross3 (vec4- v1 v0)
+                               (vec4- v2 v0))))
+        (centroid (tri-centroid v0 v1 v2)))
+    (vector v0 v1 v2 normal centroid)))
 
 ;; Returns the triangle at index from the blt-mesh
 ;; If the mesh has multiple elements, the indexes are treated
@@ -285,4 +295,11 @@
 ;;;
 ;;; Bounding Volume stuff herr
 ;;;
+
+#+disabled
+(defmethod calc-bounding-volume ((this blt-model))
+  (blt3d-phy:combine-bounding-volume 
+   (iter (for node in (mesh-nodes this))
+         (collect (bounding-volume
+                   (mesh node))))))
 

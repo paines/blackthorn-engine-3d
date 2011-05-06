@@ -222,3 +222,19 @@
                   (* r (cos (- (/ pi 2) theta)))
                   (* r (cos phi) sin-theta)
                   (if vec 0.0 1.0))))
+
+
+(defun tri-centroid (v0 v1 v2)
+  (make-vector3 
+   (/ (+ (x v0) (x v1) (x v2)) 3.0)
+   (/ (+ (y v0) (y v1) (y v2)) 3.0)
+   (/ (+ (z v0) (z v1) (z v2)) 3.0)))
+
+;; TODO: fix this later
+#+disabled 
+(defun centroid (&rest vecs)
+  (let ((v-len (length (car vecs))))
+    (iter (for v in vecs)
+          (counting t into len)
+          (iter (for i below v-len)
+                (collect )))))

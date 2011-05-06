@@ -58,10 +58,15 @@
 
 (defvar *message-counter* 0)
 
+(defvar *level* nil)
+
 (defun client-main (host port)
   (setup-paths)
   (load-dlls)
   (blt3d-gfx:init)
+
+  (setf *level* (blt3d-gfx:load-obj->models 
+                 (blt3d-imp:load-dae #p "res/models/PlatformRoom.dae")))
 
   (setf *random-state* (make-random-state t))
 
@@ -105,7 +110,7 @@
                                              :view-x (* 0.1 vx)
                                              :view-y (* 0.1 vy))))
 
-         (blt3d-gfx:render-frame (list-entities))
+         (blt3d-gfx:render-frame (list-entities) *level*)
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))

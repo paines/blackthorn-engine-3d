@@ -53,8 +53,7 @@
             (when (consp effect)
               (setf (gethash (get-attribute "id" (attributes effect))
                              effects-ht)
-                    (make-instance
-                     'blt-material
+                    (make-blt-material
                      :ambient     (mat-prop-finder "ambient" effect)
                      :diffuse     (mat-prop-finder "diffuse" effect)
                      :specular    (mat-prop-finder "specular" effect)

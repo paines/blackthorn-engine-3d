@@ -69,7 +69,7 @@
                (for mat-index upfrom 0)
                (collect 
                 (make-instance 
-                 'elem
+                 'element
                  :indices (string->sv (third (find-tag "p" (children tri-lst))))
                  :material 
                  (cons mat-index

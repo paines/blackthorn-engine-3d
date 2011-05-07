@@ -74,7 +74,8 @@
   (collide-p aabb sph))
 
 
-(defmethod collide-p ((e1 entity-server) (e2 entity-server))
+(defmethod collide-p ((e1 blt3d-ent:entity-server) 
+                      (e2 blt3d-ent:entity-server))
   (collide-p (move-bounding-volume (blt3d-ent:bounding-volume e1) (pos e1))
 	     (move-bounding-volume (blt3d-ent:bounding-volume e2) (pos e2))))
 

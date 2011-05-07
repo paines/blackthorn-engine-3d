@@ -146,7 +146,7 @@
                            (vector-push-extend elt attrib-vec)))
                  attrib-vec)))))
 
-;; Takes a list of non-unified elements and input vertex data and 
+
 ;; combines the vertex data so there is only one indice per vertex
 ;; returns  (ELEMENTS VERTEX-STREAMS) where elements is a list
 ;; of elem objects and VERTEX-STREAMS is a list of vertex-stream objects
@@ -158,7 +158,7 @@
      ;; ELEMENTS
      (iter 
       (for elt in elements)
-      (let* ((indices (elem-indices elt))
+      (let* ((indices (element-indices elt))
              (n-verts (/ (length indices) n-inputs))
              (curr-index 0)
              (new-indices (make-array n-verts :fill-pointer 0)))
@@ -176,11 +176,10 @@
                              (for i in-vector vertex)
                              (funcall (car f) i))
                        (incf curr-index)))))
-        (collect (make-instance
-                  'elem
+        (collect (make-element
                   :indices new-indices
-                  :material (elem-material elt)
-                  :count (elem-count elt)
+                  :material (element-material elt)
+                  :count (element-count elt)
                   ))))
 
      ;; VERTEX-STREAMS

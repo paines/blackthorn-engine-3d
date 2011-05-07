@@ -70,14 +70,14 @@
                       (mat-array (make-array (length (elements mesh)))))
                  ;; Build the material-array (mat-id: (index . material-id))
                  (iter (for elt in (elements mesh))
-                       (with-slots ((mat-id material)) elt
+                       (let ((mat-id (element-material elt)))
                          (setf (aref mat-array (car mat-id)) 
                                (aif (find (cdr mat-id) 
                                           mats :test #'equal :key #'car)
                                     (gethash (second it) materials)
                                     nil))
                                         ;(setf mat-id (car mat-id))
-                         ))
+                           ))
                  (collect (make-model-node :transform xform
                                            :material-array mat-array
                                            :mesh mesh)))

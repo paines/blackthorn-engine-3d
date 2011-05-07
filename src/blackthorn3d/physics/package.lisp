@@ -27,20 +27,54 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-math :blt3d-ent)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math)
   (:export
 
-   ;; shapes.lisp
-   ; bounding-sphere
-   :bounding-sphere
-   :pos
-   :rad
+   ;; blt-model.lisp
+   :id
+   :blt-model
+   :mesh-nodes
+   :animations
 
-   ; aa-bounding-box
-   :aa-bounding-box
-   :a-min
-   :a-max
+   :blt-mesh
+   :make-blt-mesh
+   :vertex-streams
+   :elements
+   :mesh-bounding-volume
+
+   :model-node
+   :make-model-node
+   :transform
+   :mesh
+   :material-array
+   :node-bounding-volume
+   :child-nodes
+
+   :vertex-stream
+   :vs-ref
+   :get-stream
    
+   :element
+   :make-element
+   :element-material
+   :element-indices
+   :element-count
+
+   :blt-material
+   :make-blt-material
+   :ambient
+   :diffuse
+   :specular
+   :shininess
+   :textures
+
+   :interleave
+
+   ;; shapes.lisp
+
+   ;; aa-bounding-box
+   :aa-bounding-box
+
    :move-bounding-volume
    :move-bounding-volume-set
    :find-bounding-points
@@ -50,6 +84,4 @@
 
    ;; collision.lisp
    :collide-p
-   
-
    ))

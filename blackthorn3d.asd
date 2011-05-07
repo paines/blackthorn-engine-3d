@@ -74,13 +74,13 @@
                                               :components
                                               ((:file "package")
                                                (:file "shapes")
+                                               (:file "blt-model")
                                                (:file "collision"))
                                               :serial t)
                                      (:module graphics
                                               :components
                                               ((:file "package")
                                                (:file "scene-graph")
-                                               (:file "blt-model")
                                                (:file "texture")
                                                (:file "light")
                                                (:file "shader")

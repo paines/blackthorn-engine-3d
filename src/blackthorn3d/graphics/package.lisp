@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent)
+  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-phy)
   (:export
 
    ;; draw.lisp
@@ -73,37 +73,6 @@
    ;; model.lisp
    :model-shape
    :load-obj->models
-
-   ;; blt-model.lisp
-   :id
-   :blt-model
-   :mesh-nodes
-   :animations
-
-   :blt-mesh
-   :make-blt-mesh
-   :vertex-streams
-   :elements
- 
-   :model-node
-   :make-model-node
-   :transform
-   :mesh
-   :bounding-volume
-   :child-nodes
-
-   :vertex-stream
-   :vs-ref
-   :get-stream
-   
-   :elem
-   :material
-   :elem-material
-   :elem-indices
-   :elem-count
-
-   :blt-material
-   :make-blt-material
    ))
         
         

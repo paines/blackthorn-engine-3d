@@ -75,14 +75,13 @@
     gl-array))
 
 (defun elem->gl-elem (element)
-  (make-instance
-   'elem
-   :indices (indices->gl-array (elem-indices element))
+  (make-element
+   :indices (indices->gl-array (element-indices element))
    ;; TODO: load textures to open-gl
-   :material (elem-material element)
+   :material (element-material element)
    #+disabled
    (with-slots (ambient diffuse specular shininess textures) 
-       (elem-material element)
+       (element-material element)
      (make-instance 'material
                     :ambient ambient
                     :diffuse diffuse

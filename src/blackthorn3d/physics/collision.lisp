@@ -28,6 +28,7 @@
 
 (defmethod collide-p ((s1 bounding-shape) a) nil)
 (defmethod collide-p (a (s1 bounding-shape)) nil)
+(defmethod collide-p (a b) nil)
 
 ;; sphere-sphere collisions
 (defmethod collide-p ((s1 bounding-sphere) (s2 bounding-sphere))

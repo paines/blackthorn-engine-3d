@@ -46,10 +46,10 @@
     :initarg :channel-lst)
    (t-start
     :accessor start-time
-    :initarg t-start)
+    :initarg :t-start)
    (t-end
     :accessor end-time
-    :initarg t-end)
+    :initarg :t-end)
    (ref-time
     :documentation "the time used as a reference to game time 
                     may get abstracted to higher up")))
@@ -59,10 +59,10 @@
 ;; time should be game-time
 (defmethod update-clip ((this animation-clip) time)
   (with-slots (channel-lst t-start t-end ref-time) this
-    (let ((c-time (+ t-start (- time ref-time))))
-      (iter (for ch in channel-lst)
-            (with-slots (modify-fn) ch
-              (funcall modify-fn (evaluate-channel ch c-time)))))))
+    ;(let ((c-time (+ t-start (- time ref-time)))))
+    (iter (for ch in channel-lst)
+          (with-slots (target) ch
+            (funcall target (evaluate-channel ch time))))))
 
 
 ;; every animated model should have one of these...

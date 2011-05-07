@@ -160,7 +160,10 @@
 
 
 (defclass model-node ()
-  ((transform
+  ((id
+    :accessor id
+    :initarg :id)
+   (transform
     :accessor transform
     :initarg :transform)
    (material-array
@@ -178,8 +181,9 @@
     :initarg :child-nodes
     :initform nil)))
 
-(defun make-model-node (&key transform material-array mesh)
+(defun make-model-node (&key id transform material-array mesh)
   (make-instance 'model-node
+                 :id id
                  :transform transform
                  :material-array material-array
                  :mesh mesh

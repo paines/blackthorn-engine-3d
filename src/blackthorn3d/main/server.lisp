@@ -38,8 +38,7 @@
         (vec4+ (pos p)
                (make-vec3 (float (s-input-move-x client)) 
                           0.0 
-                          (float (s-input-move-y client))))))
-)
+                          (float (s-input-move-y client)))))))
 
 (defmethod update ((c blt3d-gfx:camera))
   (let ((client (player-client (blt3d-gfx:target c))))

@@ -66,6 +66,14 @@
 
 ;; Source related functions
 
+(defun src-expand (source)
+  (with-slots (array stride) source
+    (let* ((len (/ (length array) stride))
+           (exp-arr (make-array len)))
+      (iter (for i below len)
+            (setf (svref exp-arr i) (src-accessor source i)))
+      exp-arr)))
+
 (defun make-accessor (accessor-lst array)
   "Returns a function that takes an index and returns a vector containing
    the data for that index"

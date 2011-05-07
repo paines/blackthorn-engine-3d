@@ -36,7 +36,8 @@
            (setf (shape entity)
                  (blt3d-gfx:load-obj->models 
                   (blt3d-imp:load-dae
-                   #p"res/models/wedge-dummy.dae")))))
+                  ; #p"res/models/wedge-dummy.dae"
+                   #p "res/models/test-anim.dae")))))
     (:event-entity-update
      ;; Nothing needs to be done, unserializing the message already
      ;; updated the entity state.
@@ -109,6 +110,9 @@
                                              :move-y (* 0.1 my)
                                              :view-x (* 0.1 vx)
                                              :view-y (* 0.1 vy))))
+
+
+         (blt3d-gfx:update-graphics (list-entities) 1/60)
 
          (blt3d-gfx:render-frame (list-entities) *level*)
 

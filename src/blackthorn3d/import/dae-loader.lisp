@@ -42,54 +42,60 @@
 ;; nodes is a list of scene nodes (
 (defun get-location-fn (loc nodes)
   (labels ((node-finder (node-id nodes)
+             (format t "    FINDING NODE: ~a~%" node-id)
              (iter (for node in nodes)
-                   (if (equal node-id (id node)) (return node))
-                   (node-finder node-id (children node))))
+                   (format t "     looking@ ~a~%" (id node))
+                   (if (equal node-id (id node)) (leave node)
+                       (node-finder node-id (child-nodes node)))))
 
            (split-loc (str start)
              (let ((p1 (position #\/ str :start start)))
                (if p1
                    (cons (subseq str start p1)
-                         (tokenize-loc str (1+ p1)))
+                         (split-loc str (1+ p1)))
                    (if (< start (length str))
                        (cons (subseq str start) nil)
-                       nil))))))
-
-  (destructuring-bind (node-id location &rest dc) (split-loc loc 0)
-    (let ((node (node-finder node-id nodes)))
-      ;; Set up the function, and stuff
-      #'(lambda (val) (setf (slot-value node transform) val)))))
+                       nil)))))
+    (format t "    location: ~a~%" loc)
+    (destructuring-bind (node-id location &rest dc) (split-loc loc 0)
+      (let ((node (node-finder node-id nodes)))
+        ;; Set up the function, and stuff
+        #'(lambda (val) (setf (slot-value node 'transform) 
+                              (transpose (reshape val '(4 4)))))))))
 
 
 ;; Responsible for taking the table in the tables
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials animations)
-  (let ((meshes 
-         (iter (for (node xform mesh-id mats) in scenes)
-               (let* ((mesh (gethash mesh-id geometry))
-                      (mat-array (make-array (length (elements mesh)))))
-                 ;; Build the material-array (mat-id: (index . material-id))
-                 (iter (for elt in (elements mesh))
-                       (let ((mat-id (element-material elt)))
-                         (setf (aref mat-array (car mat-id)) 
-                               (aif (find (cdr mat-id) 
-                                          mats :test #'equal :key #'car)
-                                    (gethash (second it) materials)
-                                    nil))
+  (let* ((meshes 
+          (iter (for (node xform mesh-id mats) in scenes)
+                (let* ((mesh (gethash mesh-id geometry))
+                       (mat-array (make-array (length (elements mesh)))))
+                  ;; Build the material-array (mat-id: (index . material-id))
+                  (iter (for elt in (elements mesh))
+                        (let ((mat-id (element-material elt)))
+                          (setf (aref mat-array (car mat-id)) 
+                                (aif (find (cdr mat-id) 
+                                           mats :test #'equal :key #'car)
+                                     (gethash (second it) materials)
+                                     nil))
                                         ;(setf mat-id (car mat-id))
-                           ))
-                 (collect (make-model-node :transform xform
-                                           :material-array mat-array
-                                           :mesh mesh)))
-               ;; T0D0: stuff
-               ))
-        (anims     
-         ;; Need to update the animation clips with the proper target fn
-         (when animations
-           (iter (for (anim-id clip) in-hashtable animations)
-                 (iter (for ch in (channel-list clip))
-                       (setf (target ch) (get-location-fn (target ch) meshes)))
-                 (collect clip)))))
+                          ))
+                  (collect (make-model-node :id node
+                                            :transform xform
+                                            :material-array mat-array
+                                            :mesh mesh)))
+                ;; T0D0: stuff
+                ))
+         (anims     
+          ;; Need to update the animation clips with the proper target fn
+          (when animations
+            (iter (for (anim-id clip) in-hashtable animations)
+                  (iter (for ch in (channel-lst clip))
+                        (setf (slot-value ch 'target) 
+                              (get-location-fn (slot-value ch 'target) 
+                                               meshes)))
+                  (collect clip)))))
 
     (make-instance 
      'blt-model
@@ -100,6 +106,7 @@
 (defvar *geometry-table* nil)
 (defvar *scene-table* nil)
 (defvar *material-table* nil)
+(defvar *animation-table* nil)
 
 ;; Returns an intermediate representation of the dae file
 (defun load-dae (filename)
@@ -118,11 +125,14 @@
             (find-tag-in-children +geometry-library+ dae-file)))
           (*scene-table*    
            (process-scene 
-            (find-tag-in-children +scene-library+ dae-file))))
+            (find-tag-in-children +scene-library+ dae-file)))
+          (*animation-table*
+           (process-animations
+            (find-tag-in-children +animation-library+ dae-file))))
       ;; Combine all the tables into a list of model-shape objects
       (compile-dae-data :geometry *geometry-table*
                         :scenes   *scene-table*
                         :materials *material-table*
                         ;; TODO: implement animations
-                        ;;:animations *animation-table*
+                        :animations *animation-table*
                         ))))

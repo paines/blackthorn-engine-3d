@@ -60,6 +60,7 @@
     :initform (make-server-oid))
    (bounding-volume
     :accessor bounding-volume
+    :initform nil
     :initarg :bv)))
 
 (defclass entity-client (entity)

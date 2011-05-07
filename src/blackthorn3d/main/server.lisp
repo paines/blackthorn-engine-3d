@@ -150,8 +150,23 @@
      
 (defun update-entities ()
   (iter (for thing in (list-entities))
-        (update thing)))
-     
+        (update thing)))       
+       
+(defun combinations (input-list)
+  (iter outer (for x on input-list) 
+    (iter (for y in (rest x)) 
+      (in outer (collect (list (first x) y))))))
+       
+(defun check-collisions ()
+  (format t "---------------------------------------------------------------~%")
+  (iter (for (e1 e2) in (combinations (list-entities)))
+      (when (blackthorn3d-physics:collide-p e1 e2)
+        (format t "~a collides with ~a!~%" e1 e2))
+  )
+)
+       
+
+      
 (defun server-main (host port)
   (declare (ignore host))
   
@@ -167,6 +182,7 @@
        (next-frame)
        (check-for-new-clients)
        (update-entities)
+       (check-collisions)
        (synchronize-clients)
 
        )))

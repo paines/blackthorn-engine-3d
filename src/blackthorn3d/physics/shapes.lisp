@@ -67,6 +67,8 @@
     (make-instance 'bounding-sphere
 		   :pos (vec4+ pos move-vec)
 		   :rad rad)))
+       
+(defmethod move-bounding-volume (a move-vec) nil)
 
 (defmethod move-bounding-volume-set ((bv bounding-shape) move-vec)
   (setf (pos bv) (vec4+ (pos bv) move-vec)))

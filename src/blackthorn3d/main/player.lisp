@@ -45,6 +45,11 @@
          :client client-id
          :pos (make-point3 0.0 0.0 0.0)
          :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0))))
+         :up  (make-vec3 0.0 1.0 0.0)
+         :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
+                :pos (make-point3 1.0 0.0 0.0)
+                :rad 1.0)
+         
+         )))
     (register-player p client-id)))
     

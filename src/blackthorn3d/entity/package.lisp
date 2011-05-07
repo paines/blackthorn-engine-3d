@@ -39,6 +39,7 @@
    :up
    :veloc
    :shape
+   :bounding-volume
    :make-server-entity
    :make-client-entity
    :lookup-entity

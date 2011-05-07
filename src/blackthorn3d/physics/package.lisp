@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-math)
+  (:use :iter :cl :alexandria :userial :blt3d-math :blt3d-ent)
   (:export
 
    ;; shapes.lisp

@@ -76,21 +76,11 @@
                                                (:file "shapes")
                                                (:file "collision"))
                                               :serial t)
-                                     (:module import
-                                              :components
-                                              ((:file "package")
-                                               (:file "load-object")
-                                               (:file "xmls-helpers")
-                                               (:file "dae-general")
-                                               (:file "dae-geometry")
-                                               (:file "dae-material")
-                                               (:file "dae-scene")
-                                               (:file "dae-loader"))
-                                              :serial t)
                                      (:module graphics
                                               :components
                                               ((:file "package")
                                                (:file "scene-graph")
+                                               (:file "blt-model")
                                                (:file "texture")
                                                (:file "light")
                                                (:file "shader")
@@ -102,6 +92,17 @@
                                                (:file "frustum")
                                                (:file "camera")
                                                (:file "render"))
+                                              :serial t)
+                                     (:module import
+                                              :components
+                                              ((:file "package")
+                                               (:file "xmls-helpers")
+                                               (:file "dae-general")
+                                               (:file "dae-geometry")
+                                               (:file "dae-material")
+                                               (:file "dae-scene")
+                                               (:file "dae-animation")
+                                               (:file "dae-loader"))
                                               :serial t)
                                      (:module input
                                               :components

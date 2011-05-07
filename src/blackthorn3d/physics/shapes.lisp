@@ -62,6 +62,15 @@
     :initarg :half-lengths
     :initform (make-vector3 1.0 1.0 1.0))))
 
+(defmethod move-bounding-volume ((bv bounding-sphere) move-vec)
+  (with-slots (pos rad) bv
+    (make-instance 'bounding-sphere
+		   :pos (vec4+ pos move-vec)
+		   :rad rad)))
+
+(defmethod move-bounding-volume-set ((bv bounding-shape) move-vec)
+  (setf (pos bv) (vec4+ (pos bv) move-vec)))
+
 (defmethod find-bounding-points (vect-array)
   (iter (for i in-vector vect-array)
 	(maximizing (aref i 0) into max-x)
@@ -89,6 +98,18 @@
 
 (defmethod make-bounding-volume (vect-array)
   (make-bounding-sphere vect-array))
+
+(defmethod distance (vec1 vec2)
+  (mag (vec4- vec1 vec2))) 
+
+#+disabled
+(defmethod combine-bounding-volume (list-bv)
+  (let ((mid-point (iter (for bv in list-bv)
+		     (with-slots (pos) bv
+		       (reducing pos by vec4+ into sum-vec))
+		     (finally (vec-scale sum-vec (/ 1 (length list-bv)))))))
+    (iter (for bv in list-bv)
+      (maximizing ))))
 
 #+disabled
 (defmethod transform-bounding-volume ((this bounding-sphere) xform)

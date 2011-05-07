@@ -26,6 +26,9 @@
 
 (in-package :blackthorn3d-physics)
 
+(defmethod collide-p ((s1 bounding-shape) a) nil)
+(defmethod collide-p (a (s1 bounding-shape)) nil)
+
 ;; sphere-sphere collisions
 (defmethod collide-p ((s1 bounding-sphere) (s2 bounding-sphere))
   "@short{tests if two spheres intersect}
@@ -69,6 +72,11 @@
 
 (defmethod collide-p ((sph bounding-sphere) (aabb aa-bounding-box))
   (collide-p aabb sph))
+
+
+(defmethod collide-p ((e1 entity-server) (e2 entity-server))
+  (collide-p (move-bounding-volume (blt3d-ent:bounding-volume e1) (pos e1))
+	     (move-bounding-volume (blt3d-ent:bounding-volume e2) (pos e2))))
 
 ;;;
 ;;; Oriented Bounding Box

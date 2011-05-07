@@ -89,8 +89,41 @@
                            :rad 1.0))
 	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1.1 0.0 0.0) 
 			                    :a-max (make-point3 1.1 2.0 0.0))))
-    (is (eql (collide-p s1 s2) nil))))
+    (is (eql (collide-p s1 s2) nil)))
+  (let ((s1 (make-instance 'bounding-sphere 
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0)))
+    (is (eql (collide-p s1 nil) nil))
+    (is (eql (collide-p nil s1) nil)))
+  (let* ((s1 (make-instance 'bounding-sphere 
+                           :pos (make-point3 1.0 0.0 0.0)
+                           :rad 1.0))
+	 (e1 (make-instance 'entity-server :pos (make-point3 0.0 1.0 0.0)
+			    :bv s1))
+	 (s2 (make-instance 'bounding-sphere 
+                           :pos (make-point3 0.0 2.0 0.0)
+                           :rad 1.1))
+	 (e2 (make-instance 'entity-server :pos (make-point3 1.0 0.0 0.0)
+			    :bv s2))
+    (is (eql (collide-p e1 e2) t)))))
     ; expect NIL
+
+(test move-bounding-volume-set
+  (let* ((s1 (make-instance 'bounding-sphere 
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+	 (vec1 (make-vector3 1.0 2.0 3.0))
+	 (s2 (move-bounding-volume s1 vec1)))
+    (is (equalp (pos s2) (make-point3 1 2 3)))))
+
+(test move-bounding-volume-set
+  (let ((s1 (make-instance 'bounding-sphere 
+                           :pos (make-point3 0.0 0.0 0.0)
+                           :rad 1.0))
+	(vec1 (make-vector3 1.0 2.0 3.0)))
+    (move-bounding-volume-set s1 vec1)
+    (is (equalp (pos s1) (make-point3 1 2 3)))))
+    
 
 (test find-bounding-points
       (let* ((vect-array (vector (make-vector3 1 1 1)

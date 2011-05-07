@@ -1,6 +1,4 @@
-;;;; Blackthorn -- Lisp Game Engine
-;;;;
-;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,21 +21,12 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-physics)
 
-(defpackage :blackthorn3d-test
-  (:nicknames :blt3d-test)
-  (:use :cl :fiveam :blt3d-utils :blt3d-gfx :blt3d-math :blt3d-phy :blt3d-ent)
-  (:export
+;;;
+;;; Ray tracing related stuff.  Here so i don't mess other things up
+;;; feel free to refactor elsewhere
+;;;
 
-   ;; package.lisp
-   :run-tests
 
-   ))
 
-(in-package :blackthorn3d-test)
-
-(def-suite blackthorn3d)
-
-(defun run-tests ()
-  (run! 'blackthorn3d))

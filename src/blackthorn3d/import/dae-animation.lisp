@@ -61,7 +61,8 @@
             ;; Setup channels
             (iter (for channel in (children-with-tag +channel+ animation))
                   (let ((inputs 
-                         (gethash (get-uri "source" (attributes channel)) sampler-table)))
+                         (gethash (get-uri "source" (attributes channel)) 
+                                  sampler-table)))
                     (collect
                      (make-channel
                       :times (input-by-semantic :input inputs)

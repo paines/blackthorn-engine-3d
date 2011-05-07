@@ -74,6 +74,7 @@
    ;; model.lisp
    :model-shape
    :load-obj->models
+   :controller
   
    ))
         

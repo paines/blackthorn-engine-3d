@@ -25,6 +25,8 @@
 
 (in-package :blackthorn3d-graphics)
 
+
+
 (defun draw-cube (&key (color #(1.0 1.0 1.0)))
   (gl:color (r color) (g color) (b color))
   (gl:with-primitive :quads

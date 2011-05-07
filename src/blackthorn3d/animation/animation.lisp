@@ -49,10 +49,7 @@
     :initarg :t-start)
    (t-end
     :accessor end-time
-    :initarg :t-end)
-   (ref-time
-    :documentation "the time used as a reference to game time 
-                    may get abstracted to higher up")))
+    :initarg :t-end)))
 
 
 ;; called to update the fields this clip controls.
@@ -69,15 +66,27 @@
 (defclass anim-controller ()
   ((current-clip
     :accessor current-clip
-    :initarg :current-clip)
+    :initarg :current-clip
+    :initform nil)
    (next-clip
     :initform nil)
-   (t0
-    :accessor t0)
+   (elapsed
+    :accessor elapsed
+    :initform 0.0)
    (state
     :accessor state
     :initarg :state
-    :initform :stop)))
+    :initform :stop)
+   (clips
+    :initarg :clips)))
+
+(defun make-animation-controller (clips)
+  (make-instance
+   'anim-controller
+   :current-clip (car clips)
+   :state :stop
+   :clips clips))
+
 
 (defun set-next-clip (controller clip)
   (with-slots (current-clip next-clip state) controller
@@ -89,22 +98,30 @@
   (set-next-clip this clip)
   (setf (state this) :run))
 
+(defun next-clip (controller)
+  (with-slots (current-clip next-clip state) this
+    (setf current-clip next-clip)
+    (setf next-clip nil)
+    (setf elapsed 0)))
+
 ;; Updates the animation state controlled by this controller
 ;; there are two states (possibly three later):
 ;;   :run - animation playes current-clip until it stops
 ;;          then will run next-clip if there is one
 ;;   :stop - does nothing
-(defmethod update ((this anim-controller) time)
-  (with-slots (current-clip next-clip t0 state) this
-    (let ((c-time (- time t0)))
-      (when (> c-time (end-time current-clip))
-        (setf current-clip next-clip)
-        (setf next-clip nil)
-        (setf t0 time)
-        (setf c-time 0.0))
-      (case state
-        (:run 
-         (if current-clip
-             (update-clip current-clip c-time)
-             (setf state :stop)))
-        (:stop nil)))))
+(defmethod update-anim-controller ((this anim-controller) dt)
+  (with-slots (current-clip next-clip elapsed t-start state) this
+    (incf elapsed dt)
+    (when (> elapsed (end-time current-clip))
+      (if (eql state :loop) 
+          (setf elapsed 0.0)
+          (next-clip this)))
+    (case state
+      ((:run :loop)    (if current-clip
+                   (update-clip current-clip elapsed)
+                   (setf state :stop)))
+      (:stop   (setf elapsed 0.0))
+      (:pause  nil)
+      (:reset  (if current-clip
+                   (update-clip current-clip 0.0))
+               (setf state :stop)))))

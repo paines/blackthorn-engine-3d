@@ -34,13 +34,15 @@
    :make-channel
    :frames
    :target
-   :dt
+   :t-max
 
    ;; animation.lisp
    :anim-controller
-   :update
+   :make-animation-controller
+   :update-anim-controller
    :play-clip
-
+   :state
+  
    :update-clip
    :animation-clip
    :t-start

@@ -34,14 +34,14 @@
 ;;;
 
 
-;; However, for now let's just get a mesh with transform
 (defclass model-shape ()  
   ((mesh-graph
     :accessor model-mesh-graph
     :initarg :mesh-graph
     :documentation "The 3d geometry data comprising the model")
-   (animations
-    :initarg :animations
+   (controller
+    :accessor controller
+    :initarg :controller
     :documentation "the animation-clips, for now. should be a controller")
    (matrix
     :accessor model-matrix
@@ -53,14 +53,8 @@
 
 (defvar *material-array* nil)
 
-(let ((elapsed 0))
-  (defmethod update-model((this model-shape) time)
-    (incf elapsed time)
-    (iter (for ani in (slot-value this 'animations))
-          (with-slots (t-start t-end) ani
-            (if (> elapsed t-end)
-                (setf elapsed 0))
-            (update-clip ani elapsed)))))
+(defmethod update-model((this model-shape) time)
+  (update-anim-controller (controller this) time))
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this
@@ -100,9 +94,11 @@
                     :specular specular
                     :shininess shininess))))
 
+(defvar *animator* nil)
 
 (defmethod load-obj->models ((this blt-model))
   (format t "loading object to models~%")
+  (setf *animator* (animations this))
   (make-instance 
    'model-shape
    :mesh-graph 
@@ -123,4 +119,4 @@
                          :elements elements
                          :array-format 'blt-vnt-mesh))
              (collect instance))))
-   :animations (animations this)))
+   :controller (animations this)))

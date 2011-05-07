@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-graphics)
+(in-package :blackthorn3d-physics)
 
 ;; This is our intermediate representation, basically just a 
 ;; representation/organization of all the data we loaded from
@@ -36,7 +36,7 @@
     :accessor mesh-nodes
     :initarg :nodes)
    (animations
-    :accessor model-animations
+    :accessor animations
     :initarg :animations)))
 
 (defclass vertex-stream ()
@@ -64,20 +64,25 @@
           (for i below stride)
           (setf (svref stream (+ i (* index stride))) elt))))
 
-(defclass elem ()
+(defclass element ()
   ((indices
-    :accessor elem-indices
+    :accessor element-indices
     :initarg :indices)
    (count
-    :accessor elem-count
+    :accessor element-count
     :initarg :count)
    (material
-    :accessor elem-material
+    :accessor element-material
     :initarg :material)
    (unifiedp 
-    :accessor elem-unifiedp
     :initarg :unifiedp
     :initform nil)))
+
+(defun make-element (&key indices count material)
+  (make-instance 'element
+                 :indices indices
+                 :count count
+                 :material material))
 
 (defclass blt-material ()
   ((ambient
@@ -130,7 +135,7 @@
     :initarg :elements
     :documentation "A list of elem objects")
    (bounding-volume
-    :accessor bounding-volume
+    :accessor mesh-bounding-volume
     :initarg :bounding-volume
     :documentation "For narrow-phase collision detection
                    to start we can use something coarse like a sphere
@@ -142,8 +147,8 @@
                  :id id
                  :vertex-streams vertex-streams
                  :elements elements
-                 :bounding-volume 
-                 (blt3d-phy:make-bounding-volume 
+                 :bounding-volume
+                 (make-bounding-volume
                   (vs-get-stream :vertex vertex-streams))))
 
 (defun vs-get-stream (stream vs-lst)
@@ -165,7 +170,7 @@
     :accessor mesh
     :initarg :mesh)
    (bounding-volume
-    :accessor bounding-volume
+    :accessor node-bounding-volume
     :initarg :bounding-volume
     :documentation "bounding volume encompassing all children??")
    (child-nodes
@@ -178,7 +183,7 @@
                  :transform transform
                  :material-array material-array
                  :mesh mesh
-                 :bounding-volume (blt3d-phy:make-bounding-volume
+                 :bounding-volume (make-bounding-volume
                                    (get-stream :vertex mesh))))
 
 #+disabled
@@ -193,6 +198,7 @@
 ;;;
 ;;; Model loading-specific code.
 ;;;
+
 
 ;; Note that this assumes that all the semantics in order exist in 
 ;; vertex-streams. The behavior is currently incorrect if this isn't true
@@ -269,25 +275,25 @@
 (defmethod triangle ((this blt-mesh) index)
   (with-slots (elements vertex-streams) this
     ;; First find the element we're in
-    (multiple-value-bind (element start-index)
+    (multiple-value-bind (elt start-index)
         (iter (for elt in elements)
-              (for s first 0 then (+ s (elem-count elt)))
+              (for s first 0 then (+ s (slot-value elt count)))
               (for last-s previous s initially 0)
-              (finding elt such-that (> s index))
-              (finally (return (values elt (- index last-s))))))
+              (finding elt such-that (> s index) into first-elt)
+              (finally (return (values first-elt (- index last-s))))))
     (let ((vertices (find :vertex vertex-streams :key #'vs-semantic)))
       ;; MUST have vertex positions!
       (unless (null vertices)
-        (tri-in-elt element vertices start-index)))))
+        (tri-in-elt elt vertices start-index)))))
 
 (defmethod build-triangle-array ((this blt-mesh))
   (with-slots (elements vertex-streams) this
     (let ((vertices (find :vertex vertex-streams :key #'vs-semantic))
           (triangles (make-array (/ (iter (for elt in elements)
-                                          (sum (elem-count elt))) 3)))
+                                          (sum (slot-value elt count))) 3)))
           (index 0))
       (iter (for element in elements)
-            (iter (for i below (elem-count element))
+            (iter (for i below (slot-value element count))
                   (setf (svref triangles index) 
                         (tri-in-elt element vertices i)))))))
 
@@ -298,7 +304,7 @@
 
 #+disabled
 (defmethod calc-bounding-volume ((this blt-model))
-  (blt3d-phy:combine-bounding-volume 
+  (combine-bounding-volume 
    (iter (for node in (mesh-nodes this))
          (collect (bounding-volume
                    (mesh node))))))

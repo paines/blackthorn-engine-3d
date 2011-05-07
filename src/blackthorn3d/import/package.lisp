@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-import
   (:nicknames :blt3d-imp)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-phy)
+  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-phy :blt3d-ani)
   (:export
 
    ;; dae-loader.lisp

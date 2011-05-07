@@ -40,6 +40,9 @@
     :accessor model-mesh-graph
     :initarg :mesh-graph
     :documentation "The 3d geometry data comprising the model")
+   (animations
+    :initarg :animations
+    :documentation "the animation-clips, for now. should be a controller")
    (matrix
     :accessor model-matrix
     :initarg :matrix
@@ -49,6 +52,15 @@
                     in a scenegraph")))
 
 (defvar *material-array* nil)
+
+(let ((elapsed 0))
+  (defmethod update-model((this model-shape) time)
+    (incf elapsed time)
+    (iter (for ani in (slot-value this 'animations))
+          (with-slots (t-start t-end) ani
+            (if (> elapsed t-end)
+                (setf elapsed 0))
+            (update-clip ani elapsed)))))
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this
@@ -110,4 +122,5 @@
                          :vert-data (vnt-array->gl-array interleaved)
                          :elements elements
                          :array-format 'blt-vnt-mesh))
-             (collect instance))))))
+             (collect instance))))
+   :animations (animations this)))

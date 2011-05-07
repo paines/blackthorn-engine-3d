@@ -82,11 +82,9 @@
                  (collect val)))))
 
 (defun uri-indirect (uri)
-  ;(format t "uri: ~a~%" uri)
   (if (and (simple-string-p uri)
-           (char= (char uri 0)) #\#)
-      (progn ;(format t "un-uri: ~a~%" (subseq uri 1)) 
-             (subseq uri 1))
+           (char= (char uri 0) #\#))
+      (subseq uri 1)
       uri))
 
 (defun get-uri (name attribs)

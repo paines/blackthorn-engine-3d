@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-phy)
+  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-phy :blt3d-ani)
   (:export
 
    ;; draw.lisp
@@ -48,6 +48,7 @@
    :set-camera
    :*main-cam-quat*
    :render-frame
+   :update-graphics
 
    ;; frustum.lisp
    :frustum
@@ -73,6 +74,7 @@
    ;; model.lisp
    :model-shape
    :load-obj->models
+  
    ))
         
         

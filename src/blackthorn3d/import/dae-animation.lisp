@@ -45,8 +45,10 @@
 ;;;
 
 (defun process-animations (animations-library)
+  (format t "~%    Processing Animation~%")
   (let ((animation-table (make-id-table))
-        (sampler-table (make-id-table)))    
+        (sampler-table (make-id-table))
+        (default-count 0))    
     (iter (for animation in (children-with-tag +animation+ 
                                                animations-library))
           (let ((source-table (hash-sources animation))
@@ -56,25 +58,30 @@
             (iter (for sampler in (children-with-tag +sampler+ animation))
                   (setf (gethash (get-attribute "id" (attributes sampler))
                                  sampler-table)
-                        (build-inputs sampler source-table)))
+                        (build-input-lst sampler source-table)))
 
             ;; Setup channels
-            (iter (for channel in (children-with-tag +channel+ animation))
-                  (let ((inputs 
-                         (gethash (get-uri "source" (attributes channel)) 
-                                  sampler-table)))
-                    (collect
-                     (make-channel
-                      :times (input-by-semantic :input inputs)
-                      :values (input-by-semantic :output inputs)
-                      :target (get-uri "target" (attributes channel))))))
+            (setf 
+             channel-list
+             (iter (for channel in (children-with-tag +channel+ animation))
+                   (let ((inputs 
+                          (gethash (get-uri "source" (attributes channel)) 
+                                   sampler-table)))
+                
+                     (collect
+                      (make-channel
+                       :times (src-array (input-by-semantic :input inputs))
+                       :values (src-expand (input-by-semantic :output inputs))
+                       :target (get-uri "target" (attributes channel)))))))
 
             ;; Setup the animation-clip
             (let ((end-time
                    (iter (for ch in channel-list)
-                         (maximizing  (time-step (frames ch) 0))))
-                  (anim-id (get-attribute "id" (attributes animation))))
-              (setf (get-hash anim-id animation-table)
+                         (maximizing (slot-value ch 'dt))))
+                  (anim-id (or (get-attribute "id" (attributes animation))
+                               (format nil "default~a" (incf default-count)))))
+              (format t "      anim-id: ~a~%" anim-id)
+              (setf (gethash anim-id animation-table)
                     (make-instance 'animation-clip
                                    :id anim-id
                                    :channel-lst channel-list

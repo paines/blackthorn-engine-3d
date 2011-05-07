@@ -62,13 +62,13 @@
     :initarg :interpolation
     :initform :linear)
    (target
-    :initform :target)))
+    :initarg :target)))
 
 (defun make-channel (&key times values target normalize)
   (let* ((len (min (length times) (length values)))
          (t-min (aref times 0))
-         (t-max (aref times(1- (length time))))
-         (t-d (- t-max t-min))
+         (t-max (aref times(1- (length times))))
+         (t-d (- t-max 0.0))
          (frames (make-array len
                              :initial-contents
                              (iter (for i below len)
@@ -77,12 +77,12 @@
                                      (if normalize 
                                        (- (/ (aref times i) t-d) t-min)
                                        (aref times i))
-                                     (aref values i))))))))
-  (make-instance 
-   'channel
-   :frames frames
-   :dt dt
-   :target target))
+                                     (aref values i)))))))
+    (make-instance 
+     'channel
+     :frames frames
+     :dt t-d
+     :target target)))
 
 (defmacro time-step (frames index)
   `(car (aref ,frames ,index)))
@@ -93,9 +93,11 @@
   (with-slots (frames dt extrapolation) this
     (cond ((< time 0.0)
            ;; TODO: max extrapolation
+           0.0
            )
           ((> time dt)
            ;; TODO: min extrapolation
+           dt
            )
           (t time))))
 
@@ -105,7 +107,7 @@
           (m-time (map-time this time)))
       (iter (for i below n-frames)
             (finding (value frames i) 
-                     such-that (> (time-step frames i) time))))))
+                     such-that (>= (time-step frames i) time))))))
 
 
 

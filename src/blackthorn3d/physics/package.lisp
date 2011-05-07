@@ -27,7 +27,7 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent)
   (:export
 
    ;; blt-model.lisp
@@ -71,6 +71,7 @@
    :interleave
 
    ;; shapes.lisp
+   :bounding-sphere
 
    ;; aa-bounding-box
    :aa-bounding-box

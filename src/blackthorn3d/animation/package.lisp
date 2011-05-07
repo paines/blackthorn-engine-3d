@@ -33,9 +33,21 @@
    :channel
    :make-channel
    :frames
+   :target
+   :dt
 
    ;; animation.lisp
    :anim-controller
    :update
    :play-clip
+
+   :update-clip
+   :animation-clip
+   :t-start
+   :t-end
+   :channel-lst
+
+   :time-step
+   :value
+
    ))

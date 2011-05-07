@@ -101,9 +101,8 @@
   (when *main-cam*
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)
-                                     (up  *main-cam*)))
-    ())
-  ;(gl:light :light0 :position '(6.0 6.0 6.0 1.0))   
+                                     (up  *main-cam*))))
+
   (init-light *main-light* :light0)
 
   (gl:color-material :front :diffuse)

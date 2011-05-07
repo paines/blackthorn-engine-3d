@@ -37,13 +37,26 @@
   tan-out
   interp)
 
-;; Channels
 (defstruct span
   t0
   ;; this may not be needed, since it's in coefs (d @ index 3)
   value
   coefs
   t1-t0)
+
+;;;
+;;; Channels
+;;;
+;;; Interpolation Modes:
+;;;  :none/nil  -> takes the last Ti such that Ti < t0
+;;;  :linear    -> linearly interpolates between two frames by
+;;;                Ti, Ti+1 with s = (t0 - Ti) / (Ti+1 - Ti)
+;;;
+;;; Extrapolation Modes:
+;;;  :constant  -> before 0 evaluate to Ch(0)
+;;;                after Tmax evaluate to Ch(Tmax)
+;;;  :repeat    -> before 0 evaluate to Ch(mod t0 Tmax)
+;;;             -> after Tmax evaluate to Ch(mod t0 Tmax)
 
 ;; Used for setting the previous frame so I don't have to add bookkeeping
 ;; code everywhere
@@ -53,35 +66,37 @@
   ((frames
     :accessor frames
     :initarg :frames)
-   (dt
-    :initarg :dt)
+   (t-max
+    :initarg :t-max)
    (extrapolation
     :initarg :extrapolation
-    :initform :loop)
+    :initform :constant)
    (interpolation
     :initarg :interpolation
     :initform :linear)
    (target
-    :initarg :target)))
+    :initarg :target)
+   (eval-fn)))
 
 (defun make-channel (&key times values target normalize)
   (let* ((len (min (length times) (length values)))
          (t-min (aref times 0))
          (t-max (aref times(1- (length times))))
          (t-d (- t-max 0.0))
-         (frames (make-array len
-                             :initial-contents
-                             (iter (for i below len)
-                                   (collect 
-                                    (cons
-                                     (if normalize 
-                                       (- (/ (aref times i) t-d) t-min)
-                                       (aref times i))
-                                     (aref values i)))))))
+         (frames 
+          (make-array len
+                      :initial-contents
+                      (iter (for i below len)
+                            (collect 
+                                (cons
+                                 (if normalize 
+                                     (- (/ (aref times i) t-d) t-min)
+                                     (aref times i))
+                                 (aref values i)))))))
     (make-instance 
      'channel
      :frames frames
-     :dt t-d
+     :t-max t-d
      :target target)))
 
 (defmacro time-step (frames index)
@@ -89,25 +104,57 @@
 (defmacro value (frames index)
   `(cdr (aref ,frames ,index)))
 
-(defmethod map-time ((this channel) time)
-  (with-slots (frames dt extrapolation) this
-    (cond ((< time 0.0)
-           ;; TODO: max extrapolation
-           0.0
-           )
-          ((> time dt)
-           ;; TODO: min extrapolation
-           dt
-           )
-          (t time))))
+(defun map-time (t0 t-max extrapolation)
+  (cond ((< t0 0.0)
+         ;; TODO: min extrapolation
+         (case extrapolation
+           (:loop (mod t0 t-max))
+           (otherwise 0.0)))
+        ((> t0 t-max)
+         ;; TODO: max extrapolation
+         (case extrapolation
+           (:loop (mod t0 t-max))
+           (otherwise t-max)))
+        (t t0)))
 
-(defmethod evaluate-channel ((this channel) time)
-  (with-slots (frames t-start t-end extrapolation) this
-    (let ((n-frames (length frames))
-          (m-time (map-time this time)))
-      (iter (for i below n-frames)
-            (finding (value frames i) 
-                     such-that (>= (time-step frames i) time))))))
+(defmethod evaluate-channel ((this channel) t0)
+  (with-slots (frames t-max extrapolation interpolation) this
+    (let* ((n-frames (length frames))
+           (m-time (map-time t0 t-max extrapolation))
+           (i
+            (iter (for i from (or *prev-frame* 0) below n-frames)
+                  (finding i #+disabled(value frames i) 
+                           such-that (>= (time-step frames i) m-time)))))
+      (case interpolation
+        (:linear (linear-interpolate 
+                  frames i 
+                  (case extrapolation
+                    (:loop (mod (1+ i) (length frames)))
+                    (otherwise (clamp (1+ i) 0 (1- (length frames)))))
+                  m-time))
+        (otherwise (value frames i))))))
+
+(defun linear-interpolate (frames i0 i1 t0)
+  (let* ((v1 (value frames i0))
+        (v2 (value frames i1))
+        (denom (- (time-step frames i1) (time-step frames i0)))
+        (s (if (= 0.0 denom)
+               0.0 
+               (/ (- t0 (time-step frames i0))
+                  denom))))
+   ; (format t "v1:  ~a~%v2:   ~a~%" v1 v2)
+    (if (arrayp v1)
+        (iter (with len = (length v1))
+              (with arr = (make-array len))
+              (for i below len)
+              (setf (svref arr i)
+                    (lerp s (svref v1 i) (svref v2 i)))
+              (finally (return arr)))
+        (lerp s v1 v2))))
+
+#+disabled
+(defun evalute-channel (channel t0)
+  (funcall (eval-fn channel) t0))
 
 
 

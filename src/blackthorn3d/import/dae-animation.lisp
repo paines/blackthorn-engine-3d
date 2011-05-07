@@ -77,9 +77,10 @@
             ;; Setup the animation-clip
             (let ((end-time
                    (iter (for ch in channel-list)
-                         (maximizing (slot-value ch 'dt))))
+                         (maximizing (slot-value ch 't-max))))
                   (anim-id (or (get-attribute "id" (attributes animation))
-                               (format nil "default~a" (incf default-count)))))
+                               (format nil "animation-no-~a" 
+                                       (incf default-count)))))
               (format t "      anim-id: ~a~%" anim-id)
               (setf (gethash anim-id animation-table)
                     (make-instance 'animation-clip

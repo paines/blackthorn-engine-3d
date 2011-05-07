@@ -100,7 +100,7 @@
     (make-instance 
      'blt-model
      :nodes meshes
-     :animations anims)))
+     :animations (make-animation-controller anims))))
 
 
 (defvar *geometry-table* nil)

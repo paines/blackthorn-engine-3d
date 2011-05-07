@@ -160,7 +160,9 @@
 (defun check-collisions ()
   (format t "---------------------------------------------------------------~%")
   (iter (for (e1 e2) in (combinations (list-entities)))
-    (format t "Check ~a with ~a~%" e1 e2))
+      (when (blackthorn3d-physics:collide-p e1 e2)
+        (format t "~a collides with ~a!~%" e1 e2))
+  )
 )
        
 

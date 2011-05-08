@@ -79,7 +79,7 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-  #+disabled
+  ;#+disabled
   (setf shader (make-shader (blt3d-res:file-contents
                              (blt3d-res:resolve-resource 
                               #p "res/shaders/FinalProjShader.vert"))
@@ -107,7 +107,7 @@
 
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
-  (gl:use-program 0)
+  (gl:use-program shader)
   ;(gl:bind-texture :texture-2d cube-tex)
 
   (when level

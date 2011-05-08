@@ -42,4 +42,5 @@
 (defmethod init-light ((this light) gl-light)
   (gl:light gl-light :position (light-pos this))
   (gl:light gl-light :diffuse (light-diff this))
-  (gl:light gl-light :ambient (light-amb this)))
+  (gl:light gl-light :ambient (light-amb this))
+  (gl:light gl-light :linear-attenuation 0.5))

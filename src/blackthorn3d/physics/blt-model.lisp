@@ -276,7 +276,7 @@
      (v1 (vs-ref vertices (+ i 1)))
      (v2 (vs-ref vertices (+ i 2))))))
 
-(defmethod triangle ((this blt-mesh) index)
+(defmethod triangle-at ((this blt-mesh) index)
   (with-slots (elements vertex-streams) this
     ;; First find the element we're in
     (multiple-value-bind (elt start-index)
@@ -299,13 +299,23 @@
       (iter (for element in elements)
             (iter (for i below (slot-value element count))
                   (setf (svref triangles index) 
-                        (tri-in-elt element vertices i)))))))
+                        (tri-in-elt element vertices i))
+                  (incf index))))))
 
+
+(defmethod build-triangle-list ((this blt-mesh))
+  (with-slots (elements vertex-streams) this
+    (let ((vertices (find :vertex vertex-streams :key #'vs-semantic)))
+      (iter (for element in elements)
+            (iter (for i below (slot-value element count))
+                  (collect (tri-in-elt element vertices i)))))))
+
+(defun tri-bounds (tri)
+  (find-bounding-points (subseq tri 0 3)))
 
 ;;;
 ;;; Bounding Volume stuff herr
 ;;;
-
 #+disabled
 (defmethod calc-bounding-volume ((this blt-model))
   (combine-bounding-volume 

@@ -23,30 +23,18 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-graphics)
+(in-package :blackthorn3d-import)
 
 ;;;
-;;; And so pandora's box is opened
+;;; Loads controller, or bone, data from a collada file
 ;;;
 
-;;;
-;;; Skeletons
-;;;
+(defvar +controller+ "controller")
+(defvar +skin+ "skin")
 
-;; A joint: (world-mat bind-mat <...> (child-joint-1 child-joint-2 ... ))
-;; world-mat -> the most recently calculated world-mat for this joint
-;; bind-mat -> static matrix that describes the transform from this 
-
-(defun joint-update-r )
-
-(defun joint-update (skeleton)
-  (labels ((j-u-r (joint parent-matrix)
-             (destructuring-bind (world-mat bind-mat children) joint
-               (setf (car joint) (matrix-multipy-m parent-matrix bind-mat))
-               (dolist (child children)
-                 (j-u-r child (car joint))))))
-    (j-u-r skeleton (make-identity-matrix))))
-
-;;;
-;;; Skinning
-;;;
+(defun process-controller (controller-library)
+  (iter (for controller in (children-with-tag +controller+ 
+                                              controller-library))
+        (let* ((skin (find-tag-in-children +skin+ controller))
+               (sources (hash-sources skin)))
+          )))

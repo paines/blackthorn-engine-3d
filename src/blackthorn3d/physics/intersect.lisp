@@ -28,7 +28,10 @@
 
 
 (defun triangle-triangle-intersection (tri1 tri2)
+  "Detect whether two triangles intersect or not. returns nil for
+   false, otherwise true (may return collision info later)"
   )
+
 
 (defun ray-triangle-intersection (ray tri)
   )

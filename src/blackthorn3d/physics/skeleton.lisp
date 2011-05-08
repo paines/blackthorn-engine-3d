@@ -59,3 +59,6 @@
   (matrix-multiply-m (joint-ibm joint) 
                      (matrix-multiply-m parent-matrix
                                         (joint-mat joint))))
+
+(defclass skeleton ()
+  )

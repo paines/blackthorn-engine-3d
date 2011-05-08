@@ -42,6 +42,7 @@
    :bounding-volume
    :make-server-entity
    :make-client-entity
+   :oid-in-use-p
    :lookup-entity
    :list-entities
    :remove-entity

@@ -40,8 +40,15 @@
                           0.0 
                           (float (s-input-move-y client)))))))
 
+(defun is-alive-p (thing)
+  (oid-in-use-p (oid thing)))
+                          
 (defmethod update ((c blt3d-gfx:camera))
-  (let ((client (player-client (blt3d-gfx:target c))))
+  (let* ((player (blt3d-gfx:target c))
+         (client (player-client player)))
+    (when (not (is-alive-p player))
+      (remove-entity c)
+      (return-from update))
     (blt3d-gfx:move-player c (vector (s-input-move-x client)
                                      (s-input-move-y client)))
     (blt3d-gfx:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)

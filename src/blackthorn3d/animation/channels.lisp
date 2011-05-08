@@ -136,12 +136,12 @@
 
 (defun linear-interpolate (frames i0 i1 t0)
   (let* ((v1 (value frames i0))
-        (v2 (value frames i1))
-        (denom (- (time-step frames i1) (time-step frames i0)))
-        (s (if (= 0.0 denom)
-               0.0 
-               (/ (- t0 (time-step frames i0))
-                  denom))))
+         (v2 (value frames i1))
+         (denom (- (time-step frames i1) (time-step frames i0)))
+         (s (if (= 0.0 denom)
+                0.0 
+                (/ (- t0 (time-step frames i0))
+                   denom))))
    ; (format t "v1:  ~a~%v2:   ~a~%" v1 v2)
     (if (arrayp v1)
         (iter (with len = (length v1))

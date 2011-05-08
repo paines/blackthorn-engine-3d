@@ -73,7 +73,9 @@
 (defmethod move-bounding-volume-set ((bv bounding-shape) move-vec)
   (setf (pos bv) (vec4+ (pos bv) move-vec)))
 
-(defmethod find-bounding-points (vect-array)
+;; By Robert - note, changed to defun, as there isn't a reason for it to
+;;             be a method
+(defun find-bounding-points (vect-array)
   (iter (for i in-vector vect-array)
 	(maximizing (aref i 0) into max-x)
 	(maximizing (aref i 1) into max-y)
@@ -102,10 +104,25 @@
   (make-bounding-sphere vect-array))
 
 (defmethod distance (vec1 vec2)
-  (mag (vec4- vec1 vec2))) 
+  (mag (vec4- vec1 vec2)))
 
 #+disabled
-(defmethod combine-bounding-volume (list-bv)
+(defun combine-spheres (sph1 sph2)
+  (with-slots ((p1 pos) (r1 rad)) sph1
+    (with-slots ((p2 pos) (r2 rad)) sph2
+      (let* ((t-vec (vec4- p2 p1))
+             (d (mag t-vec))
+             (r (/ (+ (mag t-vec) r1 r2)
+                   2.0)))
+        (make-instance 'bounding-sphere
+                       :pos (vec4+ (pos sph1) 
+                                   (vec-scale4 t-vec (/ (rad sph2) 
+                                                        (rad sph1))))
+                       :rad r)))))
+
+#+disabled
+(defmethod combine-bounding-volumes (list-bv)
+  (labels ())
   (let ((mid-point (iter (for bv in list-bv)
 		     (with-slots (pos) bv
 		       (reducing pos by vec4+ into sum-vec))

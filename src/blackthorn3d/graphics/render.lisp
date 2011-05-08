@@ -52,6 +52,18 @@
 (defun prepare-scene ()
   "Called after sdl is initialized, before first frame is drawn
    or when changing the 'scene' settings"
+
+  ;; Display our version #s
+  (format t 
+"GL3 Major Version: ~a
+GL3 Minor Version: ~a
+GLSL Major Version: ~a
+GLSL Minor Version: ~a~%"
+          (gl:gl3-major-version)
+          (gl:gl3-minor-version)
+          (gl:glsl-major-version)
+          (gl:glsl-minor-version))
+  
   (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)

@@ -27,6 +27,9 @@
 (in-package :blackthorn3d-physics)
 
 
+;;; @Michael: this can all be rewritten, i was mostly playing around
+;;; with it, but it was headed for a strict octree. 
+
 ;;;
 ;;; Spatial trees.
 ;;;  all spatial trees require that the primitives being used

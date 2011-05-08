@@ -68,7 +68,8 @@
                                               :components
                                               ((:file "package")
                                                (:file "channels")
-                                               (:file "animation"))
+                                               (:file "animation")
+                                               (:file "controller"))
                                               :serial t)
                                      (:module entity
                                               :components

@@ -54,7 +54,8 @@
 (defvar *material-array* nil)
 
 (defmethod update-model((this model-shape) time)
-  (update-anim-controller (controller this) time))
+  #+disabled(aif (controller this)
+       (update-anim-controller it time)))
 
 (defmethod draw-object ((this model-shape))
   (with-slots (mesh-graph matrix material) this

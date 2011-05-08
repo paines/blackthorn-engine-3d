@@ -39,7 +39,7 @@
                    #p"res/models/wedge-dummy.dae"
                    ;#p "res/models/test-anim.dae"
                    )))
-           (setf (blt3d-ani:state 
+          #+disabled(setf (blt3d-ani:state 
                   (blt3d-gfx:controller (shape entity))) :loop)))
     (:event-entity-update
      ;; Nothing needs to be done, unserializing the message already

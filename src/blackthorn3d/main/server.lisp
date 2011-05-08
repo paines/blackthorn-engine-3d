@@ -46,14 +46,6 @@
                                      (s-input-move-y client)))
     (blt3d-gfx:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))))
-
-   
-
-       
-(defun kill (object)
-    (declare (ignore object))) ;todo: implement object death
-       
-
       
 (defmacro make-server-only (type &rest options)
   `(make-server-entity ,type 
@@ -63,9 +55,6 @@
       :up  (make-vec3 0.0 1.0 0.0)
       ,@options))
       
-      
-
-
 (defun next-frame ()
   (sleep 1/120)
   )

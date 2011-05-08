@@ -52,7 +52,7 @@
             (if (not (eq (callback a) nil))
               (funcall (callback a)))
             (setf (callback a) nil)
-            (kill a))))
+            (remove-entity a))))
        
 (defclass cyclic-alarm (entity-server)
     ((alarm

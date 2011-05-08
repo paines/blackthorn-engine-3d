@@ -126,6 +126,9 @@
   (unintern-entity object)
   (remember-removed-server-entity object))
 
+(defun lookup-and-remove-entity (oid)
+  (remove-entity (lookup-entity oid)))
+  
 (make-uint-serializer :oid 4)
 
 (make-vec-serializer :vec3 :single-float 3)
@@ -146,3 +149,8 @@
 (make-init-slot-serializer :entity-oid
                            (lookup-entity) (:oid oid)
                            ())
+                           
+(make-init-slot-serializer :entity-remove
+                           (lookup-and-remove-entity) (:oid oid)
+                           ())
+                           

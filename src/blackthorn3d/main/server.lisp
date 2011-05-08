@@ -104,9 +104,12 @@
         (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt)
        ))))
 
+(defvar *delay-disconnected-clients* nil)
+       
 (defun handle-disconnect (client)
   (remove-server-controller client)
-  (remove-player client)
+  ;(remove-player client)
+  (push client *delay-disconnected-clients*)
   (decf *client-count*)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
   
@@ -157,14 +160,22 @@
       (in outer (collect (list (first x) y))))))
        
 (defun check-collisions ()
+
+  #+disabled
   (format t "---------------------------------------------------------------~%")
   (iter (for (e1 e2) in (combinations (list-entities)))
       (when (blackthorn3d-physics:collide-p e1 e2)
+        (format t "")
+        #+disabled
         (format t "~a collides with ~a!~%" e1 e2))
   )
 )
-       
 
+(defun remove-disconnected-clients ()
+  (iter (for client in *delay-disconnected-clients*)
+    (format t "Removing client: ~a~%" client)
+    (remove-player client))
+  (setf *delay-disconnected-clients* nil))
       
 (defun server-main (host port)
   (declare (ignore host))
@@ -180,6 +191,7 @@
     (loop
        (next-frame)
        (check-for-new-clients)
+       (remove-disconnected-clients)
        (update-entities)
        (check-collisions)
        (synchronize-clients)

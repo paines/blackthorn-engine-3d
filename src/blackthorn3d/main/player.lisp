@@ -36,7 +36,9 @@
     (setf (getf *client->player* c) p))
     
 (defun remove-player (client)
-    ; FIXME: Need to remove player entity as well!
+    (let ((player (getf *client->player* client)))
+      (when player 
+        (remove-entity player)))
     (remf *client->player* client))
     
 (defun new-player (client-id)

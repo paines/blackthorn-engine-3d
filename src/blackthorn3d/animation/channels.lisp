@@ -99,6 +99,7 @@
      :t-max t-d
      :target target)))
 
+
 (defmacro time-step (frames index)
   `(car (aref ,frames ,index)))
 (defmacro value (frames index)
@@ -151,6 +152,27 @@
                     (lerp s (svref v1 i) (svref v2 i)))
               (finally (return arr)))
         (lerp s v1 v2))))
+
+
+
+
+;;;
+;;; Channel Bindings
+;;;
+
+;; channel bindings are tuples of form (channel target-fn prev-frame)
+
+(defun make-binding (channel target-fn &optional last-frame)
+  (list channel target-fn last-frame))
+
+(defun update-binding (binding t0)
+  (destructuring-bind (channel fn prev-frame) binding
+    (let ((*prev-frame* prev-frame))
+      (funcall fn (evaluate-channel channel t0))
+      ;; save the *prev-frame* (updated, ostensibly, by evaluate-channel)
+      ;; into the binding
+      (setf (third binding) *prev-frame*))))
+
 
 #+disabled
 (defun evalute-channel (channel t0)

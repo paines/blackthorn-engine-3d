@@ -63,16 +63,23 @@
          (append (iter (for ch in (channel-lst c))
                        (collect (list ch nil nil)))))))
 
+(defmethod bind-channel ((this anim-controller) channel target-fn)
+  (with-slots (channel-bindings) this
+    (let ((ch-bind (find channel channel-bindings :key #'car)))
+      (if ch-bind
+          (setf (second ch-bind) target-fn
+                (third ch-bind) nil)
+          (push (make-binding channel target-fn nil) channel-bindings)))))
 
 (defun set-next-clip (controller clip)
-  (with-slots (current-clip next-clip state) controller
+  (with-slots (current-clip next-clip) controller
     (if current-clip
         (setf next-clip clip)
         (setf current-clip clip))))
 
-(defmethod play-clip ((this anim-controller) clip)
+(defmethod play-clip ((this anim-controller) clip &optional (state :run))
   (set-next-clip this clip)
-  (setf (state this) :run))
+  (setf (state this) state))
 
 (defun next-clip (controller)
   (with-slots (current-clip next-clip state) this
@@ -86,15 +93,18 @@
 ;;          then will run next-clip if there is one
 ;;   :stop - does nothing
 (defmethod update-anim-controller ((this anim-controller) dt)
-  (with-slots (current-clip next-clip elapsed t-start state) this
+  (with-slots (current-clip next-clip elapsed 
+               t-start state 
+               channel-bindings) this
     (incf elapsed dt)
     (when (> elapsed (end-time current-clip))
       (if (eql state :loop) 
           (setf elapsed 0.0)
           (next-clip this)))
     (case state
-      ((:run :loop)    (if current-clip
-                   (update-clip current-clip elapsed)
+      ((:run 
+        :loop) (if current-clip
+                   (update-clip current-clip elapsed channel-bindings)
                    (setf state :stop)))
       (:stop   (setf elapsed 0.0))
       (:pause  nil)

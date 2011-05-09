@@ -49,15 +49,19 @@
    (up
     :accessor up
     :initarg :up)
+   (die-now
+    :accessor die-now
+    :initform :no
+    :initarg :die-now)
    (shape-name
     :accessor shape-name
-    :initform :none
+    :initform :cylinder
     :initarg  :shape-name)
    (shape
     :accessor shape
     :initarg :shape)))
 
-(track-modifed-slots entity pos dir up shape-name)
+(track-modifed-slots entity pos dir up shape-name die-now)
 
 (defclass entity-server (entity)
   ((oid
@@ -142,14 +146,17 @@
                            (make-client-entity) (:oid oid)
                            (:vec4 pos
                             :vec4 dir
-                            :vec4 up))
+                            :vec4 up
+                            :symbol shape-name
+                            :symbol die-now))
 
 (make-init-slot-serializer :entity-update
                            (lookup-entity) (:oid oid)
                            (:vec4 pos
                             :vec4 dir
                             :vec4 up
-                            :symbol shape-name))
+                            :symbol shape-name
+                            :symbol die-now))
 
 (make-init-slot-serializer :entity-oid
                            (lookup-entity) (:oid oid)

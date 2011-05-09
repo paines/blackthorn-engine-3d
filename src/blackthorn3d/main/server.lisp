@@ -31,7 +31,7 @@
 (defmethod update ((e entity-server))
     (declare (ignore e)))
 
-(defmethod update ((p Player))
+(defmethod update ((p player))
     (with-slots (client) p
       #+disabled
       (setf (pos p)
@@ -155,14 +155,18 @@
   (iter outer (for x on input-list) 
     (iter (for y in (rest x)) 
       (in outer (collect (list (first x) y))))))
-       
+      
+(defmethod collide (a b)
+  (declare (ignore a)
+           (ignore b)))
+      
 (defun check-collisions ()
 
   #+disabled
   (format t "---------------------------------------------------------------~%")
   (iter (for (e1 e2) in (combinations (list-entities)))
       (when (blackthorn3d-physics:collide-p e1 e2)
-        (format t "")
+        (collide e1 e2)
         #+disabled
         (format t "~a collides with ~a!~%" e1 e2))
   )
@@ -184,6 +188,8 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
+  (make-monster (make-point3 20.0 0.0 0.0))
+  
   (with-finalize-server ()
     (loop
        (next-frame)

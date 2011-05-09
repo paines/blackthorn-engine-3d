@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Chris McFarland <askgeek@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,21 +23,22 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-resources
-  (:nicknames :blt3d-res)
-  (:use :cl :alexandria :iter :blt3d-utils)
-  (:export
+(in-package :blackthorn3d-resources)
 
-   ;; locate.lisp
-   :add-resource-path
-   :resolve-resource
+(defvar *model-loader-table* (make-hash-table))
+(defvar *graphical-thingies* (make-hash-table))
 
-   ;; files.lisp
-   :file-contents
-   
-   ;; graphics.lisp
-   :register-model-loader
-   :load-models-n-stuff
-   :get-model
-   
-   ))
+(defun register-model-loader (type f) 
+  (setf (gethash type *model-loader-table*) f))
+
+(defmacro load-model (key type path)
+  `(setf (gethash ,key *graphical-thingies*)
+    (funcall (gethash ,type *model-loader-table*) ,path)))  
+
+(defun load-models-n-stuff ()
+  (setf (gethash :none *graphical-thingies*) nil)
+  (load-model :wedge    :dae #p"res/models/wedge-dummy.dae")
+  (load-model :cylinder :dae #p"res/models/test-anim.dae"))
+
+(defun get-model (key)
+  (gethash key *graphical-thingies*))

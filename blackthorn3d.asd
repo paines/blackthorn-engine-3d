@@ -55,7 +55,8 @@
                                               :components
                                               ((:file "package")
                                                (:file "locate")
-                                               (:file "files"))
+                                               (:file "files")
+                                               (:file "graphics"))
                                               :serial t)
                                      (:module network
                                               :components

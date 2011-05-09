@@ -25,23 +25,8 @@
 
 (in-package :blackthorn3d-main)
 
-;; obviously, these are intented to be replaced soon. :)
-(defvar *graphical-thingies* (make-hash-table))
-
-(defun load-models-n-stuff ()
-  (setf (gethash :none *graphical-thingies*) nil)
-  
-  (setf (gethash :wedge *graphical-thingies*)
-    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae 
-      #p"res/models/wedge-dummy.dae")))
-      
-  (setf (gethash :cylinder *graphical-thingies*)
-    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae 
-      #p"res/models/test-anim.dae"))))
-
-(defun use-model-on (model-sym entity)
-  (let ((model (gethash model-sym *graphical-thingies*)))
-    (setf (shape entity) model)))
+(defun use-model-on (model-symbol entity)
+    (setf (shape entity) (get-model model-symbol)))
     
       
 (defun handle-message-client (src message)
@@ -83,6 +68,9 @@
   (load-dlls)
   (blt3d-gfx:init)
 
+  (register-model-loader :dae #'(lambda (path) 
+    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae path))))
+    
   (load-models-n-stuff)
   
   (setf *level* (blt3d-gfx:load-obj->models 

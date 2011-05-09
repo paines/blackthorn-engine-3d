@@ -25,6 +25,25 @@
 
 (in-package :blackthorn3d-main)
 
+;; obviously, these are intented to be replaced soon. :)
+(defvar *graphical-thingies* (make-hash-table))
+
+(defun load-models-n-stuff ()
+  (setf (gethash :none *graphical-thingies*) nil)
+  
+  (setf (gethash :wedge *graphical-thingies*)
+    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae 
+      #p"res/models/wedge-dummy.dae")))
+      
+  (setf (gethash :cylinder *graphical-thingies*)
+    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae 
+      #p"res/models/test-anim.dae"))))
+
+(defun use-model-on (model-sym entity)
+  (let ((model (gethash model-sym *graphical-thingies*)))
+    (setf (shape entity) model)))
+    
+      
 (defun handle-message-client (src message)
   (ecase (message-type message)
     (:string
@@ -33,12 +52,7 @@
     (:event-entity-create
      (iter (for entity in (message-value message))
            ;; TODO: Don't hard code the model, send it's in the message...
-           (setf (shape entity)
-                 (blt3d-gfx:load-obj->models 
-                  (blt3d-imp:load-dae
-                   #p"res/models/wedge-dummy.dae"
-                   ;#p "res/models/test-anim.dae"
-                   )))
+           (use-model-on :wedge entity)
           #+disabled(setf (blt3d-ani:state 
                   (blt3d-gfx:controller (shape entity))) :loop)))
     (:event-entity-update
@@ -69,6 +83,8 @@
   (load-dlls)
   (blt3d-gfx:init)
 
+  (load-models-n-stuff)
+  
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:load-dae #p "res/models/PlatformRoom.dae")))
 

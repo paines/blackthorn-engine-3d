@@ -107,7 +107,7 @@
   (serialize :string (symbol-name value) :buffer buffer)
   (serialize :string (package-name (symbol-package value)) :buffer buffer))
 
-(defmethod unserialize ((type (eql :single-float)) &key (buffer *buffer*))
+(defmethod unserialize ((type (eql :symbol)) &key (buffer *buffer*))
   (let ((symbol-name (unserialize :string :buffer buffer))
         (package-name (unserialize :string :buffer buffer)))
     (intern symbol-name package-name)))

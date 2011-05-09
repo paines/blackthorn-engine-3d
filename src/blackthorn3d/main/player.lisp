@@ -51,7 +51,7 @@
          :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
                 :pos (make-point3 1.0 0.0 0.0)
                 :rad 1.0)
-         
+         :shape-name :wedge
          )))
     (register-player p client-id)))
     

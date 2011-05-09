@@ -117,6 +117,7 @@
         :up  (make-vec3 0.0 1.0 0.0)
         :ideal-coord (list 0.0 (cos (/ pi 2.5)) 7.0)
         :target player-entity
+        :shape-name :cylinder
         :mode :third-person))
 
 (defun finalize-server ()

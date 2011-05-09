@@ -38,6 +38,7 @@
    :dir
    :up
    :veloc
+   :shape-name
    :shape
    :bounding-volume
    :make-server-entity

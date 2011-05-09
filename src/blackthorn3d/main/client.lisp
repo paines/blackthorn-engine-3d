@@ -37,12 +37,13 @@
     (:event-entity-create
      (iter (for entity in (message-value message))
            ;; TODO: Don't hard code the model, send it's in the message...
-           (use-model-on :wedge entity)
+           (use-model-on (shape-name entity) entity)
           #+disabled(setf (blt3d-ani:state 
                   (blt3d-gfx:controller (shape entity))) :loop)))
     (:event-entity-update
-     ;; Nothing needs to be done, unserializing the message already
-     ;; updated the entity state.
+        (iter (for entity in (message-value message))
+          (format t "Setting model to ~a~%" (shape-name entity))
+          (use-model-on (shape-name entity) entity))
      )
     (:event-entity-remove
      ;; TODO: Do it.

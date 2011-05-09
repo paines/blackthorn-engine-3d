@@ -42,9 +42,7 @@
 ;; nodes is a list of scene nodes (
 (defun get-location-fn (loc nodes)
   (labels ((node-finder (node-id nodes)
-             (format t "    FINDING NODE: ~a~%" node-id)
              (iter (for node in nodes)
-                   (format t "     looking@ ~a~%" (id node))
                    (if (equal node-id (id node)) (leave node)
                        (node-finder node-id (child-nodes node)))))
 
@@ -111,6 +109,7 @@
 ;; Returns an intermediate representation of the dae file
 (defun load-dae (filename)
   "Loads the objects from a dae file"
+  (dae-debug "~%LOADING DAE FILE ~a~%" filename)
   (let ((dae-file (cxml:parse-file filename
                    #+disabled(blt3d-res:resolve-resource filename) 
                                    (cxml-xmls:make-xmls-builder))))

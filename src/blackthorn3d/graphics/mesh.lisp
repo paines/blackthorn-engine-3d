@@ -83,5 +83,6 @@
     (gl:bind-gl-vertex-array vert-data)
     (iter (for elt in elements)
           (when (and (element-material elt) *material-array*) 
-            (use-material (aref *material-array* (car (element-material elt)))))
+            (use-material (aref *material-array* 
+                                (car (element-material elt)))))
           (gl:draw-elements :triangles (element-indices elt)))))

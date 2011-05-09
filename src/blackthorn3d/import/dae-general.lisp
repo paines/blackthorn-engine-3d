@@ -60,6 +60,14 @@
   (with-slots (stride array) src
     (subseq array (* index stride) (+ (* index stride) stride))))
 
+(defun (setf src-accessor) (vec src index)
+  (with-slots (stride array) src
+    (iter (with start = (* index stride))
+          (for i from start below (+ start stride))
+          (for e in-vector vec)
+          (setf (svref array i) e))
+    vec))
+
 ;;;
 ;;; Collada helper functions
 ;;;
@@ -67,8 +75,8 @@
 (defvar *dbg-level* 0)
 (defun dae-debug (&rest args)
   (dotimes (i *dbg-level*)
-    (format t "~T"))
-  (format t "~a~%" args))
+    (format t "~2T"))
+  (apply #'format t args))
 
 
 ;; Source related functions
@@ -136,8 +144,8 @@
 ;; Helper function to construct a 4x4 matrix (should probably be
 ;; extended to support arbitrary sized matrices
 ;; note that collada gives us row-major matrices
-(defun matrix-tag->matrix (xml-lst)
-  (when (equal "matrix" (tag-name xml-lst))
+(defun matrix-tag->matrix (xml-lst &key (tag "matrix"))
+  (when (equal tag (tag-name xml-lst))
     (transpose (reshape (string->sv (third xml-lst)) '(4 4)))))
 
 

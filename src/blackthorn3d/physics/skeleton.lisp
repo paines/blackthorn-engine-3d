@@ -30,7 +30,10 @@
 ;;;
 
 (defclass joint ()
-  ((model-matrix
+  ((id
+    :accessor id
+    :initarg :id)
+   (model-matrix
     :accessor joint-model-mat
     :initform nil
     :documentation "Place to store the last computed local->model space mat")
@@ -46,7 +49,7 @@
     :accessor child-joints
     :initarg :child-joints)))
 
-(defun make-joint (inverse-bind-matrix 
+(defun make-joint (id inverse-bind-matrix 
                    &key (joint-matrix (make-identity-matrix))
                         child-joints)
   (make-instance 'joint 

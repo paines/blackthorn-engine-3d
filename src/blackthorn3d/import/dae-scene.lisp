@@ -48,7 +48,6 @@
 
                 ((equal "rotate" (tag-name tag))
                  (let ((r-vec (string->sv (third tag))))
-                   (format t "~%rotation values: ~a~%" r-vec)
                    (quat->matrix (axis-rad->quat
                                   (make-vec3 (x r-vec)
                                              (y r-vec)
@@ -83,7 +82,7 @@
 ;; so far is all that max has given me.  SO it should be fine, until
 ;; we start looking at character animation.  Then...who knows.
 (defun process-scene (scene-library)
-  (format t "   Loading Scene ...~%")
+  (dae-debug "~%Processing scene~%")
   (let ((scene (first-child scene-library)))
     (remove-if #'null
                (iter (for node in (children-with-tag "node" scene))

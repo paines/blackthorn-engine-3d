@@ -45,8 +45,9 @@
 ;;;
 
 (defun process-animations (animations-library)
-  (format t "~%    Processing Animation~%")
-  (let ((animation-table (make-id-table))
+  (dae-debug "~%Processing Animation~%")
+  (let ((*dbg-level* (1+ *dbg-level*))
+        (animation-table (make-id-table))
         (sampler-table (make-id-table))
         (default-count 0))    
     (iter (for animation in (children-with-tag +animation+ 
@@ -81,7 +82,7 @@
                   (anim-id (or (get-attribute "id" (attributes animation))
                                (format nil "animation-no-~a" 
                                        (incf default-count)))))
-              (format t "      anim-id: ~a~%" anim-id)
+              (dae-debug "anim-id: ~a~%" anim-id)
               (setf (gethash anim-id animation-table)
                     (make-instance 'animation-clip
                                    :id anim-id

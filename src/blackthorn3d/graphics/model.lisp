@@ -98,7 +98,6 @@
 (defvar *animator* nil)
 
 (defmethod load-obj->models ((this blt-model))
-  (format t "loading object to models~%")
   (setf *animator* (animations this))
   (make-instance 
    'model-shape

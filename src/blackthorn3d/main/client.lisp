@@ -42,7 +42,7 @@
                   (blt3d-gfx:controller (shape entity))) :loop)))
     (:event-entity-update
         (iter (for entity in (message-value message))
-          (format t "Setting model to ~a~%" (shape-name entity))
+          ;; this really shouldn't be done every step
           (use-model-on (shape-name entity) entity))
      )
     (:event-entity-remove

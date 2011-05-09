@@ -30,6 +30,12 @@
 (defmethod collide-p (a (s1 bounding-shape)) nil)
 (defmethod collide-p (a b) nil)
 
+(defmethod collide-p ((s1 bounding-shape) (e blt3d-ent:entity-server))
+  (collide-p s1 (bounding-volume e)))
+  
+(defmethod collide-p ((e blt3d-ent:entity-server) (s1 bounding-shape))
+  (collide-p s1 (bounding-volume e)))
+
 ;; sphere-sphere collisions
 (defmethod collide-p ((s1 bounding-sphere) (s2 bounding-sphere))
   "@short{tests if two spheres intersect}

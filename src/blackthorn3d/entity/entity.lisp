@@ -49,11 +49,15 @@
    (up
     :accessor up
     :initarg :up)
+   (shape-name
+    :accessor shape-name
+    :initform :none
+    :initarg  :shape-name)
    (shape
     :accessor shape
     :initarg :shape)))
 
-(track-modifed-slots entity pos dir up)
+(track-modifed-slots entity pos dir up shape-name)
 
 (defclass entity-server (entity)
   ((oid
@@ -144,7 +148,8 @@
                            (lookup-entity) (:oid oid)
                            (:vec4 pos
                             :vec4 dir
-                            :vec4 up))
+                            :vec4 up
+                            :symbol shape-name))
 
 (make-init-slot-serializer :entity-oid
                            (lookup-entity) (:oid oid)

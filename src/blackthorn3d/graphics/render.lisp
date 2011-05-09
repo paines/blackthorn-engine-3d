@@ -60,9 +60,10 @@ GLSL Version: ~a.~a~%"
          ; (gl:gl3-major-version)
          ; (gl:gl3-minor-version)
           (gl:major-version)
-          (gl:minor-version)
-          (gl:glsl-major-version)
-          (gl:glsl-minor-version))
+          (gl:minor-version) 0 0
+         ; (gl:glsl-major-version)
+         ; (gl:glsl-minor-version)
+          )
   
   (gl:viewport 0 0 800 600)
 

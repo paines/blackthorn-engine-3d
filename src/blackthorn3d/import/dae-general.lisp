@@ -64,6 +64,13 @@
 ;;; Collada helper functions
 ;;;
 
+(defvar *dbg-level* 0)
+(defun dae-debug (str)
+  (dotimes (i *dbg-level*)
+    (format t "~T"))
+  (format t "~a~%" str))
+
+
 ;; Source related functions
 
 (defun src-expand (source)

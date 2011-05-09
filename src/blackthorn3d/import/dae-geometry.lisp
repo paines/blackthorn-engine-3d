@@ -88,11 +88,19 @@
   "parses the geometry items in the dae file, building a hash table of the 
    meshes (hashed by id)
    @arg[geom-library]{the xml-list of the geometry library}"
-  (let ((mesh-table (make-id-table)))
-    (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
-          (let ((new-mesh (build-blt-mesh geom-xml)))
-            (setf (gethash (id new-mesh) mesh-table) new-mesh)))
-    mesh-table))
+  (let ((*dbg-level* (1+ *dbg-level*)))
+    (dae-debug "geometry")
+    (let ((mesh-table (make-id-table)))
+      (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
+            (let ((new-mesh (build-blt-mesh geom-xml)))
+              (setf (gethash (id new-mesh) mesh-table) new-mesh)
+              (counting t into total-models)
+              (finally 
+               (dae-debug "Loaded ~a meshes:~%" total-models)
+               (let ((*dbg-level* (1+ *dbg-level*)))
+                 (iter (for (id mesh) in-hashtable mesh-table)
+                       (dae-debug "id: ~a~%" id))))))
+      mesh-table)))
 
 
 

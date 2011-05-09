@@ -28,6 +28,8 @@
 (defun use-model-on (model-symbol entity)
     (setf (shape entity) (get-model model-symbol)))
     
+    
+(defvar *should-quit* nil)
       
 (defun handle-message-client (src message)
   (ecase (message-type message)
@@ -42,6 +44,9 @@
                   (blt3d-gfx:controller (shape entity))) :loop)))
     (:event-entity-update
         (iter (for entity in (message-value message))
+          (when (eq (blackthorn3d-entity::die-now entity) :yes)
+            (format t  "Killed by monster!~%")
+            (setf *should-quit* t))
           ;; this really shouldn't be done every step
           (use-model-on (shape-name entity) entity))
      )
@@ -127,6 +132,9 @@
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))
 
+         (when *should-quit*
+            (return-from client-main))
+            
          #+disabled
          (send-string
           :server

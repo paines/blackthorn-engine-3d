@@ -124,6 +124,7 @@
                                               :components
                                               ((:file "package")
                                                (:file "player")
+                                               (:file "simple-monster")
                                                (:file "server")
                                                (:file "alarm")
                                                (:file "client")

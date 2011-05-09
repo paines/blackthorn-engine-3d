@@ -65,10 +65,10 @@
 ;;;
 
 (defvar *dbg-level* 0)
-(defun dae-debug (str)
+(defun dae-debug (&rest args)
   (dotimes (i *dbg-level*)
     (format t "~T"))
-  (format t "~a~%" str))
+  (format t "~a~%" args))
 
 
 ;; Source related functions

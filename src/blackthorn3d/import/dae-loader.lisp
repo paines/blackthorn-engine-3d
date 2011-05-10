@@ -30,6 +30,10 @@
 ;;;
 
 (defvar +instance-geometry+ "instance_geometry")
+(defvar *geometry-table* nil)
+(defvar *scene-table* nil)
+(defvar *material-table* nil)
+(defvar *animation-table* nil)
 
 
 ;;;
@@ -74,7 +78,7 @@
             (setf (aref mat-array (car mat-id))
                   (aif (find (cdr mat-id) 
                              materials :test #'equal :key #'car)
-                       (gethash (second it) materials)
+                       (gethash (second it) *materials)
                        nil))))
 
     (make-model-node :id node
@@ -94,9 +98,9 @@
                   (iter (for elt in (elements mesh))
                         (let ((mat-id (element-material elt)))
                           (setf (aref mat-array (car mat-id)) 
-                                (aif (find (cdr mat-id) 
+                                (aif (find (cdr mat-id)
                                            mats :test #'equal :key #'car)
-                                     (gethash (second it) materials)
+                                     (gethash (second it) *material-table*)
                                      nil))
                                         ;(setf mat-id (car mat-id))
                           ))
@@ -122,10 +126,6 @@
      :animations (make-animation-controller anims))))
 
 
-(defvar *geometry-table* nil)
-(defvar *scene-table* nil)
-(defvar *material-table* nil)
-(defvar *animation-table* nil)
 
 ;; Returns an intermediate representation of the dae file
 (defun load-dae (filename)

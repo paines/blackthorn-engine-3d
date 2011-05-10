@@ -112,3 +112,11 @@
         (package-name (unserialize :string :buffer buffer)))
     (intern symbol-name package-name)))
 
+(defmethod serialize ((type (eql :keyword)) value &key (buffer *buffer*))
+  (assert (keywordp value))
+  (serialize :string (symbol-name value) :buffer buffer))
+
+(defmethod unserialize ((type (eql :keyword)) &key (buffer *buffer*))
+  (let ((symbol-name (unserialize :string :buffer buffer)))
+    (intern symbol-name :keyword)))
+

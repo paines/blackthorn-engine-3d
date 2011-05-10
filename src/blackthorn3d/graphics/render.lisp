@@ -107,7 +107,8 @@ GLSL Version: ~a.~a~%"
 (defun update-graphics (entities time)
   (iter (for e in entities)
         (with-slots (shape) e
-          (update-model shape time))))
+          (when shape
+            (update-model shape time)))))
 
 (defun render-frame (entities level)
   (gl:clear :color-buffer-bit :depth-buffer-bit)

@@ -52,7 +52,7 @@
       :dir (make-vec3 1.0 0.0 0.0)
       :up  (make-vec3 0.0 1.0 0.0)
       :follow the-monster
-      :shape-name :wedge
+      :shape-name :none
       :bv (make-instance 'blackthorn3d-physics:bounding-sphere 
                     :pos (make-vec3 0.0 0.0 0.0)
                     :rad *eyesight-radius*)))

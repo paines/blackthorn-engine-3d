@@ -69,7 +69,7 @@
 (defun compile-node (node-id transform mesh-lst materials)
   ;; Convert mesh-lst into a blt-mesh
   ;; TODO:- hack in skinning data!
-  (let* ((mesh (mesh-lst->blt-mesh mesh-lst))
+  (let* ((mesh (mesh-list->blt-mesh mesh-lst))
          (mat-array (make-array (length (elements mesh)))))
     
     ;; Build the material array
@@ -78,10 +78,10 @@
             (setf (aref mat-array (car mat-id))
                   (aif (find (cdr mat-id) 
                              materials :test #'equal :key #'car)
-                       (gethash (second it) *materials)
+                       (gethash (second it) *material-table*)
                        nil))))
 
-    (make-model-node :id node
+    (make-model-node :id node-id
                      :transform transform
                      :material-array mat-array
                      :mesh mesh)))
@@ -91,6 +91,11 @@
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((meshes 
           (iter (for (node xform mesh-id mats) in scenes)
+                (collect (compile-node node 
+                                       xform
+                                       (gethash mesh-id geometry)
+                                       mats))
+                #+disabled
                 (let* ((mesh (mesh-list->blt-mesh 
                                    (gethash mesh-id geometry)))
                        (mat-array (make-array (length (elements mesh)))))

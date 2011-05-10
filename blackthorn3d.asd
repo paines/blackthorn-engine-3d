@@ -83,7 +83,9 @@
                                               ((:file "package")
                                                (:file "shapes")
                                                (:file "blt-model")
-                                               (:file "collision"))
+                                               (:file "intersect")
+                                               (:file "collision")
+                                               (:file "skeleton"))
                                               :serial t)
                                      (:module graphics
                                               :components
@@ -110,6 +112,7 @@
                                                (:file "dae-material")
                                                (:file "dae-scene")
                                                (:file "dae-animation")
+                                               (:file "dae-controller")
                                                (:file "dae-loader"))
                                               :serial t)
                                      (:module input

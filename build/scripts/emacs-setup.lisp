@@ -36,7 +36,7 @@
       string)))
 
 (defun (setf file-contents) (string filename)
-  (with-open-file (filestream filename :direction :output)
+  (with-open-file (filestream filename :direction :output :if-exists :supersede)
     (write-sequence string filestream)))
 
 (let* ((user-homedir

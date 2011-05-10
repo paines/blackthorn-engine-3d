@@ -80,17 +80,6 @@
                       source-table))))
 
 
-(defun mesh-list->blt-mesh (mesh-lst)
-  "Converts a list of form (id (element*) (input*)) into a
-   blt-mesh object"
-  (destructuring-bind (id elements inputs) mesh-lst
-    (destructuring-bind (new-elements vertex-streams)
-        (unify-indices elements inputs)
-      (make-blt-mesh :id id
-                     :vertex-streams vertex-streams
-                     :elements new-elements))))
-
-
 
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)
@@ -102,13 +91,13 @@
         (mesh-table (make-id-table)))
     (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
           (let ((new-mesh (build-blt-mesh-data geom-xml)))
-            (setf (gethash (id new-mesh) mesh-table) new-mesh)
+            (setf (gethash (car new-mesh) mesh-table) new-mesh)
             (counting t into total-models)
             (finally 
              (dae-debug "Loaded ~a meshes:~%" total-models)
              (let ((*dbg-level* (1+ *dbg-level*)))
-               (iter (for (car mesh) in-hashtable mesh-table)
-                     (dae-debug "id: ~a~%" id))))))
+               (iter (for (mesh-id mesh-lst) in-hashtable mesh-table)
+                     (dae-debug "id: ~a~%" mesh-id))))))
     mesh-table))
 
 

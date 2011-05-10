@@ -87,7 +87,8 @@
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((meshes 
           (iter (for (node xform mesh-id mats) in scenes)
-                (let* ((mesh-list (gethash mesh-id geometry))
+                (let* ((mesh (mesh-list->blt-mesh 
+                                   (gethash mesh-id geometry)))
                        (mat-array (make-array (length (elements mesh)))))
                   ;; Build the material-array (mat-id: (index . material-id))
                   (iter (for elt in (elements mesh))

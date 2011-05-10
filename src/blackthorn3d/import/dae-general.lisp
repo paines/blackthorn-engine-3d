@@ -213,3 +213,14 @@
                            :semantic semantic
                            :stream (cdr fn)
                            :stride (length (src-components source))))))))
+
+
+(defun mesh-list->blt-mesh (mesh-lst)
+  "Converts a list of form (id (element*) (input*)) into a
+   blt-mesh object"
+  (destructuring-bind (id elements inputs) mesh-lst
+    (destructuring-bind (new-elements vertex-streams)
+        (unify-indices elements inputs)
+      (make-blt-mesh :id id
+                     :vertex-streams vertex-streams
+                     :elements new-elements))))

@@ -11,6 +11,9 @@ syntax: glob
 .find-lisp
 .find-emacs
 
+# files for other version control systems
+.svn
+
 # object files
 *.o
 *.fas

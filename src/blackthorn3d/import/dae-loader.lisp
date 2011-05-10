@@ -62,12 +62,32 @@
                               (transpose (reshape val '(4 4)))))))))
 
 
+(defun compile-node (node-id transform mesh-lst materials)
+  ;; Convert mesh-lst into a blt-mesh
+  ;; TODO:- hack in skinning data!
+  (let* ((mesh (mesh-lst->blt-mesh mesh-lst))
+         (mat-array (make-array (length (elements mesh)))))
+    
+    ;; Build the material array
+    (iter (for elt in (elements mesh))
+          (let ((mat-id (element-material elt)))
+            (setf (aref mat-array (car mat-id))
+                  (aif (find (cdr mat-id) 
+                             materials :test #'equal :key #'car)
+                       (gethash (second it) materials)
+                       nil))))
+
+    (make-model-node :id node
+                     :transform transform
+                     :material-array mat-array
+                     :mesh mesh)))
+
 ;; Responsible for taking the table in the tables
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((meshes 
           (iter (for (node xform mesh-id mats) in scenes)
-                (let* ((mesh (gethash mesh-id geometry))
+                (let* ((mesh-list (gethash mesh-id geometry))
                        (mat-array (make-array (length (elements mesh)))))
                   ;; Build the material-array (mat-id: (index . material-id))
                   (iter (for elt in (elements mesh))

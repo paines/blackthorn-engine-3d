@@ -53,6 +53,7 @@
                    &key (joint-matrix (make-identity-matrix))
                         child-joints)
   (make-instance 'joint 
+                 :id id
                  :inverse-bind-matrix inverse-bind-matrix
                  :joint-matrix joint-matrix
                  :child-joints child-joints))

@@ -86,7 +86,8 @@
 
 (defun process-controller (controller-library)
   (dae-debug "processing skin controllers~%")
-  (let ((*dbg-level* (1+ *dbg-level*)))
+  (let ((*dbg-level* (1+ *dbg-level*))
+        (controller-table (make-id-table)))
     (iter (for controller in (children-with-tag +controller+ 
                                                 controller-library))
           (dae-debug "processing controller: ~a~%" 
@@ -105,6 +106,9 @@
             
             ;; TODO:- do something with the return of the next 2 statements
             ;; Build joint array
+            ;;  we can only make the joints...we don't know the skeleton
+            ;;  until the process-scene stage, where we'll have to assume
+            ;;  the joint data isn't malformed
             (dae-debug "building joint array~%")
             (let ((joint-names (src-array 
                                 (input-by-semantic :joint joint-lst)))
@@ -114,6 +118,7 @@
                     (for ibm in-vector ibm-array)
                     (collect (make-joint joint-name ibm))))
 
-            ;; Build vertex stream with for indexes and weights
-            (build-index-weight-streams
+            ;; Build inputs with for indexes and weights
+            ;; these get fed to unify-indices with the other inputs
+            (build-index-weight-inputs
              (find-tag-in-children +vertex-weights+ skin) sources)))))

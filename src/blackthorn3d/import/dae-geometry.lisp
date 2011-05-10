@@ -49,12 +49,12 @@
 
 ;; constructs a load-mesh object from an xml-list geometry tag
 ;; Returns a load-mesh object
-(defun build-blt-mesh (geometry-lst)
-  "From a single geometry tag, builds a load-mesh object. That is, read in
-   all the vertice data (position, normal, tex-coord) store it in an object
-   for future reference
+(defun build-blt-mesh-data (geometry-lst)
+  "From a single geometry tag, collects mesh data. That is, read in
+   all the vertice data (position, normal, tex-coord) store it for future
+   reference
    @arg[geometry-lst]{xml-list with tag 'geometry' and correct children}
-   @return{A load-mesh object with vertex and index data}"
+   @return{A tuple of (id elements inputs)}"
   (let* ((id (get-attribute "id" (attributes geometry-lst)))
          (mesh-lst (find-tag-in-children "mesh" geometry-lst))
          (children (children mesh-lst))
@@ -62,26 +62,35 @@
 
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
+    (list
+     id
+     ;; collect mesh elements
+     (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
+           (for mat-index upfrom 0)
+           (collect 
+            (make-instance 
+             'element
+             :indices (string->sv (third (find-tag "p" (children tri-lst))))
+             :material 
+             (cons mat-index
+                   (get-attribute "material" (attributes tri-lst)))
+             :count (get-attribute "count" (attributes tri-lst)))))
+     ;; build input list
+     (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
+                      source-table))))
 
-    (destructuring-bind (elements vertex-streams)
-        (unify-indices 
-         (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
-               (for mat-index upfrom 0)
-               (collect 
-                (make-instance 
-                 'element
-                 :indices (string->sv (third (find-tag "p" (children tri-lst))))
-                 :material 
-                 (cons mat-index
-                      (get-attribute "material" (attributes tri-lst)))
-                 :count (get-attribute "count" (attributes tri-lst)))))
-         (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
-                          source-table))
 
-      (make-blt-mesh 
-       :id id 
-       :vertex-streams vertex-streams 
-       :elements elements))))
+(defun mesh-list->blt-mesh (mesh-lst)
+  "Converts a list of form (id (element*) (input*)) into a
+   blt-mesh object"
+  (destructuring-bind (id elements inputs) mesh-lst
+    (destructuring-bind (elements' vertex-streams)
+        (unify-indices elements inputs)
+      (make-blt-mesh :id id
+                     :vertex-streams vertex-streams
+                     :elements elements'))))
+
+
 
 ;; Build a hash table of mesh ids and meshes 
 (defun process-geometry (geom-library)
@@ -92,13 +101,13 @@
   (let ((*dbg-level* (1+ *dbg-level*))
         (mesh-table (make-id-table)))
     (iter (for geom-xml in (children-with-tag +geometry-block+ geom-library))
-          (let ((new-mesh (build-blt-mesh geom-xml)))
+          (let ((new-mesh (build-blt-mesh-data geom-xml)))
             (setf (gethash (id new-mesh) mesh-table) new-mesh)
             (counting t into total-models)
             (finally 
              (dae-debug "Loaded ~a meshes:~%" total-models)
              (let ((*dbg-level* (1+ *dbg-level*)))
-               (iter (for (id mesh) in-hashtable mesh-table)
+               (iter (for (car mesh) in-hashtable mesh-table)
                      (dae-debug "id: ~a~%" id))))))
     mesh-table))
 

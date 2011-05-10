@@ -30,6 +30,10 @@
 ;;;
 
 (defvar +instance-geometry+ "instance_geometry")
+(defvar *geometry-table* nil)
+(defvar *scene-table* nil)
+(defvar *material-table* nil)
+(defvar *animation-table* nil)
 
 
 ;;;
@@ -65,7 +69,7 @@
 (defun compile-node (node-id transform mesh-lst materials)
   ;; Convert mesh-lst into a blt-mesh
   ;; TODO:- hack in skinning data!
-  (let* ((mesh (mesh-lst->blt-mesh mesh-lst))
+  (let* ((mesh (mesh-list->blt-mesh mesh-lst))
          (mat-array (make-array (length (elements mesh)))))
     
     ;; Build the material array
@@ -74,10 +78,10 @@
             (setf (aref mat-array (car mat-id))
                   (aif (find (cdr mat-id) 
                              materials :test #'equal :key #'car)
-                       (gethash (second it) materials)
+                       (gethash (second it) *material-table*)
                        nil))))
 
-    (make-model-node :id node
+    (make-model-node :id node-id
                      :transform transform
                      :material-array mat-array
                      :mesh mesh)))
@@ -87,6 +91,11 @@
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((meshes 
           (iter (for (node xform mesh-id mats) in scenes)
+                (collect (compile-node node 
+                                       xform
+                                       (gethash mesh-id geometry)
+                                       mats))
+                #+disabled
                 (let* ((mesh (mesh-list->blt-mesh 
                                    (gethash mesh-id geometry)))
                        (mat-array (make-array (length (elements mesh)))))
@@ -94,9 +103,9 @@
                   (iter (for elt in (elements mesh))
                         (let ((mat-id (element-material elt)))
                           (setf (aref mat-array (car mat-id)) 
-                                (aif (find (cdr mat-id) 
+                                (aif (find (cdr mat-id)
                                            mats :test #'equal :key #'car)
-                                     (gethash (second it) materials)
+                                     (gethash (second it) *material-table*)
                                      nil))
                                         ;(setf mat-id (car mat-id))
                           ))
@@ -122,10 +131,6 @@
      :animations (make-animation-controller anims))))
 
 
-(defvar *geometry-table* nil)
-(defvar *scene-table* nil)
-(defvar *material-table* nil)
-(defvar *animation-table* nil)
 
 ;; Returns an intermediate representation of the dae file
 (defun load-dae (filename)

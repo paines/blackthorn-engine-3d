@@ -37,7 +37,8 @@
   (cdr ray))
 (defun ray-e (ray)
   (car ray))
-(gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
+
+(blt3d-math::gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
 
 (defvar +eps+ 10e-5)
 
@@ -114,5 +115,5 @@
     
     ;; TEST 1: check if the sphere intersects with the surface of tri
     (let* ((plane-intersection (vec3+ (vec3- sph-rad (tri-n tri))
-                                      (vec-scale3 velocity t0)))
-           ))))
+                                      (vec-scale3 velocity t0))))
+      (when ()))))

@@ -158,20 +158,13 @@
 (defmethod get-stream (stream (this blt-mesh))
   (vs-get-stream stream (vertex-streams this)))
 
-
-(defclass model-node ()
+(defclass node ()
   ((id
     :accessor id
     :initarg :id)
    (transform
     :accessor transform
     :initarg :transform)
-   (material-array
-    :accessor material-array
-    :initarg :material-array)
-   (mesh
-    :accessor mesh
-    :initarg :mesh)
    (bounding-volume
     :accessor node-bounding-volume
     :initarg :bounding-volume
@@ -181,12 +174,21 @@
     :initarg :child-nodes
     :initform nil)))
 
-(defun make-model-node (&key id transform material-array mesh)
+(defclass model-node (node)
+  ((material-array
+    :accessor material-array
+    :initarg :material-array)
+   (mesh
+    :accessor mesh
+    :initarg :mesh)))
+
+(defun make-model-node (&key id transform material-array mesh children)
   (make-instance 'model-node
                  :id id
                  :transform transform
                  :material-array material-array
                  :mesh mesh
+                 :child-nodes children
                  :bounding-volume (make-bounding-volume
                                    (get-stream :vertex mesh))))
 

@@ -96,5 +96,7 @@
    :chase 
 
    ;; skeleton.lisp
+   :joint-id
    :make-joint
+   :make-skeleton
    ))

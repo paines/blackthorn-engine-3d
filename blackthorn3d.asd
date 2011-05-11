@@ -85,6 +85,7 @@
                                                (:file "blt-model")
                                                (:file "intersect")
                                                (:file "collision")
+                                               (:file "motion")
                                                (:file "skeleton"))
                                               :serial t)
                                      (:module graphics

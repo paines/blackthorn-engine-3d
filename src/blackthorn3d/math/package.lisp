@@ -52,6 +52,7 @@
    :norm3
    :magnitude
    :spherical->cartesian
+   :tri-centroid
    
    ;; matrix.lisp
    :make-matrix

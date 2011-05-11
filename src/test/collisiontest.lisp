@@ -108,6 +108,34 @@
     (is (eql (collide-p e1 e2) t)))))
     ; expect NIL
 
+
+(test point-line-sq-distance
+      (let* ((line (cons #(0.0 0.0 0.0)
+                         #(1.0 0.0 0.0)))
+             (point #(1.0 1.0 0.0))
+             (test1 (point-line-sq-distance point line)))
+        (is (= test1 1.0))
+        (is (=
+             (point-line-sq-distance
+              #(0.0 1.0 0.0) (cons #(-1.0 0.0 0.0) #(1.0 0.0 0.0)))             
+             1.0))
+        (is (=
+             (point-line-sq-distance
+              #(0.0 0.0 0.0) (cons #(-1.0 0.0 0.0) #(1.0 0.0 0.0)))
+             0.0))))
+
+(test sphere-triangle-intersection
+      (let* ((tri (make-triangle (make-point3 -1.0 -1.0 0.0)
+                                 (make-point3 1.0 -1.0 0.0)
+                                 (make-point3 0.0 1.0 0.0)))
+             (sphere (make-instance 'bounding-sphere
+                                    :pos (make-point3 0.0 0.0 2.0)
+                                    :rad 1.0))
+             (test-res (sphere-triangle-intersection sphere tri)))
+        (format t "~%~%WE RETURNED: ~a~%~%" test-res)
+        (is (not (eql test-res
+                      nil)))))
+
 (test move-bounding-volume-set
   (let* ((s1 (make-instance 'bounding-sphere 
                            :pos (make-point3 0.0 0.0 0.0)
@@ -151,4 +179,4 @@
              (b-sphere (make-bounding-sphere vect-array)))
 	(is (equalp (pos b-sphere) (make-point3 2 2 2)))
 	(is (equalp (rad b-sphere) (sqrt 12)))))
-	
+

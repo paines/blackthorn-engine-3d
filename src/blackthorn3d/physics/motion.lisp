@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011, Chris McFarland <askgeek@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,70 +23,12 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-physics)
 
-(defpackage :blackthorn3d-physics
-  (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent)
-  (:export
-
-   ;; blt-model.lisp
-   :id
-   :blt-model
-   :mesh-nodes
-   :animations
-
-   :blt-mesh
-   :make-blt-mesh
-   :vertex-streams
-   :elements
-   :mesh-bounding-volume
-
-   :model-node
-   :make-model-node
-   :transform
-   :mesh
-   :material-array
-   :node-bounding-volume
-   :child-nodes
-
-   :vertex-stream
-   :vs-ref
-   :get-stream
-   
-   :element
-   :make-element
-   :element-material
-   :element-indices
-   :element-count
-
-   :blt-material
-   :make-blt-material
-   :ambient
-   :diffuse
-   :specular
-   :shininess
-   :textures
-
-   :interleave
-
-   ;; shapes.lisp
-   :bounding-sphere
-
-   ;; aa-bounding-box
-   :aa-bounding-box
-
-   :move-bounding-volume
-   :move-bounding-volume-set
-   :find-bounding-points
-   :make-bounding-box
-   :make-bounding-sphere
-   :make-bounding-volume
-
-   ;; collision.lisp
-   :collide-p
-   
-   ;; motion.lisp
-   :move
-   :chase 
-   ))
+(defun move (thing x y z)
+  (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
+  
+(defun chase (self who speed)
+  (let ((direction (norm4 (vec4- (pos who) (pos self)))))
+      (setf (dir self) direction)
+      (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))

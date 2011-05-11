@@ -84,9 +84,7 @@
     ;; then
     (setf (chase-who self) nil)
     ;; else
-    (let ((direction (norm4 (vec4- (pos who) (pos self)))))
-      (setf (dir self) direction)
-      (setf (pos self) (vec4+ (pos self) (vec-scale4 direction 0.08))))))
+    (blt3d-phy:chase self who 0.08)))
       
 (defun monster-wander (self)
   (declare (ignore self)))

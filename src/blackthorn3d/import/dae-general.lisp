@@ -30,13 +30,14 @@
 ;;; common to many collada elements
 ;;;
 
-(defvar +geometry-library+ "library_geometries")
-(defvar +material-library+ "library_materials")
-(defvar +image-library+    "library_images")
-(defvar +effect-library+   "library_effects")
-(defvar +scene-library+    "library_visual_scenes")
-(defvar +light-library+    "library_lights")
-(defvar +animation-library+ "library_animations")
+(defvar +geometry-library+   "library_geometries")
+(defvar +controller-library+ "library_controllers")
+(defvar +material-library+   "library_materials")
+(defvar +image-library+      "library_images")
+(defvar +effect-library+     "library_effects")
+(defvar +scene-library+      "library_visual_scenes")
+(defvar +light-library+      "library_lights")
+(defvar +animation-library+  "library_animations")
 
 ;;;
 ;;; Collada helper objects

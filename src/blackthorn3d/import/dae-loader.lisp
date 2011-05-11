@@ -34,7 +34,7 @@
 (defvar *scene-table* nil)
 (defvar *material-table* nil)
 (defvar *animation-table* nil)
-
+(defvar *controller-table* nil)
 
 ;;;
 ;;; Collada load functions
@@ -148,6 +148,9 @@
           (*geometry-table* 
            (process-geometry 
             (find-tag-in-children +geometry-library+ dae-file)))
+          (*controller-table*
+           (process-controllers
+            (find-tag-in-children +controller-library+ dae-file)))
           (*scene-table*    
            (process-scene 
             (find-tag-in-children +scene-library+ dae-file)))

@@ -65,7 +65,6 @@
     (:event-entity-remove
      ;; TODO: Do it.
      (apply-message-handler #'handle-entity-remove-client src message))
-     )
     (:force-disconnect
       (setf *should-quit* t)
     )

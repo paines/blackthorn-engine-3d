@@ -104,7 +104,7 @@
   ))
   
 (defun disconnect-eaten-player (who)
-  (send-message who (make-message-list :force-disconnect
+  (message-send who (make-message-list :force-disconnect
     "You were eaten by the monster!")))
       
 (defmethod collide ((p player) (m simple-monster))

@@ -84,21 +84,22 @@
 (defun send-all-entities (destination)
   (message-send destination (make-event :entity-create :include-all t)))
 
+(defun handle-input-server (src inputs)
+  (let ((move-x-amt (input-amount (find :move-x inputs :key #'input-type)))
+        (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
+        (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
+        (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
+    (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt)))
+
 (defun handle-message-server (src message)
   (ecase (message-type message)
     (:string
      (let ((str (read-string message)))
        (format t "The message from ~a was ~a~%" src str)
        (send-string src (concatenate 'string "ACK: " str))))
+    ;; TODO: Register these handlers globally.
     (:event-input
-     (let* ((inputs (message-value message))
-            (move-x-amt (input-amount (find :move-x inputs :key #'input-type)))
-            (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
-            (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
-            (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
-            
-        (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt)
-       ))))
+     (apply-message-handler #'handle-input-server src message))))
 
 (defvar *delay-disconnected-clients* nil)
        

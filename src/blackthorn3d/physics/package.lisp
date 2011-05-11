@@ -94,4 +94,7 @@
    ;; motion.lisp
    :move
    :chase 
+
+   ;; skeleton.lisp
+   :make-joint
    ))

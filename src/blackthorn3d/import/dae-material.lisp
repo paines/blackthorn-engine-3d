@@ -58,11 +58,13 @@
                      :diffuse     (mat-prop-finder "diffuse" effect)
                      :specular    (mat-prop-finder "specular" effect)
                      :shininess   (mat-prop-finder "shininess" effect)
-                     :textures (aif (find-tag "texture" (children effect))
-                                    (load-image (gethash
-                                                 (get-attribute "texture" it) 
-                                                 images-ht))
-                                    nil))))))
+                     :textures
+                     (aif (find-tag "texture" (children effect))
+                          #+disabled(load-image (gethash
+                                       (get-attribute "texture" 
+                                                      (attributes it)) 
+                                       images-ht))
+                          nil))))))
     
     ;; Finally the materials
     (iter (for material in (children mat-library))

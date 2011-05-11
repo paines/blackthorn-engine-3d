@@ -88,6 +88,18 @@
                                                (:file "motion")
                                                (:file "skeleton"))
                                               :serial t)
+                                     (:module import
+                                              :components
+                                              ((:file "package")
+                                               (:file "xmls-helpers")
+                                               (:file "dae-general")
+                                               (:file "dae-geometry")
+                                               (:file "dae-material")
+                                               (:file "dae-scene")
+                                               (:file "dae-animation")
+                                               (:file "dae-controller")
+                                               (:file "dae-loader"))
+                                              :serial t)
                                      (:module graphics
                                               :components
                                               ((:file "package")
@@ -103,18 +115,6 @@
                                                (:file "frustum")
                                                (:file "camera")
                                                (:file "render"))
-                                              :serial t)
-                                     (:module import
-                                              :components
-                                              ((:file "package")
-                                               (:file "xmls-helpers")
-                                               (:file "dae-general")
-                                               (:file "dae-geometry")
-                                               (:file "dae-material")
-                                               (:file "dae-scene")
-                                               (:file "dae-animation")
-                                               (:file "dae-controller")
-                                               (:file "dae-loader"))
                                               :serial t)
                                      (:module input
                                               :components

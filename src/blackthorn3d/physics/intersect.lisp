@@ -37,19 +37,13 @@
   (cdr ray))
 (defun ray-e (ray)
   (car ray))
-(gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
+(blt3d-math::gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
 
 (defun triangle-triangle-intersection (tri1 tri2)
   "Detect whether two triangles intersect or not. returns nil for
    false, otherwise true (may return collision info later)"
   )
 
-(defun expand-triangle (tri dist)
-  "Returns a new triangle with the points displaced outward from the centroid by dist"
-  (labels ((expand-helper (pt)
-             (vec3+ pt (vec-scale3 (vec3- pt (tri-c tri)) dist)))))
-  (make-triangle
-   (vec3+ (tri-v0 tri) (vec-scale3 (vec3- (tri-v0 tri) (tri-c ))))))
 
 
 (defun ray-triangle-intersection (ray tri)
@@ -114,6 +108,7 @@
 
 (defun point-line-dist (point line))
 
+#+disabled
 (defun sphere-triangle-intersection (sphere tri)
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let ((tri-plane (get-triangle-plane tri))
@@ -132,6 +127,7 @@
       ))
   )
 
+#+disabled
 (defun moving-sphere-triangle-intersection (sphere tri velocity)
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let* ((tri-plane (make-plane (tri-n tri) 

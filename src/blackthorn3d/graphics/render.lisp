@@ -40,6 +40,7 @@
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
   (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
+  #+disabled
   (setf plane-mat (make-instance
                    'blt-material
                    :ambient #(.5 .2 .2 1.0)
@@ -48,6 +49,8 @@
 
 (defun set-camera (cam)
   (setf *main-cam* cam))
+
+(defvar test-skele nil)
 
 (defun prepare-scene ()
   "Called after sdl is initialized, before first frame is drawn
@@ -78,10 +81,15 @@ GLSL Version: ~a.~a~%"
 
   (setf cube-tex (image->texture2d 
                   (load-image #p"res/images/test-tex.png")))
+
   (setf cube-mat (make-instance 'material
                                 :ambient #(.5 .38 0.0 1.0)
                                 :diffuse #(1.0 .75 0.0 1.0)
                                 :tex cube-tex))
+
+  (format t "### LOADING SCIENTIST ###~%")
+  (setf test-skele (load-obj->models 
+                    (blt3d-imp:load-dae #p "res/models/scientist-01.dae")))
 
   (load-frstm *frustum*)
   (gl:load-identity)
@@ -124,7 +132,7 @@ GLSL Version: ~a.~a~%"
 
   (when level
     (gl:with-pushed-matrix
-        (use-material plane-mat)
+        ;; (use-material plane-mat)
       ;;(draw-plane 20)
       (gl:scale .05 .05 .05)
       ;;#+disabled

@@ -75,7 +75,7 @@
 (defun plane-n (plane)
   (car plane))
 (defun plane-dist (plane point)
-  (+ (dot (car plane) point) (cdr plane)))
+  (+ (dot point (car plane)) (cdr plane)))
 (defun get-triangle-plane (tri)
   (make-plane (tri-n tri)
               (dot (tri-c tri) (tri-n tri))))
@@ -103,15 +103,39 @@
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let* ((center-dist (plane-dist plane sph-pos)))
       (if (< center-dist sph-rad)
-          (list (vec3- sph-pos (vec-scale3 (plane-n plane) center-dist)) center-dist)
+          (list (vec3- sph-pos (vec-scale3 (plane-n plane) center-dist)) 
+                center-dist)
           nil))))
 
-(defun point-line-dist (point line))
+(defun point-line-sq-distance (point line)
+  "Returns (values sq-dist t-val) where dist is the squared distance of 
+   point from line segment line, t-val is the value along B-A that point
+   occurs at"
+  (let* ((e (vec3- (cdr line) (car line)))
+         (d1 (dot (vec3- point (car line)) e))
+         (d2 (dot (vec3- point (cdr line)) (vec-neg3 e))))
+    ;; If p is 'behind' the beginning of line
+    (if (minusp d1)
+        (values (mag (vec3- point (car line))) 
+                (/ d1 (sq-mag e)))
+        ;; If p is 'after' the end of the line
+        (if (minusp d2)
+            (values (sq-mag (vec3- point (cdr line))) 
+                    (/ d1 (sq-mag e)))
+            ;; If p is in between
+            (values
+             (/ (sq-mag (cross3 e (vec3- (car line) point)))
+                (sq-mag e))
+             (/ d1 (sq-mag e)))))))
 
-#+disabled
+
 (defun sphere-triangle-intersection (sphere tri)
+  "Reports sphere-triangle intersections. Returns nil
+   if no intersection occurs. Returns the point of intersection
+   if one does occur"
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let ((tri-plane (get-triangle-plane tri))
+          (rad-sq (* sph-rad sph-rad))
           plane-pt dist)
       (aif (sphere-plane-intersection sphere tri-plane)
            (setf plane-pt (first it)
@@ -119,13 +143,45 @@
            ;; If sphere is too far form triangle plane then we can reject 
          (return-from sphere-triangle-intersection nil))
   
-      ;; Here's mah theory.  If we enlarge the triangle by the radius of the
-      ;; circle intersecting the tri-plane, we can do point-in-triangle test
-      (let* (;; Circle radius is rad^2-dist^2
-             (circle-sq-rad (- (* sph-rad sph-rad) (* dist dist)))
-             (big-tri (expand-triangle tri circle-rad))))
-      ))
-  )
+      ;; DEBUG
+      (format t "~%Plane-pt: ~a~%" plane-pt)
+
+      ;; Check if point is inside triangle
+      (when (point-in-triangle-p plane-pt tri)
+        (format t "~%WE IZ UP HERR 'N DIS TRI!~%")
+        (return-from sphere-triangle-intersection plane-pt))
+
+      ;; Check the sides of the triangle
+      (labels ((side-test (v0 v1)
+                 (multiple-value-bind (dist t-val)
+                     (point-line-sq-distance plane-pt (cons v0 v1))
+                   (when (>= rad-sq dist)
+                    ; (format t "~%dist=~a~%t-val=~a~%" dist t-val)
+                     ;; Do hit herr
+                     (list dist 
+                           (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))
+                     #+disabled
+                     (return-from
+                      sphere-triangle-intersection
+                       (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))))))
+        (let (min-d)
+          ;; Side v0->v1
+         ; (format t "testing v0 v1~%")
+          (setf min-d (side-test (tri-v0 tri) (tri-v1 tri)))
+          
+          ;; Side v0->v2
+         ; (format t "testing v0 v2~%")
+          (let ((t2 (side-test (tri-v0 tri) (tri-v2 tri))))
+            (if (and min-d t2 (< (car t2) (car min-d)))
+                (setf min-d t2)))
+          
+          ;; Side v1->v
+         ; (format t "testing v1 v2~%")
+          (let ((t3 (side-test (tri-v1 tri) (tri-v2 tri))))
+            (if (and min-d t3 (< (car t3) (car min-d)))
+                (setf min-d t3)))
+          
+          min-d)))))
 
 #+disabled
 (defun moving-sphere-triangle-intersection (sphere tri velocity)
@@ -157,3 +213,44 @@
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0)))
              )))))
+;; Was looking at 
+;; http://www.geometrictools.com/Documentation/DistancePoint3Triangle3.pdf
+#+disabled
+(defun point-triangle-distance (point tri)
+  "returns the minimum distance from a point to a triangle"
+  (let* ((d-vec (vec3- (tri-v0 tri) point))
+         (e0 (vec3- (tri-v1 tri) (tri-v0 tri)))
+         (e1 (vec3- (tri-v2 tri) (tri-v0 tri)))
+         (a (dot e0 e0))
+         (b (dot e0 e1))
+         (c (dot e1 e1))
+         (e (dot e1 d-vec))
+         (f (dot d d))
+         (delta (abs (- (* a c) (* b b)))))
+    (let ((det (- (* a c) (* b b)))
+          (sp (- (* b e) (* c d)))
+          (tp (- (* b d) (* a e))))
+            
+      (if (<= (+ sp tp) det)
+          (if (< sp 0)
+              (if (< tp 0)
+                  ;; Region 4
+                  ()
+                  ;; Region 3
+                  ())
+              (if (< tp 0)
+                  ;; Region 5
+                  ()
+                  ;; Region 0
+                  (let ((inv-det (/ 1 det)))
+                    (setf sp (* sp inv-det)
+                          tp (* tp inv-det)))))
+          ;; Else sp + tp < det
+          (if (< sp 0)
+              ;; Region 2
+              ()
+              (if (< tp 0)
+                  ;; Region 6
+                  ()
+                  ;; Region 1
+                  (if ())))))))

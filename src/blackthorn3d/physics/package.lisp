@@ -69,6 +69,7 @@
    :textures
 
    :interleave
+   :make-triangle
 
    ;; shapes.lisp
    :bounding-sphere
@@ -83,10 +84,17 @@
    :make-bounding-sphere
    :make-bounding-volume
 
+   ;; intersect.lisp
+   :point-line-sq-distance
+   :sphere-triangle-intersection
+
    ;; collision.lisp
    :collide-p
    
    ;; motion.lisp
    :move
    :chase 
+
+   ;; skeleton.lisp
+   :make-joint
    ))

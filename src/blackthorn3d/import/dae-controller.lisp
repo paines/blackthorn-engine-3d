@@ -33,7 +33,7 @@
 (defvar +skin+ "skin")
 (defvar +bind-shape-mat+ "bind_shape_matrix")
 (defvar +joints+ "joints")
-(defvar +vertex-weights+ "skin")
+(defvar +vertex-weights+ "vertex_weights")
 
 
 (defun build-index-weight-inputs (weights-tag sources)
@@ -43,49 +43,63 @@
    fewer, 0s will be stored"
   (dae-debug "building skin weights~%")
   (let* ((*dbg-level* (1+ *dbg-level*))
-         (n-verts (get-attribute "count" (attributes weights-tag)))
-         (weights (input-by-semantic :weight (build-input-lst weights-tag)))
+         (n-verts (parse-integer
+                   (get-attribute "count" (attributes weights-tag))))
+         (weights (src-array
+                   (input-by-semantic :weight 
+                                      (build-input-lst weights-tag 
+                                                       sources))))
          (counts (string->sv (third 
                               (find-tag-in-children 
                                "vcount" weights-tag))))
          (v-indices (string->sv (third 
                                  (find-tag-in-children 
-                                  "v" weights-tag)))))
+                                  "v" weights-tag))))
+         (index-array (make-array (* 4 n-verts)))
+         (weight-array (make-array (* 4 n-verts)))
+         (ii -1) (wi -1))
 
     (dae-debug "Is N-VERTS == (length COUNTS)? ~a~%"
                (= n-verts (length counts)))
 
-    (iter (with index-array = (make-array n-verts))
-          (with weight-array = (make-array n-verts))
-          (with ii = -1) (with wi = -1)
-          (for vi below n-verts)
-          (for count in-vector counts)
-          (for v-index first 0 then (+ v-index count))
-                    
-          ;; Build the index and weight streams
-          (iter (for i from v-index to (+ v-index (min 4 count)))
-                (setf (svref index-array (incf ii)) 
-                      (svref v-indices (* 2 i)))
+    ;; The v-indices array is considered an array of stride 2
+    ;; so, indices have to be multiplied by 2
+    (labels ((set-thingy (start-index count)
+           (iter (for i below 4)
+                 (for v-ind-inc = (* 2 (+ i start-index)))
+                 (if (< i count)
+                     (progn
+                       (setf (svref index-array (incf ii))
+                             (svref v-indices v-ind-inc))
+                       (setf (svref weight-array (incf wi))
+                             (svref weights  
+                                    (svref v-indices (1+ v-ind-inc)))))
+                     (progn
+                       (setf (svref index-array (incf ii))
+                             0)
+                       (setf (svref weight-array (incf wi))
+                             0.0))))))
 
-                (setf (svref weight-array (incf wi))
-                      (svref weights (svref v-indices (1+ (* 2 i))))))
-          (finally 
-           (return 
-             (list
-              (list :joint-index
-                    (make-instance 'source
-                                   :array index-array
-                                   :stride 4
-                                   :components '(i0 i1 i2 i3)))
-              (list :joint-weight
-                    (make-instance 'source
-                                   :array weight-array
-                                   :stride 4
-                                   :components '(w0 w1 w2 w3)))))))))
+      (iter (for vi below n-verts)
+            (for count in-vector counts)
+            (for v-index first 0 then (+ v-index count))
+            ;; Build the index and weight streams
+            (set-thingy v-index count))
+      (list
+       (list :joint-index
+             (make-instance 'source
+                            :array index-array
+                            :stride 4
+                            :components '(i0 i1 i2 i3)))
+       (list :joint-weight
+             (make-instance 'source
+                            :array weight-array
+                            :stride 4
+                            :components '(w0 w1 w2 w3)))))))
 
 
-(defun process-controller (controller-library)
-  (dae-debug "processing skin controllers~%")
+(defun process-controllers (controller-library)
+  (dae-debug "Processing skin controllers~%")
   (let ((*dbg-level* (1+ *dbg-level*))
         (controller-table (make-id-table)))
     (iter (for controller in (children-with-tag +controller+ 
@@ -97,12 +111,13 @@
                  (sources (hash-sources skin))
                  (bind-pose (matrix-tag->matrix 
                              (find-tag-in-children +bind-shape-mat+ skin) 
-                             +bind-shape-mat+))
-                 (joint-lst (build-input-lst 
-                             (find-tag-in-children +joints+ skin)
-                             sources)))
+                             :tag +bind-shape-mat+))
+                 (joint-list (build-input-lst 
+                              (find-tag-in-children +joints+ skin)
+                              sources)))
             
             ;; DEBUG
+            ;(print joint-list)
             
             ;; TODO:- do something with the return of the next 2 statements
             ;; Build joint array
@@ -111,9 +126,10 @@
             ;;  the joint data isn't malformed
             (dae-debug "building joint array~%")
             (let ((joint-names (src-array 
-                                (input-by-semantic :joint joint-lst)))
+                                (input-by-semantic :joint joint-list)))
                   (ibm-array (src-array 
-                              (input-by-semantic :inv-bind-matrix joint-list))))
+                              (input-by-semantic :inv_bind_matrix 
+                                                 joint-list))))
               (iter (for joint-name in-vector joint-names)
                     (for ibm in-vector ibm-array)
                     (collect (make-joint joint-name ibm))))

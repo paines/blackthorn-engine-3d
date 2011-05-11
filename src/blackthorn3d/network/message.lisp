@@ -57,24 +57,39 @@
 (defun make-message (type value)
   (make-instance 'message :type type :value value))
 
-;; Note: The bogus enum entry was needed to make this take up more than 0 bits.
-(make-enum-serializer :message-type (:string
-                                     :event-input
-                                     :event-entity-create
-                                     :event-entity-update
-                                     :event-entity-remove
-                                     :event-camera))
+(defun make-message-list (type &rest value)
+  (make-instance 'message :type type :value value))
 
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
   (with-buffer buffer
     (with-slots (type value) value
-      (serialize :message-type type)
+      (serialize :keyword type)
       (serialize type value))))
 
 (defmethod unserialize ((mtype (eql :message)) &key (buffer *buffer*))
   (let ((message (make-instance 'message)))
     (with-buffer buffer
       (with-slots (type value) message
-        (setf type (unserialize :message-type))
+        (setf type (unserialize :keyword))
         (setf value (unserialize type))
         message))))
+
+(defmacro defmessage (type (&rest fields))
+  (let ((field-vars (mapcar #'(lambda (field) (gensym (symbol-name field)))
+                            fields)))
+    `(progn
+       (defmethod serialize ((type (eql ,type)) value &key (buffer *buffer*))
+         ;; destructuring-bind here...
+         (destructuring-bind ,field-vars value
+           ,@(mapcar #'(lambda (type var)
+                         `(serialize ,type ,var :buffer buffer))
+                     fields
+                     field-vars))
+         buffer)
+       (defmethod unserialize ((type (eql ,type)) &key (buffer *buffer*))
+         (let ((value
+                ,(make-message-list
+                  (mapcar #'(lambda (type)
+                              `(unserialize ,type :buffer buffer))
+                          fields))))
+           (values value buffer))))))

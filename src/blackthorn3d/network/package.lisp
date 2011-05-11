@@ -45,7 +45,9 @@
    :socket-send
 
    ;; message.lisp
+   :defmessage
    :make-message
+   :make-message-list ; TODO: remove when API is stable
    :message-type
    :message-value
    :message-receive-all

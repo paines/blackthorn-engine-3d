@@ -44,6 +44,17 @@
 (defvar *view-up-key*    :sdl-key-up)
 (defvar *view-down-key*  :sdl-key-down)
 
+(defvar *deadzone-range-lx* 0.1)
+(defvar *deadzone-range-ly* 0.1)
+(defvar *deadzone-range-rx* 0.1)
+(defvar *deadzone-range-ry* 0.1)
+        
+(defun xbox-thumb (fn controller deadzone)
+  (let* ((query  (funcall fn controller))
+         (scaled (/ query 65535)))
+    (if (< (abs scaled) deadzone)
+      0.0
+      scaled)))
         
 (defgeneric input-move-x (system)
    (:documentation 
@@ -62,7 +73,7 @@
               (+ (if (sdl:get-key-state *walk-right-key*) 1.0  0)
                  (if (sdl:get-key-state *walk-left-key*) -1.0  0)))
             #+windows
-            (:xbox (/ (xbox360_get_lx 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_lx 0 *deadzone-range-lx*))
             (otherwise 0))))
 
 (defmethod input-move-y ((system input-system))
@@ -72,7 +83,7 @@
                (+ (if (sdl:get-key-state *walk-up-key*) 1.0 0)
                   (if (sdl:get-key-state *walk-down-key*) -1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_ly 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_ly 0 *deadzone-range-ly*))
             (otherwise 0))))
 
 (defgeneric set-controller (system type)
@@ -94,7 +105,7 @@
                 (+ (if (sdl:get-key-state *view-left-key*) -1.0 0)
                    (if (sdl:get-key-state *view-right-key*)  1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_rx 0) 65535))
+            (:xbox  (xbox-thumb #'xbox360_get_rx 0 *deadzone-range-rx*))
             (otherwise 0))))
             
 (defgeneric input-view-y (system)
@@ -109,7 +120,7 @@
                 (+ (if (sdl:get-key-state *view-up-key*) 1.0 0)
                    (if (sdl:get-key-state *view-down-key*) -1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_ry 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_ry 0 *deadzone-range-ry*))
             (otherwise 0))))
             
             

@@ -81,7 +81,7 @@
                     (make-instance 'source
                                    :array weight-array
                                    :stride 4
-                                   :components '(w0 w1 w2 w3))))))))))
+                                   :components '(w0 w1 w2 w3)))))))))
 
 
 (defun process-controller (controller-library)
@@ -100,8 +100,8 @@
                              +bind-shape-mat+))
                  (joint-lst (build-input-lst 
                              (find-tag-in-children +joints+ skin)
-                             sources))
-                 )
+                             sources)))
+            
             ;; DEBUG
             
             ;; TODO:- do something with the return of the next 2 statements

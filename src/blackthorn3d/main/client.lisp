@@ -53,6 +53,9 @@
     (:event-entity-remove
      ;; TODO: Do it.
      )
+    (:force-disconnect
+      (setf *should-quit* t)
+    )
     (:event-camera
      (let ((camera (camera-event-camera (message-value message))))
        (blt3d-gfx:set-camera camera)))))

@@ -99,6 +99,9 @@
 
 
 (defun process-controllers (controller-library)
+  "Returns a hash table of controllers; each controller is
+   a list of the joint array and the vertex weights ( a source )
+   for the specific controller"
   (dae-debug "Processing skin controllers~%")
   (let ((*dbg-level* (1+ *dbg-level*))
         (controller-table (make-id-table)))
@@ -120,21 +123,32 @@
             ;(print joint-list)
             
             ;; TODO:- do something with the return of the next 2 statements
+
             ;; Build joint array
             ;;  we can only make the joints...we don't know the skeleton
             ;;  until the process-scene stage, where we'll have to assume
             ;;  the joint data isn't malformed
             (dae-debug "building joint array~%")
-            (let ((joint-names (src-array 
-                                (input-by-semantic :joint joint-list)))
-                  (ibm-array (src-array 
-                              (input-by-semantic :inv_bind_matrix 
-                                                 joint-list))))
-              (iter (for joint-name in-vector joint-names)
-                    (for ibm in-vector ibm-array)
-                    (collect (make-joint joint-name ibm))))
+            (setf (gethash (get-attribute "id" (attributes controller))
+                           controller-table)
+                  (list
+                   ;; Geometry id link
+                   (get-attribute "source" (attributes skin))
+                   ;; Bind pose matrix
+                   bind-pose
+                   ;; Joint array
+                   (let ((joint-names (src-array 
+                                       (input-by-semantic :joint joint-list)))
+                         (ibm-array (src-array 
+                                     (input-by-semantic :inv_bind_matrix 
+                                                        joint-list))))
+                     (iter (for joint-name in-vector joint-names)
+                           (for ibm in-vector ibm-array)
+                           (collect (make-joint joint-name ibm)
+                                    result-type 'vector)))
 
-            ;; Build inputs with for indexes and weights
-            ;; these get fed to unify-indices with the other inputs
-            (build-index-weight-inputs
-             (find-tag-in-children +vertex-weights+ skin) sources)))))
+                   ;; The vertex sources
+                   ;; Build inputs with for indexes and weights
+                   ;; these get fed to unify-indices with the other inputs
+                   (build-index-weight-inputs
+                    (find-tag-in-children +vertex-weights+ skin) sources)))))))

@@ -29,11 +29,9 @@
 ;;; Joints
 ;;;
 
-(defclass joint ()
-  ((id
-    :accessor id
-    :initarg :id)
-   (model-matrix
+;; The joint matrix will be stored in the transform field of node
+(defclass joint (node)
+  ((model-matrix
     :accessor joint-model-mat
     :initform nil
     :documentation "Place to store the last computed local->model space mat")
@@ -41,21 +39,19 @@
     :accessor joint-ibm
     :initarg :inverse-bind-matrix
     :documentation "matrix to bring points to joint space")
-   (joint-matrix
-    :accessor joint-mat
-    :initarg :joint-matrix
-    :documentation "The matrix that moves the joint, and what gets animated")
    (child-joints
     :accessor child-joints
     :initarg :child-joints)))
 
+(defun joint-matrix (joint) (slot-value joint 'joint-matrix))
+(defun joint-id (joint) (id joint))
 (defun make-joint (id inverse-bind-matrix 
                    &key (joint-matrix (make-identity-matrix))
                         child-joints)
   (make-instance 'joint 
                  :id id
                  :inverse-bind-matrix inverse-bind-matrix
-                 :joint-matrix joint-matrix
+                 :transform joint-matrix
                  :child-joints child-joints))
 
 (defun calc-joint-matrix (joint parent-matrix)
@@ -73,6 +69,11 @@
                    (%update-r child-j (model-matrix joint)))))
     (%update-r root (make-identity-matrix))))
 
+
+;;;
+;;; Skeletons
+;;;
+
 (defclass skeleton ()
   ((root-joint
     :accessor root-joint
@@ -83,6 +84,9 @@
     :documentation "Since vertices need to index the joints in fixed
                     order, we store them here. Root informs us which
                     is the first, and each one has a list of children")))
+
+(defun make-skeleton (root-joint joint-arr)
+  (make-instance 'skeleton :root-joint root-joint :joint-array joint-arr))
 
 (defmethod get-joint-matrices ((this skeleton))
   "returns an array of matricies"

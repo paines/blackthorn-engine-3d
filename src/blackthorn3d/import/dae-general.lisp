@@ -39,6 +39,11 @@
 (defvar +light-library+      "library_lights")
 (defvar +animation-library+  "library_animations")
 
+(defvar +instance-geometry+ "instance_geometry")
+(defvar +instance-controller+ "instance_controller")
+(defvar +instance-material+ "instance_material")
+
+
 ;;;
 ;;; Collada helper objects
 ;;;

@@ -29,7 +29,6 @@
 ;;; Collada Tag names
 ;;;
 
-(defvar +instance-geometry+ "instance_geometry")
 (defvar *geometry-table* nil)
 (defvar *scene-table* nil)
 (defvar *material-table* nil)
@@ -65,56 +64,136 @@
         #'(lambda (val) (setf (slot-value node 'transform) 
                               (transpose (reshape val '(4 4)))))))))
 
+(defun build-material-array (elements materials)
+  "takes a list of elements and materials and returns an array
+   matching blt-material objects to the index of the element"
+  (iter (for elt in elements)
+        (let ((mat-id (element-material elt)))
+          (collect (aif (find (cdr mat-id) 
+                              materials :test #'equal :key #'car)
+                        (gethash (second it) *material-table*)
+                        nil) result-type 'vector))))
 
-(defun compile-node (node-id transform mesh-lst materials)
+(defun compile-geometry (data)
+  (destructuring-bind (mesh-id materials) data
+    (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
+           (mat-array (build-material-array (elements mesh) materials)))
+      (list mesh mat-array))))
+
+;; For now, lets assume the skeleton data is well formed
+;; that is, all the nodes are in joint arr
+(defun compile-skeleton (joint-arr root-node)
+  (labels ((skele-builder (root-node)
+             (let* ((joint-name (car (node-extra root-node)))
+                    (joint-obj (find (read-from-string joint-name)
+                                     joint-arr
+                                     :key #'joint-id)))
+               ;; set initial local matrix
+               (setf (joint-matrix joint-obj) (node-xform root-node))
+               ;; Recursive step: set up the children!
+               (setf (child-joints joint-obj)
+                     (iter (for ch in (node-children root-node))
+                           (collect (compile-skeleton joint-arr ch))))
+               joint-obj)))
+
+    (make-skeleton (skele-builder root-node)
+                   joint-arr)))
+
+(defun compile-controller (data)
+  (labels ((find-root-node (nodes sid) 
+             (when nodes
+               (iter (for n in nodes)
+                     (with-slots (id type extra children) n
+                       (let ((joint-id (car extra)))
+                         (if (equal joint-id sid)
+                             (return-from find-root-node n)
+                             (find-root-node children))))))))
+
+    (destructuring-bind (controller-id root-node materials) data
+      ;; First get the controller and then the geometry
+      (destructuring-bind (geom-id bind-pose joint-arr skin-inputs)
+          (gethash controller-id *controller-table*)
+        (destructuring-bind (elements inputs) 
+            (gethash geom-id *geometry-table*)
+          ;; Construct the mesh objects and skeleton
+          (let ((mesh (mesh-list->blt-mesh 
+                       (list elements (append inputs skin-inputs))))
+                (skeleton (compile-skeleton joint-arr
+                                            (find-root-node *scene-table*
+                                                            root-node))))
+            (list 
+             (make-instance 'skin
+                            :mesh mesh
+                            :bind-skeleton skeleton
+                            :bind-shape-matrix bind-pose)
+             (build-material-array (elements mesh) materials))))))))
+
+(defun compile-node (node geometry-table material-table)
   ;; Convert mesh-lst into a blt-mesh
   ;; TODO:- hack in skinning data!
-  (let* ((mesh (mesh-list->blt-mesh mesh-lst))
-         (mat-array (make-array (length (elements mesh)))))
-    
-    ;; Build the material array
-    (iter (for elt in (elements mesh))
-          (let ((mat-id (element-material elt)))
-            (setf (aref mat-array (car mat-id))
-                  (aif (find (cdr mat-id) 
-                             materials :test #'equal :key #'car)
-                       (gethash (second it) *material-table*)
-                       nil))))
+  (with-slots (id type xform extra children) node
+    (dae-debug "node ~a is of type: ~a~%" id type)
+    ;; recurse on children
+    (let ((new-node 
+           (case type
+             (:geometry 
+              (destructuring-bind (mesh materials) 
+                  (compile-geometry extra)
+                (make-model-node :id id
+                                 :transform xform
+                                 :material-array materials
+                                 :mesh mesh)))
+             (:controller 
+              (destructuring-bind (skin materials) 
+                  (compile-controller extra)
+                (make-model-node :id id
+                                 :transform xform
+                                 :material-array materials
+                                 :mesh skin)))
+             ;; Don't really need to do anything with joints...they just have
+             ;; to be there
+             (otherwise nil))))
 
-    (make-model-node :id node-id
-                     :transform transform
-                     :material-array mat-array
-                     :mesh mesh)))
+      ;; recurse on children
+      (when new-node
+        (setf (child-nodes new-node)
+              (iter (for child-node in children)
+                    (collect (compile-node child-node
+                                           geometry-table 
+                                           material-table)))))
+      (dae-debug "finished compiling node: ~a, result: ~a~%" id new-node)
+      ;; return the node
+      new-node)))
 
 ;; Responsible for taking the table in the tables
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((meshes 
-          (iter (for (node xform mesh-id mats) in scenes)
-                (collect (compile-node node 
-                                       xform
-                                       (gethash mesh-id geometry)
-                                       mats))
-                #+disabled
-                (let* ((mesh (mesh-list->blt-mesh 
-                                   (gethash mesh-id geometry)))
-                       (mat-array (make-array (length (elements mesh)))))
-                  ;; Build the material-array (mat-id: (index . material-id))
-                  (iter (for elt in (elements mesh))
-                        (let ((mat-id (element-material elt)))
-                          (setf (aref mat-array (car mat-id)) 
-                                (aif (find (cdr mat-id)
-                                           mats :test #'equal :key #'car)
-                                     (gethash (second it) *material-table*)
-                                     nil))
+          (remove-if 
+           #'null 
+           (iter (for node in scenes)
+                 (collect (compile-node node geometry materials))
+
+                 #+disabled
+                 (let* ((mesh (mesh-list->blt-mesh 
+                               (gethash mesh-id geometry)))
+                        (mat-array (make-array (length (elements mesh)))))
+                   ;; Build the material-array (mat-id: (index . material-id))
+                   (iter (for elt in (elements mesh))
+                         (let ((mat-id (element-material elt)))
+                           (setf (aref mat-array (car mat-id)) 
+                                 (aif (find (cdr mat-id)
+                                            mats :test #'equal :key #'car)
+                                      (gethash (second it) *material-table*)
+                                      nil))
                                         ;(setf mat-id (car mat-id))
-                          ))
-                  (collect (make-model-node :id node
-                                            :transform xform
-                                            :material-array mat-array
-                                            :mesh mesh)))
-                ;; T0D0: stuff
-                ))
+                           ))
+                   (collect (make-model-node :id node
+                                             :transform xform
+                                             :material-array mat-array
+                                             :mesh mesh)))
+                 ;; T0D0: stuff
+                 )))
          (anims     
           ;; Need to update the animation clips with the proper target fn
           (when animations

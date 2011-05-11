@@ -32,7 +32,29 @@
         :documentation "Either :keyboard or :xbox"))
     (:documentation "Holds the state of the input system."))
         
-; TODO: Customizable up/down/left/right keys
+        
+;; This should make it a bit easier to change keys...
+(defvar *walk-left-key*  :sdl-key-a)
+(defvar *walk-right-key* :sdl-key-d)
+(defvar *walk-up-key*    :sdl-key-w)
+(defvar *walk-down-key*  :sdl-key-s)
+
+(defvar *view-left-key*  :sdl-key-left)
+(defvar *view-right-key* :sdl-key-right)
+(defvar *view-up-key*    :sdl-key-up)
+(defvar *view-down-key*  :sdl-key-down)
+
+(defvar *deadzone-range-lx* 0.1)
+(defvar *deadzone-range-ly* 0.1)
+(defvar *deadzone-range-rx* 0.1)
+(defvar *deadzone-range-ry* 0.1)
+        
+(defun xbox-thumb (fn controller deadzone)
+  (let* ((query  (funcall fn controller))
+         (scaled (/ query 65535)))
+    (if (< (abs scaled) deadzone)
+      0.0
+      scaled)))
         
 (defgeneric input-move-x (system)
    (:documentation 
@@ -48,20 +70,20 @@
     (with-slots (kind) system
         (case kind
             (:keyboard 
-              (+ (if (sdl:get-key-state :sdl-key-d) 1.0  0)
-                 (if (sdl:get-key-state :sdl-key-a) -1.0  0)))
+              (+ (if (sdl:get-key-state *walk-right-key*) 1.0  0)
+                 (if (sdl:get-key-state *walk-left-key*) -1.0  0)))
             #+windows
-            (:xbox (/ (xbox360_get_lx 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_lx 0 *deadzone-range-lx*))
             (otherwise 0))))
 
 (defmethod input-move-y ((system input-system))
     (with-slots (kind) system
         (case kind
             (:keyboard
-               (+ (if (sdl:get-key-state :sdl-key-w) 1.0 0)
-                  (if (sdl:get-key-state :sdl-key-s) -1.0 0)))
+               (+ (if (sdl:get-key-state *walk-up-key*) 1.0 0)
+                  (if (sdl:get-key-state *walk-down-key*) -1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_ly 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_ly 0 *deadzone-range-ly*))
             (otherwise 0))))
 
 (defgeneric set-controller (system type)
@@ -80,10 +102,10 @@
     (with-slots (kind) system
         (case kind
             (:keyboard
-                (+ (if (sdl:get-key-state :sdl-key-left) -1.0 0)
-                   (if (sdl:get-key-state :sdl-key-right)  1.0 0)))
+                (+ (if (sdl:get-key-state *view-left-key*) -1.0 0)
+                   (if (sdl:get-key-state *view-right-key*)  1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_rx 0) 65535))
+            (:xbox  (xbox-thumb #'xbox360_get_rx 0 *deadzone-range-rx*))
             (otherwise 0))))
             
 (defgeneric input-view-y (system)
@@ -95,10 +117,10 @@
     (with-slots (kind) system
         (case kind
             (:keyboard
-                (+ (if (sdl:get-key-state :sdl-key-up) 1.0 0)
-                   (if (sdl:get-key-state :sdl-key-down) -1.0 0)))
+                (+ (if (sdl:get-key-state *view-up-key*) 1.0 0)
+                   (if (sdl:get-key-state *view-down-key*) -1.0 0)))
             #+windows
-            (:xbox (/ (xbox360_get_ry 0) 65535))
+            (:xbox (xbox-thumb #'xbox360_get_ry 0 *deadzone-range-ry*))
             (otherwise 0))))
             
             

@@ -57,8 +57,8 @@
 (defun make-message (type value)
   (make-instance 'message :type type :value value))
 
-(defun make-message-list (type &rest value)
-  (make-instance 'message :type type :value value))
+(defun make-message-list (type &rest values)
+  (make-instance 'message :type type :value values))
 
 (defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
   (with-buffer buffer
@@ -79,17 +79,19 @@
                             fields)))
     `(progn
        (defmethod serialize ((type (eql ,type)) value &key (buffer *buffer*))
-         ;; destructuring-bind here...
          (destructuring-bind ,field-vars value
-           ,@(mapcar #'(lambda (type var)
-                         `(serialize ,type ,var :buffer buffer))
+           ,@(mapcar #'(lambda (field var)
+                         `(serialize ,field ,var :buffer buffer))
                      fields
                      field-vars))
          buffer)
        (defmethod unserialize ((type (eql ,type)) &key (buffer *buffer*))
          (let ((value
-                ,(make-message-list
-                  (mapcar #'(lambda (type)
-                              `(unserialize ,type :buffer buffer))
-                          fields))))
+                (list
+                 ,@(mapcar #'(lambda (field)
+                               `(unserialize ,field :buffer buffer))
+                           fields))))
            (values value buffer))))))
+
+(defun apply-message-handler (handler src message)
+  (apply handler src (message-value message)))

@@ -25,9 +25,13 @@
 
 (in-package :blackthorn3d-entity)
 
-(make-list-serializer :event-entity-create :entity-create)
-(make-list-serializer :event-entity-update :entity-update)
-(make-list-serializer :event-entity-remove :entity-remove)
+(make-list-serializer :entity-create-list :entity-create)
+(make-list-serializer :entity-update-list :entity-update)
+(make-list-serializer :entity-remove-list :entity-remove)
+
+(defmessage :event-entity-create (:entity-create-list))
+(defmessage :event-entity-update (:entity-update-list))
+(defmessage :event-entity-remove (:entity-remove-list))
 
 (defgeneric make-event (type &key))
 
@@ -37,18 +41,18 @@
              (iter (for (nil entity) in-hashtable *global-oid-table*)
                    (collect entity))
              *recently-created-server-entities*)))
-    (make-message :event-entity-create entities)))
+    (make-message-list :event-entity-create entities)))
 
 (defmethod make-event ((type (eql :entity-update)) &key)
   (let ((entities
          (iter (for (nil entity) in-hashtable *global-oid-table*)
                (with-slots (modified) entity
                  (when modified (collect entity))))))
-    (make-message :event-entity-update entities)))
+    (make-message-list :event-entity-update entities)))
 
 (defmethod make-event ((type (eql :entity-remove)) &key)
   (let ((entities *recently-removed-server-entities*))
-    (make-message :event-entity-remove entities)))
+    (make-message-list :event-entity-remove entities)))
 
 ;; TODO: MOVE ELSEWHERE!!! (E.g. input package, hint hint.)
 (defclass input-event ()
@@ -66,23 +70,25 @@
                       (:input-type input-type
                        :float32 input-amount))
 
-(make-list-serializer :event-input :input)
+(make-list-serializer :input-list :input)
+
+(defmessage :event-input (:input-list))
 
 (defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y)
-  (make-message :event-input
-                (list (make-instance 'input-event
-                                     :input-type :move-x
-                                     :input-amount move-x)
-                      (make-instance 'input-event
-                                     :input-type :move-y
-                                     :input-amount move-y)
-                      (make-instance 'input-event
-                                     :input-type :view-x
-                                     :input-amount view-x)
-                      (make-instance 'input-event
-                                     :input-type :view-y
-                                     :input-amount view-y)                     
-                )))
+  (make-message-list
+   :event-input
+   (list (make-instance 'input-event
+                        :input-type :move-x
+                        :input-amount move-x)
+         (make-instance 'input-event
+                        :input-type :move-y
+                        :input-amount move-y)
+         (make-instance 'input-event
+                        :input-type :view-x
+                        :input-amount view-x)
+         (make-instance 'input-event
+                        :input-type :view-y
+                        :input-amount view-y))))
 
 (defclass camera-event ()
   ((camera
@@ -93,11 +99,8 @@
                       (make-instance 'camera-event)
                       (:entity-oid camera))
 
+(defmessage :event-camera (:camera))
+
 (defmethod make-event ((type (eql :camera)) &key camera)
-  (make-message :event-camera (make-instance 'camera-event :camera camera)))
-
-(defmethod serialize ((type (eql :event-camera)) value &key (buffer *buffer*))
-  (serialize :camera value :buffer buffer))
-
-(defmethod unserialize ((type (eql :event-camera)) &key (buffer *buffer*))
-  (unserialize :camera :buffer buffer))
+  (make-message-list :event-camera
+                     (make-instance 'camera-event :camera camera)))

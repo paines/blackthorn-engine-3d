@@ -52,5 +52,6 @@
    :message-value
    :message-receive-all
    :message-send
+   :apply-message-handler
 
    ))

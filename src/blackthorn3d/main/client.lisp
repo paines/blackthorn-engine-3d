@@ -27,38 +27,50 @@
 
 (defun use-model-on (model-symbol entity)
     (setf (shape entity) (get-model model-symbol)))
-    
-    
+
 (defvar *should-quit* nil)
-      
+
+(defun handle-entity-create-client (src entities)
+  (iter (for entity in entities)
+        (use-model-on (shape-name entity) entity)
+        #+disabled (setf (blt3d-ani:state 
+                          (blt3d-gfx:controller (shape entity))) :loop)))
+
+(defun handle-entity-update-client (src entities)
+  (iter (for entity in entities)
+        (when (eql (blackthorn3d-entity::die-now entity) :yes)
+          (format t  "Killed by monster!~%")
+          (setf *should-quit* t))
+        ;; this really shouldn't be done every step
+        (use-model-on (shape-name entity) entity)))
+
+(defun handle-entity-remove-client (src entity)
+  ;; TODO: Do it.
+  )
+
+(defun handle-camera-client (src camera-event)
+  (let ((camera (camera-event-camera camera-event)))
+    (blt3d-gfx:set-camera camera)))
+
 (defun handle-message-client (src message)
   (ecase (message-type message)
     (:string
      (let ((str (read-string message)))
        (format t "Msg from ~a was ~a~%" src str)))
+    ;; TODO: Register these handlers globally.
     (:event-entity-create
-     (iter (for entity in (message-value message))
-           ;; TODO: Don't hard code the model, send it's in the message...
-           (use-model-on (shape-name entity) entity)
-          #+disabled(setf (blt3d-ani:state 
-                  (blt3d-gfx:controller (shape entity))) :loop)))
+     (apply-message-handler #'handle-entity-create-client src message))
     (:event-entity-update
-        (iter (for entity in (message-value message))
-          (when (eq (blackthorn3d-entity::die-now entity) :yes)
-            (format t  "Killed by monster!~%")
-            (setf *should-quit* t))
-          ;; this really shouldn't be done every step
-          (use-model-on (shape-name entity) entity))
-     )
+     (apply-message-handler #'handle-entity-update-client src message))
     (:event-entity-remove
      ;; TODO: Do it.
+     (apply-message-handler #'handle-entity-remove-client src message))
      )
     (:force-disconnect
       (setf *should-quit* t)
     )
     (:event-camera
-     (let ((camera (camera-event-camera (message-value message))))
-       (blt3d-gfx:set-camera camera)))))
+     (apply-message-handler #'handle-camera-client src message))))
 
 (defun finalize-client ()
   (socket-disconnect-all))

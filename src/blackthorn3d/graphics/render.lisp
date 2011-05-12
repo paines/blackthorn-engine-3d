@@ -32,6 +32,7 @@
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
+(defparameter animated nil)
 
 (defun init ()
   "Called to initialize the graphics subsystem"
@@ -88,8 +89,16 @@ GLSL Version: ~a.~a~%"
                                 :tex cube-tex))
 
   (format t "### LOADING SCIENTIST ###~%")
-  (setf test-skele (load-obj->models 
-                    (blt3d-imp:load-dae #p "res/models/scientist-01.dae")))
+  ;#+disabled
+  (let ((scientist-model 
+         (blt3d-imp:load-dae #p "res/models/scientist-01.dae")))
+    
+    (setf test-skele (load-obj->models scientist-model)))
+
+  #+disabled
+  (setf animated (load-obj->models 
+                  (blt3d-imp:load-dae #p "res/models/test-anim.dae")))
+                                        ;(play-clip (animations animated) (car (clips (animations animated))))
 
   (load-frstm *frustum*)
   (gl:load-identity)
@@ -98,7 +107,7 @@ GLSL Version: ~a.~a~%"
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-  ;#+disabled
+                                        ;#+disabled
   (setf shader (make-shader (blt3d-res:file-contents
                              (blt3d-res:resolve-resource 
                               #p "res/shaders/FinalProjShader.vert"))
@@ -107,10 +116,14 @@ GLSL Version: ~a.~a~%"
                               #p "res/shaders/FinalProjShader.frag"))))
   
 
-    ;(make-vao-cube)
+                                        ;(make-vao-cube)
   )
 
 (defun update-graphics (entities time)
+  (when animated
+    (update-model animated time))
+  (when test-skele
+    (update-model test-skele time))
   (iter (for e in entities)
         (with-slots (shape) e
           (when shape
@@ -130,6 +143,9 @@ GLSL Version: ~a.~a~%"
   (gl:use-program shader)
   ;(gl:bind-texture :texture-2d cube-tex)
 
+  (when animated
+    (draw-object animated))
+
   (when level
     (gl:with-pushed-matrix
         ;; (use-material plane-mat)
@@ -140,6 +156,11 @@ GLSL Version: ~a.~a~%"
                                             (make-point3 0.0 0.0 1.0)
                                             (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
+
+  (when test-skele
+    (gl:with-pushed-matrix
+        (gl:scale 0.03 0.03 0.03)
+      (draw-object test-skele)))
 
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))

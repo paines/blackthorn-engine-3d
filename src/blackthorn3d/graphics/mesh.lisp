@@ -72,7 +72,7 @@
     (iter (for i below count)
           (iter (for j below vertex-size)
                 (for c in *blt-mesh-components*)
-                (setf (gl:glaref gl-array i c) (aref array i j))))
+                (setf (gl:glaref gl-array i c) (float (aref array i j)))))
     gl-array))
 
 (defmethod draw-object ((m mesh))

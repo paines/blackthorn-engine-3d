@@ -52,6 +52,13 @@
 (defun get-ncols (mat)
   (array-dimension mat 0))
 
+(defun set-mat (A B)
+  "Sets contents of a to contents of b"
+  (let ((size (array-dimensions A)))
+    (iter (for i below (* (first size) (second size)))
+          (setf (row-major-aref A i) (row-major-aref B i)))
+    A))
+
 (defun copy-matrix (mat)
   "@return{a matrix with the same elements as mat}"
   (let* ((n-row (get-nrows mat))

@@ -39,10 +39,15 @@
 ;;; Collada load functions
 ;;;
 
+(defmacro make-set-fn (place)
+  `#'(lambda (val) (setf ,place (transpose (reshape val '(4 4))))))
+
 ;; this'll be fun....
 ;; gets a function that will modify a slot/location based on an id...
 ;; Note: for starters will only support one level.
 ;; nodes is a list of scene nodes (
+
+;; Simplified to a hashtable lookup
 (defun get-location-fn (loc nodes)
   (labels ((node-finder (node-id nodes)
              (iter (for node in nodes)
@@ -57,9 +62,18 @@
                    (if (< start (length str))
                        (cons (subseq str start) nil)
                        nil)))))
-    (format t "    location: ~a~%" loc)
+   ; (format t "~%SPLIT_LOC: ~A~%" (split-loc loc 0))
+    (aif (gethash (car (split-loc loc 0)) nodes)
+         it
+         (progn 
+           (format t "WARNING: found no mapping for ~a~%" 
+                   (car (split-loc loc 0)))
+           #'(lambda (val))))
+   ; (format t "~2Tlocation: ~a~%" loc)
+    #+disabled
     (destructuring-bind (node-id location &rest dc) (split-loc loc 0)
       (let ((node (node-finder node-id nodes)))
+        (format t "~4TBinding ~a~%" node-id )
         ;; Set up the function, and stuff
         #'(lambda (val) (setf (slot-value node 'transform) 
                               (transpose (reshape val '(4 4)))))))))
@@ -81,7 +95,7 @@
       (list mesh mat-array))))
 
 ;; For now, lets assume the skeleton data is well formed
-;; that is, all the nodes are in joint arr
+;; that is, all the nodes are in joint-arr
 (defun compile-skeleton (joint-arr root-node)
   (labels ((skele-builder (root-node)
              (let* ((joint-name (car (node-extra root-node)))
@@ -91,6 +105,14 @@
                ;(format t "joint-name: ~a~%" joint-name)
                ;; set initial local matrix
                (setf (joint-matrix joint-obj) (node-xform root-node))
+
+               ;; Add a mapping to *xform-mappings* so that animations
+               ;; can find us!
+               (setf (gethash (node-id root-node) *xform-mappings*)
+                     (make-set-fn (joint-matrix joint-obj))
+                     #+disable
+                     #'(lambda (val) (setf (joint-matrix joint-obj) val)))
+
                ;; Recursive step: set up the children!
                (setf (child-joints joint-obj)
                      (iter (for ch in (node-children root-node))
@@ -120,18 +142,26 @@
           (dae-debug "root-node: ~a~%" root-node)
           ;; Construct the mesh objects and skeleton
           (let ((mesh (mesh-list->blt-mesh 
-                       (list geom-id 
+                       (list geom-id elements inputs)
+                       #+disabled(list geom-id 
                              (duplicate-indices elements 0 2)
                              (append inputs skin-inputs))))
                 (skeleton (compile-skeleton joint-arr
                                             (find-root-node *scene-table*
                                                             root-node))))
+
+            
+            (dae-debug "Vertices:~%")
+            (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
+                  (dae-debug "~a  ~%" elt))
             
             (list 
              (make-blt-skin :mesh mesh
                             :skeleton skeleton
                             :bind-matrix bind-pose)
              (build-material-array (elements mesh) materials))))))))
+
+(defvar *xform-mappings* nil)
 
 (defun compile-node (node geometry-table material-table)
   ;; Convert mesh-lst into a blt-mesh
@@ -158,6 +188,12 @@
              ;; anything else, we don't really care about much
              (otherwise nil))))
 
+      ;; Add an entry in *xform-mappings* for the animation pass
+      (setf (gethash id *xform-mappings*)
+            (make-set-fn (transform new-node))
+            #+disabled
+            #'(lambda (val) (setf (transform new-node) val)))
+
       ;; recurse on children
       (when new-node
         (setf (child-nodes new-node)
@@ -171,46 +207,36 @@
 ;; Responsible for taking the table in the tables
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials animations)
-  (let* ((meshes 
+  (let* ((*xform-mappings* (make-id-table))
+         (meshes 
           (remove-if 
            #'null 
            (iter (for node in scenes)
-                 (collect (compile-node node geometry materials))
-
-                 #+disabled
-                 (let* ((mesh (mesh-list->blt-mesh 
-                               (gethash mesh-id geometry)))
-                        (mat-array (make-array (length (elements mesh)))))
-                   ;; Build the material-array (mat-id: (index . material-id))
-                   (iter (for elt in (elements mesh))
-                         (let ((mat-id (element-material elt)))
-                           (setf (aref mat-array (car mat-id)) 
-                                 (aif (find (cdr mat-id)
-                                            mats :test #'equal :key #'car)
-                                      (gethash (second it) *material-table*)
-                                      nil))
-                                        ;(setf mat-id (car mat-id))
-                           ))
-                   (collect (make-model-node :id node
-                                             :transform xform
-                                             :material-array mat-array
-                                             :mesh mesh)))
-                 ;; T0D0: stuff
-                 )))
+                 (collect (compile-node node geometry materials)))))
          (anims     
           ;; Need to update the animation clips with the proper target fn
           (when animations
             (iter (for (anim-id clip) in-hashtable animations)
+                  (format t "~5Tclip: ~a~%" anim-id)
                   (iter (for ch in (channel-lst clip))
                         (setf (slot-value ch 'target) 
                               (get-location-fn (slot-value ch 'target) 
-                                               meshes)))
+                                               *xform-mappings*)))
                   (collect clip)))))
+
+    (format t "~%~%ANIM-MAPPINGS:~%")
+    (iter (for (key value) in-hashtable *xform-mappings*)
+          (format t "key: ~a~%" key))
+
+    (when anims
+      (format t "~%~%ANIMATIONS:~%")
+      (iter (for clip in anims)
+            (format t "clip: ~a~%" clip)))
 
     (make-instance 
      'blt-model
      :nodes meshes
-     :animations (make-animation-controller anims))))
+     :animations (when anims (make-animation-controller anims)))))
 
 
 

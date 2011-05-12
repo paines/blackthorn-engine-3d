@@ -54,7 +54,7 @@
 (defvar *material-array* nil)
 
 (defmethod update-model((this model-shape) time)
-  #+disabled(aif (controller this)
+  (aif (controller this)
        (update-anim-controller it time)))
 
 (defmethod draw-object ((this model-shape))
@@ -73,6 +73,7 @@
             (draw-object node)))))
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
+(defparameter mesh-format '((:vertex 3) (:normal 3) (:texcoord 2)))
 
 (defun indices->gl-array (indices)
   (let* ((count (length indices))
@@ -99,6 +100,7 @@
 
 (defmethod load-obj->models ((this blt-model))
   (setf *animator* (animations this))
+  (format t "MODEL ANIMATIONS: ~a~%" (animations this))
   (make-instance 
    'model-shape
    :mesh-graph 
@@ -106,6 +108,7 @@
          (with-slots (mesh transform) instance
            (let ((interleaved (interleave
                                (vertex-streams mesh)
+                               mesh-format
                                #+disabled
                                (organize-streams (vertex-streams mesh)
                                                  +mesh-components+)))

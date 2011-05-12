@@ -56,7 +56,7 @@
   (make-instance
    'anim-controller
    :current-clip (car clips)
-   :state :stop
+   :state :loop
    :clips clips))
 
 
@@ -82,7 +82,7 @@
 ;;          then will run next-clip if there is one
 ;;   :stop - does nothing
 (defmethod update-anim-controller ((this anim-controller) dt)
-  (with-slots (current-clip next-clip elapsed t-start state) this
+  (with-slots (current-clip next-clip elapsed t-start state clips) this
     (incf elapsed dt)
     (when (> elapsed (end-time current-clip))
       (if (eql state :loop) 
@@ -90,8 +90,10 @@
           (next-clip this)))
     (case state
       ((:run :loop)    (if current-clip
-                   (update-clip current-clip elapsed)
-                   (setf state :stop)))
+                           (update-clip current-clip elapsed)
+                           (play-clip this (car clips))
+                           #+disabled
+                           (setf state :stop)))
       (:stop   (setf elapsed 0.0))
       (:pause  nil)
       (:reset  (if current-clip

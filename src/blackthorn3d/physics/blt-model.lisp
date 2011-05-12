@@ -238,6 +238,23 @@
         (collect (find o vertex-streams 
                        :key #'(lambda (vs) (vs-semantic vs))))))
 
+(defun get-vs-fns (vertex-streams format)
+  (iter (for (semantic n-elts) in format)
+        (collect
+         (aif (find semantic vertex-streams :key #'vs-semantic)
+              (let ((len n-elts))
+                #'(lambda (index)
+                    ;;(format t "original vector: ~a~%" (vs-ref it index))
+                    (concatenate 
+                     'vector 
+                     (subseq (vs-ref it index) 
+                             0 (min len (vs-stride it))) 
+                     (iter (for i below (- len (vs-stride it)))
+                           (collect 0.0 result-type 'vector)))))
+              (let ((zero-vec (iter (for i below n-elts) 
+                                    (collect 0.0 result-type 'vector))))
+                #'(lambda (index) zero-vec))))))
+
 ;; combines unified vertex-streams into one large 2-d array
 ;; If you want a specific order, re-order/prune the data before
 ;; calling this function on it.
@@ -245,29 +262,30 @@
 ;; indexing-fn is a function that returns a list
 ;; containing (SEMANTIC VECTOR) elements for each stream that
 ;; was interleaved into the array
-(defun interleave (vertex-streams)
-  (let ((size 0)
-        (depth 0))
-    (iter (for vs in vertex-streams)
-          (minimizing (length (vs-stream vs))  into s)
-          (sum (vs-stride vs) into d)
-          (finally (setf size s) (setf depth d)))
+(defun interleave (vertex-streams format)
+  (let ((vs-fns (get-vs-fns vertex-streams format))
+        (size (iter (for vs in vertex-streams)
+                    (minimizing (length (vs-stream vs)))))
+        (depth (iter (for f in format)
+                     (sum (second f)))))
+    
     (let ((interleaved (make-array (list size depth)))
           (index 0))
       ;(format t "size: ~a depth: ~a~%" size depth)
       ;; For each vertex
       (iter (for i below size)
-            (iter (for vs in vertex-streams)
-                  (iter (for elt in-vector (vs-ref vs i))
+            (iter (for fn in vs-fns)
+                  (iter (for elt in-vector (funcall fn i))
                         (setf (row-major-aref interleaved index)
                               (float elt))
                         (incf index))))
+     
       (values
        interleaved
        #'(lambda (index) 
-           (iter (for vs in vertex-streams)
-                 (collect 
-                     (list (vs-semantic vs) (vs-ref vs index)))))))))
+           (iter (for (semantic n-elts) in format) 
+                 (for fn in vs-fns)
+                 (collect (list semantic (fn index)))))))))
 
 ;;;
 ;;; Triangle access

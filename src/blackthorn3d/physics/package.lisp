@@ -42,6 +42,9 @@
    :elements
    :mesh-bounding-volume
 
+   :blt-skin
+   :make-blt-skin
+
    :model-node
    :make-model-node
    :transform
@@ -51,6 +54,7 @@
    :child-nodes
 
    :vertex-stream
+   :vs-semantic
    :vs-ref
    :get-stream
    
@@ -97,6 +101,8 @@
 
    ;; skeleton.lisp
    :joint-id
+   :joint-matrix
+   :child-joints
    :make-joint
    :make-skeleton
    ))

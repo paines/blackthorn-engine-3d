@@ -142,6 +142,7 @@
                    but eventually might be something shiny, like bsp,
                    or hierarchy of bvs")))
 
+
 (defun make-blt-mesh (&key id vertex-streams elements)
   (make-instance 'blt-mesh
                  :id id
@@ -150,6 +151,23 @@
                  :bounding-volume
                  (make-bounding-volume
                   (vs-get-stream :vertex vertex-streams))))
+
+(defclass blt-skin (blt-mesh)
+  ((bind-skeleton
+    :accessor bind-skeleton
+    :initarg :bind-skeleton)
+   (bind-shape-matrix
+    :accessor bind-shape-matrix
+    :initarg :bind-shape-matrix
+    :initform (make-identity-matrix))))
+
+(defun make-blt-skin (&key mesh skeleton bind-matrix)
+  (change-class mesh 'blt-skin)
+  ;(format t "after change, mesh-vertex-streams: ~a~%" (vertex-streams mesh))
+  (with-slots (bind-skeleton bind-shape-matrix) mesh
+    (setf bind-skeleton skeleton
+          bind-shape-matrix bind-matrix))
+  mesh)
 
 (defun vs-get-stream (stream vs-lst)
   (aif (find stream vs-lst :key #'vs-semantic)

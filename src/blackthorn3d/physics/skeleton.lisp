@@ -38,12 +38,15 @@
    (inverse-bind-matrix
     :accessor joint-ibm
     :initarg :inverse-bind-matrix
-    :documentation "matrix to bring points to joint space")
-   (child-joints
-    :accessor child-joints
-    :initarg :child-joints)))
+    :documentation "matrix to bring points to joint space")))
 
-(defun joint-matrix (joint) (slot-value joint 'joint-matrix))
+(defun joint-matrix (joint) (slot-value joint 'transform))
+(defun (setf joint-matrix) (mat joint)
+  (setf (slot-value joint 'transform) mat))
+(defun child-joints (joint) (slot-value joint 'child-nodes))
+(defun (setf child-joints) (children joint) 
+  (setf (slot-value joint 'child-nodes) children))
+
 (defun joint-id (joint) (id joint))
 (defun make-joint (id inverse-bind-matrix 
                    &key (joint-matrix (make-identity-matrix))
@@ -52,7 +55,7 @@
                  :id id
                  :inverse-bind-matrix inverse-bind-matrix
                  :transform joint-matrix
-                 :child-joints child-joints))
+                 :child-nodes child-joints))
 
 (defun calc-joint-matrix (joint parent-matrix)
   "Return the local-to-model matrix for this joint"

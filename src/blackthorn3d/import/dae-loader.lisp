@@ -85,9 +85,10 @@
 (defun compile-skeleton (joint-arr root-node)
   (labels ((skele-builder (root-node)
              (let* ((joint-name (car (node-extra root-node)))
-                    (joint-obj (find (read-from-string joint-name)
+                    (joint-obj (find joint-name ;(read-from-string joint-name)
                                      joint-arr
                                      :key #'joint-id)))
+               ;(format t "joint-name: ~a~%" joint-name)
                ;; set initial local matrix
                (setf (joint-matrix joint-obj) (node-xform root-node))
                ;; Recursive step: set up the children!
@@ -100,39 +101,43 @@
                    joint-arr)))
 
 (defun compile-controller (data)
+  (dae-debug "compiling a controller~%")
   (labels ((find-root-node (nodes sid) 
              (when nodes
                (iter (for n in nodes)
-                     (with-slots (id type extra children) n
-                       (let ((joint-id (car extra)))
-                         (if (equal joint-id sid)
-                             (return-from find-root-node n)
-                             (find-root-node children))))))))
+                     (with-slots (id children) n
+                       (if (equal id sid)
+                           (return-from find-root-node n)
+                           (find-root-node children sid)))))))
 
     (destructuring-bind (controller-id root-node materials) data
       ;; First get the controller and then the geometry
       (destructuring-bind (geom-id bind-pose joint-arr skin-inputs)
           (gethash controller-id *controller-table*)
-        (destructuring-bind (elements inputs) 
+        (destructuring-bind (ignore-id elements inputs)
             (gethash geom-id *geometry-table*)
+
+          (dae-debug "root-node: ~a~%" root-node)
           ;; Construct the mesh objects and skeleton
           (let ((mesh (mesh-list->blt-mesh 
-                       (list elements (append inputs skin-inputs))))
+                       (list geom-id 
+                             (duplicate-indices elements 0 2)
+                             (append inputs skin-inputs))))
                 (skeleton (compile-skeleton joint-arr
                                             (find-root-node *scene-table*
                                                             root-node))))
+            
             (list 
-             (make-instance 'skin
-                            :mesh mesh
-                            :bind-skeleton skeleton
-                            :bind-shape-matrix bind-pose)
+             (make-blt-skin :mesh mesh
+                            :skeleton skeleton
+                            :bind-matrix bind-pose)
              (build-material-array (elements mesh) materials))))))))
 
 (defun compile-node (node geometry-table material-table)
   ;; Convert mesh-lst into a blt-mesh
   ;; TODO:- hack in skinning data!
   (with-slots (id type xform extra children) node
-    (dae-debug "node ~a is of type: ~a~%" id type)
+    (dae-debug "node ~a is of type ~a~%" id type)
     ;; recurse on children
     (let ((new-node 
            (case type
@@ -150,8 +155,7 @@
                                  :transform xform
                                  :material-array materials
                                  :mesh skin)))
-             ;; Don't really need to do anything with joints...they just have
-             ;; to be there
+             ;; anything else, we don't really care about much
              (otherwise nil))))
 
       ;; recurse on children
@@ -161,7 +165,6 @@
                     (collect (compile-node child-node
                                            geometry-table 
                                            material-table)))))
-      (dae-debug "finished compiling node: ~a, result: ~a~%" id new-node)
       ;; return the node
       new-node)))
 

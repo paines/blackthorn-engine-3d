@@ -133,7 +133,7 @@
                            controller-table)
                   (list
                    ;; Geometry id link
-                   (get-attribute "source" (attributes skin))
+                   (get-uri "source" (attributes skin))
                    ;; Bind pose matrix
                    bind-pose
                    ;; Joint array
@@ -151,4 +151,5 @@
                    ;; Build inputs with for indexes and weights
                    ;; these get fed to unify-indices with the other inputs
                    (build-index-weight-inputs
-                    (find-tag-in-children +vertex-weights+ skin) sources)))))))
+                    (find-tag-in-children +vertex-weights+ skin) sources)))))
+    controller-table))

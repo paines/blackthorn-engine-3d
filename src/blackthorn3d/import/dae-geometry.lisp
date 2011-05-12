@@ -74,7 +74,8 @@
              :material 
              (cons mat-index
                    (get-attribute "material" (attributes tri-lst)))
-             :count (get-attribute "count" (attributes tri-lst)))))
+             :count (parse-integer
+                     (get-attribute "count" (attributes tri-lst))))))
      ;; build input list
      (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
                       source-table))))

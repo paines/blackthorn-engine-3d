@@ -43,7 +43,6 @@
 (defvar +instance-controller+ "instance_controller")
 (defvar +instance-material+ "instance_material")
 
-
 ;;;
 ;;; Collada helper objects
 ;;;
@@ -168,13 +167,48 @@
                                         :fill-pointer 0
                                         :adjustable t)))
            (cons #'(lambda (index)
+                     #+disabled(if (eql :joint-weight (car src))
+                         (dae-debug "index: ~a~%" index))
                      (let ((src-vec (src-accessor source index)))
-                       (vector-push-extend src-vec attrib-vec))
-                     #+disabled
-                     (iter (for elt in-vector (src-accessor source index))
-                           (vector-push-extend elt attrib-vec)))
+                       (vector-push-extend src-vec attrib-vec))0
+                  )
                  attrib-vec)))))
 
+
+(defun duplicate-indices (elements index times)
+  "updates the indices in elements to have index # index 
+   repeated times number of times at the end of the index list"
+  (iter (for elt in elements)
+        (let* ((indices (element-indices elt))
+               (count (element-count elt))
+               (stride (/ (length indices) count 3))
+               (new-indices (make-array (* (+ stride times) count 3))))
+          (iter (with ni = -1)
+                (for i below (length indices) by stride)
+                (for base = (subseq indices i (+ i stride)))
+                (for copy = (svref base index))
+                (iter (for j in-vector base)
+                      (setf (svref new-indices (incf ni)) j))
+                (iter (for j below times)
+                      (setf (svref new-indices (incf ni)) copy)))
+          (print (subseq new-indices 0 100))
+          (setf (element-indices elt) new-indices)
+          #+disabled
+          (setf 
+           (element-indices elt)
+           (apply 
+            #'vector
+            (apply 
+             #'append
+             (iter (for i below (length indices) by stride)
+                   (collect 
+                       (let ((base (iter (for k from i below (+ i stride))
+                                         (collect (svref indices k)))))
+                         (append base
+                                 (iter (with copy = (elt base index))
+                                       (for j below times)
+                                       (collect copy)))))))))))
+  elements)
 
 ;; combines the vertex data so there is only one indice per vertex
 ;; returns  (ELEMENTS VERTEX-STREAMS) where elements is a list
@@ -227,6 +261,7 @@
   (destructuring-bind (id elements inputs) mesh-lst
     (destructuring-bind (new-elements vertex-streams)
         (unify-indices elements inputs)
+      
       (make-blt-mesh :id id
                      :vertex-streams vertex-streams
                      :elements new-elements))))

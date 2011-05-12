@@ -95,7 +95,9 @@
       :joint
       (if (find-tag-in-children +instance-geometry+ node)
           :geometry
-          :unknown)))
+          (if (find-tag-in-children +instance-controller+ node)
+              :controller
+              :unknown))))
 
 (defun process-geometry-node (node-tag)
   (let* ((node-id (get-attribute "id" (attributes node-tag)))
@@ -124,8 +126,13 @@
                 (aif (process-node node)
                      (collect it))))))
 
+(let ((default-count -1))
+  (defun get-default-name (prefix)
+      (format nil "~a-~a" prefix (incf default-count))))
+
 (defun process-controller-node (node-tag)
-  (let* ((node-id (get-attribute "id" (attributes node-tag)))
+  (let* ((node-id (or (get-attribute "id" (attributes node-tag))
+                      (get-default-name "node")))
          (controller-tag (find-tag-in-children +instance-controller+ node-tag))
          (controller-id (get-url controller-tag))
          (skeleton (uri-indirect 
@@ -135,7 +142,7 @@
                                                controller-tag))))
     
     (dae-debug "loading controller node: ~a with skeleton ~a~%" 
-               node-id )
+               node-id skeleton)
     
     (make-node node-id :controller *transform* 
                (list controller-id skeleton material-map)

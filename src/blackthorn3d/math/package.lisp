@@ -65,6 +65,7 @@
    :make-ortho-basis
    :make-inv-ortho-basis
    :make-projection
+   :set-mat
    :col
    :row
    :inner-product

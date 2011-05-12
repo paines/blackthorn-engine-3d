@@ -63,16 +63,16 @@
     (:event-entity-update
      (apply-message-handler #'handle-entity-update-client src message))
     (:event-entity-remove
-     ;; TODO: Do it.
      (apply-message-handler #'handle-entity-remove-client src message))
     (:force-disconnect
-      (setf *should-quit* t)
-    )
+      (setf *should-quit* t))
     (:event-camera
      (apply-message-handler #'handle-camera-client src message))))
 
 (defun finalize-client ()
-  (socket-disconnect-all))
+  (socket-disconnect-all)
+  (sdl-mixer:halt-music)
+  (sdl-mixer:close-audio))
 
 (defmacro with-finalize-client (() &body body)
   `(unwind-protect
@@ -94,7 +94,7 @@
   (load-models-n-stuff)
   
   (setf *level* (blt3d-gfx:load-obj->models 
-                 (blt3d-imp:load-dae #p "res/models/PlatformRoom.dae")))
+                 (blt3d-imp:load-dae #p"res/models/PlatformRoom.dae")))
 
   (setf *random-state* (make-random-state t))
 
@@ -108,7 +108,13 @@
     (sdl:with-init ()
       (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
+      (sdl-mixer:open-audio)
       (blt3d-gfx:prepare-scene)
+
+      (sdl-mixer:play-music
+       (sdl-mixer:load-music
+        (blt3d-res:resolve-resource #p"res/sound/music.mp3"))
+       :loop t)
 
       (sdl:with-events ()
         (:quit-event () t)

@@ -71,8 +71,7 @@
 
 (defun finalize-client ()
   (socket-disconnect-all)
-  (sdl-mixer:halt-music)
-  (sdl-mixer:close-audio))
+  (blt3d-snd:exit))
 
 (defmacro with-finalize-client (() &body body)
   `(unwind-protect
@@ -108,17 +107,11 @@
     (sdl:with-init ()
       (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
-      (sdl-mixer:open-audio)
+      (blt3d-snd:init)
       (blt3d-rend:prepare-scene)
 
-      (handler-case
-          (sdl-mixer:play-music
-           (sdl-mixer:load-music
-            (blt3d-res:resolve-resource #p"res/sound/music.mp3"))
-           :loop t)
-        (error ()
-          ;; Don't crash if we can't load the music for some reason...
-          ))
+      (blt3d-snd:play-sound
+       (blt3d-snd:load-sound :music #p"res/sound/music.mp3") :loop t)
 
       (sdl:with-events ()
         (:quit-event () t)

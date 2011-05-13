@@ -80,6 +80,7 @@
   (set-next-clip this clip)
   (setf (state this) :run))
 
+#+disabled
 (defmethod play-clip ((this anim-controller)))
 
 (defun next-clip (controller)

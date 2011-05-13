@@ -72,6 +72,9 @@
 
 (defun make-plane (n d)
   (cons n d))
+(defun make-plane-abcd (a b c d)
+  (cons (vector a b c) d))
+
 (defun plane-n (plane)
   (car plane))
 (defun plane-dist (plane point)

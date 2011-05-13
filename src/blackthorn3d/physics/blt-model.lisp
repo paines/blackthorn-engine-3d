@@ -39,6 +39,17 @@
     :accessor animations
     :initarg :animations)))
 
+(defun instance-model (model)
+  "Creates an instance of MODEL. the instance will link to all the same
+   mesh data as the original, but have separate nodes, allowing the application
+   to specify different transforms, animation states, and materials.  
+   Will also register the instance in the table"
+  (with-slots (mesh-nodes animations) model
+    (make-instance 'blt-model
+                   :mesh-nodes (iter (for node in mesh-nodes)
+                                     (collect (copy-model-node node)))
+                   :animations (copy-anim-controller animations))))
+
 (defclass vertex-stream ()
   ((semantic
     :accessor vs-semantic
@@ -209,6 +220,17 @@
                  :child-nodes children
                  :bounding-volume (make-bounding-volume
                                    (get-stream :vertex mesh))))
+
+(defun copy-model-node (node)
+  (with-slots (id transform material-array mesh child-nodes bounding-volume) node
+    (make-model-node 
+     :id id
+     :transform transform
+     :material-array material-array
+     :mesh mesh
+     :child-nodes (iter (for child in  child-nodes)
+                        (collect (copy-model-node child)))
+     :bounding-volume bounding-volume)))
 
 #+disabled
 (defmethod finalize ((this blt-mesh) &key (xform-bv t))

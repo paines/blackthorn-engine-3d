@@ -166,17 +166,14 @@
                        (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))))))
         (let (min-d)
           ;; Side v0->v1
-         ; (format t "testing v0 v1~%")
           (setf min-d (side-test (tri-v0 tri) (tri-v1 tri)))
           
           ;; Side v0->v2
-         ; (format t "testing v0 v2~%")
           (let ((t2 (side-test (tri-v0 tri) (tri-v2 tri))))
             (if (and min-d t2 (< (car t2) (car min-d)))
                 (setf min-d t2)))
           
           ;; Side v1->v
-         ; (format t "testing v1 v2~%")
           (let ((t3 (side-test (tri-v1 tri) (tri-v2 tri))))
             (if (and min-d t3 (< (car t3) (car min-d)))
                 (setf min-d t3)))
@@ -213,44 +210,3 @@
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0)))
              )))))
-;; Was looking at 
-;; http://www.geometrictools.com/Documentation/DistancePoint3Triangle3.pdf
-#+disabled
-(defun point-triangle-distance (point tri)
-  "returns the minimum distance from a point to a triangle"
-  (let* ((d-vec (vec3- (tri-v0 tri) point))
-         (e0 (vec3- (tri-v1 tri) (tri-v0 tri)))
-         (e1 (vec3- (tri-v2 tri) (tri-v0 tri)))
-         (a (dot e0 e0))
-         (b (dot e0 e1))
-         (c (dot e1 e1))
-         (e (dot e1 d-vec))
-         (f (dot d d))
-         (delta (abs (- (* a c) (* b b)))))
-    (let ((det (- (* a c) (* b b)))
-          (sp (- (* b e) (* c d)))
-          (tp (- (* b d) (* a e))))
-            
-      (if (<= (+ sp tp) det)
-          (if (< sp 0)
-              (if (< tp 0)
-                  ;; Region 4
-                  ()
-                  ;; Region 3
-                  ())
-              (if (< tp 0)
-                  ;; Region 5
-                  ()
-                  ;; Region 0
-                  (let ((inv-det (/ 1 det)))
-                    (setf sp (* sp inv-det)
-                          tp (* tp inv-det)))))
-          ;; Else sp + tp < det
-          (if (< sp 0)
-              ;; Region 2
-              ()
-              (if (< tp 0)
-                  ;; Region 6
-                  ()
-                  ;; Region 1
-                  (if ())))))))

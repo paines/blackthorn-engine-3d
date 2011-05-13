@@ -26,12 +26,23 @@
 
 (in-package :blackthorn3d-physics)
 
+;; returns a list (lows highs)
+(defgeneric shape-bounds (shape))
+
+;; May need to add triangle class
+
 (defclass bounding-shape ()
   ((pos :accessor pos :initarg :pos)))
 
 (defclass bounding-sphere (bounding-shape)
   ((rad :accessor rad :initarg :rad))
   (:documentation "sphere object, used in collision detection"))
+
+(defmethod shape-bounds ((sphere bounding-sphere))
+  (with-slots (rad pos) sphere
+    (let ((disp-vec (make-vec3 rad rad rad)))
+      (list (vec3+ pos disp-vec)
+            (vec3- pos disp-vec)))))
 
 (defclass aa-bounding-box (bounding-shape)
   ((a-min
@@ -76,7 +87,7 @@
 ;; By Robert - note, changed to defun, as there isn't a reason for it to
 ;;             be a method
 (defun find-bounding-points (vect-array)
-  (iter (for i in-vector vect-array)
+  (iter (for i in-vector (subseq vect-array 0 3))
 	(maximizing (aref i 0) into max-x)
 	(maximizing (aref i 1) into max-y)
 	(maximizing (aref i 2) into max-z)
@@ -85,6 +96,11 @@
 	(minimizing (aref i 2) into min-z)
 	(finally (return (vector (make-point3 min-x min-y min-z) 
 				 (make-point3 max-x max-y max-z))))))
+
+;; for trianles only!!! even though it allows all simple vectors
+(defmethod shape-bounds ((tri simple-vector))
+  (let ((bounds (find-bounding-points tri)))
+    (list (svref bounds 0) (svref bounds 1))))
 
 (defmethod make-bounding-box (vect-array)
   (let* ((pos-list (find-bounding-points vect-array))

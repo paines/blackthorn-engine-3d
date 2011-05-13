@@ -40,7 +40,9 @@
     :initarg :top-left)
    (bottom-right
     :accessor frstm-bottom-right
-    :initarg :bottom-right)))
+    :initarg :bottom-right)
+   (proj-matrix
+    :initarg :proj-matrix)))
 
 (defun make-frstm (near far aspect fov)
   (let* ((width (/ (calc-width near fov) 2.0))
@@ -49,7 +51,10 @@
                    :near near
                    :far far
                    :top-left (vector height (- width))
-                   :bottom-right (vector (- height) width))))
+                   :bottom-right (vector (- height) width)
+                   :proj-matrix (make-projection (- width) width
+                                                 height (- height)
+                                                 near far))))
 
 (defun calc-width (near fov)
   (* near 
@@ -62,7 +67,8 @@
                (br bottom-right)) this
     (gl:matrix-mode :projection)
     (gl:load-identity)
-    (gl:frustum (svref tl 1) (svref br 1)
+    (gl:load-matrix (slot-value this 'proj-matrix))
+    #+disabled(gl:frustum (svref tl 1) (svref br 1)
                 (svref br 0) (svref tl 0)
                 near far)
     (gl:matrix-mode :modelview)))
@@ -77,3 +83,39 @@
           (top (svref tl 0))
           (bottom (svref br 0)))
       (make-projection left right top bottom near far))))
+
+(defvar +planes+ '(:left :right :bottom :top :near :far))
+
+(defun get-plane (pmat plane)
+  (case plane
+    (:top (make-plane (vec- (row pmat 3) (row pmat 1))
+                      (- (aref pmat 3 3) (aref pmat 3 1))))
+    (:bottom (make-plane (vec+ (row pmat 3) (row pmat 1))
+                         (+ (aref pmat 3 3) (aref pmat 3 1))))
+    (:left (make-plane (vec3+ (row pmat 3) (row pmat 0)) 
+                       (+ (aref pmat 3 3) (aref pmat 3 0))))
+    (:right (make-plane (vec3- (row pmat 3) (row pmat 0))
+                        (- (aref pmat 3 3) (aref pmat 3 0))))
+    (:near (make-plane (vec3+ (row pmat 3) (row pmat 2))
+                       (+ (aref pmat 3 3) (aref pmat 3 2))))
+    (:far (make-plane (vec3- (row pmat 3) (row pmat 2))
+                      (- (aref pmat 3 3) (aref pmat 3 2))))
+    (otherwise nil)))
+
+(defmethod frustum-intersect-p ((this frustum) (bv bounding-sphere))
+  "@return{:outide for totally outside
+           :inside for totally inside
+           :intersect for part in part out"
+  (with-slots (proj-matrix) this
+    (with-slots (pos rad) bv
+      (let ((planes (iter (for i in +planes+) 
+                          (collect (get-plane M i)))))
+        (iter (for plane in planes)
+              (for dist = (plane-dist plane pos))
+              (when (> dist rad)
+                (return-from frustum-intersect-p :outside))
+              (maximizing dist into max-dist)
+              (finally 
+               (if (< max-dist (- rad)) 
+                   (return :inside)
+                   (return :intersect))))))))

@@ -76,6 +76,7 @@
    :make-triangle
 
    ;; shapes.lisp
+   :bounding-shape
    :bounding-sphere
 
    ;; aa-bounding-box

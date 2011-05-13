@@ -111,10 +111,14 @@
       (sdl-mixer:open-audio)
       (blt3d-rend:prepare-scene)
 
-      (sdl-mixer:play-music
-       (sdl-mixer:load-music
-        (blt3d-res:resolve-resource #p"res/sound/music.mp3"))
-       :loop t)
+      (handler-case
+          (sdl-mixer:play-music
+           (sdl-mixer:load-music
+            (blt3d-res:resolve-resource #p"res/sound/music.mp3"))
+           :loop t)
+        (error ()
+          ;; Don't crash if we can't load the music for some reason...
+          ))
 
       (sdl:with-events ()
         (:quit-event () t)

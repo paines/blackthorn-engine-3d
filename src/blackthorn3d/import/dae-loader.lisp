@@ -236,7 +236,7 @@
     (make-instance 
      'blt-model
      :nodes meshes
-     :animations (when anims (make-animation-controller anims)))))
+     :animations (when anims (make-anim-controller anims)))))
 
 
 

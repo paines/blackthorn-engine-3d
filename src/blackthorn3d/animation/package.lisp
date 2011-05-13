@@ -38,8 +38,9 @@
 
    ;; animation.lisp
    :anim-controller
-   :make-animation-controller
+   :make-anim-controller
    :update-anim-controller
+   :copy-anim-controller
    :play-clip
    :state
   

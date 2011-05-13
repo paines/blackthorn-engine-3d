@@ -146,8 +146,8 @@
     (iter (for bv in list-bv)
       (maximizing ))))
 
-#+disabled
 (defmethod transform-bounding-volume ((this bounding-sphere) xform)
   (with-slots (rad pos) this
-    (setf pos (matrix-multiply-v xform pos)
-          rad (* rad scale-factor xform))))
+    (make-instance 'bounding-sphere
+                 :pos (matrix-multiply-v xform pos)
+                 :rad (* rad (max (extract-scale xform))))))

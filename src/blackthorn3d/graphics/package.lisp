@@ -27,8 +27,11 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-ent :blt3d-phy :blt3d-ani)
+  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani)
   (:export
+
+   ;; init.lisp
+;   :init
 
    ;; draw.lisp
    :draw-triangle
@@ -40,15 +43,6 @@
    :gfx-init
    :gfx-draw
    :draw-object
-
-   ; render.lisp
-   :init
-   :prepare-scene
-   :*main-cam*
-   :set-camera
-   :*main-cam-quat*
-   :render-frame
-   :update-graphics
 
    ;; frustum.lisp
    :frustum
@@ -75,6 +69,16 @@
    :model-shape
    :load-obj->models
    :controller
+   :update-model
+
+   ;; light.lisp
+   :light
+   :init-light
+   :make-light
+
+   ;; shader.lisp
+   :make-shader
+   :use-shader
   
    ))
         

@@ -223,7 +223,7 @@
 
 (defun copy-model-node (node)
   (with-slots (id transform material-array mesh child-nodes bounding-volume) node
-    (make-model-node 
+    (make-instance 'model-node
      :id id
      :transform transform
      :material-array material-array
@@ -370,6 +370,7 @@
             (iter (for i below (slot-value element count))
                   (collect (tri-in-elt element vertices i)))))))
 
+#+disabled
 (defun tri-bounds (tri)
   (find-bounding-points (subseq tri 0 3)))
 
@@ -382,4 +383,3 @@
    (iter (for node in (mesh-nodes this))
          (collect (bounding-volume
                    (mesh node))))))
-

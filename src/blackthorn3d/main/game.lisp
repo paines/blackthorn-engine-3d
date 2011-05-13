@@ -26,5 +26,7 @@
 (in-package :blackthorn3d-main)
 
 
- 
-(defun load-level () nil)
+;; server side only
+(defun load-level ()
+  ;(register-model-loader :dae #'(lambda (path) nil))
+)

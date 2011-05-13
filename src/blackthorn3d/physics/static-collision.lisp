@@ -95,12 +95,17 @@
    that, since currently the bounding volume of a node is not 
    guaranteed to enclose its children, the children must always be
    tested"
-  (min-collide
-   (cons (aif (collide-test bv (node-bounding-shape node))
-              ;; if we intersect the bounding-shape, check the mesh
-              (collide-test bv (mesh node)))
-         (iter (for child in (child-nodes node))
-               (collect (collide-test bv child))))))
+  ;; We need to translate, and transform, the collidee to the 
+  ;; node coordinates.  We do this instead of translating the 
+  ;; node b/c it's a lot easier to translate a bounding sphere than
+  ;; an r-tree.
+  (let ((xformed-bv (transform-bounding-volume bv (transform node))))
+    (min-collide
+     (cons (aif (collide-test xformed-bv (node-bounding-shape node))
+                ;; if we intersect the bounding-shape, check the mesh
+                (collide-test xformed-bv (mesh node)))
+           (iter (for child in (child-nodes node))
+                 (collect (collide-test xformed-bv child)))))))
 
 (defmethod collide-test ((bv bounding-shape) (mesh blt-mesh))
   t)

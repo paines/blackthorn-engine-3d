@@ -374,7 +374,7 @@
 (defun extract-scale (mat)
   "Extract the scale factors of an affine transform
    @return{a vec3 with the scale along each axis}"
-  (make-vec3
+  (list
    (mag (row mat 0))
    (mag (row mat 1))
    (mag (row mat 2))))

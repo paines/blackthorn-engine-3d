@@ -39,6 +39,12 @@
     :initarg :ambient
     :initform #(0.0 0.0 0.0 1.0))))
 
+(defun make-light (&key position diffuse ambient)
+  (make-instance 'light
+                 :position position
+                 :diffuse diffuse
+                 :ambient ambient))
+
 (defmethod init-light ((this light) gl-light)
   (gl:light gl-light :position (light-pos this))
   (gl:light gl-light :diffuse (light-diff this))

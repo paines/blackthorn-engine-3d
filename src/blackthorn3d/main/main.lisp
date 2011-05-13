@@ -94,7 +94,7 @@
   ;; Initialization:
   (setup-paths)
   (load-dlls)
-  (blt3d-gfx:init)
+  (blt3d-rend:init)
 
   (setf mt19937:*random-state* (mt19937:make-random-state t))
 
@@ -103,7 +103,7 @@
     (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                 :title-caption "Test" :icon-caption "Test")
 
-    (blt3d-gfx:prepare-scene)
+    (blt3d-rend:prepare-scene)
 
     ;; Main loop:
     (let ((input-queue (make-instance 'containers:basic-queue))
@@ -154,7 +154,7 @@
                   (vec4+ (pos box-entity)
                          (make-vec3 (float x-amt) 0.0 (float z-amt)))))
 
-          (blt3d-gfx:render-frame (list box-entity))
+          (blt3d-rend:render-frame (list box-entity))
 
           #+disabled
           (let ((x (* 2 (abs (xbox360_get_lx 0))))

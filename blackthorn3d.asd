@@ -114,7 +114,12 @@
                                                (:file "draw")
                                                (:file "vao")
                                                (:file "frustum")
-                                               (:file "camera")
+                                               (:file "camera"))
+                                              :serial t)
+                                     (:module renderer
+                                              :components
+                                              ((:file "package")
+                                               (:file "scene-manager")
                                                (:file "render"))
                                               :serial t)
                                      (:module input

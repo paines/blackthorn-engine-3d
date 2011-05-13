@@ -34,7 +34,7 @@
   (iter (for entity in entities)
         (use-model-on (shape-name entity) entity)
         #+disabled (setf (blt3d-ani:state 
-                          (blt3d-gfx:controller (shape entity))) :loop)))
+                          (blt3d-rend:controller (shape entity))) :loop)))
 
 (defun handle-entity-update-client (src entities)
   (iter (for entity in entities)
@@ -50,7 +50,7 @@
 
 (defun handle-camera-client (src camera-event)
   (let ((camera (camera-event-camera camera-event)))
-    (blt3d-gfx:set-camera camera)))
+    (blt3d-rend:set-camera camera)))
 
 (defun handle-message-client (src message)
   (ecase (message-type message)
@@ -86,7 +86,7 @@
 (defun client-main (host port)
   (setup-paths)
   (load-dlls)
-  (blt3d-gfx:init)
+  (blt3d-rend:init)
 
   (register-model-loader :dae #'(lambda (path) 
     (blt3d-gfx:load-obj->models (blt3d-imp:load-dae path))))
@@ -109,7 +109,7 @@
       (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
       (sdl-mixer:open-audio)
-      (blt3d-gfx:prepare-scene)
+      (blt3d-rend:prepare-scene)
 
       (sdl-mixer:play-music
        (sdl-mixer:load-music
@@ -145,9 +145,9 @@
                                              :view-y (* 0.1 vy))))
 
 
-         (blt3d-gfx:update-graphics (list-entities) 1/60)
+         (blt3d-rend:update-graphics (list-entities) 1/60)
 
-         (blt3d-gfx:render-frame (list-entities) *level*)
+         (blt3d-rend:render-frame (list-entities) *level*)
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))

@@ -49,6 +49,11 @@
              (+ r1 r2))
           t nil))))
 
+(defmethod collide-test ((s1 bounding-sphere) (s2 bounding-sphere))
+  (when (collide-p s1 s2)
+    (list (/ (sq-mag (vec3- (pos s2) (pos s1))))
+          (vec3+ (pos s1) (vec-scale3 (vec3- (pos s2) (pos s1)) 0.5)))))
+
 ;; Box-Box intersection
 (defmethod collide-p ((bv1 aa-bounding-box) (bv2 aa-bounding-box))
   (with-slots (a-min a-max) bv1

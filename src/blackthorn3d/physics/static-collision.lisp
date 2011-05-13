@@ -51,6 +51,68 @@
 (defun sphere-rtree-intersection (sphere rtree)
   ;; get the list of potentially intersecting triangles
   (iter (for tri in (spatial-trees:search sphere rtree))
-        (for result = (sphere-triangle-intersection sphere tri))
-        (until result)
-        (finally (return result))))
+        (collect (sphere-triangle-intersection sphere tri) into results)
+        (finally 
+         (return (iter (with min-d = `(1.0e+INF nil))
+                       (for hit in results)
+                       (unless (null hit)
+                         (when (< (car hit) (car min-d))
+                           (setf min-d hit)))
+                       (finally (return min-d)))))))
+
+(defun initialize-cube (level-model)
+  "Take a model file contains level information 
+  (a 30x30x30 cube) and create a thinger out of it.
+  r-tree...thinger...replace the blt-meshes with r-trees"
+  (labels ((helper (node)
+             (setf (mesh node)
+                   (build-r-tree (build-triangle-array (mesh node))))
+             (iter (for n in (child-nodes node))
+                   (helper n)))))
+  (iter (for node in (mesh-nodes level-model))
+        (helper node))
+  level-model)
+
+(defun min-collide (hits)
+  "Return the hit with the smallest distance from the collider"
+  (when hits
+    (iter (with min-d = '(1.0e+INF nil))
+          (for hit in hits)
+          (when (< (car hit) (car min-d))
+            (setf min-d hit))
+          (finally (return min-d)))))
+
+;(defgeneric collide-test (bv bv))
+(defmethod collide-test ((bv bounding-shape) (model blt-model))
+  "returns a point p if bv intersects with the geometry of model
+   nil otherwise"
+  (min-collide
+   (iter (for node in (mesh-nodes model))
+         (collect (collide-test bv node)))))
+
+(defmethod collide-test ((bv bounding-shape) (node model-node))
+  "recursively tests bv against this node and its children.  Note
+   that, since currently the bounding volume of a node is not 
+   guaranteed to enclose its children, the children must always be
+   tested"
+  (min-collide
+   (cons (aif (collide-test bv (node-bounding-shape node))
+              ;; if we intersect the bounding-shape, check the mesh
+              (collide-test bv (mesh node)))
+         (iter (for child in (child-nodes node))
+               (collect (collide-test bv child))))))
+
+(defmethod collide-test ((bv bounding-shape) (mesh blt-mesh))
+  t)
+
+(defmethod collide-test ((sphere bounding-sphere) 
+                         (r-tree spatial-trees-protocol:spatial-tree))
+  (iter (for tri in (spatial-trees:search sphere rtree))
+        (collect (sphere-triangle-intersection sphere tri) into results)
+        (finally 
+         (return (iter (with min-d = `(1.0e+INF nil))
+                       (for hit in results)
+                       (unless (null hit)
+                         (when (< (car hit) (car min-d))
+                           (setf min-d hit)))
+                       (finally (return min-d)))))))

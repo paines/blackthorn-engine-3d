@@ -23,34 +23,40 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-graphics)
 
-(defpackage :blackthorn3d-animation
-  (:nicknames :blt3d-ani)
-  (:use :iter :cl :alexandria :userial :blt3d-math)
-  (:export
-   ;; channels.lisp
-   :channel
-   :make-channel
-   :frames
-   :target
-   :t-max
 
-   ;; animation.lisp
-   :anim-controller
-   :make-anim-controller
-   :update-anim-controller
-   :copy-anim-controller
-   :play-clip
-   :state
-  
-   :update-clip
-   :animation-clip
-   :t-start
-   :t-end
-   :channel-lst
+;;;
+;;; Skin - like a mesh but with skin
+;;;
 
-   :time-step
-   :value
+;; The formats meshes can use:
+;; Note that I would like to sometime write a macro that 
+;; will create component information, and maybe even
+;; accessors to make things nice and easy 
+(gl:define-gl-array-format blt-vntwi-skin
+  (gl:vertex :type :float :components (px py pz))
+  (gl:normal :type :float :components (nx ny nz))
+  (gl:tex-coord :type :float :components (u v))
+  (gl:vertex-attrib :type :float :index 3 :components (i0 i1 i2 i3))
+  (gl:vertex-attrib :type :float :index 4 :components (w0 w1 w2 w3)))
+(defparameter *blt-skin-components* '(px py pz 
+                                      nx ny nz 
+                                      u v
+                                      i0 i1 i2 i3
+                                      w0 w1 w2 w3))
 
-   ))
+;; the class
+(defclass skin (mesh)
+  ((mesh
+    :accessor skin-mesh
+    :initarg :mesh)
+   (bind-skeleton
+    :accessor bind-skeleton
+    :initarg :bind-skeleton
+    :documentation "the skeleton this skin is bound to")
+   (bind-shape-matrix
+    :accessor bind-shape-matrix
+    :initarg :bind-shape-matrx
+    :initform (make-identity-matrix))))
+

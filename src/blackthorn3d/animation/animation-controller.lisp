@@ -52,13 +52,23 @@
                     (channel target-fn last-frame) where last-frame
                     is an optimization for channel")))
 
-(defun make-animation-controller (clips)
+(defun make-anim-controller (clips)
   (make-instance
    'anim-controller
    :current-clip (car clips)
    :state :loop
    :clips clips))
 
+(defun copy-anim-controller (controller)
+  (with-slots (channel-bindings clips state elapsed current-clip next-clip)
+      controller
+    (make-instance 'animation-controller
+                   :channel-bindings channel-bindings
+                   :clips clips
+                   :state state
+                   :current-clip current-clip
+                   :next-clip next-clip
+                   :elapsed elapsed)))
 
 (defun set-next-clip (controller clip)
   (with-slots (current-clip next-clip state) controller
@@ -69,6 +79,8 @@
 (defmethod play-clip ((this anim-controller) clip)
   (set-next-clip this clip)
   (setf (state this) :run))
+
+(defmethod play-clip ((this anim-controller)))
 
 (defun next-clip (controller)
   (with-slots (current-clip next-clip state) this

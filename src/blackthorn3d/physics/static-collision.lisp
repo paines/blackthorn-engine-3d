@@ -23,34 +23,34 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-physics)
 
-(defpackage :blackthorn3d-animation
-  (:nicknames :blt3d-ani)
-  (:use :iter :cl :alexandria :userial :blt3d-math)
-  (:export
-   ;; channels.lisp
-   :channel
-   :make-channel
-   :frames
-   :target
-   :t-max
+;;;
+;;; Collection of tools for static collision detection
+;;; This should be put somewhere else...
+;;;
 
-   ;; animation.lisp
-   :anim-controller
-   :make-anim-controller
-   :update-anim-controller
-   :copy-anim-controller
-   :play-clip
-   :state
-  
-   :update-clip
-   :animation-clip
-   :t-start
-   :t-end
-   :channel-lst
 
-   :time-step
-   :value
+(defun make-rect (shape)
+  (destructuring-bind (lows-v highs-v) (shape-bounds shape)
+    (rectangles:make-rectangle
+     :lows (list (x lows-v) (y lows-v) (z lows-v))
+     :highs (list (x highs-v) (y highs-v) (z highs-v)))))
 
-   ))
+(defun build-r-tree (triangles)
+  "take a vector of triangles and return an r-tree around them"
+  (let ((r-tree 
+         (spatial-trees:make-spatial-tree :r 
+                                          :rectfun #'make-rect)))
+    (iter (for tri in-vector triangles)
+          (spatial-trees:insert tri r-tree))
+    r-tree))
+
+;; For now, we'll just return t or nil
+;; probably will want the hit location ... 
+(defun sphere-rtree-intersection (sphere rtree)
+  ;; get the list of potentially intersecting triangles
+  (iter (for tri in (spatial-trees:search sphere rtree))
+        (for result = (sphere-triangle-intersection sphere tri))
+        (until result)
+        (finally (return result))))

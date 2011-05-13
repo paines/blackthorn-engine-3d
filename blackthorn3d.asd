@@ -84,6 +84,7 @@
                                                (:file "shapes")
                                                (:file "blt-model")
                                                (:file "intersect")
+                                               (:file "static-collision")
                                                (:file "collision")
                                                (:file "motion")
                                                (:file "skeleton"))
@@ -146,6 +147,7 @@
                  :cl-containers
                  :mt19937
                  :cxml
+                 :spatial-trees
 
                  ;; Networking
                  :usocket

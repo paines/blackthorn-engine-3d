@@ -129,6 +129,7 @@
                                               ((:file "package")
                                                (:file "player")
                                                (:file "simple-monster")
+                                               (:file "game")
                                                (:file "server")
                                                (:file "alarm")
                                                (:file "client")

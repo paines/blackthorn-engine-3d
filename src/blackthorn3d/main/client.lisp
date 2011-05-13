@@ -110,8 +110,9 @@
       (blt3d-snd:init)
       (blt3d-rend:prepare-scene)
 
-      (blt3d-snd:play-sound
-       (blt3d-snd:load-sound :music #p"res/sound/music.mp3") :loop t)
+      (let ((music (blt3d-snd:load-sound :music #p"res/sound/music.mp3")))
+        (when music
+          (blt3d-snd:play-sound music :loop t)))
 
       (sdl:with-events ()
         (:quit-event () t)

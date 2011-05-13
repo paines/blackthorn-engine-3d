@@ -28,6 +28,10 @@
 (defun init ()
   (sdl-mixer:open-audio))
 
+(defun init-p ()
+  (let ((open (sdl-mixer:audio-opened-p)))
+    (and open (> open 0))))
+
 (defun exit ()
   ;;(sdl-mixer:halt-music)
   (sdl-mixer:close-audio))
@@ -42,19 +46,15 @@
 (defgeneric load-sound (type src))
 
 (defmethod load-sound ((type (eql :music)) src)
-  (let ((sound (sdl-mixer:load-music (resolve-resource src))))
-    (make-instance 'music :src src :sound sound)))
+  (when (init-p)
+    (let ((sound (sdl-mixer:load-music (resolve-resource src))))
+      (make-instance 'music :src src :sound sound))))
 
 (defgeneric play-sound (sound &key))
 
 (defmethod play-sound ((music music) &key loop)
-  (handler-case
-      (progn
-        (sdl-mixer:play-music (sound music) :loop loop)
-        nil)
-    (error (err)
-      ;; Don't crash if we can't load the music for some reason...
-      (format t "play-sound: err ~s~%" err))))
+  (when (init-p)
+    (sdl-mixer:play-music (sound music) :loop loop)))
 
 (defgeneric stop-sound (type &key))
 

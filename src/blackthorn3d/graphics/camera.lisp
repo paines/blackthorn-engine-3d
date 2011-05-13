@@ -58,7 +58,9 @@
   (setf (matrix c) (camera-inverse c)))
 
 (defvar +phi-scale+ nil)
+(defvar +theta-scale nil)
 (setf +phi-scale+ -0.2)
+(setf +theta-scale+ 0.2)
 
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
@@ -69,13 +71,21 @@
       ;; note2: this allows the camera to lazily rotate around
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
-                                        ;#+disabled
-      (let ((look-at (vec4+ t-pos (make-vec3 0.0 2.0 0.0))))
+
+      ;; look-at is an offset from the entity....hopefully we replace
+      ;; this eventually
+      (let ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0))))
+        ;; set phi
+        ;; TODO:- make this suck less
         (setf (elt ideal-coord 0)
               (aif (/= 0 (x input-vec))
                    (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
                    (+ (atan (- (x pos) (x look-at))
                             (- (z pos) (z look-at))))))
+        ;; set theta
+        (aif (/= 0 (y input-vec))
+             (setf (elt ideal-coord 1)
+                   (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec)))))
         
         ;; calculate the camera's movement
         (let* ((ideal-pos (vec4+ look-at (spherical->cartesian ideal-coord)))

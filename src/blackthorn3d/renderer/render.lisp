@@ -76,7 +76,7 @@
   (format t "### LOADING SCIENTIST ###~%")
   ;#+disabled
   (let ((scientist-model 
-         (blt3d-imp:load-dae #p "res/models/scientist-01.dae")))
+         (blt3d-imp:load-dae #p "res/models/scientist-02.dae")))
     
     (setf *test-skele* (load-obj->models scientist-model)))
 

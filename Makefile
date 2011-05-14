@@ -66,7 +66,7 @@ ifeq (${cl}, sbcl)
 	get-property = $(shell sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 else
 ifeq (${cl}, sbcl-builtin)
-	get-property = $(shell SBCL_HOME=$(shell build/scripts/pwd.sh)/build/sbcl/ build/sbcl/sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
+	get-property = $(shell SBCL_HOME="$(shell build/scripts/pwd.sh)/build/sbcl/" build/sbcl/sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 else
 ifeq (${cl}, clisp)
 	get-property = $(shell clisp -x "(load \"${quicklisp-setup}\")" -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${prop}\")")
@@ -122,7 +122,7 @@ load-sbcl:
 
 .PHONY: load-sbcl-builtin
 load-sbcl-builtin:
-	SBCL_HOME=$(shell build/scripts/pwd.sh)/build/sbcl/ build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
+	SBCL_HOME="$(shell build/scripts/pwd.sh)/build/sbcl/" build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: load-clisp
 load-clisp:

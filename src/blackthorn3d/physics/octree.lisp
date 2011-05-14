@@ -27,9 +27,6 @@
 (in-package :blackthorn3d-physics)
 
 
-;;; @Michael: this can all be rewritten, i was mostly playing around
-;;; with it, but it was headed for a strict octree. 
-
 ;;;
 ;;; Spatial trees.
 ;;;  all spatial trees require that the primitives being used
@@ -45,88 +42,57 @@
 ;; For dynamic collision detection, and potentially more??
 ;; Octree is contructed as cube
 
-(defclass octree ()
-  ((threshold)
-   (max-depth)))
+(defclass octree-node ()
+  ((threshold :accessor threshold :initarg :threshold :initform 1)
+   (max-depth :accessor max-depth :initarg :max-depth :initform 3)
+   (depth :accessor depth :initarg :depth :initform 0)
+   (growth-k :accessor growth-k :initarg :growth-k :initform 2)
+   (width :accessor width :initarg :width :initform 8) ;width is 1/2 full box
+   (children :accessor children :initarg :children :initform nil)
+   (objects :accessor objects :initarg :objects :initform nil)
+   (center :accessor center :initarg :center :initform nil)
+   ))
 
+(defclass octree (octree-node))
 
-;; classification:
-;; 9: current cell, ie, isn't contained in a child
-;; 1: (- - -)
-;; 2: (+ - -)
-;; 3: (- + -)
-;; 4: (+ + -)
-;; ... etc
-(defvar +current-cell+ 9)
-(defun classify-pt (pt cell-center)
-  (iter (for i below 3)
-        (when (> (svref pt i) (svref cell-center i))
-          (sum (ash 1 i)))))
+(defmethod make-octree (center width max-depth growth-k)
+  (make-instance 'octree :center center :width width 
+		         :max-depth max-depth :growth-k growth-k))
 
-(defun classify-obj (obj cell-center)
-  (let* ((centroid ())
-         (min-pt ())
-         (max-pt ())
-         (min-pt-classification (classify-pt min-pt)))
-    ;; Test if the object spans multiple boxes. 
-    ;;  in this case we return 0 
-    ;;  otherwise return the cell it was in
-    (if (= min-pt-classification (classify-pt max-pt))
-         min-pt-classification
-         +current-cell+)))
+(defmethod make-child-node ((node octree-node) i)
+  (with-slots (width max-depth growth-k depth center) node
+    (make-instance octree-node :width (/ width 2) :max-depth max-depth
+		   :depth (- depth 1) :growth-k growth-k
+		   :center (vec3+ center (vec-scale4 (/ width 2) 
+					             (case i 
+                                                           (0 #(-1 -1 -1))
+                                                           (1 #(-1 -1 +1))
+                                                           (2 #(-1 +1 -1))
+                                                           (3 #(-1 +1 +1))
+                                                           (4 #(+1 -1 -1))
+                                                           (5 #(+1 -1 +1))
+							   (6 #(+1 +1 -1))
+							   (7 #(+1 +1 +1))))))))
 
-(defmacro grid-center-offset (id bounds)
-  (with-gensyms (center radius)
-    (let ((arr 
-           #(#(-0.5 -0.5 -0.5)
-             #( 0.5 -0.5 -0.5)
-             #(-0.5  0.5 -0.5)
-             #( 0.5  0.5 -0.5)
-             #(-0.5 -0.5  0.5)
-             #( 0.5 -0.5  0.5)
-             #(-0.5  0.5  0.5)
-             #( 0.5  0.5  0.5))))
-      `(destructuring-bind (,center . ,radius) ,bounds
-         (vec3+ ,center (vec-scale3 (aref ,array ,id) ,radius))))))))))
+(defmethod make-children ((node octree-node))
+  (setf (children node) 
+    (iter (for i below 8)
+      (collect (make-child-node node i) result-type 'vector)))
+  (when (> (depth node) 0)
+    (iter (for i below 8)
+      (make-children (aref (children node) i)))))
 
-;; structure of an octree node is:
-;; (objs bounds children)
-;; where children is: #(c0 c1 c2 c3 c4 c5 c6 c7)
-(defun build-octree (objs bounds current-depth 
-                     threshold maximum-depth growth-k)
-  (labels ((select-by-child (obj-lst child-no)
-             (iter (for obj in obj-lst)
-                   (when (= child-no (car obj))
-                     (collect (cdr obj) result-type 'vector)))))
-    (let ((n-objs (length objs)))
+(defmethod initialize-instance :after ((octree octree) &key)
+  (make-children octree))
 
-      ;; Test if we should end recursion here. If so, then make a leaf
-      ;; Otherwise we split the objects up into 9 sequences
-      (if (or (<= n-objs threshold) 
-              (>= current-depth maximum-depth))
-          (make-octree-leaf objs)
-
-          (progn          
-            (let ((classified-objs 
-                   (iter (for object in objs)
-                         (collect 
-                             (cons (classify-obj object (car bounds)) 
-                                   object)))))
-              (list 
-               ;; Gather the objects (if any) that belong in this cell
-               (select-by-child classified-objs +current-cell+)
-
-               ;; Set the bounds
-               bounds
-
-               ;; iterate over each child and call build-octree recursively
-               (iter (for child-id below 8)
-                     ;; gather objects
-                     (build-octree
-                      ;; Gather objects
-                      (select-by-child classified-objs child-id)
-                      ;; Find bounds
-                      (cons (grid-center-offset i bounds)
-                            (* 0.5 (cdr bound)))
-                      (1+ current-depth)
-                      threshold maximum-depth growth-k)))))))))
+(defmethod insert ((node octree-node) (object blt3d-ent:entity-server))
+  (with-slots (width center children) node
+    (let ((object-pos 
+	   (move-bounding-volume (blt3d-ent:bounding-volume object) 
+				 (pos object)))
+	  (object-rad (rad (blt3d-ent:bounding-volume object)))))))
+      
+      ;check if radius inside
+      ;check if appropiate size
+      ;insert into children
+      

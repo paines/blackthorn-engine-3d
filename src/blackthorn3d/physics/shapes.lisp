@@ -141,8 +141,8 @@
   (labels ())
   (let ((mid-point (iter (for bv in list-bv)
 		     (with-slots (pos) bv
-		       (reducing pos by vec4+ into sum-vec))
-		     (finally (vec-scale sum-vec (/ 1 (length list-bv)))))))
+		       (reducing pos by #'vec4+ into sum-vec))
+		     (finally (vec-scale4 sum-vec (/ 1 (length list-bv)))))))
     (iter (for bv in list-bv)
           (with-slots (pos rad) bv
             (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 

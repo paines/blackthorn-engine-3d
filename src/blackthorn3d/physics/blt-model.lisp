@@ -368,9 +368,9 @@
 (defun tri-in-elt (elem vs index)
   (let ((i (* 3 index)))
     (make-triangle
-     (v0 (vs-ref vertices i))
-     (v1 (vs-ref vertices (+ i 1)))
-     (v2 (vs-ref vertices (+ i 2))))))
+     (vs-ref vs i)
+     (vs-ref vs (+ i 1))
+     (vs-ref vs (+ i 2)))))
 
 (defmethod triangle-at ((this blt-mesh) index)
   (with-slots (elements vertex-streams) this
@@ -380,11 +380,11 @@
               (for s first 0 then (+ s (slot-value elt count)))
               (for last-s previous s initially 0)
               (finding elt such-that (> s index) into first-elt)
-              (finally (return (values first-elt (- index last-s))))))
-    (let ((vertices (find :vertex vertex-streams :key #'vs-semantic)))
-      ;; MUST have vertex positions!
-      (unless (null vertices)
-        (tri-in-elt elt vertices start-index)))))
+              (finally (return (values first-elt (- index last-s)))))
+      (let ((vertices (find :vertex vertex-streams :key #'vs-semantic)))
+        ;; MUST have vertex positions!
+        (unless (null vertices)
+          (tri-in-elt elt vertices start-index))))))
 
 (defmethod build-triangle-array ((this blt-mesh))
   (with-slots (elements vertex-streams) this

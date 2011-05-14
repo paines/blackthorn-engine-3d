@@ -29,6 +29,9 @@
 ;;;; Vector Stuff
 ;;;;
 
+(defvar +zero-vec+ #(0.0 0.0 0.0 0.0))
+(defvar +origin+ #(0.0 0.0 0.0 1.0))
+
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
              (with-gensyms (v) `(defmacro ,n (,v) `(svref ,,v ,,p)))))

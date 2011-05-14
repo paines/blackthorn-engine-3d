@@ -37,7 +37,7 @@
    :pos
    :dir
    :up
-   :veloc
+   :velocity
    :shape-name
    :shape
    :bounding-volume

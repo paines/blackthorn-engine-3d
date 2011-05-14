@@ -49,22 +49,22 @@
 (defun make-eye (the-monster)
   (make-server-entity 'eyesight
       :pos (make-point3 0.0 0.0 0.0)
-      :dir (make-vec3 1.0 0.0 0.0)
-      :up  (make-vec3 0.0 1.0 0.0)
+      :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
+      :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
       :follow the-monster
       :shape-name :none
       :bv (make-instance 'blackthorn3d-physics:bounding-sphere 
-                    :pos (make-vec3 0.0 0.0 0.0)
+                    :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
                     :rad *eyesight-radius*)))
     
 (defun make-monster (pos)
   (let ((the-monster (make-server-entity 'simple-monster
           :pos pos
-          :dir (make-vec3 1.0 0.0 0.0)
-          :up  (make-vec3 0.0 1.0 0.0)
+          :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
+          :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
           :shape-name :wedge
           :bv (make-instance 'blackthorn3d-physics:bounding-sphere
-                :pos (make-vec3 0.0 0.0 0.0)
+                :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
                 :rad 1.0)
           )))
     (setf (eyesight the-monster) (make-eye the-monster))

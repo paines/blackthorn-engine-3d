@@ -213,7 +213,7 @@
       (1 (norm (make-vec3 (-(z v)) 0.0 (x v))))
       (2 (norm (make-vec3 (-(y v)) (x v) 0.0))))))
 
-(defun spherical->cartesian (sphere-coords &optional vec)
+(defun spherical->cartesian (sphere-coords &optional vec-p)
   (let* ((phi   (elt sphere-coords 0))
          (theta (elt sphere-coords 1))
          (r     (elt sphere-coords 2))
@@ -221,7 +221,7 @@
     (make-vector4 (* r (sin phi) sin-theta)
                   (* r (cos (- (/ pi 2) theta)))
                   (* r (cos phi) sin-theta)
-                  (if vec 0.0 1.0))))
+                  (if vec-p 0.0 1.0))))
 
 
 (defun tri-centroid (v0 v1 v2)

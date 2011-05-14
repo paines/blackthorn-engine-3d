@@ -87,35 +87,50 @@
 (defvar +planes+ '(:left :right :bottom :top :near :far))
 
 (defun get-plane (pmat plane)
-  (case plane
-    (:top (make-plane (vec- (row pmat 3) (row pmat 1))
-                      (- (aref pmat 3 3) (aref pmat 3 1))))
-    (:bottom (make-plane (vec+ (row pmat 3) (row pmat 1))
-                         (+ (aref pmat 3 3) (aref pmat 3 1))))
-    (:left (make-plane (vec3+ (row pmat 3) (row pmat 0)) 
-                       (+ (aref pmat 3 3) (aref pmat 3 0))))
-    (:right (make-plane (vec3- (row pmat 3) (row pmat 0))
-                        (- (aref pmat 3 3) (aref pmat 3 0))))
-    (:near (make-plane (vec3+ (row pmat 3) (row pmat 2))
-                       (+ (aref pmat 3 3) (aref pmat 3 2))))
-    (:far (make-plane (vec3- (row pmat 3) (row pmat 2))
-                      (- (aref pmat 3 3) (aref pmat 3 2))))
-    (otherwise nil)))
+  (labels ((plane-maker (row sign)
+             (make-plane (vec3+ (row pmat 3) (vec-scale3 (row pmat row) sign))
+                         (+ (aref pmat 3 3) (* sign (aref pmat 3 row))))))
+    (case plane
+      (:top    (plane-maker 1 -1))
+      (:bottom (plane-maker 1 1))
+      (:left   (plane-maker 0 1))
+      (:right  (plane-maker 0 -1))
+      (:near   (plane-maker 2 1))
+      (:far    (plane-maker 2 -1))
+      (otherwise nil))))
 
-(defmethod frustum-intersect-p ((this frustum) (bv bounding-sphere))
-  "@return{:outide for totally outside
-           :inside for totally inside
-           :intersect for part in part out"
-  (with-slots (proj-matrix) this
-    (with-slots (pos rad) bv
-      (let ((planes (iter (for i in +planes+) 
-                          (collect (get-plane M i)))))
-        (iter (for plane in planes)
-              (for dist = (plane-dist plane pos))
-              (when (> dist rad)
-                (return-from frustum-intersect-p :outside))
-              (maximizing dist into max-dist)
-              (finally 
-               (if (< max-dist (- rad)) 
-                   (return :inside)
-                   (return :intersect))))))))
+;; We can do frustum culling at a viewport level...
+;; generate the planes first, then process every sphere
+;; but....what are objects? Do I want to pass in a sphere hierarchy?
+;; could pass a list of nodes, and cull by those spheres...however
+;; we're missing the translation info from entity =(
+;; but lets go with that...we can work out details at a higher leve
+;; it makes more sense than anything else i can think of
+;; 
+;; Really I need some sort of real scene-management heirarchy
+;;   entity
+;;    -> blt-model
+;;         -> list of nodes w/bounding spheres
+;;
+;;  blt-model for level
+;;    -> list of nodes w/bounding spheres
+
+
+(defun cull-frustum (frstm view-matrix objects)
+  (with-slots ((P proj-matrix)) frstm
+    (let* ((M (matrix-multiply-m P view-matrix))
+           (planes (iter (for i in +planes+) 
+                         (collect (get-plane M i)))))
+      )))
+
+(defun frustum-planes-intersect-test (planes b-sphere)
+  (with-slots (pos rad) b-sphere
+    (iter (for plane in planes)
+          (for dist = (plane-dist plane pos))
+          (when (> dist rad)
+            (return-from frustum-planes-intersect-test :outside))
+          (maximizing dist into max-dist)
+          (finally 
+           (if (< max-dist (- rad)) 
+               (return :inside)
+               (return :intersect))))))

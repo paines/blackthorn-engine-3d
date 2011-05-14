@@ -136,18 +136,27 @@
                                                         (rad sph1))))
                        :rad r)))))
 
-#+disabled
-(defmethod combine-bounding-volumes (list-bv)
+
+(defmethod combine-bounding-spheres (list-bv)
   (labels ())
   (let ((mid-point (iter (for bv in list-bv)
 		     (with-slots (pos) bv
 		       (reducing pos by vec4+ into sum-vec))
 		     (finally (vec-scale sum-vec (/ 1 (length list-bv)))))))
     (iter (for bv in list-bv)
-      (maximizing ))))
+          (with-slots (pos rad) bv
+            (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 
+                        into radius))
+          (finally (return (make-instance 
+                            'bounding-sphere
+                            :pos mid-point
+                            :rad radius))))))
 
-(defmethod transform-bounding-volume ((this bounding-sphere) xform)
+(defmethod transform-bounding-volume ((this bounding-sphere) xform
+                                      &optional ignore-r)
   (with-slots (rad pos) this
     (make-instance 'bounding-sphere
                  :pos (matrix-multiply-v xform pos)
-                 :rad (* rad (max (extract-scale xform))))))
+                 :rad (if ignore-r 
+                          rad 
+                          (* rad (max (extract-scale xform)))))))

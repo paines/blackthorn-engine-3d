@@ -35,6 +35,7 @@
    :blt-model
    :mesh-nodes
    :animations
+   :expand-bounding-spheres
 
    :blt-mesh
    :make-blt-mesh

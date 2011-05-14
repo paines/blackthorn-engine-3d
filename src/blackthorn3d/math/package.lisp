@@ -97,6 +97,7 @@
 
    ;; utils.lisp
    :deg->rad
+   :range
 
    ;; curves.lisp
    :calc-1d-hermite-coefs

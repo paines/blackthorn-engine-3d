@@ -50,6 +50,42 @@
                                      (collect (copy-model-node node)))
                    :animations (copy-anim-controller animations))))
 
+
+(defmethod expand-bounding-spheres ((this blt-model))
+  "sets each nodes bounding sphere to be the union of it's bounding
+   sphere with all its children's bounding spheres"
+  (labels ((recurse-nodes (node)
+             (let ((children-bounding-spheres
+                    (iter (for c in (child-nodes node)) 
+                          (collect (recurse-nodes (child-nodes node))))))
+               (setf (node-bounding-volume node)
+                     (combine-bounding-spheres 
+                      (cons (node-bounding-volume node)
+                            children-bounding-spheres))))))
+    (combine-bounding-spheres
+     (iter (for node in (mesh-nodes this))
+           (collect (recurse-nodes node))))))
+
+(defmethod apply-transform ((this blt-model) xform)
+  "applies transform matrix to the nodes of this blt-model"
+  (labels ((apply-helper (node)
+             (with-slots (transform bounding-volume) node
+               ;; set transform
+               (setf transform 
+                     (matrix-multiply-m xform transform))
+               ;; and transformed bv
+               (setf bounding-volume 
+                     (transform-bounding-volume bounding-volume xform))
+               ;; do the children
+               (iter (for child in (child-nodes node))
+                     (apply-helper child))
+               bounding-volume)))
+    
+    (combine-bounding-volumes
+     (iter (for node in (mesh-nodes this))
+           (collect (apply-helper node))))))
+
+
 (defclass vertex-stream ()
   ((semantic
     :accessor vs-semantic

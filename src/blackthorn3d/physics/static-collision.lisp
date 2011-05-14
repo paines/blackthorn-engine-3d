@@ -99,7 +99,9 @@
   ;; node coordinates.  We do this instead of translating the 
   ;; node b/c it's a lot easier to translate a bounding sphere than
   ;; an r-tree.
-  (let ((xformed-bv (transform-bounding-volume bv (transform node))))
+  (let ((xformed-bv (transform-bounding-volume 
+                     bv 
+                     (rt-inverse (transform node)))))
     (min-collide
      (cons (aif (collide-test xformed-bv (node-bounding-shape node))
                 ;; if we intersect the bounding-shape, check the mesh

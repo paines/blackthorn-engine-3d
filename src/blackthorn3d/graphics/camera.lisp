@@ -60,12 +60,13 @@
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
 (setf +phi-scale+ -0.2)
-(setf +theta-scale+ 0.2)
+(setf +theta-scale+ -0.2)
 
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
     (with-slots ((t-pos pos)
-                 (t-dir dir)) target
+                 (t-dir dir)
+                 (t-up up)) target
       ;; Update the ideal azimuth (phi) based on the camera's
       ;; position relative to the target
       ;; note2: this allows the camera to lazily rotate around
@@ -77,23 +78,44 @@
       (let ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0))))
         ;; set phi
         ;; TODO:- make this suck less
+        ;; to make it suck less, use a quaternion?
+        ;; the axes to rotate around are
+        ;;    phi: (up target)
+        ;;    theta: (cross (dir target) (up target))
+
+        ;#+disabled
         (setf (elt ideal-coord 0)
               (aif (/= 0 (x input-vec))
                    (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
                    (+ (atan (- (x pos) (x look-at))
                             (- (z pos) (z look-at))))))
         ;; set theta
+        #+disabled
+        (let* ((theta (* +theta-scale+ (y input-vec)))
+               (phi  (* +phi-scale+ (x input-vec)))
+               (disp-vec (vec-scale4 (norm4 (vec4- pos t-pos))
+                                     (elt ideal-coord 2)))
+               (cam-quat (quat* (axis-rad->quat t-up phi)
+                                (axis-rad->quat (norm4 (cross t-dir t-up)) 
+                                                (- theta)))))
+          (setf (pos c) (vec4+ t-pos (quat-rotate-vec cam-quat disp-vec))
+                (up c)  (quat-rotate-vec cam-quat up)
+                (dir c) (quat-rotate-vec cam-quat dir)))
+        
+        ;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
                    (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec)))))
         
         ;; calculate the camera's movement
+       ; #+disabled
         (let* ((ideal-pos (vec4+ look-at (spherical->cartesian ideal-coord)))
                (displace-vec (vec4- pos ideal-pos))
                (spring-accel (vec4-
                               (vec-scale4 displace-vec (- spring-k))
                               (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
           (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
+         ; (setf (up c) )
           (setf (pos c) ideal-pos #+disabled(vec4+ pos (vec-scale4 veloc time)))
           (setf (dir c) (norm4 (vec4- look-at pos))))))))
 
@@ -146,8 +168,7 @@
         (setf (pos target)
               (vec4+ t-pos move-vec))
         (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
-          (setf (dir target) (norm4 move-vec)))
-        ))))
+          (setf (dir target) (norm4 move-vec)))))))
 
 (defmethod camera-move! ((c camera) vec4)
   "translates the camera by vec3. This is sort of temporary, as once we

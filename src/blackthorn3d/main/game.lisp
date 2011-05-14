@@ -28,5 +28,11 @@
 
 ;; server side only
 (defun load-level ()
-  ;(register-model-loader :dae #'(lambda (path) nil))
-)
+  (register-model-loader :dae 
+                         #'(lambda (path) 
+                             (blt3d-imp:load-dae path)))
+
+  ;; load our test model
+  (blt3d-phy:initialize-cube
+   (blt3d-res:load-model 
+    :companion-cube :dae #p "res/models/PlatformRoom.dae")))

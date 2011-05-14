@@ -60,8 +60,9 @@
                           (collect (recurse-nodes (child-nodes node))))))
                (setf (node-bounding-volume node)
                      (combine-bounding-spheres 
-                      (cons (node-bounding-volume node)
-                            children-bounding-spheres))))))
+                      (remove-if #'null 
+                                 (cons (node-bounding-volume node)
+                                       children-bounding-spheres)))))))
     (combine-bounding-spheres
      (iter (for node in (mesh-nodes this))
            (collect (recurse-nodes node))))))
@@ -81,7 +82,7 @@
                      (apply-helper child))
                bounding-volume)))
     
-    (combine-bounding-volumes
+    (combine-bounding-spheres
      (iter (for node in (mesh-nodes this))
            (collect (apply-helper node))))))
 
@@ -354,8 +355,8 @@
 ;;
 
 (defun make-triangle (v0 v1 v2)
-  (let ((normal (norm3 (cross3 (vec4- v1 v0)
-                               (vec4- v2 v0))))
+  (let ((normal (norm3 (cross3 (vec3- v1 v0)
+                               (vec3- v2 v0))))
         (centroid (tri-centroid v0 v1 v2)))
     (vector v0 v1 v2 normal centroid)))
 
@@ -366,11 +367,12 @@
 ;; etc.
 
 (defun tri-in-elt (elem vs index)
-  (let ((i (* 3 index)))
-    (make-triangle
-     (vs-ref vs i)
-     (vs-ref vs (+ i 1))
-     (vs-ref vs (+ i 2)))))
+  (with-slots (indices) elem
+    (let ((i (* 3 index)))
+      (make-triangle
+       (to-float (vs-ref vs (aref indices i)))
+       (to-float (vs-ref vs (aref indices (+ i 1))))
+       (to-float (vs-ref vs (aref indices (+ i 2))))))))
 
 (defmethod triangle-at ((this blt-mesh) index)
   (with-slots (elements vertex-streams) this
@@ -389,11 +391,12 @@
 (defmethod build-triangle-array ((this blt-mesh))
   (with-slots (elements vertex-streams) this
     (let ((vertices (find :vertex vertex-streams :key #'vs-semantic))
-          (triangles (make-array (/ (iter (for elt in elements)
-                                          (sum (slot-value elt count))) 3)))
+          (triangles (make-array (iter (for elt in elements)
+                                       (sum (slot-value elt 'count)))))
           (index 0))
+     
       (iter (for element in elements)
-            (iter (for i below (slot-value element count))
+            (iter (for i below (slot-value element 'count))
                   (setf (svref triangles index) 
                         (tri-in-elt element vertices i))
                   (incf index))))))

@@ -31,6 +31,7 @@
    ;; vector.lisp
    :+zero-vec+
    :+origin+
+   :to-float
    :make-vector4
    :make-vector3
    :make-point3

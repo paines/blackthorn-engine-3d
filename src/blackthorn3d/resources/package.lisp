@@ -39,5 +39,6 @@
    :register-model-loader
    :load-models-n-stuff
    :get-model
+   :load-model
    
    ))

@@ -183,6 +183,9 @@
     (format t "Removing client: ~a~%" client)
     (remove-player client))
   (setf *delay-disconnected-clients* nil))
+
+;; added by Robert
+(defvar *level* nil)
       
 (defun server-main (host port)
   (declare (ignore host))
@@ -195,7 +198,8 @@
   (format t "Server running on port ~a.~%" port)
 
   (make-monster (make-point3 20.0 0.0 0.0))
-  
+  (setf *level* (load-level))
+
   (with-finalize-server ()
     (loop
        (next-frame)

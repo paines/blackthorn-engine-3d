@@ -69,6 +69,10 @@
 (defclass entity-server (entity)
   ((oid
     :initform (make-server-oid))
+   (velocity
+    :accessor velocity
+    :initarg :velocity
+    :initform blt3d-math:+zero-vec+)
    (bounding-volume
     :accessor bounding-volume
     :initform nil

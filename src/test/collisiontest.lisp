@@ -154,29 +154,30 @@
     
 
 (test find-bounding-points
-      (let* ((vect-array (vector (make-vector3 1 1 1)
-                                 (make-vector3 0 2 2)
-                                 (make-vector3 3 0 3)
-                                 (make-vector3 3 1 0)))
+      (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)
+                                 (make-vector3 0.0 2.0 2.0)
+                                 (make-vector3 3.0 0.0 3.0)
+                                 (make-vector3 3.0 1.0 0.0)))
              (pos-list (find-bounding-points vect-array)))
-        (is (equalp (aref pos-list 0) (make-point3 0 0 0)))
-	(is (equalp (aref pos-list 1) (make-point3 3 2 3)))))
+        (is (equalp (aref pos-list 0) (make-point3 0.0 0.0 0.0)))
+	(is (equalp (aref pos-list 1) (make-point3 3.0 2.0 3.0)))))
 
+#+disabled
 (test make-bounding-box
-      (let* ((vect-array (vector (make-vector3 1 1 1)
-                                 (make-vector3 0 3 2)
-                                 (make-vector3 3 0 3)
-                                 (make-vector3 3 1 0)))
+      (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)
+                                 (make-vector3 0.0 3.0 2.0)
+                                 (make-vector3 3.0 0.0 3.0)
+                                 (make-vector3 3.0 1.0 0.0)))
              (b-box (make-bounding-box vect-array)))
-        (is (equalp (a-min b-box) (make-point3 0 0 0)))
-	(is (equalp (a-max b-box) (make-point3 3 3 3)))))
+        (is (equalp (a-min b-box) (make-point3 0.0 0.0 0.0)))
+	(is (equalp (a-max b-box) (make-point3 3.0 3.0 3.0)))))
 
 (test make-bounding-sphere
-      (let* ((vect-array (vector (make-vector3 1 1 4)
-                                 (make-vector3 0 3 2)
-                                 (make-vector3 4 0 3)
-                                 (make-vector3 3 4 0)))
+      (let* ((vect-array (vector (make-vector3 1.0 1.0 4.0)
+                                 (make-vector3 0.0 3.0 2.0)
+                                 (make-vector3 4.0 0.0 3.0)
+                                 (make-vector3 3.0 4.0 0.0)))
              (b-sphere (make-bounding-sphere vect-array)))
-	(is (equalp (pos b-sphere) (make-point3 2 2 2)))
-	(is (equalp (rad b-sphere) (sqrt 12)))))
+	(is (equalp (blt3d-phy::pos b-sphere) (make-point3 2.0 2.0 2.0)))
+	(is (equalp (blt3d-phy::rad b-sphere) (sqrt 12)))))
 

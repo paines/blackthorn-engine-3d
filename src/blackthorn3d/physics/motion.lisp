@@ -25,10 +25,22 @@
 
 (in-package :blackthorn3d-physics)
 
-(defun move (thing x y z)
+(defun move-component (thing x y z)
   (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
+  
+(defun move-vec (thing vec)
+  (setf (pos thing) (vec4+ (pos thing) vec)))
   
 (defun chase (self who speed)
   (let ((direction (norm4 (vec4- (pos who) (pos self)))))
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
+      
+(defun standard-physics-step (self)
+  (let ((movement-vec (vel self)))
+    (if (< (sq-mag (vel self)) *velocity-threshold-squared*)
+      (progn ; stick velocity to 0 if movement is too small
+        (setf (vel self) (make-point3 0.0 0.0 0.0)))
+      (progn ; else, we're actually moving
+        (move-vec self movement-vec)))))
+    

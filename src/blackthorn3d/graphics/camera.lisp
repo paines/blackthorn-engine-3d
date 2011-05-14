@@ -163,12 +163,9 @@
   (with-slots (target (c-up up) (x2 dir) (c-pos pos)) c
     (with-slots ((t-up up) (x1 dir) (t-pos pos) client) target
       (let* ((z1 (cross x1 t-up))
-             (z2 (cross x2 c-up))
-             (move-vec (generate-move-vector c input-vec)))
-        (setf (pos target)
-              (vec4+ t-pos move-vec))
-        (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
-          (setf (dir target) (norm4 move-vec)))))))
+             (z2 (cross x2 c-up))))
+        (generate-move-vector c input-vec)
+        )))
 
 (defmethod camera-move! ((c camera) vec4)
   "translates the camera by vec3. This is sort of temporary, as once we

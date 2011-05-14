@@ -37,10 +37,10 @@
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
 (defun standard-physics-step (self)
-  (let ((movement-vec (vel self)))
-    (if (< (sq-mag (vel self)) *velocity-threshold-squared*)
+  (let ((movement-vec (velocity self)))
+    (if (< (sq-mag (velocity self)) *velocity-threshold-squared*)
       (progn ; stick velocity to 0 if movement is too small
-        (setf (vel self) (make-point3 0.0 0.0 0.0)))
+        (setf (velocity self) (make-point3 0.0 0.0 0.0)))
       (progn ; else, we're actually moving
         (move-vec self movement-vec)))))
     

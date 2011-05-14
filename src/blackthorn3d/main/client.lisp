@@ -94,7 +94,9 @@
   
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:load-dae #p"res/models/PlatformRoom.dae")))
+  #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
+  #+disabled
   (blt3d-phy:apply-transform *level* (make-scale #(0.05 0.05 0.05)))
 
   (setf *random-state* (make-random-state t))

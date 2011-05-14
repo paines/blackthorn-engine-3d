@@ -63,8 +63,12 @@
           (draw-object node))))
 
 (defmethod draw-object ((this model-node))
+  
   (gl:with-pushed-matrix
       (aif (transform this) (gl:mult-matrix it))
+
+    (draw-bounding-sphere (node-bounding-volume this))
+
     (let ((*material-array* (material-array this)))
       (draw-object (mesh this))
       (iter (for node in (child-nodes this))

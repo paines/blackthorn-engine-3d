@@ -133,12 +133,13 @@
   (when level
     (gl:with-pushed-matrix
         ;; (use-material plane-mat)
-      ;;(draw-plane 20)
-     ;; (gl:scale .05 .05 .05)
+        ;;(draw-plane 20)
+        (gl:scale .05 .05 .05)
+       
       ;;#+disabled
-      (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                                            (make-point3 0.0 0.0 1.0)
-                                            (make-point3 0.0 1.0 0.0)))
+        (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                                              (make-point3 0.0 0.0 1.0)
+                                              (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
   (when *test-skele*

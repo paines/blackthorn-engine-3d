@@ -165,7 +165,6 @@
 
 (defun compile-node (node geometry-table material-table)
   ;; Convert mesh-lst into a blt-mesh
-  ;; TODO:- hack in skinning data!
   (with-slots (id type xform extra children) node
     (dae-debug "node ~a is of type ~a~%" id type)
     ;; recurse on children

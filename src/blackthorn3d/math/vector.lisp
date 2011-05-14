@@ -29,6 +29,9 @@
 ;;;; Vector Stuff
 ;;;;
 
+(defvar +zero-vec+ #(0.0 0.0 0.0 0.0))
+(defvar +origin+ #(0.0 0.0 0.0 1.0))
+
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
              (with-gensyms (v) `(defmacro ,n (,v) `(svref ,,v ,,p)))))
@@ -41,6 +44,10 @@
 ;;; of vectors
 (gen-vec-accessors x y z w)
 (gen-vec-accessors r g b a)
+
+(defun to-float (vec)
+  (iter (for e in-vector vec)
+        (collect (float e) result-type 'vector)))
 
 (defun make-color (r g b &optional (a 1.0))
   "@short{Create a vector4 for color}

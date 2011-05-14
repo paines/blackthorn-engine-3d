@@ -87,19 +87,19 @@
 ;; By Robert - note, changed to defun, as there isn't a reason for it to
 ;;             be a method
 (defun find-bounding-points (vect-array)
-  (iter (for i in-vector (subseq vect-array 0 3))
-	(maximizing (aref i 0) into max-x)
-	(maximizing (aref i 1) into max-y)
-	(maximizing (aref i 2) into max-z)
-	(minimizing (aref i 0) into min-x)
-	(minimizing (aref i 1) into min-y)
-	(minimizing (aref i 2) into min-z)
+  (iter (for i in-vector vect-array)
+	(maximizing (x i) into max-x)
+	(maximizing (y i) into max-y)
+	(maximizing (z i) into max-z)
+	(minimizing (x i) into min-x)
+	(minimizing (y i) into min-y)
+	(minimizing (z i) into min-z)
 	(finally (return (vector (make-point3 min-x min-y min-z) 
 				 (make-point3 max-x max-y max-z))))))
 
-;; for trianles only!!! even though it allows all simple vectors
+;; for triangles only!!! even though it allows all simple vectors
 (defmethod shape-bounds ((tri simple-vector))
-  (let ((bounds (find-bounding-points tri)))
+  (let ((bounds (find-bounding-points (subseq tri 0 3))))
     (list (svref bounds 0) (svref bounds 1))))
 
 (defmethod make-bounding-box (vect-array)
@@ -109,6 +109,25 @@
     (make-instance 'aa-bounding-box :a-min min-point :a-max max-point)))
 
 (defmethod make-bounding-sphere (vect-array)
+  ;; tighter spheres this way, but not super good...
+  (let ((mean-point
+         (iter (for v in-vector vect-array)
+               (sum (x v) into sumx)
+               (sum (y v) into sumy)
+               (sum (z v) into sumz)
+               (finally 
+                (return (vec-scale4 (make-point3 sumx sumy sumz) 
+                                    (/ 1 (length vect-array))))))))
+    (iter (for v in-vector vect-array)
+          (for sq-radius 
+               initially 0.0
+               then (max sq-radius (sq-mag (vec3- v mean-point))))
+          (finally 
+           (return (make-instance 'bounding-sphere 
+                                  :pos mean-point
+                                  :rad (sqrt sq-radius))))))
+
+  #+disabled
   (let* ((pos-list (find-bounding-points vect-array))
 	 (min-point (aref pos-list 0))
 	 (max-point (aref pos-list 1))
@@ -141,8 +160,11 @@
   (labels ())
   (let ((mid-point (iter (for bv in list-bv)
 		     (with-slots (pos) bv
-		       (reducing pos by vec4+ into sum-vec))
-		     (finally (vec-scale sum-vec (/ 1 (length list-bv)))))))
+		       (reducing pos by #'vec4+ into sum-vec 
+                                 initial-value +zero-vec+))
+		     (finally 
+                      (return (vec-scale4 sum-vec 
+                                          (/ 1 (length list-bv))))))))
     (iter (for bv in list-bv)
           (with-slots (pos rad) bv
             (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 
@@ -157,6 +179,8 @@
   (with-slots (rad pos) this
     (make-instance 'bounding-sphere
                  :pos (matrix-multiply-v xform pos)
-                 :rad (if ignore-r 
-                          rad 
-                          (* rad (max (extract-scale xform)))))))
+                 :rad (if ignore-r
+                          rad
+                          (mag (matrix-multiply-v 
+                                xform
+                                (make-vec3 rad 0.0 0.0)))))))

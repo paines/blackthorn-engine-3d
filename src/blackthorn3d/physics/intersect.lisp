@@ -184,18 +184,11 @@
           min-d)))))
 
 
-(defun quadratic (a b c)
-  (if (and (zerop a) (/= 0 b)) (/ (- c) b)
-      (let* ((det (- (* b b) (* 4 a c)))
-             (denom (* 0.5 a)))
-        (if (< 0 det)
-            nil
-            (let ((r1 (* (- (- b) (sqrt det))))
-                  (r2 (* (+ (- b) (sqrt det)))))
-              (if (<= r1 r2) 
-                  (values r1 r2)
-                  (values r2 r1)))))))
 
+;; Returns (x0 p) (and maybe other info later) where x0
+;; is how far along velocity sphere goes before hitting the
+;; triangle, and p is the point of intersection
+;; from http://www.peroxide.dk/papers/collision/collision.pdf
 (defun moving-sphere-triangle-intersection (sphere tri velocity)
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let* ((tri-plane (make-plane (tri-n tri) 
@@ -232,7 +225,7 @@
       (let* ((sq-rad (* sph-rad sph-rad))
              (vel-sqlen (sq-mag velocity))
              (mag-vel (sqrt vel-sqlen))
-             (hit (nil . nil)))
+             (hit '(nil nil)))
         (iter (with min-t = 1.0e+INF)
               (for i below 3)
               (for v = (svref tri i))
@@ -271,7 +264,24 @@
                                               (vec-scale3 edge f0))))))))
 
         ;; At this point, if we have a collision, hit is not (nil . nil)
-        ;; but some (x0 . p).  turn into (d . p)
+        ;; but some (x0 . p).  turn into (new-pos hit-point)
         (if (car hit)
-            (cons (* (car hit) mag-vel) (cdr hit))
+            hit
             nil)))))
+
+(defun slide-sphere (sphere velocity hit)
+  "@return{the new position and velocity of the sphere as
+           (new-pos  new-vel)}"
+  (destructuring-bind (x0 . hit-p) hit
+    (with-slots (pos rad) sphere
+      (let* ((new-pos (vec4+ pos (vec-scale4 velocity x0)))
+             (plane-n (norm4 (vec4- new-pos hit-p)))
+             (sliding-plane (make-plane plane-n
+                                        (- (dot plane-n hit-p))))
+             (destination (vec4+ pos velocity))
+             (new-dest 
+              (vec4- destination 
+                     (vec-scale4 plane-n 
+                                 (plane-dist sliding-plane 
+                                             destination))))))
+      (list new-pos (vec4- new-dest new-pos)))))

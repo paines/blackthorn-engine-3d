@@ -144,6 +144,32 @@
   (gl:flush))
 
 
+(defmethod draw-bounding-sphere ((sphere bounding-sphere))
+  (draw-wire-sphere (blt3d-phy::pos sphere) 
+                    (blt3d-phy::rad sphere) #(1.0 0.0 0.0)))
+
+(defun draw-wire-sphere (pos r &optional (color #(1.0 1.0 1.0)) (segs 8))
+  (gl:with-pushed-matrix
+      (gl:translate (x pos) (y pos) (z pos))
+      (gl:scale r r r)
+    (gl:with-primitives :line-strip
+      (gl:color (r color) (g color) (b color))
+      (let ((step (/ pi segs)))
+        (iter (for theta below pi by step)
+              (iter (for phi below (* 2.0 pi) by step)
+                    (gl:vertex (* (sin theta) (cos phi)) 
+                               (* (sin theta) (sin phi)) 
+                               (cos theta))
+                    (gl:vertex (* (sin (+ theta step)) (cos phi))
+                               (* (sin (+ theta step)) (sin phi))
+                               (cos (+ theta step)))
+                    (gl:vertex (* (sin (+ theta step)) (cos (+ phi step)))
+                               (* (sin (+ theta step)) (sin (+ phi step)))
+                               (cos (+ theta step)))
+                    (gl:vertex (* (sin theta) (cos (+ phi step))) 
+                               (* (sin theta) (sin (+ phi step))) 
+                               (cos theta))))))))
+
 (defun draw-sphere (pos r &optional (color #(1.0 1.0 1.0)) (segs 8))
   (gl:with-pushed-matrix
     (gl:scale r r r)

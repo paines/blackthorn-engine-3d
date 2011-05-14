@@ -36,6 +36,7 @@
    :mesh-nodes
    :animations
    :expand-bounding-spheres
+   :apply-transform
 
    :blt-mesh
    :make-blt-mesh
@@ -107,4 +108,7 @@
    :child-joints
    :make-joint
    :make-skeleton
+
+   ;; static-collision.lisp (needs refactoring?)
+   :initialize-cube
    ))

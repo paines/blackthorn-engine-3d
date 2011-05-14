@@ -53,16 +53,14 @@
 
 (defvar *material-array* nil)
 
-(defmethod update-model((this model-shape) time)
-  (aif (controller this)
+(defmethod update-model((this blt-model) time)
+  (aif (animations this)
        (update-anim-controller it time)))
 
-(defmethod draw-object ((this model-shape))
-  (with-slots (mesh-graph matrix material) this
-    (gl:with-pushed-matrix
-        (when matrix (gl:mult-matrix matrix))
-      (iter (for node in mesh-graph)
-            (draw-object node)))))
+(defmethod draw-object ((this blt-model))
+  (with-slots (mesh-nodes) this
+    (iter (for node in mesh-nodes)
+          (draw-object node))))
 
 (defmethod draw-object ((this model-node))
   (gl:with-pushed-matrix
@@ -98,9 +96,32 @@
 
 (defvar *animator* nil)
 
+;; Changed to return the same, albeit modified, blt-model
 (defmethod load-obj->models ((this blt-model))
   (setf *animator* (animations this))
   (format t "MODEL ANIMATIONS: ~a~%" (animations this))
+  (with-slots (mesh-nodes animations) this
+    (iter (for node in mesh-nodes)
+          (with-slots (mesh transform) node
+            (let ((interleaved (interleave
+                                (vertex-streams mesh)
+                                mesh-format
+                                #+disabled
+                                (organize-streams (vertex-streams mesh)
+                                                  +mesh-components+)))
+                  (elements
+                   (iter (for elt in (elements mesh))
+                         (collect (elem->gl-elem elt)))))
+              (setf mesh (make-instance
+                          'mesh
+                          :id (id mesh)
+                          :vert-data (vnt-array->gl-array interleaved)
+                          :elements elements
+                          :array-format 'blt-vnt-mesh))
+              #+disabled(collect instance)))))
+  this
+
+  #+disabled
   (make-instance 
    'model-shape
    :mesh-graph 

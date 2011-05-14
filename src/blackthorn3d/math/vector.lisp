@@ -45,6 +45,10 @@
 (gen-vec-accessors x y z w)
 (gen-vec-accessors r g b a)
 
+(defun to-float (vec)
+  (iter (for e in-vector vec)
+        (collect (float e) result-type 'vector)))
+
 (defun make-color (r g b &optional (a 1.0))
   "@short{Create a vector4 for color}
    @arg[r]{red component, float [0 1]}

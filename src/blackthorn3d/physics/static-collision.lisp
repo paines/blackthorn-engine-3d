@@ -68,10 +68,10 @@
              (setf (mesh node)
                    (build-r-tree (build-triangle-array (mesh node))))
              (iter (for n in (child-nodes node))
-                   (helper n)))))
-  (iter (for node in (mesh-nodes level-model))
-        (helper node))
-  level-model)
+                   (helper n))))
+    (iter (for node in (mesh-nodes level-model))
+          (helper node))
+    level-model))
 
 (defun min-collide (hits)
   "Return the hit with the smallest distance from the collider"

@@ -130,6 +130,11 @@
                                                #+(or win32 windows)
                                                (:file "xbox360"))
                                               :serial t)
+                                     (:module sound
+                                              :components
+                                              ((:file "package")
+                                               (:file "sound"))
+                                              :serial t)
                                      (:module main
                                               :components
                                               ((:file "package")

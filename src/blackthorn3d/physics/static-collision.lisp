@@ -163,7 +163,7 @@
     (min-collide
      (append
       (aif (swept-sphere-collide xformed-bv xformed-vel
-                                 (node-bounding-shape node) +zero-vec+)
+                                 (node-bounding-volume node) +zero-vec+)
            ;; if we intersect the bounding-shape, check the mesh
            (list (collide-test obj (mesh node))))
       (iter (for child in (child-nodes node))

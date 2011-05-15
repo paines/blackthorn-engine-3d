@@ -75,12 +75,11 @@
 
 (defun min-collide (hits)
   "Return the hit with the smallest distance from the collider"
-  (when hits
-    (iter (with min-d = nil)
-          (for hit in hits)
-          (when (or (null min-d) (< (car hit) (car min-d)))
-            (setf min-d hit))
-          (finally (return min-d)))))
+  (iter (with min-d = nil)
+        (for hit in hits)
+        (when (and hit (or (null min-d) (< (car hit) (car min-d))))
+          (setf min-d hit))
+        (finally (return min-d))))
 
 ;; intersect two spheres with velocities
 (defmethod swept-sphere-collide ((sph-a bounding-sphere) va 

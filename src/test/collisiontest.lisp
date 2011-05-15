@@ -153,6 +153,19 @@
     (is (equalp (pos s1) (make-point3 1 2 3)))))
     
 
+(test swept-sphere-collide
+      (let* ((sph1 (make-instance 'bounding-sphere
+                                  :pos (make-point3 2.0 0.0 0.0)
+                                  :rad 1.0))
+             (sph2 (make-instance 'bounding-sphere
+                                  :pos (make-point3 -2.0 0.0 0.0)
+                                  :rad 1.0))
+             (vel1 (make-vec3 0.0 0.0 0.0))
+             (vel2 (make-vec3 2.1 0.0 0.0)))
+        (format t "result is ~a~%" 
+                (swept-sphere-collide sph1 vel1 sph2 vel2))
+        (is (swept-sphere-collide sph1 vel1 sph2 vel2))))
+
 (test find-bounding-points
       (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)
                                  (make-vector3 0.0 2.0 2.0)

@@ -217,7 +217,7 @@
       ;; TEST 1: check if the sphere intersects with the surface of tri
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0))))
-        (if (point-in-triangle plane-intersection tri)
+        (if (point-in-triangle-p plane-intersection tri)
             (return-from moving-sphere-triangle-intersection
               (list plane-intersection (* t0 (mag velocity))))))
       
@@ -226,7 +226,7 @@
              (vel-sqlen (sq-mag velocity))
              (mag-vel (sqrt vel-sqlen))
              (hit '(nil nil)))
-        (iter (with min-t = 1.0e+INF)
+        (iter (with min-t = most-positive-single-float)
               (for i below 3)
               (for v = (svref tri i))
               (for tp = 

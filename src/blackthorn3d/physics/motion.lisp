@@ -25,6 +25,8 @@
 
 (in-package :blackthorn3d-physics)
 
+(defvar *velocity-threshold-squared* 0.02)
+
 (defun move-component (thing x y z)
   (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
   
@@ -37,10 +39,7 @@
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
 (defun standard-physics-step (self)
-  (let ((movement-vec (vel self)))
-    (if (< (sq-mag (vel self)) *velocity-threshold-squared*)
-      (progn ; stick velocity to 0 if movement is too small
-        (setf (vel self) (make-point3 0.0 0.0 0.0)))
-      (progn ; else, we're actually moving
-        (move-vec self movement-vec)))))
+  (let ((movement-vec (velocity self)))
+    (setf movement-vec (collide-with-world self (blt3d-res:get-model :companion-cube)))
+    (move-vec self movement-vec)))
     

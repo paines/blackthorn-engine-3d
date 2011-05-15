@@ -43,9 +43,6 @@
    (pos
     :accessor pos
     :initarg :pos)
-   (vel
-    :accessor vel
-    :initform 0)
    (dir
     :accessor dir
     :initarg :dir)

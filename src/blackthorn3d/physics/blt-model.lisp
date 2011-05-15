@@ -408,7 +408,10 @@
             (iter (for i below (slot-value element 'count))
                   (setf (svref triangles index) 
                         (tri-in-elt element vertices i))
-                  (incf index))))))
+                  (incf index)))
+      (format t "TRIANGLES: ~%~a~%"
+              (subseq triangles 0 (min (length triangles) 20)))
+      triangles)))
 
 
 (defmethod build-triangle-list ((this blt-mesh))

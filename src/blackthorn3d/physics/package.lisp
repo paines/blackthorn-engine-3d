@@ -111,4 +111,5 @@
 
    ;; static-collision.lisp (needs refactoring?)
    :initialize-cube
+   :swept-sphere-collide
    ))

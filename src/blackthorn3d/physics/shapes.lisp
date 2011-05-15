@@ -44,6 +44,24 @@
       (list (vec3+ pos disp-vec)
             (vec3- pos disp-vec)))))
 
+;; box encompassing a swept sphere
+(defmethod shape-bounds ((ent entity-server))
+  (with-slots (bounding-volume velocity) ent
+    (let* ((norm-v (norm3 velocity))
+           (c1 (pos bounding-volume))
+           (c2 (vec3+ (pos bounding-volume) velocity))
+           (min-p (make-point3 (min (x c1) (x c2))
+                               (min (y c1) (y c2))
+                               (min (z c1) (z c2))))
+           (max-p (make-point3 (max (x c1) (x c2))
+                               (max (y c1) (y c2))
+                               (max (z c1) (z c2))))
+           (rad-vec (make-vec3 (rad bounding-volume)
+                               (rad bounding-volume)
+                               (rad bounding-volume))))
+      (list (vec3- min-p rad-vec)
+            (vec3+ max-p rad-vec)))))
+
 (defclass aa-bounding-box (bounding-shape)
   ((a-min
     :accessor a-min
@@ -100,6 +118,9 @@
 ;; for triangles only!!! even though it allows all simple vectors
 (defmethod shape-bounds ((tri simple-vector))
   (let ((bounds (find-bounding-points (subseq tri 0 3))))
+    (format t 
+"### tri-bounds: ~a
+                ~a~%" (x bounds) (y bounds))
     (list (svref bounds 0) (svref bounds 1))))
 
 (defmethod make-bounding-box (vect-array)

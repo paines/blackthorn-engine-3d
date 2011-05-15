@@ -53,7 +53,7 @@
   (iter (for tri in (spatial-trees:search sphere rtree))
         (collect (sphere-triangle-intersection sphere tri) into results)
         (finally 
-         (return (iter (with min-d = `(1.0e+INF nil))
+         (return (iter (with min-d = (list most-positive-single-float))
                        (for hit in results)
                        (unless (null hit)
                          (when (< (car hit) (car min-d))
@@ -83,27 +83,44 @@
           (finally (return min-d)))))
 
 ;; intersect two spheres with velocities
-(defmethod swept-sphere-collide ((sph1 bounding-sphere) v1 
-                                 (sph2 bounding-sphere) v2)
-  
+(defmethod swept-sphere-collide ((sph-a bounding-sphere) va 
+                                 (sph-b bounding-sphere) vb)
+  (let* ((ab (vec3- (pos sph-b) (pos sph-a)))
+         (vb-va (vec3- vb va))
+         (rab (+ (rad sph-a) (rad sph-b)))
+         (q-a (dot vb-va vb-va))
+         (q-b (* 2 (dot vb-va ab)))
+         (q-c (- (dot ab ab) (sq rab))))
+    ;; Check if overlapping at x=0
+    (if (<= (dot ab ab) (sq rab))
+        0
+        (let ((r1 (quadratic q-a q-b q-c)))
+          (if (null r1) (format t "null r1!!%"))
+          (when (and r1 (>= r1 0) (<= r1 1.0))
+              r1))))
+
   ;; turn sph1 into a line and add the radius to 2
+  #+disabled
   (let* ((point (pos sph1))
          (sph3 (make-instance 'bounding-sphere 
                               :rad (+ (rad sph1) (rad sph2))
                               :pos (pos sph2)))
          ;; don't norm so we can test [0 1]
          (l (vec3- v1 v2))
+         (sq-l (sq-mag l))
+         (one/sq-l (/ 1 sq-l))
          ;; make the line at the origin
          (c (vec3- (pos sph3) point))
          (B (dot l c))
-         (det (+ (- (sq B) 
-                    (dot c c)) 
-                 (sq (rad sph3)))))
+         (det (- (sq B) 
+                 (* sq-l (+ (dot c c) 
+                            (sq (rad sph3)))))))
     (if (minusp det)
         nil
-        (let ((r (min (+ B (sqrt det)) (- B (sqrt det)))))
+        (let ((r (min (* (+ B (sqrt det)) one/sq-l) 
+                      (* (- B (/ (sqrt det))) one/sq-l))))
           (if (and (>= r 0.0) (<= r 1.0))
-              (vec4+ point (vec-scale3 l r)))))))
+              (list r (vec4+ point (vec-scale3 l r))))))))
 
 ;;;
 ;;; Static Geometry Collision testing
@@ -152,7 +169,8 @@
 
           ;; At the end return the displacement from original sphere
           ;; to new one
-          (finally (return test-vel #+disabled(vec4- (pos test-sph) (pos sphere)))))))
+          (finally (return test-vel 
+                           #+disabled(vec4- (pos test-sph) (pos sphere)))))))
 
 (defmethod collide-with-world-node ((obj entity-server) (node model-node))
   (let* ((inv-mat (rt-inverse (transform node)))
@@ -162,10 +180,14 @@
           (matrix-multiply-v inv-mat (velocity obj))))
     (min-collide
      (append
+      (list (collide-test obj (mesh node)))
+      #+disabled
       (aif (swept-sphere-collide xformed-bv xformed-vel
                                  (node-bounding-volume node) +zero-vec+)
            ;; if we intersect the bounding-shape, check the mesh
-           (list (collide-test obj (mesh node))))
+           (progn
+             (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
+             (list (collide-test obj (mesh node)))))
       (iter (for child in (child-nodes node))
             (collect 
              (collide-with-world-node  xformed-vel child)))))))
@@ -179,16 +201,20 @@
 ;; returns the results of moving-sphere-triangle-intersection
 (defmethod collide-test ((obj entity-server) 
                          (r-tree spatial-trees-protocol:spatial-tree))
-  (with-slots ((sphere bounding-shape)
+  (format t "### Testing against r-tree!! HERE WE GO!~%")
+  (with-slots ((sphere bounding-volume)
                velocity) obj
-    (iter (with min-hit = nil)
-          (for tri in (spatial-trees:search sphere r-tree))
-          (for hit = (moving-sphere-triangle-intersection
-                      sphere tri velocity))
-          (when (and hit (or (null min-hit) 
-                             (< (car hit) (car min-hit))))
-            (setf min-hit hit))
-          (finally (return min-hit)))))
+    (let ((results (spatial-trees:search sphere r-tree)))
+      ;(format t "#### results are in! ~a~%" results)
+      (iter (with min-hit = nil)
+            (for tri in results)
+            (for hit = (moving-sphere-triangle-intersection
+                        sphere tri velocity))
+            (when (and hit (or (null min-hit) 
+                               (< (car hit) (car min-hit))))
+              (format t "### Hit r-tree! zomg!~%")
+              (setf min-hit hit))
+            (finally (return min-hit))))))
 
 ;; Ignoring these for now...dunno if we want them
 #+disabled

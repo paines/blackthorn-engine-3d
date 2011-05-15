@@ -1,0 +1,155 @@
+;;;; Blackthorn -- Lisp Game Engine
+;;;;
+;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
+;;;;
+;;;; Permission is hereby granted, free of charge, to any person
+;;;; obtaining a copy of this software and associated documentation
+;;;; files (the "Software"), to deal in the Software without
+;;;; restriction, including without limitation the rights to use, copy,
+;;;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;;;; of the Software, and to permit persons to whom the Software is
+;;;; furnished to do so, subject to the following conditions:
+;;;;
+;;;; The above copyright notice and this permission notice shall be
+;;;; included in all copies or substantial portions of the Software.
+;;;;
+;;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;;;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;;;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;;;; NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+;;;; HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+;;;; WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;;;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+;;;; DEALINGS IN THE SOFTWARE.
+;;;;
+
+(in-package :blackthorn3d-import)
+
+;;;
+;;; Loads controller, or bone, data from a collada file
+;;;
+
+(defvar +controller+ "controller")
+(defvar +skin+ "skin")
+(defvar +bind-shape-mat+ "bind_shape_matrix")
+(defvar +joints+ "joints")
+(defvar +vertex-weights+ "vertex_weights")
+
+
+(defun build-index-weight-inputs (weights-tag sources)
+  "Constructs the inputs (semantic source) that are fed to unify-indices
+   (later on).  The inputs are arrays of indices and weights. Each
+   vertex is allowed to have up to 4 indices and 4 weights. If it uses
+   fewer, 0s will be stored"
+  (dae-debug "building skin weights~%")
+  (let* ((*dbg-level* (1+ *dbg-level*))
+         (n-verts (parse-integer
+                   (get-attribute "count" (attributes weights-tag))))
+         (weights (src-array
+                   (input-by-semantic :weight 
+                                      (build-input-lst weights-tag 
+                                                       sources))))
+         (counts (string->sv (third 
+                              (find-tag-in-children 
+                               "vcount" weights-tag))))
+         (v-indices (string->sv (third 
+                                 (find-tag-in-children 
+                                  "v" weights-tag))))
+         (index-array (make-array (* 4 n-verts)))
+         (weight-array (make-array (* 4 n-verts)))
+         (ii -1) (wi -1))
+
+    (dae-debug "Is N-VERTS == (length COUNTS)? ~a~%"
+               (= n-verts (length counts)))
+
+    ;; The v-indices array is considered an array of stride 2
+    ;; so, indices have to be multiplied by 2
+    (labels ((set-thingy (start-index count)
+           (iter (for i below 4)
+                 (for v-ind-inc = (* 2 (+ i start-index)))
+                 (if (< i count)
+                     (progn
+                       (setf (svref index-array (incf ii))
+                             (svref v-indices v-ind-inc))
+                       (setf (svref weight-array (incf wi))
+                             (svref weights  
+                                    (svref v-indices (1+ v-ind-inc)))))
+                     (progn
+                       (setf (svref index-array (incf ii))
+                             0)
+                       (setf (svref weight-array (incf wi))
+                             0.0))))))
+
+      (iter (for vi below n-verts)
+            (for count in-vector counts)
+            (for v-index first 0 then (+ v-index count))
+            ;; Build the index and weight streams
+            (set-thingy v-index count))
+      (list
+       (list :joint-index
+             (make-instance 'source
+                            :array index-array
+                            :stride 4
+                            :components '(i0 i1 i2 i3)))
+       (list :joint-weight
+             (make-instance 'source
+                            :array weight-array
+                            :stride 4
+                            :components '(w0 w1 w2 w3)))))))
+
+
+(defun process-controllers (controller-library)
+  "Returns a hash table of controllers; each controller is
+   a list of the joint array and the vertex weights ( a source )
+   for the specific controller"
+  (dae-debug "Processing skin controllers~%")
+  (let ((*dbg-level* (1+ *dbg-level*))
+        (controller-table (make-id-table)))
+    (iter (for controller in (children-with-tag +controller+ 
+                                                controller-library))
+          (dae-debug "processing controller: ~a~%" 
+                     (get-attribute "id" (attributes controller)))
+          (let* ((*dbg-level* (1+ *dbg-level*))
+                 (skin (find-tag-in-children +skin+ controller))
+                 (sources (hash-sources skin))
+                 (bind-pose (matrix-tag->matrix 
+                             (find-tag-in-children +bind-shape-mat+ skin) 
+                             :tag +bind-shape-mat+))
+                 (joint-list (build-input-lst 
+                              (find-tag-in-children +joints+ skin)
+                              sources)))
+            
+            ;; DEBUG
+            ;(print joint-list)
+            
+            ;; TODO:- do something with the return of the next 2 statements
+
+            ;; Build joint array
+            ;;  we can only make the joints...we don't know the skeleton
+            ;;  until the process-scene stage, where we'll have to assume
+            ;;  the joint data isn't malformed
+            (dae-debug "building joint array~%")
+            (setf (gethash (get-attribute "id" (attributes controller))
+                           controller-table)
+                  (list
+                   ;; Geometry id link
+                   (get-uri "source" (attributes skin))
+                   ;; Bind pose matrix
+                   bind-pose
+                   ;; Joint array
+                   (let ((joint-names (src-array 
+                                       (input-by-semantic :joint joint-list)))
+                         (ibm-array (src-array 
+                                     (input-by-semantic :inv_bind_matrix 
+                                                        joint-list))))
+                     (iter (for joint-name in-vector joint-names)
+                           (for ibm in-vector ibm-array)
+                           (collect (make-joint joint-name ibm)
+                                    result-type 'vector)))
+
+                   ;; The vertex sources
+                   ;; Build inputs with for indexes and weights
+                   ;; these get fed to unify-indices with the other inputs
+                   (build-index-weight-inputs
+                    (find-tag-in-children +vertex-weights+ skin) sources)))))
+    controller-table))

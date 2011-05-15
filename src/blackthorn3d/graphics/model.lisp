@@ -67,12 +67,12 @@
   (gl:with-pushed-matrix
       (aif (transform this) (gl:mult-matrix it))
 
-    (draw-bounding-sphere (node-bounding-volume this))
-
+   
     (let ((*material-array* (material-array this)))
       (draw-object (mesh this))
       (iter (for node in (child-nodes this))
-            (draw-object node)))))
+            (draw-object node))))
+   (draw-bounding-sphere (node-bounding-volume this)))
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 (defparameter mesh-format '((:vertex 3) (:normal 3) (:texcoord 2)))

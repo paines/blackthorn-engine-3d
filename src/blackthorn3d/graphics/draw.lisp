@@ -146,7 +146,7 @@
 
 (defmethod draw-bounding-sphere ((sphere bounding-sphere))
   (draw-wire-sphere (blt3d-phy::pos sphere) 
-                    (blt3d-phy::rad sphere) #(1.0 0.0 0.0)))
+                    (blt3d-phy::rad sphere)))
 
 (defun draw-wire-sphere (pos r &optional (color #(1.0 1.0 1.0)) (segs 8))
   (gl:with-pushed-matrix

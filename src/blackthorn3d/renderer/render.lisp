@@ -53,6 +53,8 @@
   "expects viewport = (min-x min-y max-x max-y)"
   (apply #'gl:viewport viewport))
 
+(defvar *collide-mat* nil)
+
 (defun prepare-scene ()
   "Called after sdl is initialized, before first frame is drawn
    or when changing the 'scene' settings"
@@ -71,8 +73,6 @@
   (gl:enable :depth-test)
   (gl:depth-func :lequal)
 
-  
-
   (format t "### LOADING SCIENTIST ###~%")
   ;#+disabled
   (let ((scientist-model 
@@ -87,17 +87,16 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-                                        ;#+disabled
   (setf shader (make-shader (blt3d-res:file-contents
                              (blt3d-res:resolve-resource 
                               #p "res/shaders/FinalProjShader.vert"))
                             (blt3d-res:file-contents
                              (blt3d-res:resolve-resource
                               #p "res/shaders/FinalProjShader.frag"))))
-  
+ 
 
-                                        ;(make-vao-cube)
-  )
+  (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
+                                         :diffuse #(1.0 0.0 0.0))))
 
 (defun update-graphics (entities time)
   (when animated
@@ -134,7 +133,7 @@
     (gl:with-pushed-matrix
         ;; (use-material plane-mat)
         ;;(draw-plane 20)
-        (gl:scale .05 .05 .05)
+        ;;(gl:scale .05 .05 .05)
        
       ;;#+disabled
         (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)

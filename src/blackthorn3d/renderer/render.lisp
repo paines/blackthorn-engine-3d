@@ -126,6 +126,16 @@
   (gl:use-program shader)
   ;(gl:bind-texture :texture-2d cube-tex)
 
+
+  ;; draw axes
+  (gl:with-primitive :lines
+    (gl:vertex 0.0 0.0 0.0)
+    (gl:vertex 5.0 0.0 0.0)
+    (gl:vertex 0.0 0.0 0.0)
+    (gl:vertex 0.0 2.5 0.0)
+    (gl:vertex 0.0 0.0 0.0)
+    (gl:vertex 0.0 0.0 1.25))
+
   (when animated
     (draw-object animated))
 
@@ -135,10 +145,10 @@
         ;;(draw-plane 20)
         ;;(gl:scale .05 .05 .05)
        
-      ;;#+disabled
-        (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                                              (make-point3 0.0 0.0 1.0)
-                                              (make-point3 0.0 1.0 0.0)))
+      #+disabled
+      (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                                            (make-point3 0.0 0.0 1.0)
+                                            (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
   (when *test-skele*

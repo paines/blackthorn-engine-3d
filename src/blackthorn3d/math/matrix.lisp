@@ -320,7 +320,7 @@
         (Tvec (vec-neg4 (col mat 3))))
     (setf (col Rmat 3) (make-point3 0.0 0.0 0.0))
     (setf Rmat (transpose Rmat))
-    (setf (col Rmat 3) Tvec)
+    (setf (col Rmat 3) (matrix-multiply-v Rmat Tvec))
     Rmat))
 
 (defun vec-cols->matrix (vecs)

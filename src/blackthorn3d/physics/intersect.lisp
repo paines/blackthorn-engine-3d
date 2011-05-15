@@ -219,8 +219,9 @@
                                         (vec-scale3 velocity t0))))
         (if (point-in-triangle-p plane-intersection tri)
             (return-from moving-sphere-triangle-intersection
-              (list plane-intersection (* t0 (mag velocity))))))
+              (list t0 plane-intersection #+disabled(* t0 (mag velocity))))))
       
+      (format t "Testing vertices~%")
       ;; TEST 2: test the vertices
       (let* ((sq-rad (* sph-rad sph-rad))
              (vel-sqlen (sq-mag velocity))
@@ -233,35 +234,37 @@
                    (quadratic (dot velocity velocity)
                               (* 2 (dot velocity (vec3- sph-pos v)))
                               (- (sq-mag (vec3- v sph-pos)) sq-rad)))
-              (when (< tp min-t)
+              (when (and tp (< tp min-t))
                 (setf min-t tp)
                 (setf hit (list tp v))))
 
+        (format t "Testing edges~%")
         ;; TEST 3: test the edges
         (let ((edges (list (cons (tri-v1 tri) (tri-v0 tri))
                            (cons (tri-v2 tri) (tri-v0 tri))
                            (cons (tri-v2 tri) (tri-v1 tri)))))
-          (iter (with min-t = (or (car hit) 1.0e+INF))
+          (iter (with min-t = (or (car hit) most-positive-single-float))
                 (for edge-pair in edges)
                 (let* ((edge (vec3- (car edge-pair) (cdr edge-pair)))
                        (s-to-p (vec3- sph-pos (cdr edge-pair)))
                        (e-sqlen (sq-mag edge))
                        (e.v (dot edge velocity))
-                       (e.stp (dot e s-to-p)))
+                       (e.stp (dot edge s-to-p)))
                   (for x0 = 
                        (quadratic (+ (* e-sqlen (- vel-sqlen)) 
                                      (sq e.v))
                                   (- (* e-sqlen (* 2 (dot velocity s-to-p)))
                                      (* 2 e.v e.stp))
-                                  (+ (* e-sqlen (- sq-rad (sq-mag b-to-p))) 
+                                  (+ (* e-sqlen (- sq-rad (sq-mag s-to-p))) 
                                      (sq e.stp))))
-                  (for f0 = (/ (- (* x0 e.v) e.stp) 
-                               e-sqlen))
-                  (when (and (range f0 0 1)
-                             (< x0 min-t))
-                    (setf min-t x0)
-                    (setf hit (list x0 (vec3+ (car edge-pair)
-                                              (vec-scale3 edge f0))))))))
+                  (when x0
+                    (for f0 = (/ (- (* x0 e.v) e.stp) 
+                                 e-sqlen))
+                    (when (and (range f0 0 1)
+                               (< x0 min-t))
+                      (setf min-t x0)
+                      (setf hit (list x0 (vec3+ (car edge-pair)
+                                                (vec-scale3 edge f0)))))))))
 
         ;; At this point, if we have a collision, hit is not (nil . nil)
         ;; but some (x0 . p).  turn into (new-pos hit-point)
@@ -272,7 +275,9 @@
 (defun slide-sphere (sphere velocity hit)
   "@return{the new position and velocity of the sphere as
            (new-pos  new-vel)}"
-  (destructuring-bind (x0 . hit-p) hit
+  (destructuring-bind (x0 hit-p &rest dc) hit
+    (declare (ignore dc))
+    (format t "our precious hit: ~a~%" hit)
     (with-slots (pos rad) sphere
       (let* ((new-pos (vec4+ pos (vec-scale4 velocity x0)))
              (plane-n (norm4 (vec4- new-pos hit-p)))
@@ -283,5 +288,5 @@
               (vec4- destination 
                      (vec-scale4 plane-n 
                                  (plane-dist sliding-plane 
-                                             destination))))))
-      (list new-pos (vec4- new-dest new-pos)))))
+                                             destination)))))
+        (list new-pos (vec4- new-dest new-pos))))))

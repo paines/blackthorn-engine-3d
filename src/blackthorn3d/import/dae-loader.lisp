@@ -186,6 +186,7 @@
                                  :mesh skin)))
              ;; anything else, we don't really care about much
              (otherwise nil))))
+      (format t "NODE ~a's transform: ~a~%" id xform)
 
       ;; Add an entry in *xform-mappings* for the animation pass
       (setf (gethash id *xform-mappings*)

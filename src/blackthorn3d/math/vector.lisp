@@ -83,6 +83,12 @@
   "@short{Create a vector in 3d space; sets w to 0.0}"
   (make-vector4 x y z 0.0))
 
+(defun vec3->point (vec3)
+  (concatenate 'vector vec3 #(1.0)))
+
+(defun vec3->vec (vec3)
+  (concatenate 'vector vec3 #(0.0)))
+
 (defun dot (a b)
   (iter (for i from 0 below 3)
         (sum (* (aref a i) (aref b i)))))

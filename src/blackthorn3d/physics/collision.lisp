@@ -49,6 +49,7 @@
              (+ r1 r2))
           t nil))))
 
+#+disabled
 (defmethod collide-test ((s1 bounding-sphere) (s2 bounding-sphere))
   (when (collide-p s1 s2)
     (list (/ (sq-mag (vec3- (pos s2) (pos s1))))

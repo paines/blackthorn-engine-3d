@@ -152,7 +152,7 @@
 
           ;; At the end return the displacement from original sphere
           ;; to new one
-          (finally (return (vec4- (pos test-sph) (pos sphere)))))))
+          (finally (return test-vel #+disabled(vec4- (pos test-sph) (pos sphere)))))))
 
 (defmethod collide-with-world-node ((obj entity-server) (node model-node))
   (let* ((inv-mat (rt-inverse (transform node)))

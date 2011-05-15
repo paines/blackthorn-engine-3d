@@ -141,7 +141,7 @@
           (until (< (sq-mag test-vel) +min-collide-dist+))
           (for hit = (min-collide
                       (iter (for node in (mesh-nodes world))
-                            (collect (collide-with-world-node obj world)))))
+                            (collect (collide-with-world-node obj node)))))
           (until (null hit))
           (when hit
             ;; get new origin and velocity

@@ -39,4 +39,4 @@
            :companion-cube :dae #p "res/models/PlatformRoom.dae"))))
     ;; we have to scale it!
     (blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
-    leve))
+    level))

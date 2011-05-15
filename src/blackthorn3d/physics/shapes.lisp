@@ -120,7 +120,7 @@
 				 (make-point3 max-x max-y max-z))))))
 
 ;; for triangles only!!! even though it allows all simple vectors
-(defmethod shape-bounds ((tri simple-vector))
+(defmethod shape-bounds ((tri vector))
   (let ((bounds (find-bounding-points (subseq tri 0 3))))
     (format t 
 "### tri-bounds: ~a

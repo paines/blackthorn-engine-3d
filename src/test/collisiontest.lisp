@@ -166,6 +166,19 @@
                 (swept-sphere-collide sph1 vel1 sph2 vel2))
         (is (swept-sphere-collide sph1 vel1 sph2 vel2))))
 
+(test rt-inverse
+      (let* ((base-mat (matrix-multiply-m 
+                        (make-y-rot (/ pi 2))
+                        (make-translate #(1.0 0.0 0.0 1.0))))
+             (inv-mat (rt-inverse base-mat))
+             (point (make-point3 0.0 0.0 0.0))
+             (xfer-pt (matrix-multiply-v base-mat point)))
+        (format t "~%~%BASE-MAT: ~a~%INV-MAT: ~a~%" 
+                base-mat inv-mat)
+        (format t "~%~%start vec: ~a~%result vec: ~a~%back-to-start? ~a~%"
+                point xfer-pt (matrix-multiply-v inv-mat xfer-pt))
+        (is (= 5 5))))
+
 (test find-bounding-points
       (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)
                                  (make-vector3 0.0 2.0 2.0)

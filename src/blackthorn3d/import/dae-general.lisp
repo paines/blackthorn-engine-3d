@@ -261,7 +261,6 @@
   (destructuring-bind (id elements inputs) mesh-lst
     (destructuring-bind (new-elements vertex-streams)
         (unify-indices elements inputs)
-      
-      (make-blt-mesh :id id
+          (make-blt-mesh :id id
                      :vertex-streams vertex-streams
                      :elements new-elements))))

@@ -44,23 +44,23 @@
       (list (vec3+ pos disp-vec)
             (vec3- pos disp-vec)))))
 
-;; box encompassing a swept sphere
-(defmethod shape-bounds ((ent entity-server))
-  (with-slots (bounding-volume velocity) ent
-    (let* ((norm-v (norm3 velocity))
-           (c1 (pos bounding-volume))
-           (c2 (vec3+ (pos bounding-volume) velocity))
-           (min-p (make-point3 (min (x c1) (x c2))
-                               (min (y c1) (y c2))
-                               (min (z c1) (z c2))))
-           (max-p (make-point3 (max (x c1) (x c2))
-                               (max (y c1) (y c2))
-                               (max (z c1) (z c2))))
-           (rad-vec (make-vec3 (rad bounding-volume)
-                               (rad bounding-volume)
-                               (rad bounding-volume))))
-      (list (vec3- min-p rad-vec)
-            (vec3+ max-p rad-vec)))))
+(defun swept-sphere->aabb (sphere vel)
+  ;; box encompassing a swept sphere
+  (let* ((norm-v (norm3 vel))
+         (c1 (pos sphere))
+         (c2 (vec3+ c1 vel))
+         (min-p (make-point3 (min (x c1) (x c2))
+                             (min (y c1) (y c2))
+                             (min (z c1) (z c2))))
+         (max-p (make-point3 (max (x c1) (x c2))
+                             (max (y c1) (y c2))
+                             (max (z c1) (z c2))))
+         (rad-vec (make-vec3 (rad sphere)
+                             (rad sphere)
+                             (rad sphere))))
+    (make-instance 'aa-bounding-box
+                   :a-min (vec3->point (vec3- min-p rad-vec))
+                   :a-max (vec3->point (vec3+ max-p rad-vec)))))
 
 (defclass aa-bounding-box (bounding-shape)
   ((a-min
@@ -74,7 +74,11 @@
 
 (defmethod initialize-instance :after ((b-box aa-bounding-box) &key)
   (with-slots (a-min a-max) b-box
-    (setf pos (vec-scale4 (vec4+ a-min a-max) 2))))
+    (setf pos (vec-scale4 (vec4+ a-min a-max) 0.5))))
+
+
+(defmethod shape-bounds ((box aa-bounding-box))
+  (list (a-min box) (a-max box)))
 
 ;#+disabled
 (defclass o-bounding-box ()
@@ -131,22 +135,23 @@
 
 (defmethod make-bounding-sphere (vect-array)
   ;; tighter spheres this way, but not super good...
-  (let ((mean-point
-         (iter (for v in-vector vect-array)
-               (sum (x v) into sumx)
-               (sum (y v) into sumy)
-               (sum (z v) into sumz)
-               (finally 
-                (return (vec-scale4 (make-point3 sumx sumy sumz) 
-                                    (/ 1 (length vect-array))))))))
-    (iter (for v in-vector vect-array)
-          (for sq-radius 
-               initially 0.0
-               then (max sq-radius (sq-mag (vec3- v mean-point))))
-          (finally 
-           (return (make-instance 'bounding-sphere 
-                                  :pos mean-point
-                                  :rad (sqrt sq-radius))))))
+  (when vect-array
+    (let ((mean-point
+           (iter (for v in-vector vect-array)
+                 (sum (x v) into sumx)
+                 (sum (y v) into sumy)
+                 (sum (z v) into sumz)
+                 (finally 
+                  (return (vec-scale4 (make-point3 sumx sumy sumz) 
+                                      (/ 1 (length vect-array))))))))
+      (iter (for v in-vector vect-array)
+            (for sq-radius 
+                 initially 0.0
+                 then (max sq-radius (sq-mag (vec3- v mean-point))))
+            (finally 
+             (return (make-instance 'bounding-sphere 
+                                    :pos mean-point
+                                    :rad (sqrt sq-radius)))))))
 
   #+disabled
   (let* ((pos-list (find-bounding-points vect-array))

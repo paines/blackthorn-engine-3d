@@ -149,6 +149,10 @@
 (defmethod collide-with-world ((obj entity-server) (world blt-model))
   "Updates the entity obj after performing world-collision"
   (with-slots ((sphere bounding-volume)) obj
+    (setf (pos sphere) (pos obj))
+
+  #+disabled(format t "----------------------------------------~%# Entity Center: ~a~%"
+            (pos sphere))
 
     ;; Loop to find the displacement vector
     (iter (with test-sph = (copy-sphere sphere))
@@ -158,7 +162,8 @@
           (until (< (sq-mag test-vel) +min-collide-dist+))
           (for hit = (min-collide
                       (iter (for node in (mesh-nodes world))
-                            (collect (collide-with-world-node obj node)))))
+                            (collect (collide-with-world-node 
+                                      test-sph test-vel node)))))
           (until (null hit))
           (when hit
             ;; get new origin and velocity
@@ -172,49 +177,67 @@
           (finally (return test-vel 
                            #+disabled(vec4- (pos test-sph) (pos sphere)))))))
 
-(defmethod collide-with-world-node ((obj entity-server) (node model-node))
+(defmethod collide-with-world-node ((sphere bounding-sphere)
+                                    velocity
+                                    (node model-node))
   (let* ((inv-mat (rt-inverse (transform node)))
          (xformed-bv 
-          (transform-bounding-volume (bounding-volume obj) inv-mat))
+          (transform-bounding-volume sphere inv-mat))
          (xformed-vel 
-          (matrix-multiply-v inv-mat (velocity obj))))
+          (matrix-multiply-v inv-mat velocity)))
+
+    ;(format t "## sphere-center: ~a~%" (pos xformed-bv))
+
     (min-collide
      (append
-      (list (collide-test obj (mesh node)))
+      (list (collide-test xformed-bv
+                          xformed-vel
+                          (mesh node)))
+
+      ;; Todo- fix swept-sphere-collide
       #+disabled
       (aif (swept-sphere-collide xformed-bv xformed-vel
                                  (node-bounding-volume node) +zero-vec+)
            ;; if we intersect the bounding-shape, check the mesh
            (progn
              (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
-             (list (collide-test obj (mesh node)))))
+             (list (collide-test xformed-bv xformed-vel (mesh node)))))
+
       (iter (for child in (child-nodes node))
             (collect 
-             (collide-with-world-node  xformed-vel child)))))))
+             (collide-with-world-node xformed-bv xformed-vel child)))))))
 
-
-(defmethod collide-test ((obj entity-server) 
-                         (mesh blt-mesh))
-  t)
 
 ;; performs collision testing of an entity against an rtree of triangles
 ;; returns the results of moving-sphere-triangle-intersection
-(defmethod collide-test ((obj entity-server) 
+(defmethod collide-test ((sphere bounding-sphere) velocity 
                          (r-tree spatial-trees-protocol:spatial-tree))
-  (format t "### Testing against r-tree!! HERE WE GO!~%")
-  (with-slots ((sphere bounding-volume)
-               velocity) obj
-    (let ((results (spatial-trees:search sphere r-tree)))
-      ;(format t "#### results are in! ~a~%" results)
-      (iter (with min-hit = nil)
-            (for tri in results)
-            (for hit = (moving-sphere-triangle-intersection
-                        sphere tri velocity))
-            (when (and hit (or (null min-hit) 
-                               (< (car hit) (car min-hit))))
-              (format t "### Hit r-tree! zomg!~%")
-              (setf min-hit hit))
-            (finally (return min-hit))))))
+;  (format t "### Testing against r-tree!! HERE WE GO!~%")
+  (let ((results 
+         (spatial-trees:search (swept-sphere->aabb sphere velocity) 
+                               r-tree)))
+    (when results (format t "#### we intersect ~a triangle boxes~%" 
+                          (length results)))
+
+    (iter (with min-hit = nil)
+          (for tri in results)
+          (format t "icanhazhit?~%")
+          (for hit = (moving-sphere-triangle-intersection
+                      sphere tri velocity))
+          (format t "hit = ~a~%" hit)
+          (when (and hit (or (null min-hit) 
+                             (< (car hit) (car min-hit))))
+            (format t "### Hit r-tree! zomg!~%")
+            (setf min-hit hit))
+          (finally (return min-hit)))))
+
+;; Do nothing for meshes
+(defmethod collide-test ((sphere bounding-sphere) velocity
+                         (mesh blt-mesh))
+  t)
+
+
+
 
 ;; Ignoring these for now...dunno if we want them
 #+disabled

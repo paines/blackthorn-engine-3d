@@ -31,7 +31,7 @@
   (if (and (zerop a) (/= 0 b)) (/ (- c) b)
       (let* ((det (- (* b b) (* 4 a c)))
              (denom (* 0.5 a)))
-        (if (< 0 det)
+        (if (< det 0)
             nil
             (let ((r1 (* (- (- b) (sqrt det))))
                   (r2 (* (+ (- b) (sqrt det)))))

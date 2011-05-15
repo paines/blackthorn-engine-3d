@@ -37,6 +37,8 @@
    :make-point3
    :make-vec3
    :make-color
+   :vec3->point
+   :vec3->vec
    :x :y :z :w
    :r :g :b :a   
    :dot

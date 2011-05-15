@@ -145,12 +145,15 @@
                  :rad (rad sphere)
                  :pos (pos sphere)))
 
+(defvar +collision-eps+ 1.0e-3)
+
 ;; World = blt-model, for now
 (defmethod collide-with-world ((obj entity-server) (world blt-model))
   "Updates the entity obj after performing world-collision"
   (with-slots ((sphere bounding-volume) velocity) obj
     (let ((test-sph (copy-sphere sphere))
           (test-vel velocity))
+
       (setf (pos test-sph) (pos obj)
             #+disabled (vec4+ (pos test-sph) (pos obj)))
       (setf (svref test-vel 3) 0.0)
@@ -166,7 +169,11 @@
           ;; don't allow the player to move into geometry
             (progn 
               (format t "hit!!   ~a~%" hit)
-              (let ((ret-vel (vec-scale4 test-vel (car hit))))
+              (let* ((ret-vel 
+                      (vec-scale4 test-vel (car hit))
+                      #+disabled(vec-scale4 (norm4 test-vel) 
+                                  +min-collide-dist+)))
+
                 (format t "new vector: ~a~%" ret-vel)
                 ret-vel))
             test-vel))
@@ -237,7 +244,7 @@
 ;; returns the results of moving-sphere-triangle-intersection
 (defmethod collide-test ((sphere bounding-sphere) velocity 
                          (r-tree spatial-trees-protocol:spatial-tree))
-;  (format t "### Testing against r-tree!! HERE WE GO!~%")
+
   (let ((results 
          (spatial-trees:search (swept-sphere->aabb sphere velocity) 
                                r-tree)))
@@ -247,12 +254,10 @@
 
     (iter (with min-hit = nil)
           (for tri in results)
-         ; (format t "icanhazhit?~%")
           (for hit = (moving-sphere-triangle-intersection
                       sphere tri velocity))
           (when (and hit (or (null min-hit) 
                              (< (car hit) (car min-hit))))
-           ; (format t "hit = ~a~%" hit)
             (setf min-hit hit))
           (finally (return min-hit)))))
 

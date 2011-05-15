@@ -37,6 +37,10 @@
                    (r2 (* (+ (- b) (sqrt det))))
                    (rmin (min r1 r2))
                    (rmax (max r1 r2)))
+              #+disabled
+              (if (<= rmin max)
+                  (values rmin rmax))
+              ;#+disabled
               (if (and (>= rmin 0.0) (<= rmin max))
                   (values rmin rmax)
                   (if (and (>= rmax 0.0) (<= rmax max))

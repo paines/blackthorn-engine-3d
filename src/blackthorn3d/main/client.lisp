@@ -97,13 +97,14 @@
   #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
   #+disabled
+  (blt3d-phy:apply-transform *level* (make-scale #(0.05 0.05 0.05)))
+  #+disabled
   (blt3d-phy:apply-transform 
    *level* 
    (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                          (make-point3 0.0 0.0 1.0)
                          (make-point3 0.0 1.0 0.0)))
-  #+disabled
-  (blt3d-phy:apply-transform *level* (make-scale #(0.05 0.05 0.05)))
+  
 
   (setf *random-state* (make-random-state t))
 

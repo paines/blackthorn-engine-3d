@@ -43,5 +43,6 @@
   ;  (format t "pre-move: ~a ; " movement-vec)
     (setf movement-vec (collide-with-world self (blt3d-res:get-model :companion-cube)))
    ; (format t "post-move: ~a~%" movement-vec)
-    (move-vec self movement-vec)))
+    (move-vec self movement-vec)
+    ))
     

@@ -39,5 +39,7 @@
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
 (defun standard-physics-step (self)
-  (move-vec self (velocity self)))
+  (let ((movement-vec (velocity self)))
+    (setf movement-vec (collide-with-world self (blt3d-res:get-model :companion-cube)))
+    (move-vec self movement-vec)))
     

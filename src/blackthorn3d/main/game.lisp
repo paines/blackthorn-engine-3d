@@ -33,6 +33,10 @@
                              (blt3d-imp:load-dae path)))
 
   ;; load our test model
-  (blt3d-phy:initialize-cube
-   (blt3d-res:load-model 
-    :companion-cube :dae #p "res/models/PlatformRoom.dae")))
+  (let ((level
+         (blt3d-phy:initialize-cube
+          (blt3d-res:load-model 
+           :companion-cube :dae #p "res/models/PlatformRoom.dae"))))
+    ;; we have to scale it!
+    (blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
+    leve))

@@ -249,22 +249,23 @@
     :initarg :mesh)))
 
 (defun make-model-node (&key id transform material-array mesh children)
-  (let ((bv (make-bounding-volume (get-stream :vertex mesh))))
-    (format t "%% Bounding Volume for ~a:  pos: ~a   rad: ~a~%"
-            id (pos bv) (rad bv))
-    (make-instance 'model-node
-                   :id id
-                   :transform transform
-                   :material-array material-array
-                   :mesh mesh
-                   :child-nodes children
-                   :bounding-volume bv
-                   #+disabled
-                   (make-bounding-volume 
-                    (get-stream :vertex mesh)
-                    #+disabled(iter (for v in-vector (get-stream :vertex mesh))
-                                    (collect (matrix-multiply-v transform v) 
-                                             result-type 'vector))))))
+  (make-instance 'model-node
+                 :id id
+                 :transform transform
+                 :material-array material-array
+                 :mesh mesh
+                 :child-nodes children
+                 :bounding-volume 
+                 (transform-bounding-volume
+                  (make-bounding-sphere (get-stream :vertex mesh))
+                  transform)
+                 #+disabled
+                 (make-bounding-volume 
+                  (get-stream :vertex mesh)
+                  ;#+disabled
+                  (iter (for v in-vector (get-stream :vertex mesh))
+                        (collect (matrix-multiply-v transform v) 
+                                 result-type 'vector)))))
 
 (defun copy-model-node (node)
   (with-slots (id transform material-array mesh child-nodes bounding-volume) node

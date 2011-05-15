@@ -96,6 +96,7 @@
                  (blt3d-imp:load-dae #p"res/models/test-room.dae")))
   #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
+  #+disabled
   (blt3d-phy:apply-transform 
    *level* 
    (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)

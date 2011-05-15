@@ -39,6 +39,7 @@
 
 (defun build-r-tree (triangles)
   "take a vector of triangles and return an r-tree around them"
+  (format t "BUILD-R-TREE: num tri: ~a~%" (length triangles))
   (let ((r-tree 
          (spatial-trees:make-spatial-tree :r 
                                           :rectfun #'make-rect)))
@@ -147,34 +148,58 @@
 ;; World = blt-model, for now
 (defmethod collide-with-world ((obj entity-server) (world blt-model))
   "Updates the entity obj after performing world-collision"
-  (with-slots ((sphere bounding-volume)) obj
-    (setf (pos sphere) (pos obj))
+  (with-slots ((sphere bounding-volume) velocity) obj
+    (let ((test-sph (copy-sphere sphere))
+          (test-vel velocity))
+      (setf (pos test-sph) (pos obj)
+            #+disabled (vec4+ (pos test-sph) (pos obj)))
+      (setf (svref test-vel 3) 0.0)
 
-  #+disabled(format t "----------------------------------------~%# Entity Center: ~a~%"
-            (pos sphere))
+     ; (format t "TEST SPHERE AT: ~a~%" (pos test-sph))
 
-    ;; Loop to find the displacement vector
-    (iter (with test-sph = (copy-sphere sphere))
-          (with test-vel = (velocity obj))
-          ;(with hit = nil)
-          (for i below +max-collision-depth+)
-          (until (< (sq-mag test-vel) +min-collide-dist+))
-          (for hit = (min-collide
-                      (iter (for node in (mesh-nodes world))
-                            (collect (collide-with-world-node 
-                                      test-sph test-vel node)))))
-          (until (null hit))
-          (when hit
-            ;; get new origin and velocity
-            (destructuring-bind (new-pos new-vel)
-                (slide-sphere test-sph test-vel hit)
-              (setf (pos test-sph) new-pos
-                    test-vel new-vel)))
+      ;; Debug version: only do one iteration
+      (let ((hit (min-collide
+                  (iter (for node in (mesh-nodes world))
+                        (collect (collide-with-world-node 
+                                  test-sph test-vel node))))))
+        (if hit
+          ;; don't allow the player to move into geometry
+            (progn 
+              (format t "hit!!   ~a~%" hit)
+              (let ((ret-vel (vec-scale4 test-vel (car hit))))
+                (format t "new vector: ~a~%" ret-vel)
+                ret-vel))
+            test-vel))
 
-          ;; At the end return the displacement from original sphere
-          ;; to new one
-          (finally (return test-vel 
-                           #+disabled(vec4- (pos test-sph) (pos sphere)))))))
+      ;; Loop to find the displacement vector
+      #+disabled
+      (iter (with test-vel = velocity)
+            (for i below +max-collision-depth+)
+            ;(until (< (sq-mag test-vel) +min-collide-dist+))
+            (for hit = (min-collide
+                        (iter (for node in (mesh-nodes world))
+                              (collect (collide-with-world-node 
+                                        test-sph test-vel node)))))
+            (until (null hit))
+            (when hit
+              (format t "top level hit = ~a~%" hit)
+              ;; get new origin and velocity
+              (destructuring-bind (new-pos new-vel)
+                  (slide-sphere test-sph test-vel hit)
+                (setf (pos test-sph) new-pos
+                      test-vel new-vel)))
+
+            ;; At the end return the displacement from original sphere
+            ;; to new one
+            (finally (return  
+                       (vec4- (vec4+ (pos test-sph) test-vel) 
+                              (vec4+ (pos sphere) (pos obj)))))))))
+
+;; x0 stays the same, but the position needs to be moved
+(defun transform-hit (transform hit)
+  (when hit
+    (list (car hit)
+          (matrix-multiply-v transform (second hit)))))
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity
@@ -186,25 +211,26 @@
           (matrix-multiply-v inv-mat velocity)))
 
     ;(format t "## sphere-center: ~a~%" (pos xformed-bv))
+    ;; don't forget to re-transform on way back up
+    (transform-hit (transform node)
+     (min-collide
+      (append
+       (list (collide-test xformed-bv
+                           xformed-vel
+                           (mesh node)))
 
-    (min-collide
-     (append
-      (list (collide-test xformed-bv
-                          xformed-vel
-                          (mesh node)))
+       ;; Todo- fix swept-sphere-collide
+       #+disabled
+       (aif (swept-sphere-collide xformed-bv xformed-vel
+                                  (node-bounding-volume node) +zero-vec+)
+            ;; if we intersect the bounding-shape, check the mesh
+            (progn
+              (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
+              (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
-      ;; Todo- fix swept-sphere-collide
-      #+disabled
-      (aif (swept-sphere-collide xformed-bv xformed-vel
-                                 (node-bounding-volume node) +zero-vec+)
-           ;; if we intersect the bounding-shape, check the mesh
-           (progn
-             (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
-             (list (collide-test xformed-bv xformed-vel (mesh node)))))
-
-      (iter (for child in (child-nodes node))
-            (collect 
-             (collide-with-world-node xformed-bv xformed-vel child)))))))
+       (iter (for child in (child-nodes node))
+             (collect 
+              (collide-with-world-node xformed-bv xformed-vel child))))))))
 
 
 ;; performs collision testing of an entity against an rtree of triangles
@@ -215,18 +241,18 @@
   (let ((results 
          (spatial-trees:search (swept-sphere->aabb sphere velocity) 
                                r-tree)))
+    #+disabled
     (when results (format t "#### we intersect ~a triangle boxes~%" 
                           (length results)))
 
     (iter (with min-hit = nil)
           (for tri in results)
-          (format t "icanhazhit?~%")
+         ; (format t "icanhazhit?~%")
           (for hit = (moving-sphere-triangle-intersection
                       sphere tri velocity))
-          (format t "hit = ~a~%" hit)
           (when (and hit (or (null min-hit) 
                              (< (car hit) (car min-hit))))
-            (format t "### Hit r-tree! zomg!~%")
+           ; (format t "hit = ~a~%" hit)
             (setf min-hit hit))
           (finally (return min-hit)))))
 

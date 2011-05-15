@@ -39,6 +39,7 @@
            :companion-cube :dae #p "res/models/test-room.dae"))))
     ;; we have to scale it!
     ;(blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
+    #+disable
     (blt3d-phy:apply-transform 
      level
      (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)

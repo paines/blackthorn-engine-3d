@@ -46,6 +46,8 @@
 
    :blt-skin
    :make-blt-skin
+   :bind-skeleton
+   :bind-shape-matrix
 
    :model-node
    :make-model-node
@@ -94,6 +96,8 @@
    ;; intersect.lisp
    :point-line-sq-distance
    :sphere-triangle-intersection
+   :sphere-edge-intersection
+   :sphere-edge-intersection2
 
    ;; collision.lisp
    :collide-p
@@ -108,6 +112,10 @@
    :child-joints
    :make-joint
    :make-skeleton
+   :update-skeleton
+   :root-joint
+   ;:get-skeleton
+   :get-joint-matrices
 
    ;; static-collision.lisp (needs refactoring?)
    :initialize-cube

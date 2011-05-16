@@ -76,6 +76,8 @@
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 (defparameter mesh-format '((:vertex 3) (:normal 3) (:texcoord 2)))
+(defparameter skin-format (append mesh-format
+                                  '((:joint-index 4) (:joint-weight 4))))
 
 (defun indices->gl-array (indices)
   (let* ((count (length indices))
@@ -88,17 +90,15 @@
   (make-element
    :indices (indices->gl-array (element-indices element))
    ;; TODO: load textures to open-gl
-   :material (element-material element)
-   #+disabled
-   (with-slots (ambient diffuse specular shininess textures) 
-       (element-material element)
-     (make-instance 'material
-                    :ambient ambient
-                    :diffuse diffuse
-                    :specular specular
-                    :shininess shininess))))
+   :material (element-material element)))
 
 (defvar *animator* nil)
+
+(defmethod get-mesh-format ((this blt-mesh))
+  mesh-format)
+
+(defmethod get-mesh-format ((this blt-skin))
+  skin-format)
 
 ;; Changed to return the same, albeit modified, blt-model
 (defmethod load-obj->models ((this blt-model))
@@ -109,42 +109,27 @@
           (with-slots (mesh transform) node
             (let ((interleaved (interleave
                                 (vertex-streams mesh)
-                                mesh-format
-                                #+disabled
-                                (organize-streams (vertex-streams mesh)
-                                                  +mesh-components+)))
+                                (get-mesh-format mesh)))
                   (elements
                    (iter (for elt in (elements mesh))
                          (collect (elem->gl-elem elt)))))
-              (setf mesh (make-instance
-                          'mesh
-                          :id (id mesh)
-                          :vert-data (vnt-array->gl-array interleaved)
-                          :elements elements
-                          :array-format 'blt-vnt-mesh))
-              #+disabled(collect instance)))))
-  this
+              (setf mesh (convert-to-ogl mesh interleaved elements))))))
+  this)
 
-  #+disabled
-  (make-instance 
-   'model-shape
-   :mesh-graph 
-   (iter (for instance in (mesh-nodes this))
-         (with-slots (mesh transform) instance
-           (let ((interleaved (interleave
-                               (vertex-streams mesh)
-                               mesh-format
-                               #+disabled
-                               (organize-streams (vertex-streams mesh)
-                                                 +mesh-components+)))
-                 (elements
-                  (iter (for elt in (elements mesh))
-                        (collect (elem->gl-elem elt)))))
-             (setf mesh (make-instance
-                         'mesh
-                         :id (id mesh)
-                         :vert-data (vnt-array->gl-array interleaved)
-                         :elements elements
-                         :array-format 'blt-vnt-mesh))
-             (collect instance))))
-   :controller (animations this)))
+(defmethod convert-to-ogl ((mesh blt-mesh) interleaved elements)
+  (make-instance
+   'mesh
+   :id (id mesh)
+   :vert-data (vnt-array->gl-array interleaved)
+   :elements elements
+   :array-format 'blt-vnt-mesh))
+
+(defmethod convert-to-ogl ((skin blt-skin) interleaved elements)
+  (make-instance
+   'skin
+   :id (id skin)
+   :vert-data (vntiw-array->gl-array interleaved)
+   :elements elements
+   :array-format 'blt-vntiw-mesh
+   :bind-skeleton (bind-skeleton skin)
+   :bind-shape-matrix (bind-shape-matrix skin)))

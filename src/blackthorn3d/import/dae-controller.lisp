@@ -139,11 +139,15 @@
                    ;; Joint array
                    (let ((joint-names (src-array 
                                        (input-by-semantic :joint joint-list)))
-                         (ibm-array (src-array 
-                                     (input-by-semantic :inv_bind_matrix 
-                                                        joint-list))))
+                         (ibm-source 
+                          (input-by-semantic :inv_bind_matrix 
+                                             joint-list)))
                      (iter (for joint-name in-vector joint-names)
-                           (for ibm in-vector ibm-array)
+                           (for i upfrom 0)
+                           (for ibm = (transpose
+                                       (reshape
+                                        (src-accessor ibm-source i)
+                                        '(4 4))))
                            (collect (make-joint joint-name ibm)
                                     result-type 'vector)))
 

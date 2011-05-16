@@ -26,16 +26,29 @@
 
 (in-package :blackthorn3d-graphics)
 
-(defun init ()
-  "Called to initialize the graphics subsystem"
-  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
- 
-  (setf *main-light* (make-instance 'light
-                                    :position (make-point3 0.0 10.0 0.0)))
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
-  #+disabled
-  (setf plane-mat (make-instance
-                   'blt-material
-                   :ambient #(.5 .2 .2 1.0)
-                   :diffuse #(1.0 0.0 0.0 1.0))))
+(defun init-gfx ()
+  (setf skin-shader
+        (make-shader (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource 
+                       #p "res/shaders/skin-shader.vert"))
+                     (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource
+                       #p "res/shaders/FinalProjShader.frag"))))
+
+  (enable-shader skin-shader)
+  (setf joint-indices-loc 
+        (gl:get-attrib-location skin-shader "jointIndices")
+        
+        joint-weights-loc
+        (gl:get-attrib-location skin-shader "jointWeights")
+        
+        joint-mats-loc
+        (gl:get-uniform-location skin-shader "jointMats"))
+
+  (setf mesh-shader (make-shader (blt3d-res:file-contents
+                                  (blt3d-res:resolve-resource 
+                                   #p "res/shaders/FinalProjShader.vert"))
+                                 (blt3d-res:file-contents
+                                  (blt3d-res:resolve-resource
+                                   #p "res/shaders/FinalProjShader.frag")))))
 

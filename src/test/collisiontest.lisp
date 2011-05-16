@@ -190,6 +190,26 @@
              (point (make-point3 0.0 0.0 0.0)))
         (is (not (null (point-in-triangle-p point tri))))))
 
+
+(test quadratic
+      (let ((res (quadratic 1 -1 -6 100)))
+        (is (= 2 res))))
+
+(test sphere-edge-intersection
+      (let* ((sphere (make-instance 'bounding-sphere
+                                    :pos (make-point3 2.344 0.0 4.0)
+                                    :rad 1.0))
+             (vel (make-vec3 -0.065 0.0 -0.0753))
+             (edge-o (make-point3 1.5 -1.5 3.0))
+             (edge-e (make-vec3 0.0 3.0 0.0))
+             
+             (result 
+              (sphere-edge-intersection sphere vel edge-o edge-e 1.0)))
+        (format t "~%SPHERE-EDGE RESULT: ~a~%" result)
+        (is (not (null result)))))
+
+
+
 (test find-bounding-points
       (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)
                                  (make-vector3 0.0 2.0 2.0)

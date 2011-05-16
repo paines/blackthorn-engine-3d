@@ -60,6 +60,8 @@
          (children (children mesh-lst))
          (source-table (hash-sources mesh-lst)))
 
+    (format t "built sources~%~a~%~%" source-table)
+
     ;; for some reason collada uses "vertices" as an alias for "position"
     (set-vertices (find-tag +vertices+ children) source-table)
     (list

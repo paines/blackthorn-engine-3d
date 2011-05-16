@@ -158,6 +158,9 @@
             #+disabled (vec4+ (pos test-sph) (pos obj)))
       (setf (svref test-vel 3) 0.0)
 
+      (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel)
+
+
      ; (format t "TEST SPHERE AT: ~a~%" (pos test-sph))
 
       ;; Debug version: only do one iteration
@@ -166,17 +169,62 @@
                         (collect (collide-with-world-node 
                                   test-sph test-vel node))))))
         (if hit
-          ;; don't allow the player to move into geometry
+            (let* ((x0 (car hit))
+                   (hit-pt (second hit))
+                   (new-bp (pos test-sph))
+                   (dest (vec4+ new-bp velocity))
+                   (closest-dist (mag (vec-scale4 velocity x0))))
+
+             ; (format t "top level hit: ~a~%" hit)
+              
+              ;; only move the base point if we aren't already
+              ;; very close to the hit
+              (if (>= closest-dist 0.001)
+                  (setf new-bp 
+                        (vec4+ new-bp 
+                               (vec-scale4 velocity 
+                                           (- closest-dist 0.001)))))
+
+              ;; make sliding plane
+              (let* ((plane-normal (norm4 (vec4- new-bp hit-pt)))
+                     (plane-origin hit-pt)
+                     (sliding-plane (make-plane 
+                                     plane-normal
+                                     (dot plane-origin plane-normal)))
+                     (new-dest (vec4-
+                                dest
+                                (vec-scale4
+                                 plane-normal
+                                 (plane-dist sliding-plane dest))))
+                     (new-vel (vec4- new-dest hit-pt)))
+                ;; return the new velocity as the vector from start
+                ;; to new-dest + new-vel
+               ; (setf (pos obj) new-bp)
+                (vec-scale4 velocity (car hit))
+               ; (vec4- (vec4+ new-dest new-vel) (pos test-sph))
+                ))
+
+            #+disabled
+            (progn
+              (format t "top level hit: ~a~%" hit)
+              ;; don't allow the player to move into geometry
+              (destructuring-bind (new-pos new-vel)
+                  (slide-sphere test-sph test-vel hit)
+
+                (vec3->vec (vec3- (vec3+ new-pos new-vel) (pos test-sph)))))
+
+            #+disabled
             (progn 
-              (format t "hit!!   ~a~%" hit)
+              (when (> (car hit) 0.0) (format t "hit!!   ~a~%" hit))
               (let* ((ret-vel 
                       (vec-scale4 test-vel (car hit))
-                      #+disabled(vec-scale4 (norm4 test-vel) 
-                                  +min-collide-dist+)))
+                       #+disabled(vec-scale4 (norm4 test-vel) 
+                                             +min-collide-dist+)))
 
                 (format t "new vector: ~a~%" ret-vel)
                 ret-vel))
-            test-vel))
+            (progn; (setf (pos obj) (vec4+ (pos obj) velocity))
+                   test-vel)))
 
       ;; Loop to find the displacement vector
       #+disabled
@@ -206,7 +254,7 @@
 (defun transform-hit (transform hit)
   (when hit
     (list (car hit)
-          (matrix-multiply-v transform (second hit)))))
+          (matrix-multiply-v transform (vec3->point (second hit))))))
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity
@@ -219,6 +267,7 @@
 
     ;(format t "## sphere-center: ~a~%" (pos xformed-bv))
     ;; don't forget to re-transform on way back up
+    ;(format t "node transform ~a~%" (transform node))
     (transform-hit (transform node)
      (min-collide
       (append
@@ -232,6 +281,7 @@
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
             (progn
+              (let (()))
               (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
               (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
@@ -258,6 +308,7 @@
                       sphere tri velocity))
           (when (and hit (or (null min-hit) 
                              (< (car hit) (car min-hit))))
+            (format t "low level hit: ~a~%" hit)
             (setf min-hit hit))
           (finally (return min-hit)))))
 

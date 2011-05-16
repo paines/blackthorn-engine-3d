@@ -31,7 +31,7 @@
   (:export
 
    ;; init.lisp
-;   :init
+   :init-gfx
 
    ;; draw.lisp
    :draw-triangle
@@ -77,8 +77,9 @@
    :make-light
 
    ;; shader.lisp
+   :*shader*
    :make-shader
-   :use-shader
+   :enable-shader
   
    ))
         

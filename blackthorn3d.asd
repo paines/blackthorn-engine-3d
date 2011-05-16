@@ -110,11 +110,13 @@
                                                (:file "shader")
                                                (:file "material")
                                                (:file "mesh")
+                                               (:file "skin")
                                                (:file "model")
                                                (:file "draw")
                                                (:file "vao")
                                                (:file "frustum")
-                                               (:file "camera"))
+                                               (:file "camera")
+                                               (:file "init"))
                                               :serial t)
                                      (:module renderer
                                               :components

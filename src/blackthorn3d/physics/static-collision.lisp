@@ -158,8 +158,10 @@
             #+disabled (vec4+ (pos test-sph) (pos obj)))
       (setf (svref test-vel 3) 0.0)
 
-      (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel)
-
+      (when (and (/= 0.0 (x velocity))
+                 (/= 0.0 (y velocity))
+                 (/= 0.0 (z velocity)))
+        (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel))
 
      ; (format t "TEST SPHERE AT: ~a~%" (pos test-sph))
 
@@ -281,10 +283,10 @@
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
             (progn
-              (let (()))
-              (format t "WE HIT A SPHERE! @ node ~a~%" (id node))
+              ;(format t "WE HIT A SPHERE! @ node ~a~%" (id node))
               (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
+       ;; Recursively collide with the children
        (iter (for child in (child-nodes node))
              (collect 
               (collide-with-world-node xformed-bv xformed-vel child))))))))

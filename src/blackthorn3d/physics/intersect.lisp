@@ -154,7 +154,7 @@
 
 (defun sphere-edge-intersection (sphere velocity
                                  O E tmax)
-
+  ;(break)
   (when (and (= 1.5 (x O))
              (= -1.5 (y O))
              (= 3.0 (z O)))
@@ -209,55 +209,6 @@
           ;; We need the time (t0) of the intersection
           ;; and the location....mebbe some other stuff
           (list t0 (vec3- Q H)))))))
-
-(defun sphere-triangle-intersection (sphere tri)
-  "Reports sphere-triangle intersections. Returns nil
-   if no intersection occurs. Returns the point of intersection
-   if one does occur"
-  (with-slots ((sph-rad rad) (sph-pos pos)) sphere
-   ; (format t "Testing sphere ~a ~a~%" sph-pos sph-pos)
-    (let ((tri-plane (get-triangle-plane tri))
-          (rad-sq (* sph-rad sph-rad))
-          plane-pt dist)
-      (aif (sphere-plane-intersection sphere tri-plane)
-           (setf plane-pt (first it)
-                 dist (second it)) 
-           ;; If sphere is too far form triangle plane then we can reject 
-         (return-from sphere-triangle-intersection nil))
-  
-
-      ;; Check if point is inside triangle
-      (when (point-in-triangle-p plane-pt tri)
-        (return-from sphere-triangle-intersection plane-pt))
-
-      ;; Check the sides of the triangle
-      (labels ((side-test (v0 v1)
-                 (multiple-value-bind (dist t-val)
-                     (point-line-sq-distance plane-pt (cons v0 v1))
-                   (when (>= rad-sq dist)
-                    ; (format t "~%dist=~a~%t-val=~a~%" dist t-val)
-                     ;; Do hit herr
-                     (list dist 
-                           (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))
-                     #+disabled
-                     (return-from
-                      sphere-triangle-intersection
-                       (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))))))
-        (let (min-d)
-          ;; Side v0->v1
-          (setf min-d (side-test (tri-v0 tri) (tri-v1 tri)))
-          
-          ;; Side v0->v2
-          (let ((t2 (side-test (tri-v0 tri) (tri-v2 tri))))
-            (if (and min-d t2 (< (car t2) (car min-d)))
-                (setf min-d t2)))
-          
-          ;; Side v1->v
-          (let ((t3 (side-test (tri-v1 tri) (tri-v2 tri))))
-            (if (and min-d t3 (< (car t3) (car min-d)))
-                (setf min-d t3)))
-          
-          min-d)))))
 
 
 
@@ -330,10 +281,6 @@
                               t-max))
               (when tp
                 (setf t-max tp)
-                (setf hit (list tp v)))
-              #+disabled
-              (when (and tp (< tp min-t))
-                (setf min-t tp)
                 (setf hit (list tp v))))
 
         ;; TEST 3: test the edges
@@ -357,6 +304,57 @@
         (if (car hit)
             hit
             nil)))))
+
+
+(defun sphere-triangle-intersection (sphere tri)
+  "Reports sphere-triangle intersections. Returns nil
+   if no intersection occurs. Returns the point of intersection
+   if one does occur"
+  (with-slots ((sph-rad rad) (sph-pos pos)) sphere
+   ; (format t "Testing sphere ~a ~a~%" sph-pos sph-pos)
+    (let ((tri-plane (get-triangle-plane tri))
+          (rad-sq (* sph-rad sph-rad))
+          plane-pt dist)
+      (aif (sphere-plane-intersection sphere tri-plane)
+           (setf plane-pt (first it)
+                 dist (second it)) 
+           ;; If sphere is too far form triangle plane then we can reject 
+         (return-from sphere-triangle-intersection nil))
+  
+
+      ;; Check if point is inside triangle
+      (when (point-in-triangle-p plane-pt tri)
+        (return-from sphere-triangle-intersection plane-pt))
+
+      ;; Check the sides of the triangle
+      (labels ((side-test (v0 v1)
+                 (multiple-value-bind (dist t-val)
+                     (point-line-sq-distance plane-pt (cons v0 v1))
+                   (when (>= rad-sq dist)
+                    ; (format t "~%dist=~a~%t-val=~a~%" dist t-val)
+                     ;; Do hit herr
+                     (list dist 
+                           (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))
+                     #+disabled
+                     (return-from
+                      sphere-triangle-intersection
+                       (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))))))
+        (let (min-d)
+          ;; Side v0->v1
+          (setf min-d (side-test (tri-v0 tri) (tri-v1 tri)))
+          
+          ;; Side v0->v2
+          (let ((t2 (side-test (tri-v0 tri) (tri-v2 tri))))
+            (if (and min-d t2 (< (car t2) (car min-d)))
+                (setf min-d t2)))
+          
+          ;; Side v1->v
+          (let ((t3 (side-test (tri-v1 tri) (tri-v2 tri))))
+            (if (and min-d t3 (< (car t3) (car min-d)))
+                (setf min-d t3)))
+          
+          min-d)))))
+
 
 
 (defun sphere-edge-intersection2 (sphere velocity e0 e1 t-max)

@@ -58,12 +58,15 @@
 (defun prepare-scene ()
   "Called after sdl is initialized, before first frame is drawn
    or when changing the 'scene' settings"
-
   ;; Display our version #s
   (format t "GL Version: ~a.~a~%GLSL Version: ~a.~a~%"
           (gl:major-version) (gl:minor-version)
           (gl:glsl-major-version) (gl:glsl-minor-version))
   
+
+  (init-gfx)
+
+
   (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)
@@ -73,12 +76,18 @@
   (gl:enable :depth-test)
   (gl:depth-func :lequal)
 
-  (format t "### LOADING SCIENTIST ###~%")
+  (format t "### LOADING CONTROLLER MODEL ###~%")
   ;#+disabled
   (let ((scientist-model 
-         (blt3d-imp:load-dae #p "res/models/scientist-02.dae")))
+         (blt3d-imp:load-dae #p "res/models/player-3.dae")))
     
-    (setf *test-skele* (load-obj->models scientist-model)))
+    (setf *test-skele* (load-obj->models scientist-model))
+    (apply-transform *test-skele* (make-scale #(0.05 0.05 0.05)))
+    ;#+disabled
+    (apply-transform *test-skele* 
+                     (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                                           (make-point3 0.0 0.0 1.0)
+                                           (make-point3 0.0 1.0 0.0))))
 
   (load-frstm *frustum*)
   (gl:load-identity)
@@ -87,20 +96,14 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-  (setf shader (make-shader (blt3d-res:file-contents
-                             (blt3d-res:resolve-resource 
-                              #p "res/shaders/FinalProjShader.vert"))
-                            (blt3d-res:file-contents
-                             (blt3d-res:resolve-resource
-                              #p "res/shaders/FinalProjShader.frag"))))
  
-
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 
 (defun update-graphics (entities time)
   (when animated
     (update-model animated time))
+  #+disabled
   (when *test-skele*
     (update-model *test-skele* time))
   (iter (for e in entities)
@@ -123,12 +126,11 @@
 
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
-  (gl:use-program shader)
-  ;(gl:bind-texture :texture-2d cube-tex)
-
+  ;(enable-shader shader)
 
   ;; draw axes
   (gl:with-primitive :lines
+    (gl:color 0.0 1.0 1.0)
     (gl:vertex 0.0 0.0 0.0)
     (gl:vertex 5.0 0.0 0.0)
     (gl:vertex 0.0 0.0 0.0)
@@ -153,7 +155,7 @@
 
   (when *test-skele*
     (gl:with-pushed-matrix
-        (gl:scale 0.03 0.03 0.03)
+        ;(gl:scale 0.03 0.03 0.03)
       (draw-object *test-skele*)))
 
   (dolist (e entities)

@@ -152,11 +152,70 @@
              (/ d1 (sq-mag e)))))))
 
 
+(defun sphere-edge-intersection (sphere velocity
+                                 O E tmax)
+
+  (when (and (= 1.5 (x O))
+             (= -1.5 (y O))
+             (= 3.0 (z O)))
+    (format t "Testing edge ~a ~a~%" O E)
+    (format t "with sphere: ~a ~%~3T~a ~%~3T~a ~%" 
+            (pos sphere) 
+            (rad sphere) 
+            velocity))
+  (let* ((pos (pos sphere))
+         (r (rad sphere))
+         (r2 (* r r))
+         (e2 (sq-mag E))
+         (H (vec3- pos O))
+         ;; cylinder equation related
+         (V-x-E (cross3 velocity E))
+         (H-x-E (cross3 H E))
+         (Q pos)
+
+         ;; quadratic cooefs
+         (qa (dot V-x-E V-x-E))
+         (qb (* 2.0 (dot V-x-E H-x-E)))
+         (qc (- (dot H-x-E H-x-E) (* r2 e2)))
+
+         (t0 (quadratic qa qb qc tmax)))
+
+    #+disabled
+    (when (and (> a 0.0) (< c 0.0))
+      (let ((d (- (sq b) (* 4 a c))))
+        (when (>= 0.0 d)
+          (setf d (sqrt d))
+          (let* ((denom (1/ (* 2 a)))
+                 (t0 (* denom (- (- b) d)))
+                 (t1 (* denom (+ (- b) d))))))))
+
+    (when t0
+      ;(format t "We have a ray-cylinder collision~%")
+      ;; The ray, Q = P + Vt that intersects the cylinder
+      (setf Q (vec3+ Q (vec-scale4 velocity t0)))
+      
+      ;; Now check if the point (Q) is part of the edge, 
+      ;; the start, or end
+      (setf H (vec3- Q O))
+      (let ((f0 (dot H E)))
+        ;; f0 must be below e2, or it's past the end of the edge
+        ;; and greater than 0.0
+        ;; NOTE that we could do the vertex tests here...
+        (when (and (<= f0 e2) (>= f0 0.0))
+          ;; set h to be perpendicular to E
+          (setf H (vec3- H (vec-scale3 E (/ f0 e2))))
+          ;(format t "T0: ~a hit: ~a~%" t0 (vec3- Q H))
+          ;; Return the result.
+          ;; We need the time (t0) of the intersection
+          ;; and the location....mebbe some other stuff
+          (list t0 (vec3- Q H)))))))
+
 (defun sphere-triangle-intersection (sphere tri)
   "Reports sphere-triangle intersections. Returns nil
    if no intersection occurs. Returns the point of intersection
    if one does occur"
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
+   ; (format t "Testing sphere ~a ~a~%" sph-pos sph-pos)
     (let ((tri-plane (get-triangle-plane tri))
           (rad-sq (* sph-rad sph-rad))
           plane-pt dist)
@@ -166,12 +225,9 @@
            ;; If sphere is too far form triangle plane then we can reject 
          (return-from sphere-triangle-intersection nil))
   
-      ;; DEBUG
-      ;(format t "~%Plane-pt: ~a~%" plane-pt)
 
       ;; Check if point is inside triangle
       (when (point-in-triangle-p plane-pt tri)
-        ;(format t "~%WE IZ UP HERR 'N DIS TRI!~%")
         (return-from sphere-triangle-intersection plane-pt))
 
       ;; Check the sides of the triangle
@@ -218,31 +274,40 @@
            (t-max 1.0)
            t0 t1)
 
+    
       ;; check for backfacing
       ;#+disabled
       (when (> n.vel 0)
-       ; (format t "Culling ze backface!~%")
         (return-from moving-sphere-triangle-intersection nil))
 
       ;; check for velocity parallel to triangle
       (if (= 0.0 n.vel)
-          (cond 
-            ;; Case: the sphere never touches the plane
-            ((< sph-rad basepoint-dist) 
-             (return-from moving-sphere-triangle-intersection nil))
-            ;; Case: the sphere moves through the plane
-            ((>= sph-rad basepoint-dist)
-             (setf t0 0.0 t1 1.0)))
+          (progn ; (format t "WE IS PARALLEL!~%")
+            (cond 
+              ;; Case: the sphere never touches the plane
+              ((< sph-rad basepoint-dist) 
+               (return-from moving-sphere-triangle-intersection nil))
+              ;; Case: the sphere moves through the plane
+              ((>= sph-rad basepoint-dist)
+               (setf t0 0.0 t1 1.0))))
           ;; General case here, where sphere is not moving parallel to plane
           (let ((one/n.vel (/ 1 n.vel)))
-            (setf t0 (* one/n.vel (- sph-rad basepoint-dist))
-                  t1 (+ t0 (* 2 one/n.vel)))))
+            (setf t0 (* one/n.vel (- (- sph-rad) basepoint-dist))
+                  t1 (* one/n.vel (- sph-rad basepoint-dist)))))
+
+      (let ((temp t0))
+        (setf t0 (min t0 t1))
+        (setf t1 (max temp t1)))
 
       ;; Check if t0 and t1 are between 0 and 1
       (unless (or (range t0 0 1) (range t1 0 1))
         (return-from moving-sphere-triangle-intersection nil))
+
+      ;; clamp
+      (setf t0 (clamp t0 0 1)
+            t1 (clamp t1 0 1))
       
-     ; (format t "Testing center~%")
+
       ;; TEST 1: check if the sphere intersects with the surface of tri
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0))))
@@ -250,8 +315,7 @@
             (return-from moving-sphere-triangle-intersection
               (list t0 plane-intersection))))
 
-      ;#+disabled
-     ; (format t "Testing vertices~%")
+
       ;; TEST 2: test the vertices
       (let* ((sq-rad (* sph-rad sph-rad))
              (vel-sqlen (sq-mag velocity))
@@ -272,42 +336,57 @@
                 (setf min-t tp)
                 (setf hit (list tp v))))
 
-       ; (format t "Testing edges~%")
         ;; TEST 3: test the edges
+        ;; edges are (p2 . p1)
         (let ((edges (list (cons (tri-v1 tri) (tri-v0 tri))
-                           (cons (tri-v2 tri) (tri-v0 tri))
-                           (cons (tri-v2 tri) (tri-v1 tri)))))
+                           (cons (tri-v2 tri) (tri-v1 tri))
+                           (cons (tri-v0 tri) (tri-v2 tri)))))
           (iter (for edge-pair in edges)
-                (let* ((edge (vec3- (car edge-pair) (cdr edge-pair)))
-                       (s-to-p (vec3- (cdr edge-pair) sph-pos))
-                       (e-sqlen (sq-mag edge))
-                       (e.v (dot edge velocity))
-                       (e.stp (dot edge s-to-p)))
-                  (for x0 = 
-                       (quadratic (+ (* e-sqlen (- vel-sqlen)) 
-                                     (sq e.v))
-                                  (- (* e-sqlen (* 2 (dot velocity s-to-p)))
-                                     (* 2 e.v e.stp))
-                                  (+ (* e-sqlen (- sq-rad (sq-mag s-to-p))) 
-                                     (sq e.stp))
-                                  t-max))
-                  (when x0
-                    (for f0 = (/ (- (* x0 e.v) e.stp) 
-                                 e-sqlen))
-                   #+disabled (format t "detected edge collision! f0 = ~a~%"
-                            f0)
-
-                    (when (range f0 0 1)
-                     ; (format t "AND ITS GOOD!~%")
-                      (setf t-max x0)
-                      (setf hit (list x0 (vec3+ (cdr edge-pair)
-                                                (vec-scale3 edge f0)))))))))
+                (for e0 = (cdr edge-pair))
+                (for ev = (vec3- (car edge-pair) e0))
+                (for edge-hit = (sphere-edge-intersection sphere velocity
+                                                          e0 ev t-max))
+                (when edge-hit
+                  (format t "##### hit edge: ~a ~a~%" e0 ev)
+                  (format t "##### hit = ~a~%" edge-hit)
+                  (setf t-max (car edge-hit))
+                  (setf hit edge-hit))))
 
         ;; At this point, if we have a collision, hit is not (nil . nil)
         ;; but some (x0 . p).  turn into (new-pos hit-point)
         (if (car hit)
             hit
             nil)))))
+
+
+(defun sphere-edge-intersection2 (sphere velocity e0 e1 t-max)
+  (let* ((edge (vec3- e1 e0))
+         (sq-rad (sq (rad sphere)))
+         (s-to-p (vec3- e0 (pos sphere)))
+         (e-sqlen (sq-mag edge))
+         (e.v (dot edge velocity))
+         (e.stp (dot edge s-to-p))
+         (vel-sqlen (sq-mag velocity))
+
+         (qa (+ (* e-sqlen (- vel-sqlen)) 
+                (sq e.v)))
+         (qb (- (* e-sqlen (* 2 (dot velocity s-to-p)))
+                (* 2 e.v e.stp)))
+         (qc (+ (* e-sqlen (- sq-rad (sq-mag s-to-p))) 
+                (sq e.stp)))
+
+         (x0 (quadratic qa qb qc t-max)))
+
+    (when  x0
+    ;  (format t "sq-rad: ~a~%" sq-rad)
+     ; (format t "x0: ~a~%" x0)
+      
+
+      (let ((f0  (/ (- (* x0 e.v) e.stp) 
+                     e-sqlen)))
+
+        (when (range f0 0 1)
+          (list x0 (vec3+ e0 (vec-scale3 edge f0))))))))
 
 (defun slide-sphere (sphere velocity hit)
   "@return{the new position and velocity of the sphere as

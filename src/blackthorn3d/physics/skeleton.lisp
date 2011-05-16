@@ -59,17 +59,25 @@
 
 (defun calc-joint-matrix (joint parent-matrix)
   "Return the local-to-model matrix for this joint"
-  (matrix-multiply-m (joint-ibm joint) 
-                     (matrix-multiply-m parent-matrix
-                                        (joint-mat joint))))
+ ; (format t "joint ~a's local matrix: ~a~%" (id joint) (joint-matrix joint))
+ ; (format t "~8TIBM: ~a~%~%" (joint-ibm joint))
+  ;(make-identity-matrix)
+  ;(matrix-multiply-m parent-matrix (joint-matrix joint))
+  ;#+disabled
+  (matrix-multiply-m 
+   (matrix-multiply-m parent-matrix
+                      (joint-matrix joint))
+   (joint-ibm joint)))
 
 (defun update-joint-matrices (root)
   "Updates the cached joint->model space matrices for each joint
   recursively starting at ROOT"
   (labels ((%update-r (joint parent-m)
-             (setf (model-matrix joint) (calc-joint-matrix joint parent-m))
-             (iter (for child-j in (child-joints joint))
-                   (%update-r child-j (model-matrix joint)))))
+             (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
+             (iter (with joint-world = 
+                         (matrix-multiply-m parent-m (joint-matrix joint))) 
+                   (for child-j in (child-joints joint))
+                   (%update-r child-j joint-world))))
     (%update-r root (make-identity-matrix))))
 
 
@@ -93,8 +101,9 @@
 
 (defmethod get-joint-matrices ((this skeleton))
   "returns an array of matricies"
-  (iter (for joint in (joint-array this))
-        (collect (model-matrix joint) result-type 'vector)))
+  (iter (for joint in-vector (joint-array this))
+       ; (format t "joint ~a's ibm: ~a~%" (id joint) (joint-ibm joint))
+        (collect (joint-model-mat joint) result-type 'vector)))
 
 (defmethod update-skeleton ((this skeleton))
   "updates the positions of all the joints"

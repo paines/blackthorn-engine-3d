@@ -102,21 +102,19 @@
                     (joint-obj (find joint-name ;(read-from-string joint-name)
                                      joint-arr
                                      :key #'joint-id)))
-               ;(format t "joint-name: ~a~%" joint-name)
+              ; (format t "joint-name: ~a  object~a~%" joint-name joint-obj)
                ;; set initial local matrix
                (setf (joint-matrix joint-obj) (node-xform root-node))
 
                ;; Add a mapping to *xform-mappings* so that animations
                ;; can find us!
                (setf (gethash (node-id root-node) *xform-mappings*)
-                     (make-set-fn (joint-matrix joint-obj))
-                     #+disable
-                     #'(lambda (val) (setf (joint-matrix joint-obj) val)))
+                     (make-set-fn (joint-matrix joint-obj)))
 
                ;; Recursive step: set up the children!
                (setf (child-joints joint-obj)
                      (iter (for ch in (node-children root-node))
-                           (collect (compile-skeleton joint-arr ch))))
+                           (collect (skele-builder ch))))
                joint-obj)))
 
     (make-skeleton (skele-builder root-node)
@@ -139,18 +137,25 @@
         (destructuring-bind (ignore-id elements inputs)
             (gethash geom-id *geometry-table*)
 
-          (dae-debug "root-node: ~a~%" root-node)
+         ; (dae-debug "root-node: ~a~%" root-node)
           ;; Construct the mesh objects and skeleton
-          (let ((mesh (mesh-list->blt-mesh 
-                       (list geom-id elements inputs)
-                       #+disabled(list geom-id 
-                             (duplicate-indices elements 0 2)
-                             (append inputs skin-inputs))))
-                (skeleton (compile-skeleton joint-arr
-                                            (find-root-node *scene-table*
-                                                            root-node))))
+          (format t "Vertex Indices & Weights:~%")
+          (let ((indices (input-by-semantic :joint-index skin-inputs))
+                (weights (input-by-semantic :joint-weight skin-inputs)))
+            (format t "Indices: ~a~%" (iter (for i below 10)
+                                            (collect (src-accessor indices i))))
+            (format t "Weights: ~a~%" (iter (for i below 10)
+                                            (collect (src-accessor weights i)))))
+          (let* ((mesh (mesh-list->blt-mesh 
+                        #+disabled(list geom-id elements inputs)
+                        (list geom-id 
+                              (duplicate-indices elements 0 2)
+                              (append inputs skin-inputs))))
+                 (found-node (find-root-node *scene-table*
+                                             root-node))
+                 (skeleton (compile-skeleton joint-arr
+                                             found-node)))
 
-            
             (dae-debug "Vertices:~%")
             (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
                   (dae-debug "~a  ~%" elt))

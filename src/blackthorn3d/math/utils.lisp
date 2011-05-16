@@ -28,20 +28,27 @@
   (* x (/ pi 180)))
 
 (defun quadratic (a b c max)
-  (if (and (zerop a) (/= 0 b)) (/ (- c) b)
-      (let* ((det (- (* b b) (* 4 a c)))
-             (denom (* 0.5 a)))
-        (if (< det 0)
-            nil
-            (let* ((r1 (* (- (- b) (sqrt det))))
-                   (r2 (* (+ (- b) (sqrt det))))
-                   (rmin (min r1 r2))
-                   (rmax (max r1 r2)))
-              #+disabled
-              (if (<= rmin max)
-                  (values rmin rmax))
-              ;#+disabled
-              (if (and (>= rmin 0.0) (<= rmin max))
-                  (values rmin rmax)
-                  (if (and (>= rmax 0.0) (<= rmax max))
-                      (values rmax rmin))))))))
+  (when (zerop a) 
+    (if (zerop b) 
+        (return-from quadratic nil)
+        (let ((res (/ (- c) b)))
+          (return-from quadratic
+            (if (and (<= res max) (>= res 0.0))
+                res
+                nil)))))
+  (let* ((det (- (sq b) (* 4 a c)))
+         (denom (/ 1 (* 2 a))))
+    (if (< det 0)
+        nil
+        (let* ((r1 (* (- (- b) (sqrt det)) denom))
+               (r2 (* (+ (- b) (sqrt det)) denom))
+               (rmin (min r1 r2))
+               (rmax (max r1 r2)))
+          #+disabled
+          (if (<= rmin max)
+              (values rmin rmax))
+                                        ;#+disabled
+          (if (and (>= rmin 0.0) (<= rmin max))
+              (values rmin rmax)
+              (if (and (>= rmax 0.0) (<= rmax max))
+                  (values rmax rmin)))))))

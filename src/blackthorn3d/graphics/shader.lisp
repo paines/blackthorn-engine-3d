@@ -29,6 +29,10 @@
 ;;; Please be a shader...
 ;;;
 
+
+;; Global shader (should always be the one that's bound
+(defvar *shader* nil)
+
 (defun make-shader (vert frag) 
   "@arg[vert]{string of vert shader}
    @arg[frag]{string of frag shader}
@@ -50,6 +54,10 @@
     (gl:link-program shader)
     shader))
 
-(defun enable-shader (shader) (gl:use-program shader))
+(defun enable-shader (shader) 
+  (setf *shader* shader)
+  (gl:use-program shader))
 
-(defun disable-shader () (gl:use-program 0))
+(defun disable-shader () 
+  (setf *shader* nil)
+  (gl:use-program 0))

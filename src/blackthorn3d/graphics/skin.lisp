@@ -86,6 +86,7 @@
 (defmethod draw-object ((this skin))
   (labels ((get-vert-attrib (semantic data)
              (second (find semantic data :key #'car))))
+
     (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
         this
 
@@ -100,6 +101,7 @@
               (iter (for v-index in-vector indices)
                     (for v-data = (funcall *accessor* v-index))
                     (for vertex = (get-vert-attrib :vertex v-data))
+                    (for normal = (get-vert-attrib :normal v-data))
                     (for j-i = (get-vert-attrib :joint-index v-data))
                     (for j-w = (get-vert-attrib :joint-weight v-data))
                     
@@ -112,7 +114,17 @@
                                        (aref joint-mats (aref j-i i))
                                        (vec3->point vertex))
                                       (aref j-w i))))
-                          (finally (gl:vertex (x pos) (y pos) (z pos)))))))
+                          (for norm initially +zero-vec+
+                               then (vec4+
+                                     norm
+                                     (vec-scale4
+                                      (matrix-multiply-v
+                                       (aref joint-mats (aref j-i i))
+                                       (vec3->vec norm))
+                                      (aref j-w i))))
+                          (finally 
+                           (gl:normal (x norm) (y norm) (z norm))
+                           (gl:vertex (x pos) (y pos) (z pos)))))))
       (gl:end))))
   
 

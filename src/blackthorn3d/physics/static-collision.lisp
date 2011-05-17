@@ -158,89 +158,20 @@
             #+disabled (vec4+ (pos test-sph) (pos obj)))
       (setf (svref test-vel 3) 0.0)
 
-      (when (and (/= 0.0 (x velocity))
-                 (/= 0.0 (y velocity))
-                 (/= 0.0 (z velocity)))
-       ; (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel)
-        )
-
-     ; (format t "TEST SPHERE AT: ~a~%" (pos test-sph))
-
       ;; Debug version: only do one iteration
+      #+disable
       (let ((hit (min-collide
                   (iter (for node in (mesh-nodes world))
                         (collect (collide-with-world-node 
                                   test-sph test-vel node))))))
         (if hit
-            (let* ((x0 (car hit))
-                   (hit-pt (second hit))
-                   (new-bp (pos test-sph))
-                   (dest (vec4+ new-bp velocity))
-                   (closest-dist (mag (vec-scale4 velocity x0))))
-
-              (format t "#####~%hit: ~a~%" hit)
-              
-              ;; only move the base point if we aren't already
-              ;; very close to the hit
-              (if (>= closest-dist 0.0001)
-                  (setf new-bp 
-                        (vec4+ new-bp 
-                               (set-length4 velocity 
-                                            (- closest-dist 0.0001)))
-                        hit-pt (vec4- hit-pt (set-length4 velocity
-                                                          0.0001))))
-
-              ;; make sliding plane
-              (let* ((plane-normal (norm4 (vec4- new-bp hit-pt)))
-                     (plane-origin hit-pt)
-                     (sliding-plane (point-normal->plane plane-origin
-                                                         plane-normal))
-                     (new-dest (vec4-
-                                dest
-                                (vec-scale4
-                                 plane-normal
-                                 (plane-dist sliding-plane dest))))
-                     (new-vel (vec4- new-dest hit-pt)))
-
-                (format t "~3Told-dest: ~a~%~3Tnew-dest: ~a~%" dest new-dest)
-                (format t "~3Tentity-pos: ~a~%" (pos obj))
-                (format t "~3Tplane-n: ~a~%" plane-normal)
-                (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
-                (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
-                (format t "~3Tresult-vec: ~a~%" (vec4- new-dest (pos obj)))
-
-                ;; return the new velocity as the vector from start
-                ;; to new-dest + new-vel
-               ; (setf (pos obj) new-bp)
-               ; (vec-scale4 velocity (car hit))
-                (vec4- (vec4+ new-bp new-vel) (pos obj))
-                ))
-
-            #+disabled
-            (progn
-              (format t "top level hit: ~a~%" hit)
-              ;; don't allow the player to move into geometry
-              (destructuring-bind (new-pos new-vel)
-                  (slide-sphere test-sph test-vel hit)
-
-                (vec3->vec (vec3- (vec3+ new-pos new-vel) (pos test-sph)))))
-
-            #+disabled
-            (progn 
-              (when (> (car hit) 0.0) (format t "hit!!   ~a~%" hit))
-              (let* ((ret-vel 
-                      (vec-scale4 test-vel (car hit))
-                       #+disabled(vec-scale4 (norm4 test-vel) 
-                                             +min-collide-dist+)))
-
-                (format t "new vector: ~a~%" ret-vel)
-                ret-vel))
-            (progn; (setf (pos obj) (vec4+ (pos obj) velocity))
-                   test-vel)))
+          (slide-sphere test-sph velocity hit)))
 
       ;; Loop to find the displacement vector
-      #+disabled
+      ;#+disabled
       (iter (with test-vel = velocity)
+            (with end = (vec4+ (pos obj) velocity))
+            (setf (svref test-vel 3) 0.0)
             (for i below +max-collision-depth+)
             ;(until (< (sq-mag test-vel) +min-collide-dist+))
             (for hit = (min-collide
@@ -254,13 +185,13 @@
               (destructuring-bind (new-pos new-vel)
                   (slide-sphere test-sph test-vel hit)
                 (setf (pos test-sph) new-pos
-                      test-vel new-vel)))
+                      test-vel new-vel
+                      end (vec4+ new-pos new-vel))))
 
             ;; At the end return the displacement from original sphere
             ;; to new one
             (finally (return  
-                       (vec4- (vec4+ (pos test-sph) test-vel) 
-                              (vec4+ (pos sphere) (pos obj)))))))))
+                       (vec4- end (pos obj))))))))
 
 ;; x0 stays the same, but the position needs to be moved
 (defun transform-hit (transform hit)

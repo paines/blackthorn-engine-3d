@@ -388,20 +388,40 @@
 (defun slide-sphere (sphere velocity hit)
   "@return{the new position and velocity of the sphere as
            (new-pos  new-vel)}"
-  (format t "### Sliding sphere at ~a,  hit: ~a~%" (pos sphere) hit)
-  (destructuring-bind (x0 hit-p &rest dc) hit
-    (declare (ignore dc))
-    (with-slots (pos rad) sphere
-      (let* ((new-pos (vec4+ pos (vec-scale4 velocity x0)))
-             (plane-n (norm4 (vec4- new-pos hit-p)))
-             (sliding-plane (make-plane plane-n
-                                        (- (dot plane-n hit-p))))
-             (destination (vec4+ pos velocity))
-             (new-dest 
-              (vec4- destination 
-                     (vec-scale4 plane-n 
-                                 (plane-dist sliding-plane 
-                                             destination)))))
-        (format t "~5TNew Position: ~a~%" new-pos)
-        (format t "~5TSliding plane normal: ~a~%" plane-n)
-        (list new-pos (vec4- new-dest new-pos))))))
+  (let* ((x0 (car hit))
+         (hit-pt (second hit))
+         (new-bp (pos sphere))
+         (dest (vec4+ new-bp velocity))
+         (closest-dist (mag (vec-scale4 velocity x0))))
+
+    (format t "#####~%hit: ~a~%" hit)
+              
+    ;; only move the base point if we aren't already
+    ;; very close to the hit
+    (if (>= closest-dist 0.0001)
+        (setf new-bp 
+              (vec4+ new-bp 
+                     (set-length4 velocity 
+                                  (- closest-dist 0.0001)))
+              hit-pt (vec4- hit-pt (set-length4 velocity
+                                                0.0001))))
+
+    ;; make sliding plane
+    (let* ((plane-normal (norm4 (vec4- new-bp hit-pt)))
+           (plane-origin hit-pt)
+           (sliding-plane (point-normal->plane plane-origin
+                                               plane-normal))
+           (new-dest (vec4-
+                      dest
+                      (vec-scale4
+                       plane-normal
+                       (plane-dist sliding-plane dest))))
+           (new-vel (vec4- new-dest hit-pt)))
+
+      (format t "~3Told-dest: ~a~%~3Tnew-dest: ~a~%" dest new-dest)
+      (format t "~3Tplane-n: ~a~%" plane-normal)
+      (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
+      (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
+      
+
+      (list new-bp new-vel))))

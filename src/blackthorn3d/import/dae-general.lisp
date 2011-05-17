@@ -107,14 +107,18 @@
               (get-attribute "name" (attributes child)))
           (children-with-tag "param" accessor-lst)))
 
+(defun get-stride (accessor-lst)
+  (aif (get-attribute "stride" (attributes accessor-lst))
+       (parse-integer it)
+       1))
+
 (defun make-source (src-lst)
   (let ((accessor-lst (find-tag +accessor+ (children src-lst)))
         (array (string->sv (car (children (first-child src-lst))))))
     (make-instance 'source 
                    :id (get-attribute "id" (attributes src-lst))
                    :array array
-                   :stride (parse-integer
-                            (get-attribute "stride" (attributes accessor-lst)))
+                   :stride (get-stride accessor-lst)
                  ;  :accessor (make-accessor accessor-lst array)
                    :components (make-components accessor-lst))))
 

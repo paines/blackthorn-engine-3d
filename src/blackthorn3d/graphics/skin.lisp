@@ -84,10 +84,44 @@
                         :diffuse #(1.0 1.0 1.0 1.0)))
 
 (defmethod draw-object ((this skin))
+  (labels ((get-vert-attrib (semantic data)
+             (second (find semantic data :key #'car))))
+    (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
+        this
+
+      (update-skeleton bind-skeleton)
+      
+      (disable-shader)
+
+      (gl:begin :triangles)
+      (let ((joint-mats (get-joint-matrices bind-skeleton)))
+        (iter (for elt in elements)
+              (for indices = (element-indices elt))
+              (iter (for v-index in-vector indices)
+                    (for v-data = (funcall *accessor* v-index))
+                    (for vertex = (get-vert-attrib :vertex v-data))
+                    (for j-i = (get-vert-attrib :joint-index v-data))
+                    (for j-w = (get-vert-attrib :joint-weight v-data))
+                    
+                    (iter (for i below 4)
+                          (for pos initially +origin+ 
+                               then (vec4+ 
+                                     pos
+                                     (vec-scale4
+                                      (matrix-multiply-v
+                                       (aref joint-mats (aref j-i i))
+                                       (vec3->point vertex))
+                                      (aref j-w i))))
+                          (finally (gl:vertex (x pos) (y pos) (z pos)))))))
+      (gl:end))))
+  
+
+#+disabled
+(defmethod draw-object ((this skin))
   (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
       this
     
-    #+disabled
+    ;#+disabled
     (progn
       (enable-shader skin-shader)
       (gl:enable-client-state :vertex-array)
@@ -97,10 +131,10 @@
       (gl::enable-vertex-attrib-array joint-weights-loc))
 
     ;; Set up the skeleton array
-    ;(update-skeleton bind-skeleton)
+    (update-skeleton bind-skeleton)
 
     ;; now lets draw 'em
-    ;#+disabled
+    #+disabled
     (labels ((skele-drawer (joint)
              ;  (format t "at joint ~a~%" (id joint))
                (let ((point (matrix-multiply-v (joint-matrix joint)
@@ -117,7 +151,7 @@
       (use-material bone-mat)
       (skele-drawer (root-joint bind-skeleton)))
 
-    #+disabled
+    ;#+disabled
     (progn
       (gl:with-pushed-matrix 
           (gl:mult-matrix bind-shape-matrix)

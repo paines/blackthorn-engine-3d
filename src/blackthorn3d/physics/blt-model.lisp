@@ -351,7 +351,7 @@
        #'(lambda (index) 
            (iter (for (semantic n-elts) in format) 
                  (for fn in vs-fns)
-                 (collect (list semantic (fn index)))))))))
+                 (collect (list semantic (funcall fn index)))))))))
 
 ;;;
 ;;; Triangle access

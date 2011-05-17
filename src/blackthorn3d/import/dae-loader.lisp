@@ -142,9 +142,9 @@
           (format t "Vertex Indices & Weights:~%")
           (let ((indices (input-by-semantic :joint-index skin-inputs))
                 (weights (input-by-semantic :joint-weight skin-inputs)))
-            (format t "Indices: ~a~%" (iter (for i below 10)
+            (format t "Indices: ~a~%" (iter (for i below 60)
                                             (collect (src-accessor indices i))))
-            (format t "Weights: ~a~%" (iter (for i below 10)
+            (format t "Weights: ~a~%" (iter (for i below 60)
                                             (collect (src-accessor weights i)))))
           (let* ((mesh (mesh-list->blt-mesh 
                         #+disabled(list geom-id elements inputs)

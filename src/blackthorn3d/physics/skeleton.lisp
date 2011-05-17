@@ -61,12 +61,13 @@
   "Return the local-to-model matrix for this joint"
  ; (format t "joint ~a's local matrix: ~a~%" (id joint) (joint-matrix joint))
  ; (format t "~8TIBM: ~a~%~%" (joint-ibm joint))
-  ;(make-identity-matrix)
-  ;(matrix-multiply-m parent-matrix (joint-matrix joint))
-  ;#+disabled
+
+ ; #+disabled
   (matrix-multiply-m 
-   (matrix-multiply-m parent-matrix
-                      (joint-matrix joint))
+   parent-matrix
+   (matrix-multiply-m (joint-matrix joint)
+                      (joint-ibm joint))
+   #+disabled
    (joint-ibm joint)))
 
 (defun update-joint-matrices (root)
@@ -103,6 +104,7 @@
   "returns an array of matricies"
   (iter (for joint in-vector (joint-array this))
        ; (format t "joint ~a's ibm: ~a~%" (id joint) (joint-ibm joint))
+       ; (format t "~5Tlocal: ~a~%" (joint-matrix joint))
         (collect (joint-model-mat joint) result-type 'vector)))
 
 (defmethod update-skeleton ((this skeleton))

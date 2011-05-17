@@ -37,7 +37,7 @@
 
 (defun load-models-n-stuff ()
   (setf (gethash :none *graphical-thingies*) nil)
-  (load-model :wedge    :dae #p"res/models/wedge-dummy.dae")
+  (load-model :wedge    :dae #p"res/models/robot-01.dae")
   (load-model :cylinder :dae #p"res/models/test-anim.dae"))
 
 (defun get-model (key)

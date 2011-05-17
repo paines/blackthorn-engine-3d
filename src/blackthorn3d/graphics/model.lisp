@@ -100,6 +100,8 @@
 (defmethod get-mesh-format ((this blt-skin))
   skin-format)
 
+(defvar *accessor* nil)
+
 ;; Changed to return the same, albeit modified, blt-model
 (defmethod load-obj->models ((this blt-model))
   (setf *animator* (animations this))
@@ -107,13 +109,14 @@
   (with-slots (mesh-nodes animations) this
     (iter (for node in mesh-nodes)
           (with-slots (mesh transform) node
-            (let ((interleaved (interleave
-                                (vertex-streams mesh)
-                                (get-mesh-format mesh)))
-                  (elements
-                   (iter (for elt in (elements mesh))
-                         (collect (elem->gl-elem elt)))))
-              (setf mesh (convert-to-ogl mesh interleaved elements))))))
+            (multiple-value-bind (interleaved accessor)
+                (interleave
+                 (vertex-streams mesh)
+                 (get-mesh-format mesh))
+              (setf *accessor* accessor)
+              (setf mesh (convert-to-ogl mesh
+                                         interleaved
+                                         (elements mesh)))))))
   this)
 
 (defmethod convert-to-ogl ((mesh blt-mesh) interleaved elements)
@@ -121,14 +124,15 @@
    'mesh
    :id (id mesh)
    :vert-data (vnt-array->gl-array interleaved)
-   :elements elements
+   :elements (iter (for elt in (elements mesh))
+                         (collect (elem->gl-elem elt)))
    :array-format 'blt-vnt-mesh))
 
 (defmethod convert-to-ogl ((skin blt-skin) interleaved elements)
   (make-instance
    'skin
    :id (id skin)
-   :vert-data (vntiw-array->gl-array interleaved)
+   :vert-data interleaved ;(vntiw-array->gl-array interleaved)
    :elements elements
    :array-format 'blt-vntiw-mesh
    :bind-skeleton (bind-skeleton skin)

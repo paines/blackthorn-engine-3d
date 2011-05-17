@@ -105,7 +105,9 @@
   (iter (for joint in-vector (joint-array this))
        ; (format t "joint ~a's ibm: ~a~%" (id joint) (joint-ibm joint))
        ; (format t "~5Tlocal: ~a~%" (joint-matrix joint))
-        (collect (joint-model-mat joint) result-type 'vector)))
+        (collect (joint-model-mat joint) result-type 'vector)
+      ;  (collect (make-identity-matrix) result-type 'vector)
+        ))
 
 (defmethod update-skeleton ((this skeleton))
   "updates the positions of all the joints"

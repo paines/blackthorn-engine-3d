@@ -212,6 +212,12 @@
     (unless (zerop magv)
       (map 'vector #'(lambda (x) (/ x magv)) v))))
 
+(defun set-length3 (v len)
+  (vec-scale3 (norm3 v) len))
+
+(defun set-length4 (v len)
+  (vec-scale4 (norm4 v) len))
+
 (defun homogenize (v)
   (unless (zerop (w v)) (vec-scale4 v (/ (w v)))))
 

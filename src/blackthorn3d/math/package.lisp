@@ -58,6 +58,8 @@
    :magnitude
    :spherical->cartesian
    :tri-centroid
+   :set-length3
+   :set-length4
    
    ;; matrix.lisp
    :make-matrix

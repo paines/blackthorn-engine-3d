@@ -140,6 +140,8 @@
                                      (:module main
                                               :components
                                               ((:file "package")
+                                               (:file "pos-edge-react")
+                                               (:file "portal")
                                                (:file "player")
                                                (:file "simple-monster")
                                                (:file "game")

@@ -31,7 +31,7 @@
   (register-model-loader :dae 
                          #'(lambda (path) 
                              (blt3d-imp:load-dae path)))
-
+                             
   ;; load our test model
   (let ((level
          (blt3d-phy:initialize-cube

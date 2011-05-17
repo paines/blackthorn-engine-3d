@@ -79,7 +79,8 @@
   (format t "### LOADING CONTROLLER MODEL ###~%")
   ;#+disabled
   (let ((scientist-model 
-         (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae")))
+         #+disabled(blt3d-imp:load-dae #P "res/models/player-3.dae")
+        (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae")))
     
     (setf *test-skele* (load-obj->models scientist-model))
     ;(apply-transform *test-skele* (make-scale #(0.05 0.05 0.05)))

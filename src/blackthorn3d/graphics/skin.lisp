@@ -120,7 +120,7 @@
                                      (vec-scale4
                                       (matrix-multiply-v
                                        (aref joint-mats (aref j-i i))
-                                       (vec3->vec norm))
+                                       (vec3->vec normal))
                                       (aref j-w i))))
                           (finally 
                            (gl:normal (x norm) (y norm) (z norm))

@@ -25,38 +25,28 @@
 
 (in-package :blackthorn3d-main)
 
-(defclass player (entity-server)
-  ((client
-        :accessor player-client
-        :initarg :client
-        :documentation "The socket symbol for the player's client")))
-
-(defvar *client->player* '())
-(defun register-player (p c)
-    (setf (getf *client->player* c) p))
+(defclass pos-edge-react (entity-server)
+    ((state
+        :accessor state
+        :initform nil)
+     (check-signal
+        :accessor check-signal
+        :initform #'(lambda () nil)
+        :initarg :check-signal)
+     (callback
+        :accessor callback
+        :initarg :callback)))
+        
+(defmethod update ((reactor pos-edge-react))
+  (let ((new-state (funcall (check-signal reactor))))
+    (when (and (not (state reactor)) new-state)
+        (setf (state reactor) t)
+        (funcall (callback reactor)))
+    (when (and (state reactor) (not new-state))
+        (setf (state reactor) nil))))
+        
+(defun make-pos-reactor (test action)
+  (make-server-entity 'pos-edge-react
+    :check-signal test
+    :callback action))
     
-(defun remove-player (client)
-    (let ((player (getf *client->player* client)))
-      (when player 
-        (remove-entity player)))
-    (remf *client->player* client))
-    
-(defun new-player (client-id)
-    (let ((p (make-server-entity
-         'player
-         :client client-id
-         :pos (make-point3 0.0 0.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0)
-         :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
-                :pos (make-point3 0.0 0.0 0.0)
-                :rad 1.0)
-         :shape-name :wedge
-         )))
-    
-    
-    (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
-         (action () (format t "Client ~a started moving.~%" client-id)))
-    (make-pos-reactor #'test #'action))
-    
-    (register-player p client-id)))

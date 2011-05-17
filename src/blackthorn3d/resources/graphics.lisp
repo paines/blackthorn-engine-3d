@@ -38,6 +38,7 @@
 (defun load-models-n-stuff ()
   (setf (gethash :none *graphical-thingies*) nil)
   (load-model :wedge    :dae #p"res/models/robot-01.dae")
+ ; (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
   (load-model :cylinder :dae #p"res/models/test-anim.dae"))
 
 (defun get-model (key)

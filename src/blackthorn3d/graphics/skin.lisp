@@ -83,6 +83,7 @@
                         :ambient #(1.0 1.0 1.0 1.0)
                         :diffuse #(1.0 1.0 1.0 1.0)))
 
+#+superslow
 (defmethod draw-object ((this skin))
   (labels ((get-vert-attrib (semantic data)
              (second (find semantic data :key #'car))))
@@ -128,7 +129,7 @@
       (gl:end))))
   
 
-#+disabled
+;#+disabled
 (defmethod draw-object ((this skin))
   (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
       this
@@ -169,7 +170,7 @@
           (gl:mult-matrix bind-shape-matrix)
         (gl:uniform-matrix 
          joint-mats-loc 4
-         (get-joint-matrices bind-skeleton))
+         (get-joint-matrices bind-skeleton) nil)
 
         (gl:bind-gl-vertex-array vert-data)
         (iter (for elt in elements)

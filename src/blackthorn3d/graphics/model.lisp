@@ -124,7 +124,7 @@
    'mesh
    :id (id mesh)
    :vert-data (vnt-array->gl-array interleaved)
-   :elements (iter (for elt in (elements mesh))
+   :elements (iter (for elt in elements)
                          (collect (elem->gl-elem elt)))
    :array-format 'blt-vnt-mesh))
 
@@ -132,8 +132,11 @@
   (make-instance
    'skin
    :id (id skin)
-   :vert-data interleaved ;(vntiw-array->gl-array interleaved)
-   :elements elements
+   :vert-data ; interleaved 
+   (vntiw-array->gl-array interleaved)
+   :elements ; elements
+   (iter (for elt in elements)
+         (collect (elem->gl-elem elt)))
    :array-format 'blt-vntiw-mesh
    :bind-skeleton (bind-skeleton skin)
    :bind-shape-matrix (bind-shape-matrix skin)))

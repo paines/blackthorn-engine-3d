@@ -178,7 +178,7 @@
                    (dest (vec4+ new-bp velocity))
                    (closest-dist (mag (vec-scale4 velocity x0))))
 
-             ; (format t "top level hit: ~a~%" hit)
+              (format t "#####~%hit: ~a~%" hit)
               
               ;; only move the base point if we aren't already
               ;; very close to the hit
@@ -200,12 +200,20 @@
                                 (vec-scale4
                                  plane-normal
                                  (plane-dist sliding-plane dest))))
-                     (new-vel (vec4- new-dest new-bp)))
+                     (new-vel (vec4- new-dest hit-pt)))
+
+                (format t "~3Told-dest: ~a~%~3Tnew-dest: ~a~%" dest new-dest)
+                (format t "~3Tentity-pos: ~a~%" (pos obj))
+                (format t "~3Tplane-n: ~a~%" plane-normal)
+                (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
+                (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
+                (format t "~3Tresult-vec: ~a~%" (vec4- new-dest (pos obj)))
+
                 ;; return the new velocity as the vector from start
                 ;; to new-dest + new-vel
                ; (setf (pos obj) new-bp)
-                (vec-scale4 velocity (car hit))
-               ; (vec4- (vec4+ new-dest new-vel) (pos test-sph))
+               ; (vec-scale4 velocity (car hit))
+                (vec4- (vec4+ new-bp new-vel) (pos obj))
                 ))
 
             #+disabled

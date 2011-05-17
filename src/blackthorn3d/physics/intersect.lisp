@@ -75,15 +75,17 @@
 (defun make-plane-abcd (a b c d)
   (cons (vector a b c) d))
 (defun point-normal->plane (point normal)
-  (cons normal (dot point normal)))
+  (cons normal (- (dot point normal))))
 
 (defun plane-n (plane)
   (car plane))
+(defun plane-d (plane)
+  (cdr plane))
 (defun plane-dist (plane point)
   (+ (dot point (car plane)) (cdr plane)))
 (defun get-triangle-plane (tri)
   (make-plane (tri-n tri)
-              (dot (tri-c tri) (tri-n tri))))
+              (- (dot (tri-c tri) (tri-n tri)))))
 
 ;; basically same as below...but less hacks so i can debug
 ;; uses barycentric coords

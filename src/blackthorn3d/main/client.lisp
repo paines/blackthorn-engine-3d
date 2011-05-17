@@ -91,6 +91,9 @@
     (blt3d-gfx:load-obj->models (blt3d-imp:load-dae path))))
     
   (load-models-n-stuff)
+
+  ;; need to scale robot =(
+  (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
   
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:load-dae #p"res/models/test-room.dae")))

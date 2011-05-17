@@ -74,6 +74,8 @@
   (cons n d))
 (defun make-plane-abcd (a b c d)
   (cons (vector a b c) d))
+(defun point-normal->plane (point normal)
+  (cons normal (dot point normal)))
 
 (defun plane-n (plane)
   (car plane))
@@ -155,14 +157,7 @@
 (defun sphere-edge-intersection (sphere velocity
                                  O E tmax)
   ;(break)
-  (when (and (= 1.5 (x O))
-             (= -1.5 (y O))
-             (= 3.0 (z O)))
-    (format t "Testing edge ~a ~a~%" O E)
-    (format t "with sphere: ~a ~%~3T~a ~%~3T~a ~%" 
-            (pos sphere) 
-            (rad sphere) 
-            velocity))
+ #+disable
   (let* ((pos (pos sphere))
          (r (rad sphere))
          (r2 (* r r))
@@ -225,10 +220,11 @@
            (t-max 1.0)
            t0 t1)
 
-    
+     
       ;; check for backfacing
       ;#+disabled
       (when (> n.vel 0)
+       ; (format t " b ")
         (return-from moving-sphere-triangle-intersection nil))
 
       ;; check for velocity parallel to triangle
@@ -251,14 +247,17 @@
         (setf t1 (max temp t1)))
 
       ;; Check if t0 and t1 are between 0 and 1
-      (unless (or (range t0 0 1) (range t1 0 1))
+      #+DISABLED
+      (when (or (< t0 0) (> t0 1.0))
+        (format t "~%OUT OF RANGE~%")
         (return-from moving-sphere-triangle-intersection nil))
+
+
 
       ;; clamp
       (setf t0 (clamp t0 0 1)
             t1 (clamp t1 0 1))
       
-
       ;; TEST 1: check if the sphere intersects with the surface of tri
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0))))
@@ -294,8 +293,6 @@
                 (for edge-hit = (sphere-edge-intersection sphere velocity
                                                           e0 ev t-max))
                 (when edge-hit
-                  (format t "##### hit edge: ~a ~a~%" e0 ev)
-                  (format t "##### hit = ~a~%" edge-hit)
                   (setf t-max (car edge-hit))
                   (setf hit edge-hit))))
 

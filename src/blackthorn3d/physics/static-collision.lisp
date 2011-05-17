@@ -161,7 +161,8 @@
       (when (and (/= 0.0 (x velocity))
                  (/= 0.0 (y velocity))
                  (/= 0.0 (z velocity)))
-        (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel))
+       ; (format t "~%## VELOCITY: ~a~%~3T~a~%" velocity test-vel)
+        )
 
      ; (format t "TEST SPHERE AT: ~a~%" (pos test-sph))
 
@@ -181,24 +182,25 @@
               
               ;; only move the base point if we aren't already
               ;; very close to the hit
-              (if (>= closest-dist 0.001)
+              (if (>= closest-dist 0.0001)
                   (setf new-bp 
                         (vec4+ new-bp 
-                               (vec-scale4 velocity 
-                                           (- closest-dist 0.001)))))
+                               (set-length4 velocity 
+                                            (- closest-dist 0.0001)))
+                        hit-pt (vec4- hit-pt (set-length4 velocity
+                                                          0.0001))))
 
               ;; make sliding plane
               (let* ((plane-normal (norm4 (vec4- new-bp hit-pt)))
                      (plane-origin hit-pt)
-                     (sliding-plane (make-plane 
-                                     plane-normal
-                                     (dot plane-origin plane-normal)))
+                     (sliding-plane (point-normal->plane plane-origin
+                                                         plane-normal))
                      (new-dest (vec4-
                                 dest
                                 (vec-scale4
                                  plane-normal
                                  (plane-dist sliding-plane dest))))
-                     (new-vel (vec4- new-dest hit-pt)))
+                     (new-vel (vec4- new-dest new-bp)))
                 ;; return the new velocity as the vector from start
                 ;; to new-dest + new-vel
                ; (setf (pos obj) new-bp)
@@ -300,9 +302,6 @@
   (let ((results 
          (spatial-trees:search (swept-sphere->aabb sphere velocity) 
                                r-tree)))
-    #+disabled
-    (when results (format t "#### we intersect ~a triangle boxes~%" 
-                          (length results)))
 
     (iter (with min-hit = nil)
           (for tri in results)
@@ -310,7 +309,6 @@
                       sphere tri velocity))
           (when (and hit (or (null min-hit) 
                              (< (car hit) (car min-hit))))
-            (format t "low level hit: ~a~%" hit)
             (setf min-hit hit))
           (finally (return min-hit)))))
 

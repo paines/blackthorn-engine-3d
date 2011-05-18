@@ -82,6 +82,8 @@
 
 (defvar *level* nil)
 
+(defvar *music* nil)
+
 (defun client-main (host port)
   (setup-paths)
   (load-dlls)
@@ -129,9 +131,9 @@
       (blt3d-snd:init)
       (blt3d-rend:prepare-scene)
 
-      (let ((music (blt3d-snd:load-sound :music #p"res/sound/music.mp3")))
-        (when music
-          (blt3d-snd:play-sound music :loop t)))
+      (setf *music* (blt3d-snd:load-sound :music #p"res/sound/music.mp3"))
+      (when *music*
+        (blt3d-snd:play-sound *music* :loop t))
 
       (sdl:with-events ()
         (:quit-event () t)

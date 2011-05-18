@@ -85,6 +85,31 @@
 ;; intersect two spheres with velocities
 (defmethod swept-sphere-collide ((sph-a bounding-sphere) va 
                                  (sph-b bounding-sphere) vb)
+  ;; Use a swept-sphere-point intersection test
+  ;; by combining the radii in one sphere and and
+  ;; subtract the velocities
+  (let* ((sph-c (make-instance 'bounding-sphere
+                               :rad (+ (rad sph-a)
+                                       (rad sph-b))
+                               :pos (pos sph-a)))
+         (va-vb (vec3- va vb)))
+    (format t "~%new velocity: ~a~%" va-vb)
+    (aif (sphere-point-intersection sph-c va-vb (pos sph-b) 1.0)
+         ;; return time of intersection and the point
+         ;; NOTE: if we don't need the point, or want to calculate
+         ;; it later, we can just return the time...
+         (list 
+          it
+          (let ((end-a (vec3+ (pos sph-a) (vec-scale3 va it)))
+                (end-b (vec3+ (pos sph-b) (vec-scale3 vb it))))
+            
+            (vec3->point 
+             (vec3+ end-a
+                    (vec-scale3
+                     (vec3- end-b end-a)
+                     (/ (rad sph-a) 
+                        (+ (rad sph-a) (rad sph-b))))))))))
+  #+disabled
   (let* ((ab (vec3- (pos sph-b) (pos sph-a)))
          (vb-va (vec3- vb va))
          (rab (+ (rad sph-a) (rad sph-b)))
@@ -97,30 +122,7 @@
         (let ((r1 (quadratic q-a q-b q-c)))
           (if (null r1) (format t "null r1!!%"))
           (when (and r1 (>= r1 0) (<= r1 1.0))
-              r1))))
-
-  ;; turn sph1 into a line and add the radius to 2
-  #+disabled
-  (let* ((point (pos sph1))
-         (sph3 (make-instance 'bounding-sphere 
-                              :rad (+ (rad sph1) (rad sph2))
-                              :pos (pos sph2)))
-         ;; don't norm so we can test [0 1]
-         (l (vec3- v1 v2))
-         (sq-l (sq-mag l))
-         (one/sq-l (/ 1 sq-l))
-         ;; make the line at the origin
-         (c (vec3- (pos sph3) point))
-         (B (dot l c))
-         (det (- (sq B) 
-                 (* sq-l (+ (dot c c) 
-                            (sq (rad sph3)))))))
-    (if (minusp det)
-        nil
-        (let ((r (min (* (+ B (sqrt det)) one/sq-l) 
-                      (* (- B (/ (sqrt det))) one/sq-l))))
-          (if (and (>= r 0.0) (<= r 1.0))
-              (list r (vec4+ point (vec-scale3 l r))))))))
+              r1)))))
 
 ;;;
 ;;; Static Geometry Collision testing
@@ -214,16 +216,17 @@
     (transform-hit (transform node)
      (min-collide
       (append
+       #+disabled
        (list (collide-test xformed-bv
                            xformed-vel
                            (mesh node)))
 
        ;; Todo- fix swept-sphere-collide
-       #+disabled
+       ;#+disabled
        (aif (swept-sphere-collide xformed-bv xformed-vel
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
-            (progn
+            (list
               ;(format t "WE HIT A SPHERE! @ node ~a~%" (id node))
               (list (collide-test xformed-bv xformed-vel (mesh node)))))
 

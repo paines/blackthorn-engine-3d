@@ -213,7 +213,7 @@
 (defun sphere-point-intersection (sphere velocity pt tmax)
   (quadratic (dot velocity velocity)
              (* 2 (dot velocity (vec3- (pos sphere) pt)))
-             (- (sq-mag (vec3- pt (pos sphere))) (rad sphere))
+             (- (sq-mag (vec3- pt (pos sphere))) (sq (rad sphere)))
              tmax))
 
 ;; Returns (x0 p) (and maybe other info later) where x0

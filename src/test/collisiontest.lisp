@@ -215,6 +215,25 @@
         (format t "~%sphere-point result: ~a~%" test-res)
         (is (not (null test-res)))))
 
+(test swept-sphere-intersection
+      (let* ((sph1 (make-instance 'bounding-sphere
+                                  :rad 1.0
+                                  :pos +origin+))
+             (sph2 (make-instance 'bounding-sphere
+                                  :rad 1.0
+                                  :pos (make-point3 4.0 0.0 0.0)))
+             (vel1 (make-vec3 2.5 0.0 0.0))
+             (vel2 (make-vec3 0.0 0.0 0.0))
+             (test-res (swept-sphere-collide sph1 vel1 sph2 vel2))
+             (test-res2 (sphere-point-intersection 
+                         (make-instance 'bounding-sphere
+                                        :rad 2.0
+                                        :pos +origin+)
+                         (make-vec3 2.5 0.0 0.0)
+                         (pos sph2) 5.0)))
+        (format t "~%swept-sphere result: ~a~%" test-res)
+        (format t "the point test: ~a~%" test-res2)
+        (is (not (null test-res)))))
 
 (test find-bounding-points
       (let* ((vect-array (vector (make-vector3 1.0 1.0 1.0)

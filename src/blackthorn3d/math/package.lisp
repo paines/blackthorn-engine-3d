@@ -30,6 +30,9 @@
    
    ;; vector.lisp
    :+zero-vec+
+   :+x-axis+
+   :+y-axis+
+   :+z-axis+
    :+origin+
    :to-float
    :make-vector4
@@ -89,7 +92,7 @@
    :vec-rows->matrix
    :extract-scale
    :extract-translate
-   :q-r-decomp
+   ;:q-r-decomp
    :3x3-determinant
 
    ;; quaternion.lisp
@@ -103,6 +106,7 @@
    :quat-conjugate
    :quat-rotate-vec
    :quat->matrix
+   :quat-rotate-to-vec
 
    ;; utils.lisp
    :deg->rad

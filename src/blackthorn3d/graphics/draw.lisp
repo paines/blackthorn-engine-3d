@@ -25,7 +25,9 @@
 
 (in-package :blackthorn3d-graphics)
 
-
+(defvar *bv-mat* (make-blt-material
+                  :ambient #(1.0 .7 0.0 1.0)
+                  :diffuse #(1.0 .7 0.0 1.0)))
 
 (defun draw-cube (&key (color #(1.0 1.0 1.0)))
   (gl:color (r color) (g color) (b color))
@@ -145,6 +147,7 @@
 
 
 (defmethod draw-bounding-sphere ((sphere bounding-sphere))
+  (use-material *bv-mat*)
   (draw-wire-sphere (blt3d-phy::pos sphere) 
                     (blt3d-phy::rad sphere)))
 

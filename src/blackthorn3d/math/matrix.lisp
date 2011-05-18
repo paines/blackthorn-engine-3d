@@ -148,12 +148,11 @@
    @arg[mat]{a matrix of size m x n}
    @arg[vec]{a vector of size n}
    @return{the result of multiplying mat by vec, a vector of size m}"
-  (let* ((nrows (min (length vec) (get-nrows mat)))
-         (new-vec (make-array nrows :element-type 'float)))
+  (let* ((nrows (min (length vec) (get-nrows mat))))
     (iter (for i below nrows)
-          (setf (aref new-vec i)
-                (inner-product (row mat i) vec)))
-    new-vec))
+          (collect
+           (inner-product (row mat i) vec) 
+           result-type 'vector))))
 
 ;; Not sure what we would need this for...
 ;; row vectors have little use
@@ -345,31 +344,38 @@
                 (setf (row-major-aref n-mat (+ i j)) (svref vec j))))
     n-mat))
 
-;#+disabled
+#+disabled
 (defun Q-R-decomp (mat)
   (labels ((proj (e a) (vec-scale 
                         e (/ (inner-product e a)
                              (inner-product e e)))))
     (destructuring-bind (n-cols n-rows) (array-dimensions mat)
+      (format t "beginning qr-decomp~%")
       (destructuring-bind (e-lst R-lst)
           (iter (for k below n-cols)
                 (for a-k = (col mat k))
+                (format t "~3Tcomputed a-~a~%" k)
                 ;; compute uk values
                 (for u-k first a-k 
-                     then (iter (for e in e-lst)
-                                (sum (proj e a-k) into s)
-                                (finally (return (- a-k s)))))
+                     then (vec- a-k (iter (for e in e-lst)
+                                          (reducing (proj e a-k)
+                                                    by #'vec+))))
+                (format t "~3Tcomputed u-~a~%" k)
                 (collect u-k into u-lst)
                 (collect (normalize u-k) into e-lst)
+                (format t "~3Tcomputed e-~a~%" k)
                 (collect 
                  (append 
                   (iter (for e-i in e-lst)
                         (collect (inner-product e-i a-k)))
                   (iter (for i from (length e-lst) below (- n-rows 
                                                             (length e-lst)))
-                        (collect 0.0))) into R-mat)
+                        (collect 0.0))) 
+                 into R-mat)
+                (format t "~3Tbuilt on r-mat~%")
                 (finally (return (list e-lst R-mat))))
-        (values (apply #'vec-cols->matrix e-lst)
+        (format t "e-lst: ~a~%" e-lst)
+        (values (funcall #'vec-cols->matrix (apply #'vector e-lst))
                 (make-matrix (list n-cols n-rows)
                              R-lst))))))
 
@@ -381,7 +387,7 @@
 
 
 
-;#+disabled
+#+disabled
 (defun extract-scale (mat)
   "Extract the scale factors of an affine transform
    @return{a vec3 with the scale along each axis}"
@@ -393,5 +399,4 @@
 (defun extract-translate (mat)
   (make-vec3 (aref mat 3 0)
              (aref mat 3 1)
-             (aref mat 3 2)
-             0.0))
+             (aref mat 3 2)))

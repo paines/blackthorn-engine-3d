@@ -31,6 +31,9 @@
 
 (defvar +zero-vec+ #(0.0 0.0 0.0 0.0))
 (defvar +origin+ #(0.0 0.0 0.0 1.0))
+(defvar +x-axis+ #(1.0 0.0 0.0 0.0))
+(defvar +y-axis+ #(0.0 1.0 0.0 0.0))
+(defvar +z-axis+ #(0.0 0.0 1.0 0.0))
 
 (defmacro gen-vec-accessors (&rest names)
   (labels ((vec-accessor (n p)
@@ -156,6 +159,27 @@
     (* s (y v))
     (* s (z v))
     (w v)))
+
+#+disabled
+(defmacro element-wise-fn (v-lst fn)
+  (with-gensysm (i vs)
+    (let (vs v-list)
+      `(iter (for ,i below (length (car ,vs)))
+             (collect (apply ,fn (mapcar #'(lambda (v) (svref v ,i))
+                                         vs))
+                      result-type 'vector)))))
+
+(defun vec- (&rest vs)
+  (iter (for i below (length (car vs)))
+        (collect
+         (apply #'- (mapcar #'(lambda (v) (svref v i)) vs))
+         result-type 'vector)))
+
+(defun vec+ (&rest vs)
+  (iter (for i below (length (car vs)))
+        (collect
+         (apply #'+ (mapcar #'(lambda (v) (svref v i)) vs))
+         result-type 'vector)))
 
 (defun vec-scale3 (v s)
   (make-vector3

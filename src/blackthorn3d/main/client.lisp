@@ -95,22 +95,23 @@
   ;; need to scale robot =(
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
   (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                                                   (make-point3 0.0 0.0 1.0)
+                             (make-inv-ortho-basis (make-point3 0.0 0.0 1.0)
+                                                   (make-point3 -1.0 0.0 0.0)
                                                    (make-point3 0.0 1.0 0.0)))
   
   (setf *level* (blt3d-gfx:load-obj->models 
-                 (blt3d-imp:load-dae #p"res/models/test-room.dae")))
+                 (blt3d-imp:load-dae #p"res/models/RampRoomRainbow.dae")))
   #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
   #+disabled
   (blt3d-phy:apply-transform *level* (make-scale #(0.05 0.05 0.05)))
-  #+disabled
+  ;#+disabled
   (blt3d-phy:apply-transform 
    *level* 
    (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                          (make-point3 0.0 0.0 1.0)
                          (make-point3 0.0 1.0 0.0)))
+  (blt3d-phy:apply-transform *level* (make-translate #(0.0 -2.0 0.0)))
   
 
   (setf *random-state* (make-random-state t))

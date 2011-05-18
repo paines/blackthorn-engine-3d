@@ -180,7 +180,7 @@
                                         test-sph test-vel node)))))
             (until (null hit))
             (when hit
-              (format t "top level hit = ~a~%" hit)
+          ;    (format t "top level hit = ~a~%" hit)
               ;; get new origin and velocity
               (destructuring-bind (new-pos new-vel)
                   (slide-sphere test-sph test-vel hit)

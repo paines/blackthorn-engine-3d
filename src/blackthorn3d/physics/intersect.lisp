@@ -98,13 +98,15 @@
          (dot02 (dot v0 v2))
          (dot11 (dot v1 v1))
          (dot12 (dot v1 v2))
-         (inv-dom (/ 1.0 (- (* dot00 dot11) 
-                            (* dot01 dot01))))
-         (u (* inv-dom
-               (- (* dot11 dot02) (* dot01 dot12))))
-         (v (* inv-dom
-               (- (* dot00 dot12) (* dot01 dot02)))))
-    (and (> u 0) (> v 0) (< (+ u v) 1.0))))
+         (denom (- (* dot00 dot11) 
+                   (* dot01 dot01))))
+    (unless (zerop denom)
+      (let* ((inv-denom (/ 1.0 denom))
+             (u (* inv-denom
+                   (- (* dot11 dot02) (* dot01 dot12))))
+             (v (* inv-denom
+                   (- (* dot00 dot12) (* dot01 dot02)))))
+        (and (> u 0) (> v 0) (< (+ u v) 1.0))))))
 
 #+disabled
 (defun point-in-triangle-p (point tri)
@@ -394,7 +396,7 @@
          (dest (vec4+ new-bp velocity))
          (closest-dist (mag (vec-scale4 velocity x0))))
 
-    (format t "#####~%hit: ~a~%" hit)
+  ;  (format t "#####~%hit: ~a~%" hit)
               
     ;; only move the base point if we aren't already
     ;; very close to the hit
@@ -418,10 +420,10 @@
                        (plane-dist sliding-plane dest))))
            (new-vel (vec4- new-dest hit-pt)))
 
-      (format t "~3Told-dest: ~a~%~3Tnew-dest: ~a~%" dest new-dest)
-      (format t "~3Tplane-n: ~a~%" plane-normal)
-      (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
-      (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
+   ;   (format t "~3Told-dest: ~a~%~3Tnew-dest: ~a~%" dest new-dest)
+   ;   (format t "~3Tplane-n: ~a~%" plane-normal)
+   ;   (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
+  ;    (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
       
 
       (list new-bp new-vel))))

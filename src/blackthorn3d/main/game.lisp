@@ -36,14 +36,16 @@
   (let ((level
          (blt3d-phy:initialize-cube
           (blt3d-res:load-model 
-           :companion-cube :dae #p "res/models/test-room.dae"))))
+           :companion-cube :dae #p "res/models/RampRoomRainbow.dae"))))
     ;; we have to scale it!
     ;(blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
-    #+disable
+    
+    ;#+disable
     (blt3d-phy:apply-transform 
      level
      (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                            (make-point3 0.0 0.0 1.0)
                            (make-point3 0.0 1.0 0.0)))
+    (blt3d-phy:apply-transform level (make-translate #(0.0 -2.0 0.0)))
     level))
 

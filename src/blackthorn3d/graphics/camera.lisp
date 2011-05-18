@@ -75,7 +75,9 @@
 
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
-      (let ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0))))
+      (let ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0)))
+            (up-quat (quat-rotate-to-vec +y-axis+ t-up)))
+
         ;; set phi
         ;; TODO:- make this suck less
         ;; to make it suck less, use a quaternion?
@@ -115,9 +117,13 @@
                               (vec-scale4 displace-vec (- spring-k))
                               (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
           (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
-         ; (setf (up c) )
-          (setf (pos c) ideal-pos #+disabled(vec4+ pos (vec-scale4 veloc time)))
-          (setf (dir c) (norm4 (vec4- look-at pos))))))))
+      ;    (setf (up c) (quat-rotate-vec up-quat (up c)))
+          (setf (pos c) ideal-pos
+                #+disabled(quat-rotate-vec up-quat ideal-pos) 
+                #+disabled(vec4+ pos (vec-scale4 veloc time)))
+          (setf (dir c)(norm4 (vec4- look-at pos))
+                #+disabled
+                (quat-rotate-vec up-quat )))))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 

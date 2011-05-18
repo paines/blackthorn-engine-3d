@@ -132,7 +132,7 @@
                                     :pos (make-point3 0.0 0.0 2.0)
                                     :rad 1.0))
              (test-res (sphere-triangle-intersection sphere tri)))
-        (format t "~%~%WE RETURNED: ~a~%~%" test-res)
+    ;    (format t "~%~%WE RETURNED: ~a~%~%" test-res)
         (is (not (eql test-res
                       nil)))))
 
@@ -177,10 +177,6 @@
              (inv-mat (rt-inverse base-mat))
              (point (make-point3 5.0 -3.0 15.0))
              (xfer-pt (matrix-multiply-v base-mat point)))
-        (format t "~%~%BASE-MAT: ~a~%INV-MAT: ~a~%" 
-                base-mat inv-mat)
-        (format t "~%~%start vec: ~a~%result vec: ~a~%back-to-start? ~a~%"
-                point xfer-pt (matrix-multiply-v inv-mat xfer-pt))
         (is (= 5 5))))
 
 (test point-in-triangle-p

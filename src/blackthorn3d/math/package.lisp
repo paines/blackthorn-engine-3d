@@ -63,6 +63,8 @@
    :tri-centroid
    :set-length3
    :set-length4
+   :pt-dist
+   :mid-point
    
    ;; matrix.lisp
    :make-matrix

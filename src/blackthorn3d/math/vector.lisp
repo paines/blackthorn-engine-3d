@@ -211,6 +211,14 @@
               (sq (y v)))
            (sq (z v)))))
 
+(defun pt-dist (p1 p2)
+  (mag (vec3- p2 p1)))
+
+(defun mid-point (p1 p2)
+  (vec3->point
+   (vec3+ p1 (vec-scale3 
+              (vec3- p2 p1) 0.5))))
+
 (defun sq-mag (v)
   (+ (+ (sq (x v))
         (sq (y v))

@@ -133,8 +133,66 @@
 	 (max-point (aref pos-list 1)))
     (make-instance 'aa-bounding-box :a-min min-point :a-max max-point)))
 
+(defun find-min-max-points (vec-array)
+  (let ((mins (iter (for i below 3)
+                    (collect 
+                     (make-point3 most-positive-single-float
+                                  most-positive-single-float
+                                  most-positive-single-float))))
+        (maxes (iter (for i below 3)
+                     (collect 
+                      (make-point3 most-negative-single-float
+                                   most-negative-single-float
+                                   most-negative-single-float)))))
+    (iter (for v in-vector vec-array)
+          (iter (for axis below 3)
+                (for min in mins)
+                (for max in maxes)
+                (when (< (svref v axis) (svref min axis))
+                  (setf (elt mins axis) (to-float v)))
+                (when (> (svref v axis) (svref max axis))
+                  (setf (elt maxes axis) (to-float v)))))
+    (mapcar #'cons mins maxes)))
+
 (defmethod make-bounding-sphere (vect-array)
   ;; tighter spheres this way, but not super good...
+  ;; now maybe even better
+  (when vect-array
+    (let* ((pairs (find-min-max-points vect-array)))
+      (format t "pairs: ~a~%" pairs)
+      (let* ((axis (iter (with max-dist = 0.0)
+                         (with axis = nil)
+                         (for i below 3)
+                         (for pair in pairs)
+                         (when (> (pt-dist (car pair) (cdr pair)) max-dist)
+                           (setf axis i))
+                         (finally (return axis))))
+             (pair (elt pairs axis))
+             (pos (mid-point (car pair) (cdr pair)))
+             (radius (* 0.5 (pt-dist (car pair) (cdr pair)))))
+        
+        ;; Now iterate over ever vertices and check if it's outside
+        ;; the sphere.  If it is, expand the sphere
+        (labels ((sphere-contains (c r2 pt)
+                   (<= (mag (vec3- pt c)) r2)))
+
+          (iter (with r2 = (sq radius))
+                (for v in-vector vect-array)
+                (unless (sphere-contains pos radius v)
+                  (let ((dist (pt-dist v pos))
+                        (dir (norm3 (vec3- v pos))))
+                    (setf pos 
+                          (vec3+ 
+                           pos 
+                           (vec-scale3 dir (* 0.5 (- dist radius)))))
+                    (setf radius
+                          (* 0.5 (+ dist radius))))))
+
+          ;; Make the sphere
+          (make-instance 'bounding-sphere
+                         :rad radius
+                         :pos (vec3->point pos)))))))
+#+disabled
   (when vect-array
     (let ((mean-point
            (iter (for v in-vector vect-array)
@@ -159,7 +217,7 @@
 	 (max-point (aref pos-list 1))
 	 (rad-vector (vec-scale3 (vec3- max-point min-point) 0.5)))
     (make-instance 'bounding-sphere :pos (vec4+ min-point rad-vector)
-		           :rad (mag rad-vector))))
+		           :rad (mag rad-vector)))
 
 (defmethod make-bounding-volume (vect-array)
   (make-bounding-sphere vect-array))

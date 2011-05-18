@@ -97,7 +97,7 @@
    :point-line-sq-distance
    :sphere-triangle-intersection
    :sphere-edge-intersection
-   :sphere-edge-intersection2
+   :sphere-point-intersection
 
    ;; collision.lisp
    :collide-p

@@ -136,6 +136,7 @@
         (is (not (eql test-res
                       nil)))))
 
+
 (test move-bounding-volume-set
   (let* ((s1 (make-instance 'bounding-sphere 
                            :pos (make-point3 0.0 0.0 0.0)
@@ -204,6 +205,15 @@
         (format t "~%SPHERE-EDGE RESULT: ~a~%" result)
         (is (not (null result)))))
 
+(test sphere-point-intersection
+      (let* ((point (make-point3 3.0 1.0 0.0))
+             (sphere (make-instance 'bounding-sphere
+                                    :pos (make-point3 0.0 0.0 0.0)
+                                    :rad 1.0))
+             (velocity (make-vec3 3.0 0.0 0.0))
+             (test-res (sphere-point-intersection sphere velocity point 2.0)))
+        (format t "~%sphere-point result: ~a~%" test-res)
+        (is (not (null test-res)))))
 
 
 (test find-bounding-points

@@ -43,3 +43,9 @@
     (is (= (x ex-scale) (x scale-vec)))
     (is (= (y ex-scale) (y scale-vec)))
     (is (= (z ex-scale) (z scale-vec)))))
+
+(test q-r-decomp
+      (let* ((scale-mat (make-scale #(2.0 2.0 2.0))))
+        (multiple-value-bind (q r) (q-r-decomp scale-mat)
+          (format t "~%Q: ~a~%R:~a~%" q r)
+          (is (not (null 5))))))

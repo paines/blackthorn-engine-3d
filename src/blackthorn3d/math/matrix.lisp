@@ -345,31 +345,42 @@
                 (setf (row-major-aref n-mat (+ i j)) (svref vec j))))
     n-mat))
 
-#+disabled
+;#+disabled
 (defun Q-R-decomp (mat)
   (labels ((proj (e a) (vec-scale 
                         e (/ (inner-product e a)
                              (inner-product e e)))))
-    (destructuring-bind (e-lst R-lst)
-      (iter (for k in (n-cols mat))
-            (for a-k = (col mat k))
-            (for u-k first a-k 
-                 then (iter (for e in e-lst)
-                            (sum (proj e a-k) into s)
-                            (finally (return (- a-k s)))))
-            (collect u-k into u-lst)
-            (collect (normalize u-k) into e-lst)
-            (collect 
-             (append 
-              (iter (for e-i in e-lst)
-                    (collect (inner-product e-i a-k)))
-              (iter (for i from (length e-lst) below (- (n-rows mat) 
-                                                        (length e-lst)))
-                    (collect 0.0))) into R-mat)
-            (finally (return (list e-lst R-mat))))
-      (values (apply #'vec-cols->matrix e-lst)
-              (make-matrix (list (n-cols mat) (n-rows mat))
-                           R-lst)))))
+    (destructuring-bind (n-cols n-rows) (array-dimensions mat)
+      (destructuring-bind (e-lst R-lst)
+          (iter (for k below n-cols)
+                (for a-k = (col mat k))
+                ;; compute uk values
+                (for u-k first a-k 
+                     then (iter (for e in e-lst)
+                                (sum (proj e a-k) into s)
+                                (finally (return (- a-k s)))))
+                (collect u-k into u-lst)
+                (collect (normalize u-k) into e-lst)
+                (collect 
+                 (append 
+                  (iter (for e-i in e-lst)
+                        (collect (inner-product e-i a-k)))
+                  (iter (for i from (length e-lst) below (- n-rows 
+                                                            (length e-lst)))
+                        (collect 0.0))) into R-mat)
+                (finally (return (list e-lst R-mat))))
+        (values (apply #'vec-cols->matrix e-lst)
+                (make-matrix (list n-cols n-rows)
+                             R-lst))))))
+
+(defun triple-product (v1 v2 v3)
+  (dot v1 (cross3 v2 v3)))
+
+(defun 3x3-determinant (mat)
+  (triple-product (col mat 0) (col mat 1) (col mat 2)))
+
+
+
 ;#+disabled
 (defun extract-scale (mat)
   "Extract the scale factors of an affine transform

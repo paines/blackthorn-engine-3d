@@ -89,6 +89,8 @@
    :vec-rows->matrix
    :extract-scale
    :extract-translate
+   :q-r-decomp
+   :3x3-determinant
 
    ;; quaternion.lisp
    :make-quat

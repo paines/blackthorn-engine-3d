@@ -164,10 +164,8 @@
     (* s (z v))))
 
 (defun vec-scale (v s)
-  (make-array (length v)
-              :initial-contents
-              (iter (for e in-vector v)
-                    (* e s))))
+  (iter (for e in-vector v)
+        (collect (* e s) result-type 'vector)))
 
 (defun vec-neg4 (v)
   (make-vector4 

@@ -42,13 +42,16 @@
     :initform nil)
    (pos
     :accessor pos
-    :initarg :pos)
+    :initarg :pos
+    :initform (blt3d-math:make-point3 0.0 0.0 0.0))
    (dir
     :accessor dir
-    :initarg :dir)
+    :initarg :dir
+    :initform (blt3d-math:make-vec3 1.0 0.0 0.0))
    (up
     :accessor up
-    :initarg :up)
+    :initarg :up
+    :initform (blt3d-math:make-vec3 0.0 1.0 0.0))
    (die-now
     :accessor die-now
     :initform :no

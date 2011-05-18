@@ -210,6 +210,11 @@
           (list t0 (vec3- Q H)))))))
 
 
+(defun sphere-point-intersection (sphere velocity pt tmax)
+  (quadratic (dot velocity velocity)
+             (* 2 (dot velocity (vec3- (pos sphere) pt)))
+             (- (sq-mag (vec3- pt (pos sphere))) (rad sphere))
+             tmax))
 
 ;; Returns (x0 p) (and maybe other info later) where x0
 ;; is how far along velocity sphere goes before hitting the
@@ -277,7 +282,8 @@
              (hit '(nil nil)))
         (iter (for i below 3)
               (for v = (svref tri i))
-              (for tp = 
+              (for tp = (sphere-point-intersection sphere velocity v)
+                   #+disabled
                    (quadratic (dot velocity velocity)
                               (* 2 (dot velocity (vec3- sph-pos v)))
                               (- (sq-mag (vec3- v sph-pos)) sq-rad)
@@ -356,36 +362,6 @@
           
           min-d)))))
 
-
-
-(defun sphere-edge-intersection2 (sphere velocity e0 e1 t-max)
-  (let* ((edge (vec3- e1 e0))
-         (sq-rad (sq (rad sphere)))
-         (s-to-p (vec3- e0 (pos sphere)))
-         (e-sqlen (sq-mag edge))
-         (e.v (dot edge velocity))
-         (e.stp (dot edge s-to-p))
-         (vel-sqlen (sq-mag velocity))
-
-         (qa (+ (* e-sqlen (- vel-sqlen)) 
-                (sq e.v)))
-         (qb (- (* e-sqlen (* 2 (dot velocity s-to-p)))
-                (* 2 e.v e.stp)))
-         (qc (+ (* e-sqlen (- sq-rad (sq-mag s-to-p))) 
-                (sq e.stp)))
-
-         (x0 (quadratic qa qb qc t-max)))
-
-    (when  x0
-    ;  (format t "sq-rad: ~a~%" sq-rad)
-     ; (format t "x0: ~a~%" x0)
-      
-
-      (let ((f0  (/ (- (* x0 e.v) e.stp) 
-                     e-sqlen)))
-
-        (when (range f0 0 1)
-          (list x0 (vec3+ e0 (vec-scale3 edge f0))))))))
 
 (defun slide-sphere (sphere velocity hit)
   "@return{the new position and velocity of the sphere as

@@ -25,38 +25,17 @@
 
 (in-package :blackthorn3d-main)
 
-(defclass player (entity-server)
-  ((client
-        :accessor player-client
-        :initarg :client
-        :documentation "The socket symbol for the player's client")))
-
-(defvar *client->player* '())
-(defun register-player (p c)
-    (setf (getf *client->player* c) p))
-    
-(defun remove-player (client)
-    (let ((player (getf *client->player* client)))
-      (when player 
-        (remove-entity player)))
-    (remf *client->player* client))
-    
-(defun new-player (client-id)
-    (let ((p (make-server-entity
-         'player
-         :client client-id
-         :pos (make-point3 0.0 0.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0)
-         :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
-                :pos (make-point3 0.0 0.0 0.0)
-                :rad 1.0)
-         :shape-name :wedge
-         )))
-    
-    
-    (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
-         (action () (format t "Client ~a started moving.~%" client-id)))
-    (make-pos-reactor #'test #'action))
-    
-    (register-player p client-id)))
+(defclass portal (entity-server)
+    ((links-to-room
+        :accessor links-to-room
+        :initform nil
+        :initarg :links-to-room)
+     (links-to-portal
+        :accessor links-to-portal
+        :initform nil
+        :initarg  :links-to-portal)))
+        
+;(defun make-portal (level-name portal-name portal-model-name)
+;    (let ((portal-model (find-portal-model level-name portal-model-name)))
+;        (make-entity-server 'portal
+;            :

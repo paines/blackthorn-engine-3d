@@ -141,8 +141,10 @@
          (u (cross ns nt))
          (e (dot ns nt))
          (radical (sqrt (* 2.0 (+ 1.0 e)))))
-    (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical)) ; qv
-                         (/ radical 2.0))))             ; qw
+    (if (zerop radical) 
+        (quat-identity)
+        (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical))  ; qv
+                             (/ radical 2.0)))))             ; qw
 
 (defun quat-slerp (q1 q2 s)
   (let* ((phi (iter (for a in-vector q1)
@@ -153,3 +155,10 @@
                              sin-phi))
            (quat-scale q2 (/ (sin (* phi s)) 
                              sin-phi)))))
+
+(defun spherical->quat (spherical)
+  (let* ((cart-vec (norm4 (spherical->cartesian spherical t)))
+         (quat (quat-norm (quat-rotate-to-vec +z-axis+ cart-vec))))
+   ; (quat-identity)
+    quat
+    ))

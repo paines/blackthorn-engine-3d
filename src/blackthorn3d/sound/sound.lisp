@@ -36,12 +36,16 @@
   ;;(sdl-mixer:halt-music)
   (sdl-mixer:close-audio))
 
-(defclass music ()
+(defclass sound ()
   ((src
     :initarg :src)
    (sound
     :accessor sound
     :initarg :sound)))
+
+(defclass music (sound) ())
+
+(defclass sample (sound) ())
 
 (defgeneric load-sound (type src))
 
@@ -50,13 +54,27 @@
     (let ((sound (sdl-mixer:load-music (resolve-resource src))))
       (make-instance 'music :src src :sound sound))))
 
+(defmethod load-sound ((type (eql :sample)) src)
+  (when (init-p)
+    (let ((sound (sdl-mixer:load-sample (resolve-resource src))))
+      (make-instance 'sample :src src :sound sound))))
+
 (defgeneric play-sound (sound &key))
 
-(defmethod play-sound ((music music) &key loop)
+(defmethod play-sound ((music music) &key loop fade (position 0))
   (when (init-p)
-    (sdl-mixer:play-music (sound music) :loop loop)))
+    (sdl-mixer:play-music (sound music)
+                          :loop loop :fade fade :position position)))
+
+(defmethod play-sound ((sample sample) &key loop fade (ticks t))
+  (when (init-p)
+    (sdl-mixer:play-sample (sound sample)
+                           :loop loop :fade fade :ticks ticks)))
 
 (defgeneric stop-sound (type &key))
 
 (defmethod stop-sound ((type (eql :music)) &key)
   (sdl-mixer:halt-music))
+
+(defmethod stop-sound ((type (eql :sample)) &key channel fade ticks)
+  (sdl-mixer:halt-sample channel :fade fade :ticks ticks))

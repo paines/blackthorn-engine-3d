@@ -173,39 +173,51 @@
   (with-slots (id type xform extra children) node
     (dae-debug "node ~a is of type ~a~%" id type)
     ;; recurse on children
-    (let ((new-node 
-           (case type
-             (:geometry 
-              (destructuring-bind (mesh materials) 
-                  (compile-geometry extra)
-                (make-model-node :id id
-                                 :transform xform
-                                 :material-array materials
-                                 :mesh mesh)))
-             (:controller 
-              (destructuring-bind (skin materials) 
-                  (compile-controller extra)
-                (make-model-node :id id
-                                 :transform xform
-                                 :material-array materials
-                                 :mesh skin)))
-             ;; anything else, we don't really care about much
-             (otherwise nil))))
+    (let* ((node-children 
+            (iter (for child-node in children)
+                  (collect (compile-node child-node
+                                         geometry-table 
+                                         material-table))))
+           (new-node 
+            (case type
+              (:geometry 
+               (destructuring-bind (mesh materials) 
+                   (compile-geometry extra)
+                 (make-model-node :id id
+                                  :transform xform
+                                  :material-array materials
+                                  :mesh mesh
+                                  :child-nodes node-children)))
+              (:controller 
+               (destructuring-bind (skin materials) 
+                   (compile-controller extra)
+                 (make-model-node :id id
+                                  :transform xform
+                                  :material-array materials
+                                  :mesh skin
+                                  :child-nodes node-children)))
+              ;#+disabled
+              (:parent
+               (make-scene-node :id id
+                                :transform xform
+                                :child-nodes node-children))
+              ;; anything else, we don't really care about much
+              (otherwise nil))))
+
       (format t "NODE ~a's transform: ~a~%" id xform)
 
       ;; Add an entry in *xform-mappings* for the animation pass
-      (setf (gethash id *xform-mappings*)
-            (make-set-fn (transform new-node))
-            #+disabled
-            #'(lambda (val) (setf (transform new-node) val)))
+      (when new-node
+        (setf (gethash id *xform-mappings*)
+              (make-set-fn (transform new-node))
+              #+disabled
+              #'(lambda (val) (setf (transform new-node) val))))
 
       ;; recurse on children
+      #+disabled
       (when new-node
         (setf (child-nodes new-node)
-              (iter (for child-node in children)
-                    (collect (compile-node child-node
-                                           geometry-table 
-                                           material-table)))))
+              ))
       ;; return the node
       new-node)))
 

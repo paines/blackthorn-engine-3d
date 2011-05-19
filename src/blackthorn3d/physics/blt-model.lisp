@@ -78,6 +78,7 @@
                (setf bounding-volume 
                      (transform-bounding-volume bounding-volume xform))
                ;; do the children
+               #+disabled
                (iter (for child in (child-nodes node))
                      (apply-helper child))
                bounding-volume)))
@@ -248,22 +249,29 @@
     :accessor mesh
     :initarg :mesh)))
 
-(defun make-model-node (&key id transform material-array mesh children)
+(defun make-scene-node (&key id transform child-nodes)
+  (make-instance 'node
+                 :id id
+                 :transform transform
+                 :child-nodes child-nodes
+                 :bounding-volume
+                 (transform-bounding-volume
+                  (combine-bounding-spheres
+                   (iter (for c in child-nodes)
+                         (collect (node-bounding-volume c))))
+                  transform)))
+
+(defun make-model-node (&key id transform material-array mesh child-nodes)
   (let ((bv (transform-bounding-volume
              (make-bounding-sphere (get-stream :vertex mesh))
              transform)))
-    (format t "BV: ~a, ~a~%" (pos bv) (rad bv))
     (make-instance 'model-node
                    :id id
                    :transform transform
                    :material-array material-array
                    :mesh mesh
-                   :child-nodes children
-                   :bounding-volume bv
-                   #+disabled
-                   (transform-bounding-volume
-                    (make-bounding-sphere (get-stream :vertex mesh))
-                    transform))))
+                   :child-nodes child-nodes
+                   :bounding-volume bv)))
 
 (defun copy-model-node (node)
   (with-slots (id transform material-array mesh child-nodes bounding-volume) node

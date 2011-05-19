@@ -46,14 +46,14 @@
 
 (test quat-rotate-to-vec
       (let* ((vec1 +x-axis+)
-             (vec2 +y-axis+)
+             (vec2 +x-axis+)
              (quat (quat-rotate-to-vec vec1 vec2))
-             (vec3 (quat-rotate-vec quat (make-point3 5.0 0.0 0.0))))
+             (vec3 (quat-rotate-vec quat (make-point3 5.0 0.0 5.0))))
         (format t "~%~%### OUR RESULT vec: ~a~%" vec3)
         (is (and
-             (= 0.0 (x vec3))
-             (= 5.0 (y vec3))
-             (= 0.0 (z vec3))))))
+             (= 5.0 (x vec3))
+             (= 0.0 (y vec3))
+             (= 5.0 (z vec3))))))
 
 #+disabled
 (test q-r-decomp

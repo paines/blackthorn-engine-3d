@@ -91,13 +91,11 @@
 (defun jointp (node)
   (equal "JOINT" (get-attribute "type" (attributes node))))
 (defun classify-node (node)
-  (if (jointp node) 
-      :joint
-      (if (find-tag-in-children +instance-geometry+ node)
-          :geometry
-          (if (find-tag-in-children +instance-controller+ node)
-              :controller
-              :unknown))))
+  (cond
+    ((jointp node) :joint)
+    ((find-tag-in-children +instance-geometry+ node) :geometry)
+    ((find-tag-in-children +instance-controller+ node) :controller)
+    (t :unknown)))
 
 (defun process-geometry-node (node-tag)
   (let* ((node-id (get-attribute "id" (attributes node-tag)))
@@ -111,9 +109,9 @@
                node-id geom-id)
 
     (make-node node-id :geometry *transform* (list geom-id material-map)
-          (iter (for node in (children-with-tag "node" node-tag))
-                (aif (process-node node)
-                     (collect it))))))
+               (iter (for node in (children-with-tag "node" node-tag))
+                     (aif (process-node node)
+                          (collect it))))))
 
 (defun process-joint-node (node-tag)
   (let ((node-id (get-attribute "id" (attributes node-tag)))
@@ -122,13 +120,13 @@
     (dae-debug "loading joint node: ~a with joint ~a~%" node-id joint-id)
     
     (make-node node-id :joint *transform* (list joint-id) 
-          (iter (for node in (children-with-tag "node" node-tag))
-                (aif (process-node node)
-                     (collect it))))))
+               (iter (for node in (children-with-tag "node" node-tag))
+                     (aif (process-node node)
+                          (collect it))))))
 
 (let ((default-count -1))
   (defun get-default-name (prefix)
-      (format nil "~a-~a" prefix (incf default-count))))
+    (format nil "~a-~a" prefix (incf default-count))))
 
 (defun process-controller-node (node-tag)
   (let* ((node-id (or (get-attribute "id" (attributes node-tag))
@@ -151,13 +149,14 @@
                           (collect it))))))
 
 ;; Returns tree of nodes
+
 (defun process-node (node-tag)
   "node format: (node-id transform geometry-id material-mapping children)"
   (let ((*dbg-level* (1+ *dbg-level*))
         (node-id (get-attribute "id" (attributes node-tag)))
         (*transform* (create-xform node-tag)))
 
-   ; (dae-debug "loading node: ~a~%" node-id)
+                                        ; (dae-debug "loading node: ~a~%" node-id)
 
     ;; Two cases (that we handle atm):
     ;; 1) node has an instance_geometry tag.  We'll assume there are 
@@ -175,9 +174,14 @@
       (otherwise
        ;; We just make a node...these will be ignored, i think, when
        ;; putting everything together
-       (make-node node-id :unknown *transform* '()
-             (iter (for node in (children-with-tag "node" node-tag))
-                   (aif (process-node node) (collect it))))))))
+       (let* ((children (iter (for node in (children-with-tag "node" node-tag))
+                              (aif (process-node node) (collect it))))
+              (type (if (find-if #'(lambda (x) (not (eql :unkown x)))
+                                 children)
+                        :parent
+                        :unknown)))
+         (make-node node-id type  *transform* '()
+                    children))))))
 
 
 (defun prune-tree (node-tree test)
@@ -189,7 +193,12 @@
       (if (funcall test node-tree)
           ;; If it doesn't hold info we care about, remove it from the
           ;; tree, bringing all child nodes up to the next level
-          new-children
+          ;; also, apply the transforms to the children
+          (iter (for c in new-children)
+                (setf (node-xform c)
+                      (matrix-multiply-m
+                       xform (node-xform c)))
+                (finally (return new-children)))
           ;; otherwise we set the children and pass on up, as a list 
           ;; so new-children will be constructed correctly
           (progn

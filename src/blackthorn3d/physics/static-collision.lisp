@@ -66,8 +66,9 @@
   (a 30x30x30 cube) and create a thinger out of it.
   r-tree...thinger...replace the blt-meshes with r-trees"
   (labels ((helper (node)
-             (setf (mesh node)
-                   (build-r-tree (build-triangle-array (mesh node))))
+             (when (slot-exists-p node 'mesh)
+               (setf (mesh node)
+                     (build-r-tree (build-triangle-array (mesh node)))))
              (iter (for n in (child-nodes node))
                    (helper n))))
     (iter (for node in (mesh-nodes level-model))
@@ -93,7 +94,7 @@
                                        (rad sph-b))
                                :pos (pos sph-a)))
          (va-vb (vec3- va vb)))
-    (format t "~%new velocity: ~a~%" va-vb)
+  ;  (format t "~%new velocity: ~a~%" va-vb)
     (aif (sphere-point-intersection sph-c va-vb (pos sph-b) 1.0)
          ;; return time of intersection and the point
          ;; NOTE: if we don't need the point, or want to calculate
@@ -203,6 +204,29 @@
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity
+                                    (node node))
+  (let* ((inv-mat (rt-inverse (transform node)))
+         (xformed-bv 
+          (transform-bounding-volume sphere inv-mat))
+         (xformed-vel 
+          (matrix-multiply-v inv-mat velocity)))
+
+    (transform-hit (transform node)
+     (min-collide
+      (append
+       (aif (swept-sphere-collide sphere velocity
+                                  (node-bounding-volume node) +zero-vec+)
+        ;; if we intersect the bounding-shape, check the mesh
+        (progn 
+          (list (collide-test xformed-bv xformed-vel (mesh node)))))
+
+       ;; Recursively collide with the children
+       (iter (for child in (child-nodes node))
+             (collect 
+              (collide-with-world-node xformed-bv xformed-vel child))))))))
+
+(defmethod collide-with-world-node ((sphere bounding-sphere)
+                                    velocity
                                     (node model-node))
   (let* ((inv-mat (rt-inverse (transform node)))
          (xformed-bv 
@@ -210,25 +234,33 @@
          (xformed-vel 
           (matrix-multiply-v inv-mat velocity)))
 
-    ;(format t "## sphere-center: ~a~%" (pos xformed-bv))
-    ;; don't forget to re-transform on way back up
-    ;(format t "node transform ~a~%" (transform node))
+  
+   #+disabled
+   (format t "Sphere @ node ~a: ~a~%" 
+            (id node)
+            (pos sphere))
+
     (transform-hit (transform node)
      (min-collide
       (append
-       #+disabled
+      ; #+disabled
        (list (collide-test xformed-bv
                            xformed-vel
                            (mesh node)))
 
        ;; Todo- fix swept-sphere-collide
-       ;#+disabled
-       (aif (swept-sphere-collide xformed-bv xformed-vel
+       #+disabled
+       (aif 
+        ;#+disabled
+        (swept-sphere-collide sphere velocity
+                              (node-bounding-volume node) +zero-vec+)
+        #+disabled
+        (swept-sphere-collide xformed-bv xformed-vel
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
-            (list
-              ;(format t "WE HIT A SPHERE! @ node ~a~%" (id node))
-              (list (collide-test xformed-bv xformed-vel (mesh node)))))
+            (progn 
+              ;(format t "Collided with node-sphere!~%")
+                   (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
        ;; Recursively collide with the children
        (iter (for child in (child-nodes node))

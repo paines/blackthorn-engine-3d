@@ -67,18 +67,28 @@
     (labels ((set-thingy (start-index count)
            (iter (for i below 4)
                  (for v-ind-inc = (* 2 (+ i start-index)))
+                 ;; we have to collect them FIRST
+                 ;; then make sure they're NORMALIZED (in case we drop some)
                  (if (< i count)
                      (progn
                        (setf (svref index-array (incf ii))
                              (svref v-indices v-ind-inc))
-                       (setf (svref weight-array (incf wi))
-                             (svref weights  
-                                    (svref v-indices (1+ v-ind-inc)))))
+                       (collect 
+                        (svref weights (svref v-indices (1+ v-ind-inc)))
+                                into weights-lst))
                      (progn
-                       (setf (svref index-array (incf ii))
-                             0)
-                       (setf (svref weight-array (incf wi))
-                             0.0))))))
+                       (setf (svref index-array (incf ii)) 0.0)
+                       (collect 0.0 into weights-lst)))
+                 (finally
+                  (let ((total (iter (for w in weights-lst)
+                                     (sum w))))
+                ;    (format t "######~%weights: ~a~%" weights-lst)
+                 ;   (format t "total is: ~a~%" total)
+                    (iter (with norm = (if (zerop total) 1.0
+                                           (/ 1 total))) 
+                          (for w in weights-lst)
+                          (setf (svref weight-array (incf wi))
+                                (* norm w))))))))
 
       (iter (for vi below n-verts)
             (for count in-vector counts)

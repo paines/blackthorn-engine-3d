@@ -244,9 +244,10 @@
      (min-collide
       (append
       ; #+disabled
-       (list (collide-test xformed-bv
-                           xformed-vel
-                           (mesh node)))
+       (when (slot-exists-p node 'mesh)
+         (list (collide-test xformed-bv
+                             xformed-vel
+                             (mesh node))))
 
        ;; Todo- fix swept-sphere-collide
        #+disabled

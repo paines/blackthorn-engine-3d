@@ -61,6 +61,7 @@
 
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
+(defvar +thresh+ 0.0001)
 (setf +phi-scale+ -0.2)
 (setf +theta-scale+ -0.2)
 
@@ -98,23 +99,49 @@
         (setf (elt ideal-coord 0)
               (aif (/= 0 (x input-vec))
                    (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
-                   (atan (- (x pos) (x t-pos))
-                         (- (z pos) (z t-pos)))))
+                   (let ((xd (- (x pos) (x t-pos)))
+                         (zd (- (z pos) (z t-pos))))
+                     (format t "--------------------------------~%")
+                     (format t "~1T XD: ~a~%" xd)
+                     (format t "~1T ZD: ~a~%" zd)
+                     (atan xd zd))))
+
         ;; set theta
         ;;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
-                   (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec)))))
+                   (min (/ pi 2) (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec))))))
+
+        ;; check for inversion
+        #+disabled
+        (when (> (elt ideal-coord 1) (/ pi 2))
+             (setf (elt ideal-coord 0) (+ (elt ideal-coord 0) (/ pi 2)))
+             (setf (elt ideal-coord 1) (- (/ pi 2) (- (elt ideal-coord 1) (/ pi 2)))))
         
+     
+        ;; mat stuff
+        (let* ((translation (make-translate (vec-scale4 +z-axis+ (elt ideal-coord 2))))
+               (rotation (quat->matrix (spherical->quat ideal-coord)))
+               (concat (matrix-multiply-m rotation translation)))
+
+          (setf (pos c) (vec4+ t-pos
+                               (matrix-multiply-v concat +origin+)))
+
+          (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))
+          
+       ;   (setf (up c) (matrix-multiply-v rotation +y-axis+))
+          )
+
+
+        #+disabled
         ;; quat stuff
-        (let* ((phi-quat (axis-rad->quat +y-axis+ phi))
-               (theta-quat (axis-rad->quat +x-axis+ theta))
+        (let* ((phi-quat (axis-rad->quat +y-axis+ (elt ideal-coord 0)))
+               (theta-quat (axis-rad->quat +x-axis+ (elt ideal-coord 1)))
                (cam-quat (quat-norm (quat* phi-quat theta-quat))))
           
           ;; calculate the camera's movement
-                                        ; #+disabled
-          (let* ((t-dvec (vec4-scale (quat-rotate-vec cam-quat +z-axis+) 
-                                     (elt idea-coord 2))
+          (let* ((t-dvec (vec-scale4 (quat-rotate-vec cam-quat +z-axis+) 
+                                     (elt ideal-coord 2))
                   #+disabled
                    (spherical->cartesian ideal-coord))
                  (ideal-pos (vec4+ look-at t-dvec))
@@ -130,7 +157,14 @@
 
             (setf (dir c) (norm4 (vec4- look-at pos))
                   #+disabled
-                  (quat-rotate-vec up-quat ))))))))
+                  (quat-rotate-vec up-quat ))
+          
+            (setf (up c) (quat-rotate-vec theta-quat up)
+                  #+disabled(norm4 (cross (cross dir up) dir)))
+          
+            (format t "----------------------------------------------~%")
+            (format t "NEW Cam UP:  ~a~%" (up c))
+            (format t "    Cam dir: ~a~%" (dir c))))))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 

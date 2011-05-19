@@ -121,7 +121,7 @@
         :pos (make-point3 0.0 0.0 0.0)
         :dir (make-vec3 1.0 0.0 0.0)
         :up  (make-vec3 0.0 1.0 0.0)
-        :ideal-coord (list 0.0 (cos (/ pi 2.5)) 10.0)
+        :ideal-coord (list 0.0 0.0 10.0)
         :target player-entity
         :shape-name :cylinder
         :mode :third-person))

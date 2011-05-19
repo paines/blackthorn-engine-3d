@@ -106,23 +106,31 @@
              (setf (elt ideal-coord 1)
                    (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec)))))
         
-        ;; calculate the camera's movement
-       ; #+disabled
-        (let* ((t-dvec (spherical->cartesian ideal-coord))
-               (ideal-pos (vec4+ look-at t-dvec))
-               (displace-vec (vec4- pos ideal-pos))
-               (spring-accel (vec4-
-                              (vec-scale4 displace-vec (- spring-k))
-                              (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
-          (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
+        ;; quat stuff
+        (let* ((phi-quat (axis-rad->quat +y-axis+ phi))
+               (theta-quat (axis-rad->quat +x-axis+ theta))
+               (cam-quat (quat-norm (quat* phi-quat theta-quat))))
+          
+          ;; calculate the camera's movement
+                                        ; #+disabled
+          (let* ((t-dvec (vec4-scale (quat-rotate-vec cam-quat +z-axis+) 
+                                     (elt idea-coord 2))
+                  #+disabled
+                   (spherical->cartesian ideal-coord))
+                 (ideal-pos (vec4+ look-at t-dvec))
+                 (displace-vec (vec4- pos ideal-pos))
+                 (spring-accel (vec4-
+                                (vec-scale4 displace-vec (- spring-k))
+                                (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
+            (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
 
-          (setf (pos c) ideal-pos
-                #+disabled(quat-rotate-vec up-quat ideal-pos) 
-                #+disabled(vec4+ pos (vec-scale4 veloc time)))
+            (setf (pos c) ideal-pos
+                  #+disabled(quat-rotate-vec up-quat ideal-pos) 
+                  #+disabled(vec4+ pos (vec-scale4 veloc time)))
 
-          (setf (dir c) (norm4 (vec4- look-at pos))
-                #+disabled
-                (quat-rotate-vec up-quat )))))))
+            (setf (dir c) (norm4 (vec4- look-at pos))
+                  #+disabled
+                  (quat-rotate-vec up-quat ))))))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 

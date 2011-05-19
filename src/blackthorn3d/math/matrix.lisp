@@ -312,6 +312,7 @@
          (v (cross w u))
          (ld-mat (make-ortho-basis u v w)))
     (setf (col ld-mat 3) (matrix-multiply-v ld-mat (vec-neg4 from)))
+    (setf (aref ld-mat 3 3) 1.0)
     ld-mat))
 
 (defun rt-inverse (mat)

@@ -101,30 +101,33 @@
                    (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
                    (let ((xd (- (x pos) (x t-pos)))
                          (zd (- (z pos) (z t-pos))))
-                     (format t "--------------------------------~%")
-                     (format t "~1T XD: ~a~%" xd)
-                     (format t "~1T ZD: ~a~%" zd)
+               ;      (format t "--------------------------------~%")
+                ;     (format t "~1T XD: ~a~%" xd)
+                 ;    (format t "~1T ZD: ~a~%" zd)
                      (atan xd zd))))
 
         ;; set theta
         ;;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
-                   (min (/ pi 2) (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec))))))
+                   (min (/ pi 2) (+ (elt ideal-coord 1) 
+                                    (* +theta-scale+ (y input-vec))))))
 
         ;; check for inversion
         #+disabled
         (when (> (elt ideal-coord 1) (/ pi 2))
              (setf (elt ideal-coord 0) (+ (elt ideal-coord 0) (/ pi 2)))
-             (setf (elt ideal-coord 1) (- (/ pi 2) (- (elt ideal-coord 1) (/ pi 2)))))
+             (setf (elt ideal-coord 1) (- (/ pi 2) (- (elt ideal-coord 1) 
+                                                      (/ pi 2)))))
         
      
         ;; mat stuff
-        (let* ((translation (make-translate (vec-scale4 +z-axis+ (elt ideal-coord 2))))
+        (let* ((translation (make-translate (vec-scale4 +z-axis+ 
+                                                        (elt ideal-coord 2))))
                (rotation (quat->matrix (spherical->quat ideal-coord)))
                (concat (matrix-multiply-m rotation translation)))
 
-          (setf (pos c) (vec4+ t-pos
+          (setf (pos c) (vec4+ look-at
                                (matrix-multiply-v concat +origin+)))
 
           (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))

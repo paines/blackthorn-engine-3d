@@ -62,8 +62,13 @@
     (iter (for node in mesh-nodes)
           (draw-object node))))
 
+(defmethod draw-object ((this node))
+  (gl:with-pushed-matrix
+      (aif (transform this) (gl:mult-matrix it))
+    (iter (for node in (child-nodes this))
+          (draw-object node))))
+
 (defmethod draw-object ((this model-node))
-  
   (gl:with-pushed-matrix
       (aif (transform this) (gl:mult-matrix it))
 
@@ -104,19 +109,30 @@
 
 ;; Changed to return the same, albeit modified, blt-model
 (defmethod load-obj->models ((this blt-model))
-  (setf *animator* (animations this))
-  (format t "MODEL ANIMATIONS: ~a~%" (animations this))
-  (with-slots (mesh-nodes animations) this
-    (iter (for node in mesh-nodes)
-          (with-slots (mesh transform) node
-            (multiple-value-bind (interleaved accessor)
-                (interleave
-                 (vertex-streams mesh)
-                 (get-mesh-format mesh))
-              (setf *accessor* accessor)
-              (setf mesh (convert-to-ogl mesh
-                                         interleaved
-                                         (elements mesh)))))))
+  (labels ((load-node (node)
+             
+             (when (slot-exists-p node 'mesh)
+               (with-slots (mesh transform) node
+                 (multiple-value-bind (interleaved accessor)
+                     (interleave
+                      (vertex-streams mesh)
+                      (get-mesh-format mesh))
+                   (setf *accessor* accessor)
+                   
+                   (setf mesh (convert-to-ogl mesh
+                                              interleaved
+                                              (elements mesh))))))
+             ;; the children!
+             (format t "loading node ~a transform: ~a~%" (id node)
+                     (transform node))
+             (iter (for cn in (child-nodes node))
+                   (load-node cn))))
+
+    (setf *animator* (animations this))
+    (format t "MODEL ANIMATIONS: ~a~%" (animations this))
+    (with-slots (mesh-nodes animations) this
+      (iter (for node in mesh-nodes)
+            (load-node node))))
   this)
 
 (defmethod convert-to-ogl ((mesh blt-mesh) interleaved elements)

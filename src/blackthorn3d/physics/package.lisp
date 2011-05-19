@@ -49,8 +49,10 @@
    :bind-skeleton
    :bind-shape-matrix
 
+   :node
    :model-node
    :make-model-node
+   :make-scene-node
    :transform
    :mesh
    :material-array

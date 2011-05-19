@@ -38,7 +38,7 @@
 ;;;  LEFT-CHILD - either another node or nil
 ;;;  RIGHT-CHILD - either another node or ni
 ;;;
-
+#+disabled
 (defclass node ()
   ((xform
     :accessor node-xform
@@ -50,7 +50,7 @@
     :accessor node-children
     :initarg :children
     :initform nil)))
-
+#+disabled
 (defun scene-dfs (node fn &key (order :pre))
   (when node
     (case order
@@ -60,7 +60,7 @@
       (:post 
        (iter (for c in (node-children node)) (scene-dfs c fn :order order))
        (funcall fn node)))))
-
+#+disabled
 (defun scene-bfs (node fn)
   (when node
     (iter (for c in (node-children node))

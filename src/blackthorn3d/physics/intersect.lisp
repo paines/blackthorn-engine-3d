@@ -282,7 +282,7 @@
              (hit '(nil nil)))
         (iter (for i below 3)
               (for v = (svref tri i))
-              (for tp = (sphere-point-intersection sphere velocity v)
+              (for tp = (sphere-point-intersection sphere velocity v t-max)
                    #+disabled
                    (quadratic (dot velocity velocity)
                               (* 2 (dot velocity (vec3- sph-pos v)))

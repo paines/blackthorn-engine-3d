@@ -36,8 +36,6 @@
     :initform (list 0.0 (cos (/ pi 6.0)) 5.0 )
     :documentation "The ideal spherical coordinates of the camera relative to 
                     the target.  tuple is (phi theta dist)")
-   (veloc
-    :initform (make-vec3 0.0 0.0 0.0))
    (spring-k
     :accessor spring-k
     :initarg :spring-k
@@ -73,11 +71,12 @@
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
 
+      
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
-      (let ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0)))
-            (up-quat (quat-rotate-to-vec +y-axis+ t-up)))
-
+      (let* ((look-at (vec4+ t-pos (make-vec3 0.0 3.0 0.0)))
+             (t-right (cross t-dir t-up)))
+        
         ;; set phi
         ;; TODO:- make this suck less
         ;; to make it suck less, use a quaternion?
@@ -92,38 +91,31 @@
                    (+ (atan (- (x pos) (x look-at))
                             (- (z pos) (z look-at))))))
         ;; set theta
-        #+disabled
-        (let* ((theta (* +theta-scale+ (y input-vec)))
-               (phi  (* +phi-scale+ (x input-vec)))
-               (disp-vec (vec-scale4 (norm4 (vec4- pos t-pos))
-                                     (elt ideal-coord 2)))
-               (cam-quat (quat* (axis-rad->quat t-up phi)
-                                (axis-rad->quat (norm4 (cross t-dir t-up)) 
-                                                (- theta)))))
-          (setf (pos c) (vec4+ t-pos (quat-rotate-vec cam-quat disp-vec))
-                (up c)  (quat-rotate-vec cam-quat up)
-                (dir c) (quat-rotate-vec cam-quat dir)))
-        
-        ;#+disabled
+        ;;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
                    (+ (elt ideal-coord 1) (* +theta-scale+ (y input-vec)))))
         
         ;; calculate the camera's movement
        ; #+disabled
-        (let* ((ideal-pos (vec4+ look-at (spherical->cartesian ideal-coord)))
+        (let* ((t-dvec (quat-rotate-vec 
+                        up-quat
+                        (spherical->cartesian ideal-coord)))
+               (ideal-pos (vec4+ look-at t-dvec))
                (displace-vec (vec4- pos ideal-pos))
                (spring-accel (vec4-
                               (vec-scale4 displace-vec (- spring-k))
                               (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
           (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
-      ;    (setf (up c) (quat-rotate-vec up-quat (up c)))
+
           (setf (pos c) ideal-pos
                 #+disabled(quat-rotate-vec up-quat ideal-pos) 
                 #+disabled(vec4+ pos (vec-scale4 veloc time)))
-          (setf (dir c)(norm4 (vec4- look-at pos))
+
+          (setf (dir c) (norm4 (vec4- look-at pos))
                 #+disabled
-                (quat-rotate-vec up-quat )))))))
+                (quat-rotate-vec up-quat ))
+        -)))))
 
 ;; for now, we'll update the camera each time this method is called.
 ;; the ideal situation would be for the camera to only re-calculate 

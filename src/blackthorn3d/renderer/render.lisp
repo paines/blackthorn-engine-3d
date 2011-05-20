@@ -97,7 +97,7 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-#+disabled
+  #+disabled
   (setf *test-ps* (make-instance 'particle-system
                                  :emitter (make-instance 'point-emitter
                                                          :pos +origin+

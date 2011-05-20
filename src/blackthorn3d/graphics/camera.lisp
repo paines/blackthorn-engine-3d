@@ -79,7 +79,7 @@
       ;#+disabled
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
-      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 3.0)))
+      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 0.4)))
              (t-right (cross t-dir t-up))
              (up-quat (quat-rotate-to-vec +y-axis+ t-up))
 

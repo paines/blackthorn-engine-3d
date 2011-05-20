@@ -29,6 +29,15 @@
 ;;; All things textures
 ;;;
 
+;; not sure these belong here... default colors
+(defvar +white+ #(1.0 1.0 1.0))
+(defvar +black+ #(0.0 0.0 0.0))
+(defvar +red+ #(1.0 0.0 0.0))
+(defvar +green+ #(0.0 1.0 0.0))
+(defvar +blue+ #(0.0 0.0 1.0))
+(defvar +orange+ #(1.0 0.7 0.0))
+(defvar +aqua+ #(0.0 0.7 1.0))
+
 
 (defun gen-texture ()
   (car (gl:gen-textures 1)))

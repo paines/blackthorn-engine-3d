@@ -46,9 +46,8 @@
          (qc (- (dot e-c e-c) (sq (rad sphere))))
          (t0 (quadratic qa qb qc t-max)))
     (when t0
-      (list t0 (vec3->point (vec3+ (ray-e ray) (vec-scale3 (ray-d ray) t0)))))))
-
-
+      (list t0 (vec3->point (vec3+ (ray-e ray) 
+                                   (vec-scale3 (ray-d ray) t0)))))))
 
 (defun ray-triangle-intersection (ray tri)
   "Detect whether a ray (e-vec . d-vec) intersects a triangle

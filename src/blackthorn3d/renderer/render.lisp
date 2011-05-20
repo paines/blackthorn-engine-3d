@@ -28,6 +28,7 @@
 
 (defvar *main-viewport* nil)
 (defvar *test-skele* nil)
+(defvar *test-ps* nil)
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
@@ -96,7 +97,18 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
- 
+#+disabled
+  (setf *test-ps* (make-instance 'particle-system
+                                 :emitter (make-instance 'point-emitter
+                                                         :pos +origin+
+                                                         :dir +y-axis+
+                                                         :up +y-axis+
+                                                         :angle (/ pi 2)
+                                                         :speed 1.0
+                                                         :speed-fuzzy 0.5)
+                                 :spawn-rate 5
+                                 :max-particles 1000))
+
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 

@@ -60,6 +60,10 @@
     :initarg :dir)
    (up
     :initarg :up)
+   (speed
+    :initarg :speed)
+   (speed-fuzzy
+    :initarg :speed-fuzzy)
    (angle
     :initarg :angle
     :documentation "The angle phi around the direction that particles 
@@ -101,9 +105,23 @@
     :accessor num-alive
     :initform 0)))
 
+#+disabled
+(defun create-particle-system (emitter max-particles &key type))
+
 (defclass particle-manager ()
   ((systems-list
     :accessor system-list)))
+
+;;;
+;;; Emitters
+;;;
+
+(defmethod gen-initial-pos ((this point-emitter) time)
+  (slot-value this 'pos))
+
+(defmethod gen-initial-vel ((this point-emitter) time)
+  (with-slots (dir speed speed-fuzzy) this
+    (vec-scale3 dir (+ speed (- 1.0 (random (* (float speed-fuzzy))))))))
 
 ;;;
 ;;; Manager Methods 'n Functions

@@ -213,17 +213,19 @@
 
     (transform-hit (transform node)
      (min-collide
+      #+disabled
       (append
        (aif (swept-sphere-collide sphere velocity
                                   (node-bounding-volume node) +zero-vec+)
-        ;; if we intersect the bounding-shape, check the mesh
-        (progn 
-          (list (collide-test xformed-bv xformed-vel (mesh node)))))
+            ;; if we intersect the bounding-shape, check the mesh
+            (progn 
+              (list (collide-test xformed-bv xformed-vel (mesh node))))))
 
        ;; Recursively collide with the children
-       (iter (for child in (child-nodes node))
-             (collect 
-              (collide-with-world-node xformed-bv xformed-vel child))))))))
+       
+      (iter (for child in (child-nodes node))
+            (collect 
+             (collide-with-world-node xformed-bv xformed-vel child)))))))
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity

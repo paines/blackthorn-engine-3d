@@ -37,7 +37,11 @@
    (ambient
     :accessor light-amb
     :initarg :ambient
-    :initform #(0.0 0.0 0.0 1.0))))
+    :initform #(0.0 0.0 0.0 1.0))
+   (attenuation
+    :accessor light-att
+    :initarg :attenuation
+    :initform 0)))
 
 (defun make-light (&key position diffuse ambient)
   (make-instance 'light
@@ -50,3 +54,10 @@
   (gl:light gl-light :diffuse (light-diff this))
   (gl:light gl-light :ambient (light-amb this))
   (gl:light gl-light :linear-attenuation 0.5))
+
+(defvar *shadow-shader* nil)
+(defvar *shadow-map-width* 2048)
+(defvar *shadow-map-height* 2048)
+
+(defun shadow-pass ()
+  )

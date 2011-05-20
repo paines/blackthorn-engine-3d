@@ -269,6 +269,20 @@
               (setf (row-major-aref new-mat i) (row-major-aref mat i)))
         new-mat))))
 
+(defun make-orthographic (left right top bottom near far)
+  (make-matrix4x4
+   (list 
+    (list (/ 2.0 (- right left)) 0.0 0.0 0.0)
+    (list 0.0 (/ 2.0 (- top bottom)) 0.0 0.0)
+    (list 0.0 0.0 (/ -2.0 (- far near)) 0.0)
+    (list (- (/ (+ right left) 
+                (- right left)))
+          (- (/ (+ top bottom)
+                (- top bottom)))
+          (- (/ (+ far near)
+                (- far near)))
+          1.0))))
+
 (defun make-projection (left right top bottom near far)
   (if (and (= top (- bottom))
            (= left (- right)))
@@ -284,13 +298,13 @@
             (t-b (- top bottom))
             (f-n (- far near)))
         (make-matrix4x4
-         `(( ,(/ n2 r-l) 0.0 0.0 0.0)
-           ( 0.0 ,(/ n2 t-b) 0.0 0.0)
-           ( ,(/ (+ right left) r-l) 
-              ,(/ (+ top bottom) t-b) 
-              ,(/ (- (+ far near)) f-n) 
-              -1.0)
-           ( 0.0 0.0 ,(/ (- (* 2 far near)) f-n) 0.0))))))
+         `(( ,(/ n2 r-l) 0.0 0.0 0.0)   ; column one
+           ( 0.0 ,(/ n2 t-b) 0.0 0.0)   ; column two
+           ( ,(/ (+ right left) r-l)    ; column three
+              ,(/ (+ top bottom) t-b)   ; .
+              ,(/ (- (+ far near)) f-n) ; .
+              -1.0)                     ; .
+           ( 0.0 0.0 ,(/ (- (* 2 far near)) f-n) 0.0)))))) ; column four
 
 (defun look-at-matrix (from to up)
   "Returns a matrix that transforms points and vectors to a coordinate

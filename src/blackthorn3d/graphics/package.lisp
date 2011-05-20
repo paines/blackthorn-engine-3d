@@ -27,7 +27,8 @@
 
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani)
+  (:use :iter :cl :blt3d-utils :alexandria
+        :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani)
   (:export
 
    ;; init.lisp
@@ -45,6 +46,9 @@
    :draw-object
 
    ;; frustum.lisp
+   :viewport
+   :create-viewport
+   :set-viewport
    :frustum
    :make-frstm
    :load-frstm

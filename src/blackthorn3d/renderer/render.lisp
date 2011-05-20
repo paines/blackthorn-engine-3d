@@ -26,7 +26,7 @@
 (in-package :blackthorn3d-renderer)
 
 
-
+(defvar *main-viewport* nil)
 (defvar *test-skele* nil)
 
 (defparameter vao-cube nil)
@@ -42,16 +42,12 @@
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
 
+  (setf *main-viewport* (create-viewport '(800 600) 0.1 1000))
   (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
 
 
 (defun set-camera (cam)
   (setf *main-cam* cam))
-
-
-(defun set-viewport (viewport)
-  "expects viewport = (min-x min-y max-x max-y)"
-  (apply #'gl:viewport viewport))
 
 (defvar *collide-mat* nil)
 
@@ -67,7 +63,7 @@
   (init-gfx)
 
 
-  (gl:viewport 0 0 800 600)
+ ; (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)
   (gl:enable :blend)
@@ -92,7 +88,8 @@
                                            (make-point3 0.0 0.0 1.0)
                                            (make-point3 0.0 1.0 0.0))))
 
-  (load-frstm *frustum*)
+  (set-viewport *main-viewport*)
+ ; (load-frstm *frustum*)
   (gl:load-identity)
 
   (gl:enable :lighting)

@@ -77,6 +77,7 @@
    :make-ortho-basis
    :make-inv-ortho-basis
    :make-projection
+   :make-orthographic
    :set-mat
    :col
    :row

@@ -25,6 +25,58 @@
 
 (in-package :blackthorn3d-graphics)
 
+;; what is a viewport? 
+;;  - the size of the render target (/ screen)
+;;  - the projection matrix / frustum (not sure which...)
+;;  - 
+(defclass viewport ()
+  ((size
+    :accessor view-size
+    :initarg :size
+    :documentation "The size of the viewport. the viewport
+                    will be sent to gl as (0 0 (car size) (cdr size)")
+   (aspect-ratio
+    :accessor view-ratio
+    :initarg :aspect-ratio)
+   (fov
+    :accessor view-fov
+    :initarg :fov)
+   (framebuffer
+    :initarg :fbo
+    :initform nil
+    :documentation "if not nil, is a fbo that the viewport
+                    will render to. More options to come")
+   (vfrustum
+    :accessor view-frustum
+    :initarg :frustum)))
+
+(defun create-viewport (size near far
+                        &key
+                        aspect-ratio
+                        framebuffer
+                        (fov (/ pi 2))
+                        (type :projection))
+  (let ((aspect-ratio
+         (aif aspect-ratio it (/ (car size) (cadr size)))))
+    (make-instance 'viewport
+                   :size size
+                   :fov fov
+                   :aspect-ratio aspect-ratio
+                   :fbo framebuffer
+                   :frustum
+                   (make-frstm near far aspect-ratio fov :type type))))
+
+(defmethod set-viewport ((this viewport))
+  (format t "starting set-viewport~%")
+  (with-slots (size vfrustum framebuffer) this
+    (format t "setting viewport of size ~a~%" size)
+    (gl:viewport 0 0 (car size) (cadr size))
+    (format t "load-frustum~%")
+    (load-frstm vfrustum)
+    (when framebuffer
+      ;; do framebuffer stuff
+      )))
+
 ;; notes- uses similar description for a frustum as opengl
 ;;        there is nothing forcing the left and right plane
 ;;        to be mirrored
@@ -44,7 +96,7 @@
    (proj-matrix
     :initarg :proj-matrix)))
 
-(defun make-frstm (near far aspect fov)
+(defun make-frstm (near far aspect fov &key (type :projection))
   (let* ((width (/ (calc-width near fov) 2.0))
          (height (* width (/ aspect))))
     (make-instance 'frustum
@@ -52,9 +104,16 @@
                    :far far
                    :top-left (vector height (- width))
                    :bottom-right (vector (- height) width)
-                   :proj-matrix (make-projection (- width) width
-                                                 height (- height)
-                                                 near far))))
+                   :proj-matrix 
+                   (case type
+                     (:projection 
+                      (make-projection (- width) width
+                                       height (- height)
+                                       near far))
+                     (:orthographic 
+                      (make-orthographic (- width) width
+                                         height (- height)
+                                         near far))))))
 
 (defun calc-width (near fov)
   (* near 
@@ -65,13 +124,11 @@
                (far far-dist)
                (tl top-left)
                (br bottom-right)) this
+    (gl:push-attrib :transform-bit)
     (gl:matrix-mode :projection)
-    (gl:load-identity)
     (gl:load-matrix (slot-value this 'proj-matrix))
-    #+disabled(gl:frustum (svref tl 1) (svref br 1)
-                (svref br 0) (svref tl 0)
-                near far)
-    (gl:matrix-mode :modelview)))
+    (gl:pop-attrib)
+    #+disabled(gl:matrix-mode :modelview)))
 
 (defmethod frustum-projection-matrix ((this frustum))
   (with-slots ((near near-dist)
@@ -88,7 +145,8 @@
 
 (defun get-plane (pmat plane)
   (labels ((plane-maker (row sign)
-             (make-plane (vec3+ (row pmat 3) (vec-scale3 (row pmat row) sign))
+             (make-plane (vec3+ (row pmat 3) 
+                                (vec-scale3 (row pmat row) sign))
                          (+ (aref pmat 3 3) (* sign (aref pmat 3 row))))))
     (case plane
       (:top    (plane-maker 1 -1))

@@ -110,9 +110,10 @@
         ;;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
-                  ; (min (/ pi 2)) 
-                   (+ (elt ideal-coord 1) 
-                      (* +theta-scale+ (y input-vec)))))
+                   (clamp (+ (elt ideal-coord 1) 
+                           (* +theta-scale+ (y input-vec)))
+                          (- (/ (* 89 pi) 180))
+                          (/ (* 89 pi) 180) )))
 
         ;; check for inversion
         #+disabled
@@ -133,6 +134,7 @@
 
           (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))
           
+          #+disabled
           (setf (up c) 
                 (matrix-multiply-v
                  (make-y-rot (elt ideal-coord 0))

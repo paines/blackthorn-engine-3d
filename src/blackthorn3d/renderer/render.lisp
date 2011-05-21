@@ -97,15 +97,16 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-  (setf *test-ps* (create-particle-system (make-instance 'point-emitter
-                                                         :pos +origin+
-                                                         :dir (vec-neg4 +x-axis+)
-                                                         :up +y-axis+
-                                                         :angle (/ pi 2)
-                                                         :speed 0.2
-                                                         :speed-fuzzy 0.5)
-                                          5
-                                          1000))
+  (setf *test-ps* (create-particle-system 
+                   (make-instance 'point-emitter
+                                  :pos +origin+
+                                  :dir +y-axis+
+                                  :up +y-axis+
+                                  :angle (/ pi 2)
+                                  :speed 0.2
+                                  :speed-fuzzy 0.5)
+                   5
+                   1000))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
@@ -183,7 +184,9 @@
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
 
+  (gl:use-program 0)
   ;; DO PARTICLES YEAH!
+  #+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

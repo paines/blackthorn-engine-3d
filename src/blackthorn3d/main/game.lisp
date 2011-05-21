@@ -30,7 +30,8 @@
 (defun load-level ()
   (register-model-loader :dae 
                          #'(lambda (path) 
-                             (blt3d-imp:load-dae path)))
+                             (blt3d-imp:dae-geometry
+                              (blt3d-imp:load-dae path))))
                              
   ;; load our test model
   (let ((level

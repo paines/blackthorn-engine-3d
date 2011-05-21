@@ -112,11 +112,10 @@
                        :pos (make-point3 0.0 0.0 0.0)
                        :dir (make-vec3 1.0 0.0 0.0) 
                        :up  (make-vec3 0.0 1.0 0.0)
-                       :shape (make-instance
-                               'blt3d-gfx:model-shape
-                               :mesh
-                               (car (blt3d-imp:load-dae
-                                     #p"res/models/orange-box2.dae"))))))
+                       :shape 
+                       (blt3d-imp:dae-geometry
+                        (blt3d-imp:load-dae 
+                         #p"res/models/orange-box2.dae")))))
 
       ;;(camera-orbit! cam 0.0 -0.2 5.0)
       (sdl:with-events ()

@@ -34,6 +34,7 @@
 (defvar *material-table* nil)
 (defvar *animation-table* nil)
 (defvar *controller-table* nil)
+(defvar *portal-list* nil)
 
 ;;;
 ;;; Collada load functions
@@ -88,11 +89,36 @@
                         (gethash (second it) *material-table*)
                         nil) result-type 'vector))))
 
+(defun geometry-type (id)
+  (if (char= #\$ (char id 0))
+      :portal
+      :mesh))
+
+(defun portal-name (id)
+  (subseq id 6))
+
+(defun compile-portal (id)
+  (let* ((vertex-source (input-by-semantic 
+                         :vertex
+                         (third (gethash id *geometry-table*))))
+         (vertices
+          (iter (for i below (/ (length (src-array vertex-source))
+                                (src-stride vertex-source)))
+                (collect (src-accessor vertex-source i)
+                         result-type 'vector))))
+    (push (list (portal-name mesh-id) (make-bounding-box vertices))
+          *portal-list*)))
+
 (defun compile-geometry (data)
   (destructuring-bind (mesh-id materials) data
-    (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
-           (mat-array (build-material-array (elements mesh) materials)))
-      (list mesh mat-array))))
+    ;; Check on mesh-id.  portals need to be separated out
+    (case (geometry-type mesh-id)
+      (:mesh
+       (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
+              (mat-array (build-material-array (elements mesh) materials)))
+         (list mesh mat-array)))
+      (:portal
+       (compile-portal mesh-id)))))
 
 ;; For now, lets assume the skeleton data is well formed
 ;; that is, all the nodes are in joint-arr
@@ -283,9 +309,13 @@
            (process-animations
             (find-tag-in-children +animation-library+ dae-file))))
       ;; Combine all the tables into a list of model-shape objects
-      (compile-dae-data :geometry *geometry-table*
-                        :scenes   *scene-table*
-                        :materials *material-table*
-                        ;; TODO: implement animations
-                        :animations *animation-table*
-                        ))))
+      (make-instance 'loaded-dae
+                     :geometry
+                     (compile-dae-data :geometry *geometry-table*
+                                       :scenes   *scene-table*
+                                       :materials *material-table*
+                                       ;; TODO: implement animations
+                                       :animations *animation-table*
+                                       )
+                     :portals
+                     *portal-list*))))

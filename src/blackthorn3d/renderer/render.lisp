@@ -77,9 +77,8 @@
   ;#+disabled
   (let ((scientist-model 
          ;#+disabled
-         (blt3d-imp:load-dae #P "res/models/cylinder-test-2.dae")
-          #+disabled
-          (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae")))
+         (blt3d-imp:dae-geometry 
+          (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae"))))
     
     (setf *test-skele* (load-obj->models scientist-model))
     (apply-transform *test-skele* (make-scale #(0.05 0.05 0.05)))
@@ -103,7 +102,7 @@
                                   :dir +y-axis+
                                   :up +y-axis+
                                   :angle (/ pi 2)
-                                  :speed 0.5
+                                  :speed 0.2
                                   :speed-fuzzy 0.5)
                    50
                    1000))

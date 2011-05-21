@@ -42,7 +42,7 @@
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
 
-  (setf *main-viewport* (create-viewport '(800 600) 0.1 1000))
+  (setf *main-viewport* (create-viewport '(960 720) 0.1 1000))
   (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
 
 
@@ -63,7 +63,7 @@
   (init-gfx)
 
 
- ; (gl:viewport 0 0 800 600)
+ ; (gl:viewport 0 0 960 720)
 
   (gl:enable :texture-2d)
   (gl:enable :blend)

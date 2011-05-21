@@ -126,7 +126,7 @@
 
   (with-finalize-client ()
     (sdl:with-init ()
-      (sdl:window 800 600 :bpp 32 :flags sdl:sdl-opengl
+      (sdl:window 960 720 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
       (blt3d-snd:init)
       (blt3d-rend:prepare-scene)

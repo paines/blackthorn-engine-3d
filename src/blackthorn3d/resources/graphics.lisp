@@ -31,14 +31,14 @@
 (defun register-model-loader (type f) 
   (setf (gethash type *model-loader-table*) f))
 
-(defmacro load-model (key type path)
-  `(setf (gethash ,key *graphical-thingies*)
-    (funcall (gethash ,type *model-loader-table*) ,path)))  
+(defun load-model (key type path)
+  (setf (gethash key *graphical-thingies*)
+        (funcall (gethash type *model-loader-table*) path)))
 
 (defun load-models-n-stuff ()
   (setf (gethash :none *graphical-thingies*) nil)
   (load-model :wedge    :dae #p"res/models/robot-01.dae")
- ; (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
+  ;; (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
   (load-model :cylinder :dae #p"res/models/test-anim.dae"))
 
 (defun get-model (key)

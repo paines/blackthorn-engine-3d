@@ -103,6 +103,12 @@
 (defmethod unserialize ((type (eql :single-float)) &key (buffer *buffer*))
   (unserialize :float32 :buffer buffer))
 
+(defmethod serialize ((type (eql :boolean)) value &key (buffer *buffer*))
+  (serialize :uint8 (if value 1 0) :buffer buffer))
+
+(defmethod unserialize ((type (eql :boolean)) &key (buffer *buffer*))
+  (not (zerop (unserialize :uint8 :buffer buffer))))
+
 (defmethod serialize ((type (eql :symbol)) value &key (buffer *buffer*))
   (serialize :string (symbol-name value) :buffer buffer)
   (serialize :string (package-name (symbol-package value)) :buffer buffer))

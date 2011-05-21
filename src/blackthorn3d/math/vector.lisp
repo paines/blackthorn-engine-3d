@@ -272,6 +272,16 @@
                   (* r (cos phi) sin-theta)
                   (if vec-p 0.0 1.0))))
 
+(defun get-perpendicular (vec)
+  (if (or (not (zerop (x vec)))
+          (not (zerop (y vec))))
+      (norm4 (make-vec3 (y vec) (- (x vec)) 0.0))
+      (norm4 (make-vec3 (z vec) 0.0 (- (x vec))))))
+
+(defun zero-vec-p (vec)
+  (and (zerop (x vec))
+       (zerop (y vec))
+       (zerop (z vec))))
 
 (defun tri-centroid (v0 v1 v2)
   (make-vector3 

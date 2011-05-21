@@ -23,20 +23,21 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blackthorn3d-sound
-  (:nicknames :blt3d-snd)
-  (:use :cl :blt3d-res :blt3d-net)
-  (:export
+(in-package :blackthorn3d-sound)
 
-   ;; sound.lisp
-   :init
-   :exit
-   :play-sound
-   :stop-sound
+(defmessage :event-sound (:keyword :boolean))
 
-   ;; sound-event.lisp
-   :make-sound
-   :find-sound
-   :handler-sound
+(defvar *sounds* (make-hash-table))
 
-   ))
+(defun make-sound (key type src)
+  (multiple-value-bind (value exists) (gethash key *sounds*)
+    (if exists
+        value
+        (setf (gethash key *sounds*) (load-sound type src)))))
+
+(defun find-sound (key)
+  (gethash key *sounds*))
+
+(defun handler-sound (src key loop)
+  (let ((sound (find-sound key)))
+    (play-sound sound :loop loop)))

@@ -93,7 +93,7 @@
  ; (load-frstm *frustum*)
   (gl:load-identity)
 
-  (gl:enable :lighting)
+;  (gl:enable :lighting)
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
@@ -103,9 +103,9 @@
                                   :dir +y-axis+
                                   :up +y-axis+
                                   :angle (/ pi 2)
-                                  :speed 0.2
+                                  :speed 0.5
                                   :speed-fuzzy 0.5)
-                   5
+                   50
                    1000))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
@@ -186,7 +186,7 @@
 
   (gl:use-program 0)
   ;; DO PARTICLES YEAH!
-  #+disabled
+  ;#+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

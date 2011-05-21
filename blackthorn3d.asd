@@ -87,7 +87,8 @@
                                                (:file "static-collision")
                                                (:file "collision")
                                                (:file "motion")
-                                               (:file "skeleton"))
+                                               (:file "skeleton")
+					       (:file "octree"))
                                               :serial t)
                                      (:module import
                                               :components

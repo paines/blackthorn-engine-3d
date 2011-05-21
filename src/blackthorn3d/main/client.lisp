@@ -156,12 +156,14 @@
          (let ((mx (float (input-move-x *input*)))
                (my (float (input-move-y *input*)))
                (vx (float (input-view-x *input*)))
-               (vy (float (input-view-y *input*))))
+               (vy (float (input-view-y *input*)))
+               (jmp (float (input-jump *input*))))
            (message-send :server (make-event :input 
                                              :move-x (* 0.1 mx) 
                                              :move-y (* 0.1 my)
                                              :view-x (* 0.1 vx)
-                                             :view-y (* 0.1 vy))))
+                                             :view-y (* 0.1 vy)
+                                             :jmp jmp)))
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)

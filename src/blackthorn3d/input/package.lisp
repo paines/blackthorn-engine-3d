@@ -36,6 +36,7 @@
    :input-move-y
    :input-view-x
    :input-view-y
+   :input-jump
    :set-controller
    :input-kind
    
@@ -47,6 +48,7 @@
    :s-input-move-y
    :s-input-view-x
    :s-input-view-y
+   :s-input-jump
    
    ;; xbox360.lisp
    :xbox360-vibrate

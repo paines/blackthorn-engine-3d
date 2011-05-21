@@ -33,6 +33,9 @@
 
 (defmethod update ((p player))
     (with-slots (client) p
+      (when (> (s-input-jump client) 0)
+        (format t "JUMP!~%")
+        (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
       #+disabled
       (setf (pos p)
         (vec4+ (pos p)
@@ -52,7 +55,7 @@
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (blt3d-gfx:move-player c input-vec))
            (target (blt3d-gfx::target c)))
-      (setf (velocity target) move-vec)
+      (setf (velocity target) (vec4+ (velocity target) move-vec))
       (blt3d-phy::standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
         (setf (dir target) (norm4 move-vec))))
@@ -93,8 +96,9 @@
   (let ((move-x-amt (input-amount (find :move-x inputs :key #'input-type)))
         (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
         (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
-        (view-y-amt (input-amount (find :view-y inputs :key #'input-type))))
-    (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt)))
+        (view-y-amt (input-amount (find :view-y inputs :key #'input-type)))
+        (jmp-amt (input-amount (find :jmp inputs :key #'input-type))))
+    (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)))
 
 (defun handle-message-server (src message)
   (ecase (message-type message)

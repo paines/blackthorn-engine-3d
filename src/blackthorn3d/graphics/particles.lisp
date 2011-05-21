@@ -41,7 +41,7 @@
                         position velocity
                         &key 
                         (energy 1.0)
-                        (fade-rate 0.1)
+                        (fade-rate 0.25)
                         (color +white+)
                         (size 0.1))
   (setf (col particles index) 
@@ -141,7 +141,8 @@
           (p-pos particle) 
           (vec3+ (p-pos particle)
                  (vec-scale3 (p-vel particle) dt))
-          (p-vel particle) (vec3+ (p-vel particle) *external-force*))))
+          (p-vel particle) (vec3+ (p-vel particle) 
+                                  (vec-scale3 *external-force* dt)))))
 
 
 (defclass point-emitter ()
@@ -242,7 +243,7 @@
 (let ((spawn-num 1))
   (defmethod update-ps ((this particle-system) dt)
     ;; Loop over each particle and update it's position
-    (let ((*external-force* (vec-scale4 +y-axis+ -0.01)))
+    (let ((*external-force* (vec-scale4 +y-axis+ -1.0)))
       (with-slots (particles spawn-rate max-particles num-alive emitter) this   
         (incf spawn-num (* dt spawn-rate))
         (iter (with emitted = 0)

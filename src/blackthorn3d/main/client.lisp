@@ -91,8 +91,11 @@
   (load-dlls)
   (blt3d-rend:init)
 
-  (register-model-loader :dae #'(lambda (path) 
-    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae path))))
+  (register-model-loader 
+   :dae 
+   #'(lambda (path) 
+       (blt3d-gfx:load-obj->models 
+        (blt3d-imp:dae-geometry (blt3d-imp:load-dae path)))))
     
   (load-models-n-stuff)
 
@@ -104,7 +107,8 @@
                                                    (make-point3 0.0 1.0 0.0)))
   
   (setf *level* (blt3d-gfx:load-obj->models 
-                 (blt3d-imp:load-dae #p"res/models/MovingPlatRoom.dae")))
+                 (blt3d-imp:dae-geometry
+                  (blt3d-imp:load-dae #p"res/models/MovingPlatRoom.dae"))))
   #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
   #+disabled

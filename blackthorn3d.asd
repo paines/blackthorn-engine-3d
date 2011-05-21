@@ -95,6 +95,7 @@
                                               ((:file "package")
                                                (:file "xmls-helpers")
                                                (:file "dae-general")
+                                               (:file "loaded-dae")
                                                (:file "dae-geometry")
                                                (:file "dae-material")
                                                (:file "dae-scene")

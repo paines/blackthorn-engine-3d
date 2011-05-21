@@ -91,6 +91,10 @@
    :render-ps
    :create-particle-system
    :point-emitter  
+   
+   ;; billboards.lisp
+   :update-billboarder
+   :draw-billboard-quad
   
    ))
         

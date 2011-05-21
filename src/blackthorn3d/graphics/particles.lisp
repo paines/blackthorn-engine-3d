@@ -27,7 +27,7 @@
 
 ;; This var is for applying external forces like gravity/wind
 (defvar *external-force* +zero-vec+)
-
+(defvar *particle-tex* nil)
 ;;;
 ;;; particles
 ;;;
@@ -41,8 +41,8 @@
                         position velocity
                         &key 
                         (energy 1.0)
-                        (fade-rate 0.25)
-                        (color +white+)
+                        (fade-rate 0.5)
+                        (color +orange+)
                         (size 0.1))
   (setf (col particles index) 
         (vector energy                  ; 0
@@ -262,7 +262,6 @@
                     (incf alive-cnt))
                   ;; If dead check if we should revive it
                   (when (< emitted max-emit)
-                    (format t "emitting particle~%")
                     (create-particle particles index
                                      (gen-initial-pos emitter dt)
                                      (gen-initial-vel emitter dt))
@@ -270,42 +269,41 @@
 
               ;; Finally, update the number of alive particles
               (finally
-               (format t "max emit: ~a~%" max-emit)
                (decf spawn-num emitted)
                (setf num-alive (+ alive-cnt emitted))))))))
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))
   (with-slots (particles max-particles num-alive) this
-    (gl:with-primitives :points
-      (format t "Rendering ~a particles ~%" num-alive)
-      (iter (for index below max-particles)
-            (for particle = (cons particles index))
-            (count (is-alive particle) into alive-cnt)
-            (while (< alive-cnt num-alive))
+    ;(gl:with-primitives :points)
+    (iter (for index below max-particles)
+          (for particle = (cons particles index))
+          (count (is-alive particle) into alive-cnt)
+          (while (< alive-cnt num-alive))
 
-            ;; do particle rendering here
-            (when (is-alive particle)
-              (let ((position (p-pos particle))
-                    (color (p-color particle)))
-                (gl:color (r color) (g color) (b color))
-                (gl:vertex (x position) (y position) (z position))))))))
+          ;; do particle rendering here
+          (when (is-alive particle)
+            (let ((position (p-pos particle))
+                  (color (p-color particle)))
+              (gl:color (r color) (g color) (b color) (* (p-energy particle)
+                                                         (a color)))
+              ;#+disabled
+              (draw-billboard-quad position 0.1 0.1 *particle-tex*
+                                   :screen)
+               #+disabled
+              (gl:vertex (x position) (y position) (z position))))))
 
 
 
-(defclass particle-manager ()
-  ((systems-list
-    :accessor system-list)))
-;;;
-;;; Manager Methods 'n Functions
-;;;
+  (defvar *system-list* nil))
 
-(defmethod update ((this particle-manager) dt))
+(defun update-particle-systems (dt)
+  (iter (for system in *system-list*)
+        (update-ps system dt)))
+(defun render-particle-systems (dt)
+  (iter (for system in *system-list*)
+        (render-ps system)))
 
-(defmethod render ((this particle-manager)))
+(defun particles-init ())
 
-(defmethod init ((this particle-manager)))
-
-(defmethod add-system ((this particle-manager) type init-parms))
-
-(defmethod remove-system ((this particle-manager) (obj particle-system)))
+(defun add-system ())

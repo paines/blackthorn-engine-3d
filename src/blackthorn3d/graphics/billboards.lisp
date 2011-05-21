@@ -26,6 +26,60 @@
 (in-package :blackthorn3d-graphics)
 
 ;;;
-;;; billboards,woot
+;;; billboards, woot
 ;;;
 
+;; The current eye position for world and axis aligned
+(defvar *bill-screen-normal* (vec-neg4 +z-axis+))
+(defvar *bill-eye-pos* +origin+)
+(defvar *bill-eye-up* +y-axis+)
+(defvar *bill-world-up* +y-axis+)
+
+(defun update-billboarder (eye-pos eye-dir eye-up world-up)
+  (setf *bill-eye-pos* eye-pos
+        *bill-eye-up* (cross (norm4 (cross eye-up eye-dir)) eye-dir)
+        *bill-screen-normal* eye-dir
+        *bill-world-up* world-up))
+
+(defun draw-billboard-quad (pos size-x size-y texture alignment
+                            &rest rest)
+  (use-texture texture)
+  (let (surface-normal
+        surface-up
+        surface-right
+        (s1 (* size-x 0.5))
+        (s2 (* size-y 0.5)))
+    (case alignment
+      (:screen
+       (setf surface-normal (vec-neg4 *bill-screen-normal*)
+             surface-up     *bill-eye-up*
+             surface-right  (cross surface-normal surface-up)))
+      (:world
+       (setf surface-normal (vec-neg4 *bill-screen-normal*)
+             surface-right  (norm4 (cross surface-normal *bill-world-up*))
+             surface-up     (cross surface-right surface-normal)))
+      (:axis
+       (destructuring-bind (axis &rest dc) rest
+         (setf surface-up axis
+               surface-right (norm4 (cross *bill-screen-normal* surface-up))
+               surface-normal (cross surface-up surface-normal)))))
+    (gl:with-pushed-matrix
+      (gl:translate (x pos) (y pos) (z pos))
+      (gl:mult-matrix (make-inv-ortho-basis surface-right 
+                                            surface-up 
+                                            surface-normal))
+    
+      (gl:with-primitives :quads
+
+        (gl:tex-coord 0.0 0.0)
+        (gl:vertex (- s1) (- s2) 0.0)
+        
+        (gl:tex-coord 1.0 0.0)
+        (gl:vertex s1 (- s2) 0.0)
+
+        
+        (gl:tex-coord 1.0 1.0)
+        (gl:vertex s1 s2 0.0)
+
+        (gl:tex-coord 0.0 1.0)
+        (gl:vertex (- s1) s2 0.0)))))

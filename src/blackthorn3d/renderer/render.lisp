@@ -97,22 +97,23 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
-  #+disabled
-  (setf *test-ps* (make-instance 'particle-system
-                                 :emitter (make-instance 'point-emitter
+  (setf *test-ps* (create-particle-system (make-instance 'point-emitter
                                                          :pos +origin+
-                                                         :dir +y-axis+
+                                                         :dir (vec-neg4 +x-axis+)
                                                          :up +y-axis+
                                                          :angle (/ pi 2)
-                                                         :speed 1.0
+                                                         :speed 0.2
                                                          :speed-fuzzy 0.5)
-                                 :spawn-rate 5
-                                 :max-particles 1000))
+                                          5
+                                          1000))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 
 (defun update-graphics (entities time)
+  (when *test-ps*
+    (update-ps *test-ps* time))
+
   (when animated
     (update-model animated time))
   #+disabled
@@ -141,6 +142,7 @@
   ;(enable-shader shader)
 
   ;; draw axes
+  #+disabled
   (gl:with-primitive :lines
     (gl:color 0.0 1.0 1.0)
     (gl:vertex 0.0 0.0 0.0)
@@ -153,6 +155,7 @@
   (when animated
     (draw-object animated))
 
+  ;#+disabled
   (when level
     (gl:with-pushed-matrix
         ;; (use-material plane-mat)
@@ -165,6 +168,7 @@
                                             (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
+  ;#+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
         ;(gl:scale 0.03 0.03 0.03)
@@ -178,6 +182,10 @@
             (gl:translate (x pos) (y pos) (z pos))
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
+
+  ;; DO PARTICLES YEAH!
+  (when *test-ps*
+    (render-ps *test-ps*))
 
   (gl:flush)
   (sdl:update-display))

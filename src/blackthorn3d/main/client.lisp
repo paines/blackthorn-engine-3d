@@ -67,7 +67,9 @@
     (:force-disconnect
       (setf *should-quit* t))
     (:event-camera
-     (apply-message-handler #'handle-camera-client src message))))
+     (apply-message-handler #'handle-camera-client src message))
+    (:event-sound
+     (apply-message-handler #'blt3d-snd:handler-sound src message))))
 
 (defun finalize-client ()
   (socket-disconnect-all)
@@ -131,9 +133,7 @@
       (blt3d-snd:init)
       (blt3d-rend:prepare-scene)
 
-      (setf *music* (blt3d-snd:load-sound :music #p"res/sound/music.mp3"))
-      (when *music*
-        (blt3d-snd:play-sound *music* :loop t))
+      (blt3d-snd:make-sound :soundtrack :music #p"res/sound/music.mp3")
 
       (sdl:with-events ()
         (:quit-event () t)

@@ -86,7 +86,11 @@
    :enable-shader
 
    ;; particles.lisp
-   
+   :particle-system
+   :update-ps
+   :render-ps
+   :create-particle-system
+   :point-emitter  
   
    ))
         

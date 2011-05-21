@@ -105,8 +105,16 @@
     :accessor num-alive
     :initform 0)))
 
-#+disabled
-(defun create-particle-system (emitter max-particles &key type))
+
+;;;
+;;; particle systems?
+;;;
+(defun create-particle-system (emitter spawn-rate max-particles)
+  (make-instance 'particle-system
+                 :emitter emitter
+                 :spawn-rate spawn-rate
+                 :max-particles max-particles
+                 :particles (make-array max-particles :fill-pointer 0)))
 
 (defclass particle-manager ()
   ((systems-list
@@ -136,6 +144,7 @@
 (defmethod add-system ((this particle-manager) type init-parms))
 
 (defmethod remove-system ((this particle-manager) (obj particle-system)))
+
 
 
 ;;;
@@ -187,10 +196,12 @@
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))
-  (gl:with-primitives :points
-    (iter (for particle in-vector particles)
-          ;; do particle rendering here
-          (with-slots (state pos color size) particle
-            (when (eql state :alive)
-              (gl:color (r color) (g color) (b color))
-              (gl:vertex (x pos) (y pos) (z pos)))))))
+  (with-slots (particles) this
+    (gl:with-primitives :points
+      (format t "Rendining ~a particles ~%" (length particles))
+      (iter (for particle in-vector particles)
+            ;; do particle rendering here
+            (with-slots (state position color size) particle
+              (when (eql state :alive)
+                (gl:color (r color) (g color) (b color))
+                (gl:vertex (x position) (y position) (z position))))))))

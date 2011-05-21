@@ -136,7 +136,8 @@
                                      (:module sound
                                               :components
                                               ((:file "package")
-                                               (:file "sound"))
+                                               (:file "sound")
+                                               (:file "sound-event"))
                                               :serial t)
                                      (:module main
                                               :components

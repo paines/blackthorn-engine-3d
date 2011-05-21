@@ -87,7 +87,8 @@
                                                (:file "static-collision")
                                                (:file "collision")
                                                (:file "motion")
-                                               (:file "skeleton"))
+                                               (:file "skeleton")
+					       (:file "octree"))
                                               :serial t)
                                      (:module import
                                               :components
@@ -136,7 +137,8 @@
                                      (:module sound
                                               :components
                                               ((:file "package")
-                                               (:file "sound"))
+                                               (:file "sound")
+                                               (:file "sound-event"))
                                               :serial t)
                                      (:module main
                                               :components

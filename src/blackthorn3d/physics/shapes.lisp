@@ -76,6 +76,9 @@
   (with-slots (a-min a-max) b-box
     (setf pos (vec-scale4 (vec4+ a-min a-max) 0.5))))
 
+(defmethod rad ((object aa-bounding-box))
+  (with-slots (a-min a-max) b-box
+    (mag (vec-scale4 (vec4+ a-min a-max) 0.5))))
 
 (defmethod shape-bounds ((box aa-bounding-box))
   (list (a-min box) (a-max box)))

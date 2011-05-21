@@ -140,15 +140,17 @@
      
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
-         (let ((new-client (check-for-clients)))
-           (when new-client
-             (new-server-controller new-client)
-             (send-all-entities new-client)
-             (let ((camera (new-camera (new-player new-client))))
-               (message-send :broadcast (make-event :entity-create))
-               (message-send new-client (make-event :camera :camera camera)))))
-         (forget-server-entity-changes))
-     
+  (let ((new-client (check-for-clients)))
+    (when new-client
+      (new-server-controller new-client)
+      (send-all-entities new-client)
+      (let ((camera (new-camera (new-player new-client))))
+        (message-send :broadcast (make-event :entity-create))
+        (message-send new-client (make-event :camera :camera camera))
+        (message-send new-client
+                      (make-message-list :event-sound :soundtrack t)))))
+  (forget-server-entity-changes))
+
 (defun synchronize-clients ()
   (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-server src message))

@@ -67,7 +67,7 @@
  ; (gl:viewport 0 0 800 600)
 
   (gl:enable :texture-2d)
-  (gl:enable :blend)
+  (gl:enable :blend :sample-alpha-to-coverage)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test)
@@ -92,7 +92,7 @@
  ; (load-frstm *frustum*)
   (gl:load-identity)
 
-;  (gl:enable :lighting)
+ ; (gl:enable :lighting)
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
@@ -101,10 +101,10 @@
                                   :pos +origin+
                                   :dir +y-axis+
                                   :up +y-axis+
-                                  :angle (/ pi 2)
-                                  :speed 0.2
-                                  :speed-fuzzy 0.5)
-                   50
+                                  :angle (* pi 2)
+                                  :speed 5
+                                  :speed-fuzzy 2.5)
+                   0
                    1000))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
@@ -116,24 +116,31 @@
 
   (when animated
     (update-model animated time))
+
   #+disabled
   (when *test-skele*
     (update-model *test-skele* time))
+
   (iter (for e in entities)
         (with-slots (shape) e
           (when shape
             (update-model shape time)))))
 
 (defun render-frame (entities level)
+  (gl:depth-mask t)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
-
+ 
   ;; Create PVS from entities and level
   (let ((PVS (find-pvs entities level))))
 
   (when *main-cam*
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)
-                                     (up  *main-cam*))))
+                                     (up  *main-cam*)))
+    (update-billboarder (pos *main-cam*)
+                        (dir *main-cam*)
+                        (up *main-cam*)
+                        +y-axis+))
 
   (init-light *main-light* :light0)
 
@@ -183,9 +190,10 @@
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
 
-  (gl:use-program 0)
   ;; DO PARTICLES YEAH!
   ;#+disabled
+  (gl:use-program 0)
+  (gl:depth-mask nil)
   (when *test-ps*
     (render-ps *test-ps*))
 

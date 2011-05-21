@@ -72,3 +72,12 @@
                        (sdl:pixel-data pix))
       (gl:bind-texture :texture-2d 0)
       tex-id)))
+
+(defun use-texture (texture)
+  (gl:bind-texture :texture-2d texture))
+
+(defmacro with-texture ((texture) &body body)
+  `(unwind-protect
+        (progn (gl:bind-texture :texture-2d ,texture)
+               ,@body)
+     (gl:bind-texture :texture-2d 0)))

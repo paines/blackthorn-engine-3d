@@ -116,6 +116,7 @@
                                                (:file "model")
                                                (:file "draw")
                                                (:file "vao")
+                                               (:file "billboards")
                                                (:file "particles")
                                                (:file "frustum")
                                                (:file "camera")

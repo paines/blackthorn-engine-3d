@@ -123,4 +123,15 @@
    :initialize-cube
    :swept-sphere-collide
    :point-in-triangle-p
+
+   ;; octree-lisp
+   :octree
+   :octree-node
+   :children
+   :center
+   :width
+   :make-octree
+   :octree-insert
+   :octree-delete
+   :octree-query
    ))

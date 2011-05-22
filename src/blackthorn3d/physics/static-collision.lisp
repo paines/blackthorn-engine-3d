@@ -174,7 +174,7 @@
       ;; Loop to find the displacement vector
       ;#+disabled
       (iter (with test-vel = velocity)
-            (with end = (vec4+ (pos obj) velocity))
+           ; (with end = (vec4+ (pos obj) velocity))
             (setf (svref test-vel 3) 0.0)
             (for i below depth)
             ;(until (< (sq-mag test-vel) +min-collide-dist+))
@@ -182,8 +182,10 @@
                         (iter (for node in (mesh-nodes world))
                               (collect (collide-with-world-node 
                                         test-sph test-vel node)))))
+            (for end first (vec4+ (pos obj) test-vel) 
+                 then (vec4+ end test-vel))
             (until (null hit))
-            (if hit
+            (when hit
           ;    (format t "top level hit = ~a~%" hit)
               ;; get new origin and velocity
               (destructuring-bind (new-pos new-vel)
@@ -192,7 +194,8 @@
                       test-vel new-vel
                       end new-pos))
               ;; 
-              (setf end (vec4+ end test-vel)))
+            ;  (setf end (vec4+ end test-vel))
+              )
 
             ;; At the end return the displacement from original sphere
             ;; to new one

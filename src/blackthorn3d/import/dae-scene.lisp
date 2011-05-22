@@ -156,7 +156,7 @@
         (node-id (get-attribute "id" (attributes node-tag)))
         (*transform* (create-xform node-tag)))
 
-                                        ; (dae-debug "loading node: ~a~%" node-id)
+    ;; (dae-debug "loading node: ~a~%" node-id)
 
     ;; Two cases (that we handle atm):
     ;; 1) node has an instance_geometry tag.  We'll assume there are 
@@ -176,10 +176,12 @@
        ;; putting everything together
        (let* ((children (iter (for node in (children-with-tag "node" node-tag))
                               (aif (process-node node) (collect it))))
-              (type (if (find-if #'(lambda (x) (not (eql :unkown x)))
+              (type (if (find-if #'(lambda (x) 
+                                     (not (eql :unknown (node-type x))))
                                  children)
                         :parent
                         :unknown)))
+         (format t "making node ~a with type ~a~%" node-id type)
          (make-node node-id type  *transform* '()
                     children))))))
 
@@ -198,7 +200,9 @@
                 (setf (node-xform c)
                       (matrix-multiply-m
                        xform (node-xform c)))
-                (finally (return new-children)))
+                (finally (dae-debug "pruning node ~a  " id)
+                         (dae-debug "children: ~a~%" new-children)
+                         (return new-children)))
           ;; otherwise we set the children and pass on up, as a list 
           ;; so new-children will be constructed correctly
           (progn

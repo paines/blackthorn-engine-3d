@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-graphics)
+(in-package :blackthorn3d-physics)
 
 ;;;
 ;;; Yay cameras!
@@ -65,6 +65,13 @@
 (setf +phi-scale+ -0.2)
 (setf +theta-scale+ -0.2)
 
+(defmethod move-camera ((c camera) vec)
+  (with-slots (target pos velocity) c
+    (with-slots ((t-pos pos) (t-up up)) target
+      (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.4))))
+        (setf (pos c) (vec4+ pos vec)
+              (dir c) (norm4 (vec4- t-pos (pos c))))))))
+
 (defmethod update-tp-camera ((c camera) time input-vec)
   (with-slots (ideal-coord target pos veloc up dir spring-k) c
     (with-slots ((t-pos pos)
@@ -95,43 +102,37 @@
         ;; the axes to rotate around are
         ;;    phi: (up target)
         ;;    theta: (cross (dir target) (up target))
-
+      
         (setf (elt ideal-coord 0)
               (aif (/= 0 (x input-vec))
                    (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
                    (let ((xd (- (x pos) (x t-pos)))
                          (zd (- (z pos) (z t-pos))))
-               ;      (format t "--------------------------------~%")
-                ;     (format t "~1T XD: ~a~%" xd)
-                 ;    (format t "~1T ZD: ~a~%" zd)
                      (atan xd zd))))
 
         ;; set theta
-        ;;#+disabled
         (aif (/= 0 (y input-vec))
              (setf (elt ideal-coord 1)
                    (clamp (+ (elt ideal-coord 1) 
-                           (* +theta-scale+ (y input-vec)))
+                             (* +theta-scale+ (y input-vec)))
                           (- (/ (* 89 pi) 180))
                           (/ (* 89 pi) 180) )))
 
-        ;; check for inversion
-        #+disabled
-        (when (> (elt ideal-coord 1) (/ pi 2))
-             (setf (elt ideal-coord 0) (+ (elt ideal-coord 0) (/ pi 2)))
-             (setf (elt ideal-coord 1) (- (/ pi 2) (- (elt ideal-coord 1) 
-                                                      (/ pi 2)))))
-        
-     
+
         ;; mat stuff
         (let* ((translation (make-translate (vec-scale4 +z-axis+ 
                                                         (elt ideal-coord 2))))
                (rotation (quat->matrix (spherical->quat ideal-coord)))
-               (concat (matrix-multiply-m rotation translation)))
+               (concat (matrix-multiply-m rotation translation))
+               (new-pos (vec4+ look-at
+                              (matrix-multiply-v concat +origin+))))
 
-          (setf (pos c) (vec4+ look-at
-                               (matrix-multiply-v concat +origin+)))
+          (setf pos look-at)
+          (setf (velocity c) 
+                (vec4- new-pos
+                       look-at))
 
+          #+disabled
           (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))
           
           #+disabled
@@ -162,10 +163,6 @@
                                 (vec-scale4 displace-vec (- spring-k))
                                 (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
             (setf veloc (vec4+ veloc (vec-scale4 spring-accel time)))
-
-            (setf (pos c) ideal-pos
-                  #+disabled(quat-rotate-vec up-quat ideal-pos) 
-                  #+disabled(vec4+ pos (vec-scale4 veloc time)))
 
             (setf (dir c) (norm4 (vec4- look-at pos))
                   #+disabled

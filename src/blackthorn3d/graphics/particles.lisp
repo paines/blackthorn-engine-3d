@@ -216,6 +216,9 @@
     :documentation "the array of particles belonging to the system")
    (max-particles
     :initarg :max-particles)
+   (particle-stream
+    :initarg :particle-stream
+    :initform nil)
    (num-alive
     :accessor num-alive
     :initform 0)))
@@ -269,7 +272,9 @@
                  :color color
                  :max-particles max-particles
                  :particles (create-particle-array max-particles)
-                 :force-fn force-fn))
+                 :force-fn force-fn
+                 :particle-stream
+                 (create-billboard-stream max-particles)))
 
 (defmethod gen-particle ((this particle-system) index dt)
   (with-slots (particles size lifetime emitter color) this
@@ -325,7 +330,7 @@
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))
-  (with-slots (particles max-particles num-alive) this
+  (with-slots (particles max-particles num-alive particle-stream) this
     ;(gl:with-primitives :points)
     (iter (for index below max-particles)
           (for particle = (cons particles index))

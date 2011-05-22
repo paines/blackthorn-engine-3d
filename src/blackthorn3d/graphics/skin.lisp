@@ -133,28 +133,18 @@
 (defmethod draw-object ((this skin))
   (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
       this
-    
-    ;#+disabled
-    (progn
-      (enable-shader skin-shader)
-      (gl:enable-client-state :vertex-array)
-      (gl:enable-client-state :normal-array)
-      (gl:enable-client-state :texture-coord-array)
-      (gl::enable-vertex-attrib-array joint-indices-loc)
-      (gl::enable-vertex-attrib-array joint-weights-loc))
 
+    (gl:point-size 5.0)
     ;; Set up the skeleton array
     (update-skeleton bind-skeleton)
 
-    ;; now lets draw 'em
-    #+disabled
     (labels ((skele-drawer (joint)
-             ;  (format t "at joint ~a~%" (id joint))
                (let ((point (matrix-multiply-v (joint-matrix joint)
                                                +origin+)))
                  (gl:with-primitives :lines
-                 ;  (gl:color 1.0 1.0 1.0)
                    (gl:vertex 0.0 0.0 0.0)
+                   (gl:vertex (x point) (y point) (z point)))
+                 (gl:with-primitives :points
                    (gl:vertex (x point) (y point) (z point)))
                  (gl:with-pushed-matrix
                      (gl:mult-matrix (joint-matrix joint))
@@ -162,12 +152,31 @@
                          (skele-drawer c))))))
 
       (use-material bone-mat)
+      ;#+disabled
+      (let ((joint-mats (get-joint-matrices bind-skeleton)))
+        (iter (for mat in-vector joint-mats)
+              (gl:with-pushed-matrix
+                  (gl:mult-matrix mat)
+                (gl:with-primitives :points
+                  (gl:vertex 0.0 0.0 0.0)))))
+
+      ;;  #+disabled
       (skele-drawer (root-joint bind-skeleton)))
+
+   ; #+disabled
+    (progn
+      (enable-shader skin-shader)
+      (gl:enable-client-state :vertex-array)
+      (gl:enable-client-state :normal-array)
+      (gl:enable-client-state :texture-coord-array)
+      (gl::enable-vertex-attrib-array joint-indices-loc)
+      (gl::enable-vertex-attrib-array joint-weights-loc))
+ 
 
     ;#+disabled
     (progn
       (gl:with-pushed-matrix 
-          (gl:mult-matrix bind-shape-matrix)
+      ;    (gl:mult-matrix bind-shape-matrix)
         (gl:uniform-matrix 
          joint-mats-loc 4
          (get-joint-matrices bind-skeleton) nil)

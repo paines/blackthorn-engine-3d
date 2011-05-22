@@ -117,6 +117,11 @@
                      (interleave
                       (vertex-streams mesh)
                       (get-mesh-format mesh))
+                   (format t "STREAMS: ~a~%"
+                           (iter (for vs in (vertex-streams mesh))
+                                 (collect (vs-semantic vs))))
+                   (format t "MESH FORMAT: ~a~%"
+                           (get-mesh-format mesh))
                    (setf *accessor* accessor)
                    
                    (setf mesh (convert-to-ogl mesh

@@ -191,6 +191,15 @@
               (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
                     (dae-debug "~a  ~%" elt))
               
+
+              ;; Apply the bind-pose
+              (format t "APPLYING BIND-POSE: ~a~%" bind-pose)
+              (apply-transform mesh bind-pose)
+              
+              (dae-debug "Transformed Vertices:~%")
+              (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
+                    (dae-debug "~a  ~%" elt))
+
               (list 
                (make-blt-skin :mesh mesh
                               :skeleton skeleton
@@ -230,12 +239,13 @@
                                     :child-nodes node-children)))
                 ;;#+disabled
                 (:parent
-                 (if (find-if #'(lambda (x)
-                                  (eql 'model-node (class-of x)))
-                              node-children)
-                     (make-scene-node :id id
-                                      :transform xform
-                                      :child-nodes node-children)))
+                 (if (find-if-not #'null node-children)
+                     (progn
+                       (format t "parent ~a is saved!~%" id)
+                       (make-scene-node :id id
+                                        :transform xform
+                                        :child-nodes node-children))
+                     (format t "parent ~a is killed!~%" id)))
                 ;; anything else, we don't really care about much
                 (otherwise nil)))))
 

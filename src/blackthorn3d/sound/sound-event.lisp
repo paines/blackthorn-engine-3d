@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011, Chris McFarland
+;;;; Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,43 +23,21 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-sound)
 
-(defpackage :blackthorn3d-input
-  (:nicknames :blt3d-input)
-  (:use :cl)
-  (:export
+(defmessage :event-sound (:keyword :boolean))
 
-   ;; input-control.lisp
-   :input-system
-   :input-move-x
-   :input-move-y
-   :input-view-x
-   :input-view-y
-   :input-jump
-   :set-controller
-   :input-kind
-   
-   ;; server-control.lisp
-   :new-server-controller
-   :remove-server-controller
-   :s-input-update
-   :s-input-move-x
-   :s-input-move-y
-   :s-input-view-x
-   :s-input-view-y
-   :s-input-jump
-   
-   ;; xbox360.lisp
-   :xbox360-vibrate
-   :xbox360_poll
-   :xbox360_get_a
-   :xbox360_get_b
-   :xbox360_get_x
-   :xbox360_get_y
-   :xbox360_get_lx
-   :xbox360_get_ly
-   :xbox360_get_rx
-   :xbox360_get_ry
+(defvar *sounds* (make-hash-table))
 
-   ))
+(defun make-sound (key type src)
+  (multiple-value-bind (value exists) (gethash key *sounds*)
+    (if exists
+        value
+        (setf (gethash key *sounds*) (load-sound type src)))))
+
+(defun find-sound (key)
+  (gethash key *sounds*))
+
+(defun handler-sound (src key loop)
+  (let ((sound (find-sound key)))
+    (play-sound sound :loop loop)))

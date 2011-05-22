@@ -1,10 +1,3 @@
-;;;; Blackthorn -- Lisp Game Engine
-;;;;
-;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
-;;;;
-;;;; Permission is hereby granted, free of charge, to any person
-;;;; obtaining a copy of this software and associated documentation
-;;;; files (the "Software"), to deal in the Software without
 ;;;; restriction, including without limitation the rights to use, copy,
 ;;;; modify, merge, publish, distribute, sublicense, and/or sell copies
 ;;;; of the Software, and to permit persons to whom the Software is
@@ -23,19 +16,16 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-import)
 
-(defpackage :blackthorn3d-import
-  (:nicknames :blt3d-imp)
-  (:use :iter :cl :blt3d-utils :blt3d-math :blt3d-phy :blt3d-ani)
+(defclass loaded-dae ()
+  ((geometry
+    :accessor dae-geometry
+    :initarg :geometry
+    :documentation "The blt-model object that contains the geometry
+                    and animations")
+   (portals
+    :accessor dae-portals
+    :initarg :portals
+    :documentation "a list of portals (id aabb)")))
 
-  (:export
-
-   ;; dae-loader.lisp
-   :load-dae
-
-   ;; loaded-dae.lisp
-   :loaded-dae
-   :dae-geometry
-   :dae-portals
-   ))

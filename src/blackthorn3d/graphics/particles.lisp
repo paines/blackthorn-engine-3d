@@ -25,33 +25,131 @@
 
 (in-package :blackthorn3d-graphics)
 
+;; This var is for applying external forces like gravity/wind
+(defvar *external-force* +zero-vec+)
+(defvar *particle-tex* nil)
+
 ;;;
 ;;; particles
 ;;;
 
-;; states: :alive :dead 
 
-(defclass particle ()
-  ((state
-    :initform :alive)
-   (energy
-    :initarg :energy
-    :initform 1.0)
-   (fade-rate
-    :initarg :fade-rate
-    :initform 1.0)                      ; default to one second life
-   (position
-    :initarg :pos)
-   (old-position
-    :initform nil)
-   (velocity
-    :initarg :vel)
-   (color
-    :initarg :color
-    :initform +white+)
-   (size
-    :initarg :size
-    :initform 0.1)))
+;; define a particle as: 
+;;        #(energy fade-rate pos.x pos.y pos.z old.x old.y old.z
+;;          vel.x vel.y vel.z color.r color.g color.b color.a size)
+;; total length: 16 floats
+(defun create-particle (particles index
+                        position velocity
+                        energy fade-rate
+                        color size)
+  (setf (col particles index) 
+        (vector energy                  ; 0
+                fade-rate               ; 1
+                (x position)            ; 2
+                (y position)            ; 3
+                (z position)            ; 4
+                (x position)            ; 5
+                (y position)            ; 6
+                (z position)            ; 7
+                (x velocity)            ; 8
+                (y velocity)            ; 9
+                (z velocity)            ; 10
+                (r color)               ; 11
+                (g color)               ; 12
+                (b color)               ; 13
+                (a color)               ; 14
+                size)))                 ; 15
+
+(defun create-particle-array (max-particles)
+  (make-array (list max-particles 16) :element-type 'float))
+
+;; ENERGY
+(defun p-energy (particle)
+  (aref (car particle) (cdr particle) 0))
+(defun (setf p-energy) (new-energy particle)
+  (setf (aref (car particle) (cdr particle) 0) new-energy))
+
+;; FADE
+(defun p-fade (particle)
+  (aref (car particle) (cdr particle) 1))
+(defun (setf p-fade) (new-fade particle)
+  (setf (aref (car particle) (cdr particle) 1) new-fade))
+
+;; POSITION
+(defun p-pos (particle)
+ 
+  (make-point3 (aref (car particle) (cdr particle) 2)
+               (aref (car particle) (cdr particle) 3)
+               (aref (car particle) (cdr particle) 4)))
+(defun (setf p-pos) (pos particle)
+  (setf (aref (car particle) (cdr particle) 2) (x pos)
+        (aref (car particle) (cdr particle) 3) (y pos)
+        (aref (car particle) (cdr particle) 4) (z pos)))
+
+;; OLD POSITION
+(defun p-old-pos (particle)
+  (make-point3 (aref (car particle) (cdr particle) 5)
+               (aref (car particle) (cdr particle) 6)
+               (aref (car particle) (cdr particle) 7)))
+(defun (setf p-old-pos) (pos particle)
+  (setf (aref (car particle) (cdr particle) 5) (x pos)
+        (aref (car particle) (cdr particle) 6) (y pos)
+        (aref (car particle) (cdr particle) 7) (z pos)))
+
+;; VELOCITY
+(defun p-vel (particle)
+  (make-vec3 (aref (car particle) (cdr particle) 8)
+             (aref (car particle) (cdr particle) 9)
+             (aref (car particle) (cdr particle) 10)))
+(defun (setf p-vel) (vel particle)
+  (setf (aref (car particle) (cdr particle) 8) (x vel)
+        (aref (car particle) (cdr particle) 9) (y vel)
+        (aref (car particle) (cdr particle) 10) (z vel)))
+
+;; COLOR
+(defun p-color (particle)
+  (make-vector4 (aref (car particle) (cdr particle) 11)
+                (aref (car particle) (cdr particle) 12)
+                (aref (car particle) (cdr particle) 13)
+                (aref (car particle) (cdr particle) 14)))
+(defun (setf p-color) (color particle)
+  (setf (aref (car particle) (cdr particle) 11) (r color)
+        (aref (car particle) (cdr particle) 12) (g color)
+        (aref (car particle) (cdr particle) 13) (b color)
+        (aref (car particle) (cdr particle) 14) (a color)))
+
+;; SIZE
+(defun p-size (particle)
+  (aref (car particle) (cdr particle) 15))
+(defun (setf p-size) (new-size particle)
+  (setf (aref (car particle) (cdr particle) 15) new-size))
+
+;;;
+;;; Particle use functions
+;;;
+
+(defun is-alive (particle)
+  (> (p-energy particle) 0.0))
+
+(defun update-particle (particle force-fn dt)
+  (setf (p-energy particle) 
+        (- (p-energy particle) (* (p-fade particle) dt)))
+  (when (is-alive particle)
+    (setf (p-old-pos particle) (p-pos particle)
+          (p-pos particle) 
+          (vec3+ (p-pos particle)
+                 (vec-scale3 (p-vel particle) dt))
+          (p-vel particle) (vec3+ (p-vel particle) 
+                                  (vec-scale3 
+                                   (funcall force-fn
+                                           (p-vel particle)
+                                            dt) 
+                                   dt)))))
+
+
+;;;
+;;; Classes
+;;;
 
 (defclass point-emitter ()
   ((pos
@@ -60,12 +158,15 @@
     :initarg :dir)
    (up
     :initarg :up)
+   (speed
+    :initarg :speed)
    (angle
     :initarg :angle
     :documentation "The angle phi around the direction that particles 
                     can be emitted in. a value of pi is a hemisphere
-                    2*pi would be a circle")))
- 
+                    2*pi would be a sphere")))
+
+
 (defclass particle-system ()
   ((emitter
     :accessor emitter
@@ -76,17 +177,35 @@
     :documentation "The rate at which particles are to be emitted.
                     If set to 0, system will max-particles once and then
                     finish")
+   (lifetime
+    :accessor lifetime
+    :initarg :lifetime
+    :initform 1.0
+    :documentation "The time in seconds that the particles live
+                    If given as a pair (start . end) a random value
+                    is generated between start and end") 
+   (size
+    :initarg :size
+    :documentation "size of particle.  same rule applies as lifetime")
+   (color
+    :accessor color
+    :initarg :color
+    :initform +white+
+    :documentation "color of each particle. Would like to expand the
+                    functionality to allow more interesting possibilities
+                    but for now if you wanna change it do it at the 
+                    particle system level")
+   (force-fn
+    :initarg :force-fn
+    :initform #'(lambda (vel dt) (vec-neg4 +y-axis+)))
    (shader
     :accessor shader
     :initarg :shader
     :initform 0)
    (texture
     :accessor texture
-    :initarg :texture)
-   (blend-mode
-    :accessor blend-mode
-    :initarg :blend-mode
-    :initform '(:src-alpha :one-minus-source-alpha))
+    :initarg :texture
+    :initform 0)
    (type
     :accessor ps-type
     :initarg :type
@@ -101,78 +220,145 @@
     :accessor num-alive
     :initform 0)))
 
-(defclass particle-manager ()
-  ((systems-list
-    :accessor system-list)))
 
 ;;;
-;;; Manager Methods 'n Functions
+;;; Emitters
 ;;;
 
-(defmethod update ((this particle-manager) dt))
 
-(defmethod render ((this particle-manager)))
+(defmethod gen-initial-pos ((this point-emitter) time)
+  (slot-value this 'pos))
 
-(defmethod init ((this particle-manager)))
-
-(defmethod add-system ((this particle-manager) type init-parms))
-
-(defmethod remove-system ((this particle-manager) (obj particle-system)))
+(defmethod gen-initial-vel ((this point-emitter) time)
+  (with-slots (dir angle speed) this
+    ;; Generate random coordinates
+    (let* ((angle/2 (* 0.5 angle))
+           (phi (random (* 2.0 pi)))
+           (theta (random (float angle/2)))
+           (u dir)
+           (v (get-perpendicular dir))
+           (w (cross3 u v))
+           (z (cos theta))
+           (x (* (sin theta) (cos phi)))
+           (y (* (sin theta) (sin phi)))
+           (speed (if (consp speed) 
+                      (+ (car speed) (random (- (cdr speed) (car speed))))
+                      speed)))
+      (vec-scale3 (vec3+ (vec3+ (vec-scale3 u z)
+                                (vec-scale3 v y))
+                         (vec-scale3 w x))
+                  speed))))
 
 
 ;;;
-;;; Particle Methods and Functions
+;;; Particle-System Methods and Functions
 ;;;
 
-(defmethod create-particle ((this particle-system) time)
-  (with-slots (emitter) this
-    (let ((initial-pos (gen-initial-pos emitter time))
-          (initial-vel (gen-initial-vel emitter time)))
-      (make-instance 'particle
-                     :pos initial-pos
-                     :vel initial-vel))))
+(defun create-particle-system (emitter spawn-rate max-particles
+                               &key 
+                               (color +white+)
+                               (lifetime 2.0)
+                               (size 0.1)
+                               (force-fn #'(lambda (vel dt)
+                                             (vec-neg4 +y-axis+))))
+  (make-instance 'particle-system
+                 :emitter emitter
+                 :spawn-rate spawn-rate
+                 :lifetime lifetime
+                 :size size
+                 :color color
+                 :max-particles max-particles
+                 :particles (create-particle-array max-particles)
+                 :force-fn force-fn))
 
-(defmethod update-ps ((this particle-system) dt)
-  ;; Loop over each particle and update it's position
-  (with-slots (particles spawn-rate max-particles) this    
-    (iter (with emitted = 0)
-          (with max-emit = (if (zerop spawn-rate)
-                               max-particles
-                               (* spawn-rate dt)))
-          (for particle in-vector particles)
-          (with-slots (state energy fade-rate
-                             position old-position velocity) particle
-            (case state
-              (:alive
-               (setf energy (- energy (* dt fade-rate)))
-               (if (< energy 0.0) 
-                   (setf state :dead)
-                   (setf old-position position
-                         position (vec3+ position 
-                                         (vec-scale3 velocity dt)))))
-              (:dead
-               ;; If the particle is dead, check if we need to rebirth it
-               (when (< emitted max-emit)
-                 (setf particle (create-particle this dt))
-                 (incf emitted)))))
+(defmethod gen-particle ((this particle-system) index dt)
+  (with-slots (particles size lifetime emitter color) this
+    (let ((pos (gen-initial-pos emitter dt))
+          (vel (gen-initial-vel emitter dt))
+          (fade (/ 1.0 (if (consp lifetime)
+                           (+ (car lifetime) 
+                              (random (- (cdr lifetime) (car lifetime))))
+                           lifetime)))
+          (size (if (consp size)
+                    (+ (car size) 
+                       (random (- (cdr size) (car size))))
+                    size)))
+      (create-particle particles index
+                       pos vel
+                       1.0 fade
+                       color size))))
 
-          ;; Finally, if we still need to emit particles, and there is
-          ;; room in the array, we need to make more
-          (finally
-           (let ((delta-p (- max-emit emitted))
-                 (delta-m (- max-particles (length particles))))
-             (when (and (plusp delta-p)
-                        (plusp delta-m))
-               (iter (for i below (min delta-p delta-m))
-                     (vector-push (create-particle this dt)
-                                  particles))))))))
+(let ((spawn-num 1))
+  (defmethod update-ps ((this particle-system) dt)
+    ;; Loop over each particle and update it's position
+   ; (let ((*external-force* (funcall (slot-value this 'force-fn) dt))))
+    (with-slots (particles 
+                 spawn-rate 
+                 max-particles 
+                 num-alive 
+                 force-fn) this
+
+      (incf spawn-num (* dt spawn-rate))
+      (iter (with emitted = 0)
+            (with max-emit = 
+                  (if (zerop spawn-rate)
+                      max-particles
+                      (floor spawn-num)))
+            (with alive-cnt = 0)
+            (for index below max-particles)
+            (for particle = (cons particles index))
+            (while (or (< emitted max-emit)
+                       (< alive-cnt num-alive)))
+            (if (is-alive particle)
+                (progn 
+                  (update-particle particle force-fn dt)
+                  (incf alive-cnt))
+                ;; If dead check if we should revive it
+                (when (< emitted max-emit)
+                  (gen-particle this index dt)
+                  (incf emitted)))
+
+            ;; Finally, update the number of alive particles
+            (finally
+             (decf spawn-num emitted)
+             (setf num-alive (+ alive-cnt emitted)))))))
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))
-  (gl:with-primitives :points
-    (iter (for particle in-vector particles)
+  (with-slots (particles max-particles num-alive) this
+    ;(gl:with-primitives :points)
+    (iter (for index below max-particles)
+          (for particle = (cons particles index))
+          (count (is-alive particle) into alive-cnt)
+          (while (< alive-cnt num-alive))
+
           ;; do particle rendering here
-          (with-slots (state pos color size) particle
-            (when (eql state :alive)
-              (gl:color (r color) (g color) (b color))
-              (gl:vertex (x pos) (y pos) (z pos)))))))
+          (when (is-alive particle)
+            (let ((position (p-pos particle))
+                  (color (p-color particle)))
+              (gl:color (r color) (g color) (b color) (* (p-energy particle)
+                                                         (a color)))
+              ;#+disabled
+              (draw-billboard-quad position 0.1 0.1 *particle-tex*
+                                   :screen)
+               #+disabled
+              (gl:vertex (x position) (y position) (z position))))))
+
+
+
+  (defvar *system-list* nil))
+
+(defun update-particle-systems (dt)
+  (iter (for system in *system-list*)
+        (update-ps system dt)))
+(defun render-particle-systems (dt)
+  (iter (for system in *system-list*)
+        (render-ps system)))
+
+(defun particles-init ())
+
+(defun add-system (ps)
+   (push ps *system-list*))
+
+(defun remove-system (ps)
+  (setf *system-list* (delete ps *system-list*)))

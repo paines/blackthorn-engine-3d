@@ -83,17 +83,20 @@
                                               ((:file "package")
                                                (:file "shapes")
                                                (:file "blt-model")
+                                               (:file "camera")
                                                (:file "intersect")
                                                (:file "static-collision")
                                                (:file "collision")
                                                (:file "motion")
-                                               (:file "skeleton"))
+                                               (:file "skeleton")
+					       (:file "octree"))
                                               :serial t)
                                      (:module import
                                               :components
                                               ((:file "package")
                                                (:file "xmls-helpers")
                                                (:file "dae-general")
+                                               (:file "loaded-dae")
                                                (:file "dae-geometry")
                                                (:file "dae-material")
                                                (:file "dae-scene")
@@ -114,9 +117,9 @@
                                                (:file "model")
                                                (:file "draw")
                                                (:file "vao")
+                                               (:file "billboards")
                                                (:file "particles")
                                                (:file "frustum")
-                                               (:file "camera")
                                                (:file "init"))
                                               :serial t)
                                      (:module renderer
@@ -136,7 +139,8 @@
                                      (:module sound
                                               :components
                                               ((:file "package")
-                                               (:file "sound"))
+                                               (:file "sound")
+                                               (:file "sound-event"))
                                               :serial t)
                                      (:module main
                                               :components

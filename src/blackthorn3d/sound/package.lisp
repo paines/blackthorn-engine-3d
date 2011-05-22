@@ -25,14 +25,18 @@
 
 (defpackage :blackthorn3d-sound
   (:nicknames :blt3d-snd)
-  (:use :cl :blt3d-res)
+  (:use :cl :blt3d-res :blt3d-net)
   (:export
 
    ;; sound.lisp
    :init
    :exit
-   :load-sound
    :play-sound
    :stop-sound
+
+   ;; sound-event.lisp
+   :make-sound
+   :find-sound
+   :handler-sound
 
    ))

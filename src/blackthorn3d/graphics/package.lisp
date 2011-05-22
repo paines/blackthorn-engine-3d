@@ -53,14 +53,7 @@
    :make-frstm
    :load-frstm
 
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :update-camera
-   :move-player
+ 
 
    ;; texture.lisp
    :load-image
@@ -84,6 +77,17 @@
    :*shader*
    :make-shader
    :enable-shader
+
+   ;; particles.lisp
+   :particle-system
+   :update-ps
+   :render-ps
+   :create-particle-system
+   :point-emitter  
+   
+   ;; billboards.lisp
+   :update-billboarder
+   :draw-billboard-quad
   
    ))
         

@@ -44,6 +44,7 @@
    :vec3->vec
    :x :y :z :w
    :r :g :b :a   
+   :zero-vec-p
    :dot
    :cross 
    :cross3
@@ -65,6 +66,7 @@
    :set-length4
    :pt-dist
    :mid-point
+   :get-perpendicular
    
    ;; matrix.lisp
    :make-matrix

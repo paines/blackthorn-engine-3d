@@ -151,7 +151,8 @@
 (defvar +collision-eps+ 1.0e-3)
 
 ;; World = blt-model, for now
-(defmethod collide-with-world ((obj entity-server) (world blt-model))
+(defmethod collide-with-world ((obj entity-server) (world blt-model)
+                               &optional (depth +max-collision-depth+))
   "Updates the entity obj after performing world-collision"
   (with-slots ((sphere bounding-volume) velocity) obj
     (let ((test-sph (copy-sphere sphere))
@@ -175,21 +176,23 @@
       (iter (with test-vel = velocity)
             (with end = (vec4+ (pos obj) velocity))
             (setf (svref test-vel 3) 0.0)
-            (for i below +max-collision-depth+)
+            (for i below depth)
             ;(until (< (sq-mag test-vel) +min-collide-dist+))
             (for hit = (min-collide
                         (iter (for node in (mesh-nodes world))
                               (collect (collide-with-world-node 
                                         test-sph test-vel node)))))
             (until (null hit))
-            (when hit
+            (if hit
           ;    (format t "top level hit = ~a~%" hit)
               ;; get new origin and velocity
               (destructuring-bind (new-pos new-vel)
                   (slide-sphere test-sph test-vel hit)
                 (setf (pos test-sph) new-pos
                       test-vel new-vel
-                      end (vec4+ new-pos new-vel))))
+                      end new-pos))
+              ;; 
+              (setf end (vec4+ end test-vel)))
 
             ;; At the end return the displacement from original sphere
             ;; to new one
@@ -213,17 +216,19 @@
 
     (transform-hit (transform node)
      (min-collide
+      #+disabled
       (append
        (aif (swept-sphere-collide sphere velocity
                                   (node-bounding-volume node) +zero-vec+)
-        ;; if we intersect the bounding-shape, check the mesh
-        (progn 
-          (list (collide-test xformed-bv xformed-vel (mesh node)))))
+            ;; if we intersect the bounding-shape, check the mesh
+            (progn 
+              (list (collide-test xformed-bv xformed-vel (mesh node))))))
 
        ;; Recursively collide with the children
-       (iter (for child in (child-nodes node))
-             (collect 
-              (collide-with-world-node xformed-bv xformed-vel child))))))))
+       
+      (iter (for child in (child-nodes node))
+            (collect 
+             (collide-with-world-node xformed-bv xformed-vel child)))))))
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity

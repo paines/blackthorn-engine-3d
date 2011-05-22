@@ -28,6 +28,7 @@
 
 (defvar *main-viewport* nil)
 (defvar *test-skele* nil)
+(defvar *test-ps* nil)
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
@@ -66,7 +67,7 @@
  ; (gl:viewport 0 0 960 720)
 
   (gl:enable :texture-2d)
-  (gl:enable :blend)
+  (gl:enable :blend :sample-alpha-to-coverage)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test)
@@ -76,9 +77,8 @@
   ;#+disabled
   (let ((scientist-model 
          ;#+disabled
-         (blt3d-imp:load-dae #P "res/models/cylinder-test-2.dae")
-          #+disabled
-          (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae")))
+         (blt3d-imp:dae-geometry 
+          (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae"))))
     
     (setf *test-skele* (load-obj->models scientist-model))
     (apply-transform *test-skele* (make-scale #(0.05 0.05 0.05)))
@@ -92,35 +92,59 @@
  ; (load-frstm *frustum*)
   (gl:load-identity)
 
-  (gl:enable :lighting)
+ ; (gl:enable :lighting)
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
- 
+  (setf *test-ps* (create-particle-system 
+                   (make-instance 'point-emitter
+                                  :pos (make-point3 0.0 -0.5 0.0)
+                                  :dir +y-axis+
+                                  :up +y-axis+
+                                  :angle (/ pi 2)
+                                  :speed '(1.0 . 2.5))
+                   100
+                   1000
+                   :lifetime 4
+                   :force-fn
+                   #'(lambda (vel dt)
+                       (vec-neg3 (vec3+ vel +y-axis+)))))
+
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 
 (defun update-graphics (entities time)
+  (when *test-ps*
+    (update-ps *test-ps* time))
+
   (when animated
     (update-model animated time))
+
   #+disabled
   (when *test-skele*
     (update-model *test-skele* time))
+
   (iter (for e in entities)
         (with-slots (shape) e
           (when shape
             (update-model shape time)))))
 
 (defun render-frame (entities level)
+  (gl:depth-mask t)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
-
+ 
   ;; Create PVS from entities and level
   (let ((PVS (find-pvs entities level))))
 
   (when *main-cam*
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)
-                                     (up  *main-cam*))))
+                                     (up  *main-cam*)))
+    (update-billboarder (pos *main-cam*)
+                        (dir *main-cam*)
+                        (up *main-cam*)
+                        +y-axis+))
 
   (init-light *main-light* :light0)
 
@@ -129,6 +153,7 @@
   ;(enable-shader shader)
 
   ;; draw axes
+  #+disabled
   (gl:with-primitive :lines
     (gl:color 0.0 1.0 1.0)
     (gl:vertex 0.0 0.0 0.0)
@@ -141,6 +166,7 @@
   (when animated
     (draw-object animated))
 
+  ;#+disabled
   (when level
     (gl:with-pushed-matrix
         ;; (use-material plane-mat)
@@ -153,6 +179,7 @@
                                             (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
+  #+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
         ;(gl:scale 0.03 0.03 0.03)
@@ -166,6 +193,14 @@
             (gl:translate (x pos) (y pos) (z pos))
             (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
             (draw-object shape))))))
+
+  ;; DO PARTICLES YEAH!
+  ;#+disabled
+  (gl:use-program 0)
+  (gl:depth-mask nil)
+  (gl:blend-func :src-alpha :one)
+  (when *test-ps*
+    (render-ps *test-ps*))
 
   (gl:flush)
   (sdl:update-display))

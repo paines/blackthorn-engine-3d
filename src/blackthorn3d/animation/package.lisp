@@ -32,8 +32,8 @@
    ;; channels.lisp
    :channel
    :make-channel
+   :ch-target
    :frames
-   :target
    :t-max
 
    ;; animation.lisp

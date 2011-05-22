@@ -40,14 +40,19 @@
 (blt3d-math::gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
 
 (defun ray-sphere-intersection (ray sphere t-max)
-  (let* ((e-c (vec3- (ray-e ray) (pos sphere)))
-         (qa 1.0)
-         (qb (* 2.0 (ray-d ray) e-c))
-         (qc (- (dot e-c e-c) (sq (rad sphere))))
-         (t0 (quadratic qa qb qc t-max)))
-    (when t0
-      (list t0 (vec3->point (vec3+ (ray-e ray) 
-                                   (vec-scale3 (ray-d ray) t0)))))))
+  (let* ((r2 (sq (rad sphere)))
+         (L (vec3- (pos sphere) (ray-e ray)))
+         (l2 (sq-mag L))
+         (s (dot L (ray-d ray))))
+    (when (and (< s 0) (> l2 r2))
+      (return-from ray-sphere-intersection nil))
+    
+    (let ((m2 (- l2 (sq s))))
+      (when (> m2 r2)
+        (return-from ray-sphere-intersection nil))
+      (let* ((q (sqrt (- r2 m2)))
+             (t0 (if (> l2 r2) (- s q) (+ s q))))
+        (list t0 (vec4+ (ray-e ray) (vec-scale4 (ray-d ray) t0)))))))
 
 (defun ray-triangle-intersection (ray tri)
   "Detect whether a ray (e-vec . d-vec) intersects a triangle

@@ -192,6 +192,16 @@
       (let ((res (quadratic 1 -1 -6 100)))
         (is (= 2 res))))
 
+
+(test ray-sphere-intersection
+      (let* ((ray (make-ray +origin+ +x-axis+))
+             (sphere (make-instance 'bounding-sphere
+                                    :pos (make-point3 2.0 1.0 0.0)
+                                    :rad 1.0))
+             (result (ray-sphere-intersection ray sphere 100)))
+        (format t "~%ray-sphere result: ~a~%" result)
+        (is (not (null result)))))
+
 (test sphere-edge-intersection
       (let* ((sphere (make-instance 'bounding-sphere
                                     :pos (make-point3 2.344 0.0 4.0)

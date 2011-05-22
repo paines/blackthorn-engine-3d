@@ -131,7 +131,7 @@
         :target player-entity
         :shape-name :cylinder
         :bv (make-instance 'blt3d-phy::bounding-sphere
-                                        :rad 0.2
+                                        :rad 0.07
                                         :pos +origin+)
         :mode :third-person))
 

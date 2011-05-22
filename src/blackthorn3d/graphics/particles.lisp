@@ -131,7 +131,7 @@
 (defun is-alive (particle)
   (> (p-energy particle) 0.0))
 
-(defun update-particle (particle dt)
+(defun update-particle (particle force-fn dt)
   (setf (p-energy particle) 
         (- (p-energy particle) (* (p-fade particle) dt)))
   (when (is-alive particle)
@@ -140,7 +140,11 @@
           (vec3+ (p-pos particle)
                  (vec-scale3 (p-vel particle) dt))
           (p-vel particle) (vec3+ (p-vel particle) 
-                                  (vec-scale3 *external-force* dt)))))
+                                  (vec-scale3 
+                                   (funcall force-fn
+                                           (p-vel particle)
+                                            dt) 
+                                   dt)))))
 
 
 ;;;
@@ -193,7 +197,7 @@
                     particle system level")
    (force-fn
     :initarg :force-fn
-    :initform #'(lambda (dt) (vec-neg4 +y-axis+)))
+    :initform #'(lambda (vel dt) (vec-neg4 +y-axis+)))
    (shader
     :accessor shader
     :initarg :shader
@@ -255,7 +259,7 @@
                                (color +white+)
                                (lifetime 2.0)
                                (size 0.1)
-                               (force-fn #'(lambda (dt)
+                               (force-fn #'(lambda (vel dt)
                                              (vec-neg4 +y-axis+))))
   (make-instance 'particle-system
                  :emitter emitter
@@ -287,32 +291,37 @@
 (let ((spawn-num 1))
   (defmethod update-ps ((this particle-system) dt)
     ;; Loop over each particle and update it's position
-    (let ((*external-force* (funcall (slot-value this 'force-fn) dt)))
-      (with-slots (particles spawn-rate max-particles num-alive) this   
-        (incf spawn-num (* dt spawn-rate))
-        (iter (with emitted = 0)
-              (with max-emit = 
-                    (if (zerop spawn-rate)
-                        max-particles
-                        (floor spawn-num)))
-              (with alive-cnt = 0)
-              (for index below max-particles)
-              (for particle = (cons particles index))
-              (while (or (< emitted max-emit)
-                         (< alive-cnt num-alive)))
-              (if (is-alive particle)
-                  (progn 
-                    (update-particle particle dt)
-                    (incf alive-cnt))
-                  ;; If dead check if we should revive it
-                  (when (< emitted max-emit)
-                    (gen-particle this index dt)
-                    (incf emitted)))
+   ; (let ((*external-force* (funcall (slot-value this 'force-fn) dt))))
+    (with-slots (particles 
+                 spawn-rate 
+                 max-particles 
+                 num-alive 
+                 force-fn) this
 
-              ;; Finally, update the number of alive particles
-              (finally
-               (decf spawn-num emitted)
-               (setf num-alive (+ alive-cnt emitted))))))))
+      (incf spawn-num (* dt spawn-rate))
+      (iter (with emitted = 0)
+            (with max-emit = 
+                  (if (zerop spawn-rate)
+                      max-particles
+                      (floor spawn-num)))
+            (with alive-cnt = 0)
+            (for index below max-particles)
+            (for particle = (cons particles index))
+            (while (or (< emitted max-emit)
+                       (< alive-cnt num-alive)))
+            (if (is-alive particle)
+                (progn 
+                  (update-particle particle force-fn dt)
+                  (incf alive-cnt))
+                ;; If dead check if we should revive it
+                (when (< emitted max-emit)
+                  (gen-particle this index dt)
+                  (incf emitted)))
+
+            ;; Finally, update the number of alive particles
+            (finally
+             (decf spawn-num emitted)
+             (setf num-alive (+ alive-cnt emitted)))))))
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))

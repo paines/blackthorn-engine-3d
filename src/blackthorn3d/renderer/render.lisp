@@ -105,7 +105,10 @@
                                   :speed '(1.0 . 2.5))
                    100
                    1000
-                   :lifetime 4))
+                   :lifetime 4
+                   :force-fn
+                   #'(lambda (vel dt)
+                       (vec-neg3 (vec3+ vel +y-axis+)))))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))

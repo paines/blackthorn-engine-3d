@@ -348,4 +348,8 @@
 
 (defun particles-init ())
 
-(defun add-system ())
+(defun add-system (ps)
+   (push ps *system-list*))
+
+(defun remove-system (ps)
+  (setf *system-list* (delete ps *system-list*)))

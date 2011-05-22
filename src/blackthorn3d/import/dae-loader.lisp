@@ -262,8 +262,8 @@
             (iter (for (anim-id clip) in-hashtable animations)
                   (format t "~5Tclip: ~a~%" anim-id)
                   (iter (for ch in (channel-lst clip))
-                        (setf (slot-value ch 'target) 
-                              (get-location-fn (slot-value ch 'target) 
+                        (setf (slot-value ch 'ch-target) 
+                              (get-location-fn (slot-value ch 'ch-target) 
                                                *xform-mappings*)))
                   (collect clip)))))
 

@@ -123,6 +123,7 @@
    :initialize-cube
    :swept-sphere-collide
    :point-in-triangle-p
+   :collide-with-world
 
    ;; octree-lisp
    :octree
@@ -134,4 +135,13 @@
    :octree-insert
    :octree-delete
    :octree-query
+
+   ;; camera.lisp
+   :camera-matrix
+   :camera-inverse
+   :camera
+   :target
+   :mode
+   :update-camera
+   :move-player
    ))

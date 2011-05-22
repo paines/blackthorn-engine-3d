@@ -46,20 +46,20 @@
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
                           
-(defmethod update ((c blt3d-gfx:camera))
-  (let* ((player (blt3d-gfx:target c))
+(defmethod update ((c blt3d-phy:camera))
+  (let* ((player (blt3d-phy:target c))
          (client (player-client player)))
     (when (not (is-alive-p player))
       (remove-entity c)
       (return-from update))
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
-           (move-vec (blt3d-gfx:move-player c input-vec))
-           (target (blt3d-gfx::target c)))
+           (move-vec (blt3d-phy:move-player c input-vec))
+           (target (blt3d-phy::target c)))
       (setf (velocity target) (vec4+ (velocity target) move-vec))
       (blt3d-phy::standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
         (setf (dir target) (norm4 move-vec))))
-    (blt3d-gfx:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
+    (blt3d-phy:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))))
       
 (defmacro make-server-only (type &rest options)
@@ -121,7 +121,7 @@
   
 (defun new-camera (player-entity)
     (make-server-entity
-        'blt3d-gfx:camera
+        'blt3d-phy:camera
         :pos (make-point3 0.0 0.0 0.0)
         :dir (make-vec3 1.0 0.0 0.0)
         :up  (make-vec3 0.0 1.0 0.0)

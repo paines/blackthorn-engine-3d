@@ -43,6 +43,7 @@
 (defun joint-matrix (joint) (slot-value joint 'transform))
 (defun (setf joint-matrix) (mat joint)
   (setf (slot-value joint 'transform) mat))
+
 (defun child-joints (joint) (slot-value joint 'child-nodes))
 (defun (setf child-joints) (children joint) 
   (setf (slot-value joint 'child-nodes) children))
@@ -64,11 +65,10 @@
 
  ; #+disabled
   (matrix-multiply-m 
-   parent-matrix
+   parent-matrix ;(joint-matrix joint)
+   ;#+disabled
    (matrix-multiply-m (joint-matrix joint)
-                      (joint-ibm joint))
-   #+disabled
-   (joint-ibm joint)))
+                      (joint-ibm joint))))
 
 (defun update-joint-matrices (root)
   "Updates the cached joint->model space matrices for each joint
@@ -76,7 +76,7 @@
   (labels ((%update-r (joint parent-m)
              (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
              (iter (with joint-world = 
-                         (matrix-multiply-m parent-m (joint-matrix joint))) 
+                         (matrix-multiply-m parent-m (joint-matrix joint)))
                    (for child-j in (child-joints joint))
                    (%update-r child-j joint-world))))
     (%update-r root (make-identity-matrix))))

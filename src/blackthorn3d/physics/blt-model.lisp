@@ -225,6 +225,30 @@
 (defmethod get-stream (stream (this blt-mesh))
   (vs-get-stream stream (vertex-streams this)))
 
+
+(defmethod apply-transform ((this blt-mesh) xform)
+  "Apply a transformation matrix to a blt-mesh at the vertex and normal level.
+   PLEASE NO SCALING!!"
+  (labels ((apply-v-helper (vertex)
+             (let ((xformed-v (matrix-multiply-v xform (vec3->point vertex))))
+               (iter (for i below 3)
+                     (setf (svref vertex i) (svref xformed-v i)))))
+           (apply-n-helper (normal)
+             (let ((xformed-v (norm4
+                               (matrix-multiply-v xform (vec3->point normal)))))
+               (iter (for i below 3)
+                     (setf (svref normal i) (svref xformed-v i))))))
+    (let ((vertices (get-stream :vertex this))
+          (normals (get-stream :normal this)))
+      (format t "transforming vertices~%")
+      (iter (for v in-vector vertices)
+            (for n in-vector normals)
+            (apply-v-helper v)
+        ;    (apply-n-helper n)
+            ))))
+
+
+
 (defclass node ()
   ((id
     :accessor id
@@ -333,6 +357,7 @@
                                     (collect 0.0 result-type 'vector))))
                 #'(lambda (index) zero-vec))))))
 
+
 ;; combines unified vertex-streams into one large 2-d array
 ;; If you want a specific order, re-order/prune the data before
 ;; calling this function on it.
@@ -342,7 +367,8 @@
 ;; was interleaved into the array
 (defun interleave (vertex-streams format)
   (let ((vs-fns (get-vs-fns vertex-streams format))
-        (size (iter (for vs in vertex-streams)
+        (size (length (vs-stream (car vertex-streams)))
+          #+disabled(iter (for vs in vertex-streams)
                     (minimizing (length (vs-stream vs)))))
         (depth (iter (for f in format)
                      (sum (second f)))))

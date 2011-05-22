@@ -29,6 +29,7 @@
 (defvar *main-viewport* nil)
 (defvar *test-skele* nil)
 (defvar *test-ps* nil)
+(defvar *test-bill* nil)
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
@@ -84,6 +85,9 @@
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
+    (format t "SKELE: ~a~%" *test-skele*)
+    (format t "~2T skele nodes: ~a~%" (mesh-nodes *test-skele*))
+
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     ;#+disabled
     (apply-transform *test-skele* 
@@ -198,10 +202,13 @@
             (draw-object shape))))))
 
   ;; DO PARTICLES YEAH!
-  ;#+disabled
   (gl:use-program 0)
   (gl:depth-mask nil)
   (gl:blend-func :src-alpha :one)
+  
+  
+
+  #+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

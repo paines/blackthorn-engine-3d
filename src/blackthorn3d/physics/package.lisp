@@ -100,6 +100,8 @@
    :sphere-triangle-intersection
    :sphere-edge-intersection
    :sphere-point-intersection
+   :make-ray
+   :ray-sphere-intersection
 
    ;; collision.lisp
    :collide-p
@@ -123,4 +125,25 @@
    :initialize-cube
    :swept-sphere-collide
    :point-in-triangle-p
+   :collide-with-world
+
+   ;; octree-lisp
+   :octree
+   :octree-node
+   :children
+   :center
+   :width
+   :make-octree
+   :octree-insert
+   :octree-delete
+   :octree-query
+
+   ;; camera.lisp
+   :camera-matrix
+   :camera-inverse
+   :camera
+   :target
+   :mode
+   :update-camera
+   :move-player
    ))

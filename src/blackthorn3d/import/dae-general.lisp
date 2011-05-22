@@ -55,6 +55,7 @@
     :accessor src-array
     :initarg :array)
    (stride 
+    :accessor src-stride
     :initarg :stride
     :initform 1)
    (components 

@@ -74,11 +74,11 @@
    (interpolation
     :initarg :interpolation
     :initform :linear)
-   (target
-    :initarg :target)
+   (ch-target
+    :initarg :ch-target)
    (eval-fn)))
 
-(defun make-channel (&key times values target normalize)
+(defun make-channel (&key times values ch-target normalize)
   (let* ((len (min (length times) (length values)))
          (t-min (aref times 0))
          (t-max (aref times(1- (length times))))
@@ -97,7 +97,7 @@
      'channel
      :frames frames
      :t-max t-d
-     :target target)))
+     :ch-target ch-target)))
 
 
 (defmacro time-step (frames index)

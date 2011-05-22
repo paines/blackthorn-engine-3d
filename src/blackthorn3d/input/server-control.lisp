@@ -43,7 +43,10 @@
      (view-y
         :accessor view-y
         :initform 0
-        :documentation "the state of the view-y axis"))
+        :documentation "the state of the view-y axis")
+     (jump
+        :accessor jump
+        :initform 0))
       (:documentation "Represents state of a client's controller"))
       
 (defun new-server-controller (client)
@@ -65,5 +68,7 @@
     (defun s-input-view-x (client-id)
       (with-controller client-id #'view-x))
     (defun s-input-view-y (client-id)
-      (with-controller client-id #'view-y)))
+      (with-controller client-id #'view-y))
+    (defun s-input-jump (client-id)
+      (with-controller client-id #'jump)))
       

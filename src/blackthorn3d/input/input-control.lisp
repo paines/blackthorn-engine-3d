@@ -38,6 +38,7 @@
 (defvar *walk-right-key* :sdl-key-d)
 (defvar *walk-up-key*    :sdl-key-w)
 (defvar *walk-down-key*  :sdl-key-s)
+(defvar *jump-key*       :sdl-key-space)
 
 (defvar *view-left-key*  :sdl-key-left)
 (defvar *view-right-key* :sdl-key-right)
@@ -123,10 +124,20 @@
             (:xbox (xbox-thumb #'xbox360_get_ry 0 *deadzone-range-ry*))
             (otherwise 0))))
             
+(defmethod input-jump ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *jump-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (xbox360_get_a) 1.0 0.0))
+      (otherwise 0.0))))
             
-(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt)
+(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)
     (when (getf *client-controllers* src)
               (setf (move-x (getf *client-controllers* src)) move-x-amt)
               (setf (move-y (getf *client-controllers* src)) move-y-amt)
               (setf (view-x (getf *client-controllers* src)) view-x-amt)
-              (setf (view-y (getf *client-controllers* src)) view-y-amt)))
+              (setf (view-y (getf *client-controllers* src)) view-y-amt)
+              (setf (jump (getf *client-controllers* src)) jmp-amt)))

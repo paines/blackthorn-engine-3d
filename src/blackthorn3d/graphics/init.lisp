@@ -27,6 +27,9 @@
 (in-package :blackthorn3d-graphics)
 
 (defun init-gfx ()
+  (setf *particle-tex*
+        (image->texture2d (load-image #p"res/images/round-particle1.png")))
+
   (setf skin-shader
         (make-shader (blt3d-res:file-contents
                       (blt3d-res:resolve-resource 

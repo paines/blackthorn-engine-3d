@@ -63,7 +63,7 @@
     :accessor input-amount
     :initarg :input-amount)))
 
-(make-enum-serializer :input-type (:move-x :move-y :view-x :view-y))
+(make-enum-serializer :input-type (:move-x :move-y :view-x :view-y :jmp))
 
 (make-slot-serializer :input
                       (make-instance 'input-event)
@@ -74,7 +74,7 @@
 
 (defmessage :event-input (:input-list))
 
-(defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y)
+(defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y jmp)
   (make-message-list
    :event-input
    (list (make-instance 'input-event
@@ -88,7 +88,10 @@
                         :input-amount view-x)
          (make-instance 'input-event
                         :input-type :view-y
-                        :input-amount view-y))))
+                        :input-amount view-y)
+         (make-instance 'input-event
+                        :input-type :jmp
+                        :input-amount jmp))))
 
 (defclass camera-event ()
   ((camera

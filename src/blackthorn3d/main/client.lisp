@@ -67,7 +67,9 @@
     (:force-disconnect
       (setf *should-quit* t))
     (:event-camera
-     (apply-message-handler #'handle-camera-client src message))))
+     (apply-message-handler #'handle-camera-client src message))
+    (:event-sound
+     (apply-message-handler #'blt3d-snd:handler-sound src message))))
 
 (defun finalize-client ()
   (socket-disconnect-all)
@@ -89,20 +91,24 @@
   (load-dlls)
   (blt3d-rend:init)
 
-  (register-model-loader :dae #'(lambda (path) 
-    (blt3d-gfx:load-obj->models (blt3d-imp:load-dae path))))
+  (register-model-loader 
+   :dae 
+   #'(lambda (path) 
+       (blt3d-gfx:load-obj->models 
+        (blt3d-imp:dae-geometry (blt3d-imp:load-dae path)))))
     
   (load-models-n-stuff)
 
   ;; need to scale robot =(
-  (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.05 0.05 0.05)))
+  (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
   (blt3d-phy:apply-transform (get-model :wedge) 
                              (make-inv-ortho-basis (make-point3 0.0 0.0 1.0)
                                                    (make-point3 -1.0 0.0 0.0)
                                                    (make-point3 0.0 1.0 0.0)))
   
   (setf *level* (blt3d-gfx:load-obj->models 
-                 (blt3d-imp:load-dae #p"res/models/RampRoomRainbow.dae")))
+                 (blt3d-imp:dae-geometry
+                  (blt3d-imp:load-dae #p"res/models/MovingPlatRoom.dae"))))
   #+disabled
   (blt3d-phy:expand-bounding-spheres *level*)
   #+disabled
@@ -131,9 +137,7 @@
       (blt3d-snd:init)
       (blt3d-rend:prepare-scene)
 
-      (setf *music* (blt3d-snd:load-sound :music #p"res/sound/music.mp3"))
-      (when *music*
-        (blt3d-snd:play-sound *music* :loop t))
+      (blt3d-snd:make-sound :soundtrack :music #p"res/sound/music.mp3")
 
       (sdl:with-events ()
         (:quit-event () t)
@@ -156,12 +160,14 @@
          (let ((mx (float (input-move-x *input*)))
                (my (float (input-move-y *input*)))
                (vx (float (input-view-x *input*)))
-               (vy (float (input-view-y *input*))))
+               (vy (float (input-view-y *input*)))
+               (jmp (float (input-jump *input*))))
            (message-send :server (make-event :input 
                                              :move-x (* 0.1 mx) 
                                              :move-y (* 0.1 my)
                                              :view-x (* 0.1 vx)
-                                             :view-y (* 0.1 vy))))
+                                             :view-y (* 0.1 vy)
+                                             :jmp jmp)))
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)

@@ -30,13 +30,14 @@
 (defun load-level ()
   (register-model-loader :dae 
                          #'(lambda (path) 
-                             (blt3d-imp:load-dae path)))
+                             (blt3d-imp:dae-geometry
+                              (blt3d-imp:load-dae path))))
                              
   ;; load our test model
   (let ((level
          (blt3d-phy:initialize-cube
           (blt3d-res:load-model 
-           :companion-cube :dae #p "res/models/RampRoomRainbow.dae"))))
+           :companion-cube :dae #p "res/models/MovingPlatRoom.dae"))))
     ;; we have to scale it!
     ;(blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
     

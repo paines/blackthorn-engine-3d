@@ -28,6 +28,7 @@
 ;; This var is for applying external forces like gravity/wind
 (defvar *external-force* +zero-vec+)
 (defvar *particle-tex* nil)
+
 ;;;
 ;;; particles
 ;;;
@@ -39,11 +40,8 @@
 ;; total length: 16 floats
 (defun create-particle (particles index
                         position velocity
-                        &key 
-                        (energy 1.0)
-                        (fade-rate 0.5)
-                        (color +orange+)
-                        (size 0.1))
+                        energy fade-rate
+                        color size)
   (setf (col particles index) 
         (vector energy                  ; 0
                 fade-rate               ; 1
@@ -145,6 +143,10 @@
                                   (vec-scale3 *external-force* dt)))))
 
 
+;;;
+;;; Classes
+;;;
+
 (defclass point-emitter ()
   ((pos
     :initarg :pos)
@@ -154,13 +156,12 @@
     :initarg :up)
    (speed
     :initarg :speed)
-   (speed-fuzzy
-    :initarg :speed-fuzzy)
    (angle
     :initarg :angle
     :documentation "The angle phi around the direction that particles 
                     can be emitted in. a value of pi is a hemisphere
                     2*pi would be a sphere")))
+
 
 (defclass particle-system ()
   ((emitter
@@ -172,17 +173,35 @@
     :documentation "The rate at which particles are to be emitted.
                     If set to 0, system will max-particles once and then
                     finish")
+   (lifetime
+    :accessor lifetime
+    :initarg :lifetime
+    :initform 1.0
+    :documentation "The time in seconds that the particles live
+                    If given as a pair (start . end) a random value
+                    is generated between start and end") 
+   (size
+    :initarg :size
+    :documentation "size of particle.  same rule applies as lifetime")
+   (color
+    :accessor color
+    :initarg :color
+    :initform +white+
+    :documentation "color of each particle. Would like to expand the
+                    functionality to allow more interesting possibilities
+                    but for now if you wanna change it do it at the 
+                    particle system level")
+   (force-fn
+    :initarg :force-fn
+    :initform #'(lambda (dt) (vec-neg4 +y-axis+)))
    (shader
     :accessor shader
     :initarg :shader
     :initform 0)
    (texture
     :accessor texture
-    :initarg :texture)
-   (blend-mode
-    :accessor blend-mode
-    :initarg :blend-mode
-    :initform '(:src-alpha :one-minus-source-alpha))
+    :initarg :texture
+    :initform 0)
    (type
     :accessor ps-type
     :initarg :type
@@ -207,7 +226,7 @@
   (slot-value this 'pos))
 
 (defmethod gen-initial-vel ((this point-emitter) time)
-  (with-slots (dir angle speed speed-fuzzy) this
+  (with-slots (dir angle speed) this
     ;; Generate random coordinates
     (let* ((angle/2 (* 0.5 angle))
            (phi (random (* 2.0 pi)))
@@ -217,34 +236,59 @@
            (w (cross3 u v))
            (z (cos theta))
            (x (* (sin theta) (cos phi)))
-           (y (* (sin theta) (sin phi))))
+           (y (* (sin theta) (sin phi)))
+           (speed (if (consp speed) 
+                      (+ (car speed) (random (- (cdr speed) (car speed))))
+                      speed)))
       (vec-scale3 (vec3+ (vec3+ (vec-scale3 u z)
                                 (vec-scale3 v y))
                          (vec-scale3 w x))
-                  (+ speed (- 1.0 (random (* (float speed-fuzzy))))))
-      #+disabled
-      (vec-scale3 dir
-                  (+ speed (- 1.0 (random (* (float speed-fuzzy)))))))))
-
+                  speed))))
 
 
 ;;;
 ;;; Particle-System Methods and Functions
 ;;;
 
-
-(defun create-particle-system (emitter spawn-rate max-particles)
+(defun create-particle-system (emitter spawn-rate max-particles
+                               &key 
+                               (color +white+)
+                               (lifetime 2.0)
+                               (size 0.1)
+                               (force-fn #'(lambda (dt)
+                                             (vec-neg4 +y-axis+))))
   (make-instance 'particle-system
                  :emitter emitter
                  :spawn-rate spawn-rate
+                 :lifetime lifetime
+                 :size size
+                 :color color
                  :max-particles max-particles
-                 :particles (create-particle-array max-particles)))
+                 :particles (create-particle-array max-particles)
+                 :force-fn force-fn))
+
+(defmethod gen-particle ((this particle-system) index dt)
+  (with-slots (particles size lifetime emitter color) this
+    (let ((pos (gen-initial-pos emitter dt))
+          (vel (gen-initial-vel emitter dt))
+          (fade (/ 1.0 (if (consp lifetime)
+                           (+ (car lifetime) 
+                              (random (- (cdr lifetime) (car lifetime))))
+                           lifetime)))
+          (size (if (consp size)
+                    (+ (car size) 
+                       (random (- (cdr size) (car size))))
+                    size)))
+      (create-particle particles index
+                       pos vel
+                       1.0 fade
+                       color size))))
 
 (let ((spawn-num 1))
   (defmethod update-ps ((this particle-system) dt)
     ;; Loop over each particle and update it's position
-    (let ((*external-force* (vec-scale4 +y-axis+ -1.0)))
-      (with-slots (particles spawn-rate max-particles num-alive emitter) this   
+    (let ((*external-force* (funcall (slot-value this 'force-fn) dt)))
+      (with-slots (particles spawn-rate max-particles num-alive) this   
         (incf spawn-num (* dt spawn-rate))
         (iter (with emitted = 0)
               (with max-emit = 
@@ -262,9 +306,7 @@
                     (incf alive-cnt))
                   ;; If dead check if we should revive it
                   (when (< emitted max-emit)
-                    (create-particle particles index
-                                     (gen-initial-pos emitter dt)
-                                     (gen-initial-vel emitter dt))
+                    (gen-particle this index dt)
                     (incf emitted)))
 
               ;; Finally, update the number of alive particles

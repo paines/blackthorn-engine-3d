@@ -78,10 +78,13 @@
   (let ((scientist-model 
          ;#+disabled
          (blt3d-imp:dae-geometry 
-          (blt3d-imp:load-dae #p "res/models/cylinder-test-2.dae"))))
+          (blt3d-imp:load-dae 
+          ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
+           #p "res/models/player-3.dae"
+           ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
-    (apply-transform *test-skele* (make-scale #(0.05 0.05 0.05)))
+    (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     ;#+disabled
     (apply-transform *test-skele* 
                      (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
@@ -179,7 +182,7 @@
                                             (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
-  #+disabled
+  ;#+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
         ;(gl:scale 0.03 0.03 0.03)

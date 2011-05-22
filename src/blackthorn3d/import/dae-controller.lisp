@@ -85,7 +85,8 @@
                 ;    (format t "######~%weights: ~a~%" weights-lst)
                  ;   (format t "total is: ~a~%" total)
                     (iter (with norm = (if (zerop total) 1.0
-                                           (/ 1 total))) 
+                                           1.0;(/ 1 total)
+                                           )) 
                           (for w in weights-lst)
                           (setf (svref weight-array (incf wi))
                                 (* norm w))))))))
@@ -120,6 +121,7 @@
           (dae-debug "processing controller: ~a~%" 
                      (get-attribute "id" (attributes controller)))
           (let* ((*dbg-level* (1+ *dbg-level*))
+
                  (skin (find-tag-in-children +skin+ controller))
                  (sources (hash-sources skin))
                  (bind-pose (matrix-tag->matrix 

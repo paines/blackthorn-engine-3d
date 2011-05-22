@@ -77,10 +77,43 @@
         
         (gl:tex-coord 1.0 0.0)
         (gl:vertex s1 (- s2) 0.0)
-
         
         (gl:tex-coord 1.0 1.0)
         (gl:vertex s1 s2 0.0)
 
         (gl:tex-coord 0.0 1.0)
         (gl:vertex (- s1) s2 0.0)))))
+
+
+(gl:define-gl-array-format blt-billboard
+  (gl:vertex :type :float :components (vx vy vz))
+  (gl:tex-coord :type :float :components (u v)))
+
+(defvar *billboard-shader* nil)
+
+(defun create-billboard-stream (count align &rest rest)
+  "align is :screen :world or :axis. If axis, axis should be in rest"
+  (let ((gl-array (gl:alloc-gl-array 'blt-billboard count)))
+    gl-array))
+
+(defun write-to-bb-stream (stream index vertex uv)
+  (setf (glaref stream index 'vx) (x vertex)
+        (glaref stream index 'vy) (y vertex)
+        (glaref stream index 'vz) (z vertex)
+        
+        (glaref stream index 'u)  (x uv)
+        (glaref stream index 'v)  (y uv)))
+
+(defun flush-billboard-stream (stream)
+  (gl:with-pushed-attrib (:depth-buffer-bit)
+    ;; Turn off depth write /hack for transparency
+    (gl:depth-mask nil)
+
+    (gl:enable-client-state :vertex-array)
+    (gl:enable-client-state :texture-coord-array)
+
+    (use-shader *billboard-shader*)
+
+    (gl:bind-gl-vertex-array stream)
+   ; (gl:draw-arrays :quads 0 )
+    ))

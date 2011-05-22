@@ -123,6 +123,7 @@
 ;; For now, lets assume the skeleton data is well formed
 ;; that is, all the nodes are in joint-arr
 (defun compile-skeleton (joint-arr root-node)
+  (format t "root node: ~a~%" root-node)
   (labels ((skele-builder (root-node)
              (let* ((joint-name (car (node-extra root-node)))
                     (joint-obj (find joint-name ;(read-from-string joint-name)
@@ -153,8 +154,10 @@
                (iter (for n in nodes)
                      (with-slots (id children) n
                        (if (equal id sid)
-                           (return-from find-root-node n)
-                           (find-root-node children sid)))))))
+                           (progn (format t "found node ~a~%" n)
+                                  (return-from find-root-node n))
+                           (aif (find-root-node children sid)
+                               (return-from find-root-node it))))))))
 
     (destructuring-bind (controller-id root-node materials) data
       ;; First get the controller and then the geometry
@@ -172,63 +175,69 @@
                                             (collect (src-accessor indices i))))
             (format t "Weights: ~a~%" (iter (for i below 60)
                                             (collect (src-accessor weights i)))))
+          (format t "looking for node: ~a~%" root-node)
           (let* ((mesh (mesh-list->blt-mesh 
                         #+disabled(list geom-id elements inputs)
                         (list geom-id 
                               (duplicate-indices elements 0 2)
                               (append inputs skin-inputs))))
                  (found-node (find-root-node *scene-table*
-                                             root-node))
-                 (skeleton (compile-skeleton joint-arr
-                                             found-node)))
+                                             root-node)))
+            (format t "found-node: ~a~%" found-node)
+            (let ((skeleton (compile-skeleton joint-arr
+                                              found-node)))
 
-            (dae-debug "Vertices:~%")
-            (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
-                  (dae-debug "~a  ~%" elt))
-            
-            (list 
-             (make-blt-skin :mesh mesh
-                            :skeleton skeleton
-                            :bind-matrix bind-pose)
-             (build-material-array (elements mesh) materials))))))))
+              (dae-debug "Vertices:~%")
+              (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
+                    (dae-debug "~a  ~%" elt))
+              
+              (list 
+               (make-blt-skin :mesh mesh
+                              :skeleton skeleton
+                              :bind-matrix bind-pose)
+               (build-material-array (elements mesh) materials)))))))))
 
 (defvar *xform-mappings* nil)
 
 (defun compile-node (node geometry-table material-table)
   ;; Convert mesh-lst into a blt-mesh
   (with-slots (id type xform extra children) node
-    (dae-debug "node ~a is of type ~a~%" id type)
     ;; recurse on children
     (let* ((node-children 
             (iter (for child-node in children)
                   (collect (compile-node child-node
-                                         geometry-table 
+                                         geometry-table
                                          material-table))))
-           (new-node 
-            (case type
-              (:geometry 
-               (destructuring-bind (mesh materials) 
-                   (compile-geometry extra)
-                 (make-model-node :id id
-                                  :transform xform
-                                  :material-array materials
-                                  :mesh mesh
-                                  :child-nodes node-children)))
-              (:controller 
-               (destructuring-bind (skin materials) 
-                   (compile-controller extra)
-                 (make-model-node :id id
-                                  :transform xform
-                                  :material-array materials
-                                  :mesh skin
-                                  :child-nodes node-children)))
-              ;#+disabled
-              (:parent
-               (make-scene-node :id id
-                                :transform xform
-                                :child-nodes node-children))
-              ;; anything else, we don't really care about much
-              (otherwise nil))))
+           (new-node
+            (progn   
+              (dae-debug "node ~a is of type ~a~%" id type)
+              (case type
+                (:geometry 
+                 (destructuring-bind (mesh materials) 
+                     (compile-geometry extra)
+                   (make-model-node :id id
+                                    :transform xform
+                                    :material-array materials
+                                    :mesh mesh
+                                    :child-nodes node-children)))
+                (:controller 
+                 (destructuring-bind (skin materials) 
+                     (compile-controller extra)
+                   (make-model-node :id id
+                                    :transform xform
+                                    :material-array materials
+                                    :mesh skin
+                                    :child-nodes node-children)))
+                ;;#+disabled
+                (:parent
+                 (if (find-if #'(lambda (x)
+                                  (eql 'model-node (class-of x)))
+                              node-children)
+                     (make-scene-node :id id
+                                      :transform xform
+                                      :child-nodes node-children)))
+                ;; anything else, we don't really care about much
+                (otherwise nil)))))
 
       (format t "NODE ~a's transform: ~a~%" id xform)
 
@@ -239,11 +248,6 @@
               #+disabled
               #'(lambda (val) (setf (transform new-node) val))))
 
-      ;; recurse on children
-      #+disabled
-      (when new-node
-        (setf (child-nodes new-node)
-              ))
       ;; return the node
       new-node)))
 
@@ -266,6 +270,12 @@
                               (get-location-fn (slot-value ch 'ch-target) 
                                                *xform-mappings*)))
                   (collect clip)))))
+    
+    (iter (for node in meshes)
+          (format t "Node ~a:  transform: ~a  bv: ~a~%"
+                  (id node) (transform node) (node-bounding-volume node)))
+ 
+    (format t "Nodes: ~a~%" meshes)
 
     (format t "~%~%ANIM-MAPPINGS:~%")
     (iter (for (key value) in-hashtable *xform-mappings*)

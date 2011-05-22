@@ -250,16 +250,20 @@
     :initarg :mesh)))
 
 (defun make-scene-node (&key id transform child-nodes)
-  (make-instance 'node
-                 :id id
-                 :transform transform
-                 :child-nodes child-nodes
-                 :bounding-volume
-                 (transform-bounding-volume
-                  (combine-bounding-spheres
-                   (iter (for c in child-nodes)
-                         (collect (node-bounding-volume c))))
-                  transform)))
+  (let ((children (remove-if #'null child-nodes)))
+    (format t "~3TMaking scene node ~a with children ~a~%"
+            id child-nodes)
+    (make-instance 'node
+                   :id id
+                   :transform transform
+                   :child-nodes children
+                   :bounding-volume
+                   (when children
+                     (transform-bounding-volume
+                      (combine-bounding-spheres
+                       (iter (for c in children)
+                             (collect (node-bounding-volume c))))
+                      transform)))))
 
 (defun make-model-node (&key id transform material-array mesh child-nodes)
   (let ((bv (transform-bounding-volume

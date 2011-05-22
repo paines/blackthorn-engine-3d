@@ -98,14 +98,14 @@
 
   (setf *test-ps* (create-particle-system 
                    (make-instance 'point-emitter
-                                  :pos +origin+
+                                  :pos (make-point3 0.0 -0.5 0.0)
                                   :dir +y-axis+
                                   :up +y-axis+
-                                  :angle (* pi 2)
-                                  :speed 5
-                                  :speed-fuzzy 2.5)
-                   0
-                   1000))
+                                  :angle (/ pi 2)
+                                  :speed '(1.0 . 2.5))
+                   500
+                   2000
+                   :lifetime 4))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
@@ -128,6 +128,7 @@
 
 (defun render-frame (entities level)
   (gl:depth-mask t)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
  
   ;; Create PVS from entities and level
@@ -175,7 +176,7 @@
                                             (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
-  ;#+disabled
+  #+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
         ;(gl:scale 0.03 0.03 0.03)
@@ -194,6 +195,7 @@
   ;#+disabled
   (gl:use-program 0)
   (gl:depth-mask nil)
+  (gl:blend-func :src-alpha :one)
   (when *test-ps*
     (render-ps *test-ps*))
 

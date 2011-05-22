@@ -29,11 +29,12 @@
 ;;; billboards, woot
 ;;;
 
-;; The current eye position for world and axis aligned
+;; The current eye position and related data
 (defvar *bill-screen-normal* (vec-neg4 +z-axis+))
 (defvar *bill-eye-pos* +origin+)
 (defvar *bill-eye-up* +y-axis+)
 (defvar *bill-world-up* +y-axis+)
+
 
 (defun update-billboarder (eye-pos eye-dir eye-up world-up)
   (setf *bill-eye-pos* eye-pos

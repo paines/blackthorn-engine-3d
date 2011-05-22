@@ -248,29 +248,30 @@
 
 (defmethod combine-bounding-spheres (list-bv)
   (labels ())
-  (let ((mid-point (iter (for bv in list-bv)
-		     (with-slots (pos) bv
-		       (reducing pos by #'vec4+ into sum-vec 
-                                 initial-value +zero-vec+))
-		     (finally 
-                      (return (vec-scale4 sum-vec 
-                                          (/ 1 (length list-bv))))))))
-    (iter (for bv in list-bv)
-          (with-slots (pos rad) bv
-            (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 
-                        into radius))
-          (finally (return (make-instance 
-                            'bounding-sphere
-                            :pos mid-point
-                            :rad radius))))))
+  (when list-bv
+    (let ((mid-point (iter (for bv in list-bv)
+                           (with-slots (pos) bv
+                             (reducing pos by #'vec4+ into sum-vec 
+                                       initial-value +zero-vec+))
+                           (finally 
+                            (return (vec-scale4 sum-vec 
+                                                (/ 1 (length list-bv))))))))
+      (iter (for bv in list-bv)
+            (with-slots (pos rad) bv
+              (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 
+                          into radius))
+            (finally (return (make-instance 
+                              'bounding-sphere
+                              :pos mid-point
+                              :rad radius)))))))
 
 (defmethod transform-bounding-volume ((this bounding-sphere) xform
                                       &optional ignore-r)
   (with-slots (rad pos) this
     (make-instance 'bounding-sphere
-                 :pos (matrix-multiply-v xform pos)
-                 :rad (if ignore-r
-                          rad
-                          (mag (matrix-multiply-v 
-                                xform
-                                (make-vec3 rad 0.0 0.0)))))))
+                   :pos (matrix-multiply-v xform pos)
+                   :rad (if ignore-r
+                            rad
+                            (mag (matrix-multiply-v 
+                                  xform
+                                  (make-vec3 rad 0.0 0.0)))))))

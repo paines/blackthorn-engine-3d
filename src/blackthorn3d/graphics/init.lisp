@@ -53,5 +53,7 @@
                                    #p "res/shaders/FinalProjShader.vert"))
                                  (blt3d-res:file-contents
                                   (blt3d-res:resolve-resource
-                                   #p "res/shaders/FinalProjShader.frag")))))
+                                   #p "res/shaders/FinalProjShader.frag"))))
+  
+  (billboard-init))
 

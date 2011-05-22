@@ -55,7 +55,11 @@
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (blt3d-phy:move-player c input-vec))
            (target (blt3d-phy::target c)))
+
+      (setf (velocity target) move-vec)
+      #+disabled
       (setf (velocity target) (vec4+ (velocity target) move-vec))
+
       (blt3d-phy::standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
         (setf (dir target) (norm4 move-vec))))

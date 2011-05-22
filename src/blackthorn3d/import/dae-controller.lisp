@@ -65,36 +65,73 @@
     ;; The v-indices array is considered an array of stride 2
     ;; so, indices have to be multiplied by 2
     (labels ((set-thingy (start-index count)
-           (iter (for i below 4)
+           (iter (for i below count)
                  (for v-ind-inc = (* 2 (+ i start-index)))
                  ;; we have to collect them FIRST
                  ;; then make sure they're NORMALIZED (in case we drop some)
-                 (if (< i count)
-                     (progn
-                       (setf (svref index-array (incf ii))
-                             (svref v-indices v-ind-inc))
-                       (collect 
-                        (svref weights (svref v-indices (1+ v-ind-inc)))
-                                into weights-lst))
-                     (progn
-                       (setf (svref index-array (incf ii)) 0.0)
-                       (collect 0.0 into weights-lst)))
+                 (collect 
+                  (cons (svref v-indices v-ind-inc)
+                        (svref weights (svref v-indices (1+ v-ind-inc))))
+                  into pairs-lst)
+
                  (finally
-                  (let ((total (iter (for w in weights-lst)
-                                     (sum w))))
-                ;    (format t "######~%weights: ~a~%" weights-lst)
-                 ;   (format t "total is: ~a~%" total)
-                    (iter (with norm = (if (zerop total) 1.0
-                                           (/ 1 total))) 
-                          (for w in weights-lst)
-                          (setf (svref weight-array (incf wi))
-                                (* norm w))))))))
+                  ;; select the 4 biggest weights, pad with 0s, and 
+                  ;; normalize
+                  
+                  ;;quick check to see sum
+                  (when (zerop (iter (for (index . weight) in pairs-lst)
+                                     (sum weight)))
+                    (format t "ZERO-TOTAL!: pairs: ~a~%" pairs-lst))
+
+                  (when (> count 4)
+                    (format t "WE HAVE ~a WEIGHTS!~%~2Tpairs: ~a~%"
+                            count pairs-lst))
+
+                  ;; combine same-joint weights
+                  (setf 
+                   pairs-lst
+                   (iter (with result = (make-hash-table))
+                         (for (index . weight) in pairs-lst)
+                         (setf (gethash index result)
+                               (+ (gethash index result 0)
+                                  weight))
+                         (finally
+                          (return (iter (for (key value) in-hashtable result)
+                                        (collect (cons key value)))))))
+
+                  (when (> count 4)
+                    (format t "~2Tcombined: ~a~%"
+                            pairs-lst)
+                    (setf pairs-lst ()))
+
+                  (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
+                  (progn
+                    (iter (for i below (- 4 (length pairs-lst)))
+                          (push '(0 . 0.0) pairs-lst))
+                  
+                    
+                    ;; normalize
+                    (let ((total 
+                           (iter (for (index . weight) in pairs-lst)
+                                 (for i below 4)
+                                 (sum weight))))
+                      (when (zerop total)
+                        (setf total 1.0))
+                      (iter (with norm = (/ 1.0 total))
+                            (for i below 4)
+                            (for (index . weight) in pairs-lst)
+                            (setf (svref index-array (incf ii))
+                                  index)
+                            (setf (svref weight-array (incf wi))
+                                  (* norm weight)))))))))
 
       (iter (for vi below n-verts)
             (for count in-vector counts)
             (for v-index first 0 then (+ v-index count))
             ;; Build the index and weight streams
-            (set-thingy v-index count))
+            (set-thingy v-index count)
+            (finally (format t "Was vi = nverts?!? ~a: ~a~%" 
+                            vi  (= vi n-verts))))
       (list
        (list :joint-index
              (make-instance 'source
@@ -120,6 +157,7 @@
           (dae-debug "processing controller: ~a~%" 
                      (get-attribute "id" (attributes controller)))
           (let* ((*dbg-level* (1+ *dbg-level*))
+
                  (skin (find-tag-in-children +skin+ controller))
                  (sources (hash-sources skin))
                  (bind-pose (matrix-tag->matrix 

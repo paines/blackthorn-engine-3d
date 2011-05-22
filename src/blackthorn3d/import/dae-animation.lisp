@@ -73,7 +73,7 @@
                       (make-channel
                        :times (src-array (input-by-semantic :input inputs))
                        :values (src-expand (input-by-semantic :output inputs))
-                       :target (get-uri "target" (attributes channel)))))))
+                       :ch-target (get-uri "target" (attributes channel)))))))
 
             ;; Setup the animation-clip
             (let ((end-time

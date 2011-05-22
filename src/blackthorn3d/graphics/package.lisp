@@ -53,14 +53,7 @@
    :make-frstm
    :load-frstm
 
-   ;; camera.lisp
-   :camera-matrix
-   :camera-inverse
-   :camera
-   :target
-   :mode
-   :update-camera
-   :move-player
+ 
 
    ;; texture.lisp
    :load-image

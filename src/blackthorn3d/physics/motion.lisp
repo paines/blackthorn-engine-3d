@@ -38,7 +38,7 @@
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
-(defun standard-physics-step (self)
+(defmethod standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) (velocity self))))
    ; (format t "VEL: ~a~%" (velocity self))
   ;  (format t "pre-move: ~a ; " movement-vec)

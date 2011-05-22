@@ -83,6 +83,7 @@
                                               ((:file "package")
                                                (:file "shapes")
                                                (:file "blt-model")
+                                               (:file "camera")
                                                (:file "intersect")
                                                (:file "static-collision")
                                                (:file "collision")
@@ -119,7 +120,6 @@
                                                (:file "billboards")
                                                (:file "particles")
                                                (:file "frustum")
-                                               (:file "camera")
                                                (:file "init"))
                                               :serial t)
                                      (:module renderer

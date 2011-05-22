@@ -100,6 +100,8 @@
    :sphere-triangle-intersection
    :sphere-edge-intersection
    :sphere-point-intersection
+   :make-ray
+   :ray-sphere-intersection
 
    ;; collision.lisp
    :collide-p

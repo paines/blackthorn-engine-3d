@@ -48,3 +48,9 @@
     (move-vec self movement-vec)
     ))
     
+(defmethod standard-physics-step ((self camera))
+  (let ((movement-vec (collide-with-world 
+                       self 
+                       (blt3d-res:get-model :companion-cube)
+                       )))
+    (move-camera self movement-vec)))

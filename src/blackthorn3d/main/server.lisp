@@ -59,8 +59,10 @@
       (blt3d-phy::standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
         (setf (dir target) (norm4 move-vec))))
+
     (blt3d-phy:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
-                                                     (s-input-view-y client)))))
+                                                     (s-input-view-y client)))
+    (blt3d-phy::standard-physics-step c)))
       
 (defmacro make-server-only (type &rest options)
   `(make-server-entity ,type 
@@ -128,6 +130,9 @@
         :ideal-coord (list 0.0 0.0 4.0)
         :target player-entity
         :shape-name :cylinder
+        :bv (make-instance 'blt3d-phy::bounding-sphere
+                                        :rad 0.2
+                                        :pos +origin+)
         :mode :third-person))
 
 (defun finalize-server ()

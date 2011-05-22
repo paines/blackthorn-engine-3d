@@ -103,8 +103,8 @@
                                   :up +y-axis+
                                   :angle (/ pi 2)
                                   :speed '(1.0 . 2.5))
-                   500
-                   2000
+                   100
+                   1000
                    :lifetime 4))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)

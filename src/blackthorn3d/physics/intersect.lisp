@@ -169,7 +169,7 @@
 (defun sphere-edge-intersection (sphere velocity
                                  O E tmax)
   ;(break)
- #+disable
+; #+disable
   (let* ((pos (pos sphere))
          (r (rad sphere))
          (r2 (* r r))

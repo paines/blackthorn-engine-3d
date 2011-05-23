@@ -49,18 +49,20 @@
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-shader.frag"))))
-   (setf *right-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "right"))
-   (setf *up-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "up"))
-   (setf *size-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "size")))
+   #+disabled
+   (progn
+     (setf *right-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "right"))
+     (setf *up-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "up"))
+     (setf *size-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "size"))))
 
 (defun update-billboarder (eye-pos eye-dir eye-up world-up)
   (setf *bill-eye-pos* eye-pos

@@ -32,16 +32,10 @@
     (declare (ignore e)))
 
 (defmethod update ((p player))
-    (with-slots (client) p
-      (when (> (s-input-jump client) 0)
-        (format t "JUMP!~%")
-        (jump p))
-      #+disabled
-      (setf (pos p)
-        (vec4+ (pos p)
-               (make-vec3 (float (s-input-move-x client)) 
-                          0.0 
-                          (float (s-input-move-y client)))))))
+  (with-slots (client) p
+    (when (> (s-input-jump client) 0)
+      (format t "JUMP!~%")
+      (jump p))))
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
@@ -49,16 +43,17 @@
 (defmethod update ((c camera))
   (let* ((player (target c))
          (client (player-client player)))
+         
+    ;; camera should remove itself after the player disconnects
     (when (not (is-alive-p player))
       (remove-entity c)
       (return-from update))
+      
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (move-player c input-vec))
            (target (blt3d-phy::target c)))
 
       (setf (velocity target) move-vec)
-      #+disabled
-      (setf (velocity target) (vec4+ (velocity target) move-vec))
 
       (standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
@@ -115,7 +110,6 @@
        
 (defun handle-disconnect (client)
   (remove-server-controller client)
-  ;(remove-player client)
   (push client *delay-disconnected-clients*)
   (decf *client-count*)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
@@ -177,14 +171,9 @@
            (ignore b)))
       
 (defun check-collisions ()
-
-  #+disabled
-  (format t "---------------------------------------------------------------~%")
   (iter (for (e1 e2) in (combinations (list-entities)))
       (when (blackthorn3d-physics:collide-p e1 e2)
-        (collide e1 e2)
-        #+disabled
-        (format t "~a collides with ~a!~%" e1 e2))
+        (collide e1 e2))
   )
 )
 

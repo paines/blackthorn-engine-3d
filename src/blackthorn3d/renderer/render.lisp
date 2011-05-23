@@ -110,8 +110,8 @@
                                   :up +y-axis+
                                   :angle (/ pi 2)
                                   :speed '(1.0 . 2.5))
-                   100
                    1000
+                   10000
                    :lifetime 4
                    :force-fn
                    #'(lambda (vel dt)
@@ -202,13 +202,8 @@
             (draw-object shape))))))
 
   ;; DO PARTICLES YEAH!
-  (gl:use-program 0)
-  (gl:depth-mask nil)
-  (gl:blend-func :src-alpha :one)
-  
-  
-
-  #+disabled
+  (gl:blend-func :src-alpha :one)  
+  ;#+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

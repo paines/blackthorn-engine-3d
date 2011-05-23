@@ -76,10 +76,9 @@
   
 (defun string->sv (str)
   (with-input-from-string (s str)
-    (apply #'vector
-           (iter (for val = (read s nil :eof ))
-                 (until (eql val :eof))
-                 (collect val)))))
+    (iter (for val = (read s nil :eof ))
+          (until (eql val :eof))
+          (collect val result-type 'vector))))
 
 (defun uri-indirect (uri)
   (if (and (simple-string-p uri)

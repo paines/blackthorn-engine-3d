@@ -58,6 +58,7 @@
    ;; texture.lisp
    :load-image
    :image->texture2d
+   :use-texture
 
    ;; mesh.lisp
    :mesh
@@ -80,6 +81,8 @@
 
    ;; particles.lisp
    :particle-system
+   :num-alive
+   :max-particles
    :update-ps
    :render-ps
    :create-particle-system
@@ -88,7 +91,14 @@
    ;; billboards.lisp
    :update-billboarder
    :draw-billboard-quad
-  
+
+   ;; ui.lisp
+   :ui-element
+   :ui-gauge
+   :update-ui-element
+   :draw-ui-element
+   :render-ui
+   :add-ui-element
    ))
         
         

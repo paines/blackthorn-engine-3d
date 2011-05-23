@@ -109,11 +109,7 @@
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:dae-geometry
                   (blt3d-imp:load-dae #p"res/models/MovingPlatRoom.dae"))))
-  #+disabled
-  (blt3d-phy:expand-bounding-spheres *level*)
-  #+disabled
-  (blt3d-phy:apply-transform *level* (make-scale #(0.05 0.05 0.05)))
-  ;#+disabled
+
   (blt3d-phy:apply-transform 
    *level* 
    (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
@@ -170,9 +166,10 @@
                                              :jmp jmp)))
 
 
-         (blt3d-rend:update-graphics (list-entities) 1/60)
+         (blt3d-rend:update-graphics (list-entities) *level* 1/60)
 
          (blt3d-rend:render-frame (list-entities) *level*)
+;         (blt3d-rend::render-2d)
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))

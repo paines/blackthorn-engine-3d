@@ -261,8 +261,10 @@
               (let ((pos (p-pos particle))
                     (color (p-color particle)))
 
-                (gl:color (r color) (g color) (b color)
+
+             (gl:color (r color) (g color) (b color)
                           (* (p-energy particle) (a color)))
+             ;   (gl:color 1.0 0.7 0.0 1.0)
 
                 (gl:tex-coord 0.0 0.0)
                 (gl:vertex (x pos) (y pos) (z pos))

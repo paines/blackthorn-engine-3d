@@ -215,7 +215,8 @@
     :initarg :particles
     :documentation "the array of particles belonging to the system")
    (max-particles
-    :initarg :max-particles)
+    :initarg :max-particles
+    :reader  max-particles)
    (particle-stream
     :initarg :particle-stream
     :initform nil)
@@ -326,7 +327,8 @@
             ;; Finally, update the number of alive particles
             (finally
              (decf spawn-num emitted)
-             (setf num-alive (+ alive-cnt emitted)))))))
+             (setf num-alive (+ alive-cnt emitted))
+          #+disabled   (format t "num alive: ~a~%" num-alive))))))
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))

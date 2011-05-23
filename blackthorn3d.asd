@@ -120,6 +120,7 @@
                                                (:file "billboards")
                                                (:file "particles")
                                                (:file "frustum")
+                                               (:file "ui")
                                                (:file "init"))
                                               :serial t)
                                      (:module renderer

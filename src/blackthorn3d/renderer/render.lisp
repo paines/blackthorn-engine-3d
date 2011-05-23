@@ -29,7 +29,7 @@
 (defvar *main-viewport* nil)
 (defvar *test-skele* nil)
 (defvar *test-ps* nil)
-(defvar *test-bill* nil)
+(defvar *test-ui* nil)
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
@@ -44,8 +44,9 @@
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
 
-  (setf *main-viewport* (create-viewport '(960 720) 0.1 1000))
-  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2))))
+  (setf *main-viewport* (create-viewport '(960 720) 0.1 200))
+;  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
+  )
 
 
 (defun set-camera (cam)
@@ -64,9 +65,6 @@
 
   (init-gfx)
 
-
- ; (gl:viewport 0 0 960 720)
-
   (gl:enable :texture-2d)
   (gl:enable :blend :sample-alpha-to-coverage)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
@@ -75,9 +73,9 @@
   (gl:depth-func :lequal)
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
-  ;#+disabled
+
+  #+disabled
   (let ((scientist-model 
-         ;#+disabled
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
@@ -89,14 +87,14 @@
     (format t "~2T skele nodes: ~a~%" (mesh-nodes *test-skele*))
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
-    ;#+disabled
+ 
     (apply-transform *test-skele* 
                      (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                                            (make-point3 0.0 0.0 1.0)
                                            (make-point3 0.0 1.0 0.0))))
 
   (set-viewport *main-viewport*)
- ; (load-frstm *frustum*)
+  (gl:matrix-mode :modelview)
   (gl:load-identity)
 
  ; (gl:enable :lighting)
@@ -108,20 +106,29 @@
                                   :pos (make-point3 0.0 -0.5 0.0)
                                   :dir +y-axis+
                                   :up +y-axis+
-                                  :angle (/ pi 2)
-                                  :speed '(1.0 . 2.5))
+                                  :angle (/ pi 1.5)
+                                  :speed '(.7 . 4.5))
                    1000
-                   10000
+                   8000
                    :lifetime 4
                    :force-fn
                    #'(lambda (vel dt)
                        (vec-neg3 (vec3+ vel +y-axis+)))))
 
+  (add-ui-element
+   (setf *test-ui* (make-instance 'ui-gauge
+                                  :offset '(0 0)
+                                  :size '(.05 .25)
+                                  :orientation :up
+                                  :max-value (max-particles *test-ps*)
+                                  :current-value 0)))
+
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 
-(defun update-graphics (entities time)
+(defun update-graphics (entities level time)
   (when *test-ps*
+    (update-ui-element *test-ui* (num-alive *test-ps*))
     (update-ps *test-ps* time))
 
   (when animated
@@ -130,6 +137,10 @@
   #+disabled
   (when *test-skele*
     (update-model *test-skele* time))
+
+  #+disabled
+  (when level
+    (update-model level time)) 
 
   (iter (for e in entities)
         (with-slots (shape) e
@@ -157,7 +168,6 @@
 
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
-  ;(enable-shader shader)
 
   ;; draw axes
   #+disabled
@@ -170,6 +180,7 @@
     (gl:vertex 0.0 0.0 0.0)
     (gl:vertex 0.0 0.0 1.25))
 
+  #+disabled
   (when animated
     (draw-object animated))
 
@@ -192,6 +203,7 @@
         ;(gl:scale 0.03 0.03 0.03)
       (draw-object *test-skele*)))
 
+  ;#+disabled
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))
       (with-slots (pos dir up shape) e
@@ -206,6 +218,9 @@
   ;#+disabled
   (when *test-ps*
     (render-ps *test-ps*))
+
+  ;; Lastly render the ui
+  (render-ui)
 
   (gl:flush)
   (sdl:update-display))

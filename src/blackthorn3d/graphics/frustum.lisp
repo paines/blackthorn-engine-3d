@@ -25,6 +25,9 @@
 
 (in-package :blackthorn3d-graphics)
 
+(defvar *screen-x* 960)
+(defvar *screen-y* 720)
+
 ;; what is a viewport? 
 ;;  - the size of the render target (/ screen)
 ;;  - the projection matrix / frustum (not sure which...)

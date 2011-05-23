@@ -47,3 +47,6 @@
                         (blt3d-res:get-model :companion-cube)))
     (move-vec self movement-vec)
     ))
+
+(defun jump (p)
+  (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))

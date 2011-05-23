@@ -109,6 +109,8 @@
    ;; motion.lisp
    :move
    :chase 
+   :jump
+   :standard-physics-step
 
    ;; skeleton.lisp
    :joint-id

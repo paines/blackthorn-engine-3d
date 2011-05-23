@@ -35,7 +35,7 @@
     (with-slots (client) p
       (when (> (s-input-jump client) 0)
         (format t "JUMP!~%")
-        (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+        (blt3d-phy:jump p))
       #+disabled
       (setf (pos p)
         (vec4+ (pos p)

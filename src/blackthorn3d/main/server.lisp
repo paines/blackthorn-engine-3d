@@ -71,14 +71,6 @@
                        (blt3d-res:get-model :companion-cube))))
     (blt3d-phy::move-camera c movement-vec))))
       
-(defmacro make-server-only (type &rest options)
-  `(make-server-entity ,type 
-      ; init w/ bogus values since these fields are not needed for server obj
-      :pos (make-point3 0.0 0.0 0.0)  
-      :dir (make-vec3 1.0 0.0 0.0)
-      :up  (make-vec3 0.0 1.0 0.0)
-      ,@options))
-      
 (defun next-frame ()
   (sleep 1/120)
   )

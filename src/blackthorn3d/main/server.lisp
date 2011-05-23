@@ -66,7 +66,10 @@
 
     (blt3d-phy:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
-    (blt3d-phy::standard-physics-step c)))
+    (let ((movement-vec (blt3d-phy:collide-with-world 
+                       c
+                       (blt3d-res:get-model :companion-cube))))
+    (blt3d-phy::move-camera c movement-vec))))
       
 (defmacro make-server-only (type &rest options)
   `(make-server-entity ,type 
@@ -214,7 +217,7 @@
 
   (make-monster (make-point3 20.0 0.0 0.0))
   (setf *level* (load-level))
-
+  
   (with-finalize-server ()
     (loop
        (next-frame)

@@ -38,21 +38,12 @@
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
-(defmethod standard-physics-step (self)
+(defun standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
                              (velocity self))))
-   ; (format t "VEL: ~a~%" (velocity self))
-  ;  (format t "pre-move: ~a ; " movement-vec)
     (setf (velocity self) movement-vec)
     (setf movement-vec (collide-with-world 
                         self 
                         (blt3d-res:get-model :companion-cube)))
-   ; (format t "post-move: ~a~%" movement-vec)
     (move-vec self movement-vec)
     ))
-    
-(defmethod standard-physics-step ((self camera))
-  (let ((movement-vec (collide-with-world 
-                       self 
-                       (blt3d-res:get-model :companion-cube))))
-    (move-camera self movement-vec)))

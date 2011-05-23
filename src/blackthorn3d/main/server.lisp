@@ -35,7 +35,7 @@
     (with-slots (client) p
       (when (> (s-input-jump client) 0)
         (format t "JUMP!~%")
-        (blt3d-phy:jump p))
+        (jump p))
       #+disabled
       (setf (pos p)
         (vec4+ (pos p)
@@ -46,27 +46,27 @@
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
                           
-(defmethod update ((c blt3d-phy:camera))
-  (let* ((player (blt3d-phy:target c))
+(defmethod update ((c camera))
+  (let* ((player (target c))
          (client (player-client player)))
     (when (not (is-alive-p player))
       (remove-entity c)
       (return-from update))
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
-           (move-vec (blt3d-phy:move-player c input-vec))
+           (move-vec (move-player c input-vec))
            (target (blt3d-phy::target c)))
 
       (setf (velocity target) move-vec)
       #+disabled
       (setf (velocity target) (vec4+ (velocity target) move-vec))
 
-      (blt3d-phy::standard-physics-step target)
+      (standard-physics-step target)
       (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
         (setf (dir target) (norm4 move-vec))))
 
-    (blt3d-phy:update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
+    (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
-    (let ((movement-vec (blt3d-phy:collide-with-world 
+    (let ((movement-vec (collide-with-world 
                        c
                        (blt3d-res:get-model :companion-cube))))
     (blt3d-phy::move-camera c movement-vec))))
@@ -130,14 +130,14 @@
   
 (defun new-camera (player-entity)
     (make-server-entity
-        'blt3d-phy:camera
+        'camera
         :pos (make-point3 0.0 0.0 0.0)
         :dir (make-vec3 1.0 0.0 0.0)
         :up  (make-vec3 0.0 1.0 0.0)
         :ideal-coord (list 0.0 0.0 4.0)
         :target player-entity
         :shape-name :cylinder
-        :bv (make-instance 'blt3d-phy::bounding-sphere
+        :bv (make-instance 'bounding-sphere
                                         :rad 0.07
                                         :pos +origin+)
         :mode :third-person))

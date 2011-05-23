@@ -49,18 +49,20 @@
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-shader.frag"))))
-   (setf *right-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "right"))
-   (setf *up-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "up"))
-   (setf *size-loc*
-         (gl:get-uniform-location
-          *billboard-shader*
-          "size")))
+   #+disabled
+   (progn
+     (setf *right-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "right"))
+     (setf *up-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "up"))
+     (setf *size-loc*
+           (gl:get-uniform-location
+            *billboard-shader*
+            "size"))))
 
 (defun update-billboarder (eye-pos eye-dir eye-up world-up)
   (setf *bill-eye-pos* eye-pos
@@ -159,18 +161,34 @@
   (gl:tex-coord :type :float :components (u v)))
 
 (defun create-billboard-stream (count)
-  (let ((gl-array (gl:alloc-gl-array 'blt-billboard count)))
-    gl-array))
+  (gl:alloc-gl-array 'blt-billboard count))
 
 (defun write-to-bb-stream (stream index vertex uv)
-  (setf (glaref stream index 'vx) (x vertex)
-        (glaref stream index 'vy) (y vertex)
-        (glaref stream index 'vz) (z vertex)
+  (setf (gl:glaref stream index 'vx)  (x vertex)
+        (gl:glaref stream index 'vy)  (y vertex)
+        (gl:glaref stream index 'vz)  (z vertex)
         
-        (glaref stream index 'u)  (x uv)
-        (glaref stream index 'v)  (y uv)))
+        (gl:glaref stream index 'u)   (x uv)
+        (gl:glaref stream index 'v)   (y uv)))
 
-(defun write-billboard (stream index position size)
+
+(defun write-billboard (stream index position size align)
+  (let ((order (list '(0.0 . 0.0)
+                     '(1.0 . 0.0)
+                     '(1.0 . 1.0)
+                     '(0.0 . 1.0))))
+    (iter (with start-index = (* 4 index))
+          (with pos = (make-point3 (coerce (x position) 'single-float)
+                                   (coerce (y position) 'single-float)
+                                   (coerce (z position) 'single-float)))
+          (for (u . v) in order)
+          (for i from start-index)
+          (write-to-bb-stream
+           stream i 
+           pos (vector u v)))))
+
+#+disabled
+(defun write-billboard (stream index position size align)
   (let (surface-normal surface-up surface-right basis)
     (case align
       (:screen
@@ -188,43 +206,74 @@
                surface-normal (cross surface-up surface-normal)))))
 
     (let ((start-index (* 4 index))
-          (order (list '(0 . 0)
-                       '(1 . 0)
-                       '(1 . 1)
-                       '(0 . 1))))
-      (iter (for (u . v) in order)
+          (order (list '(0.0 . 0.0)
+                       '(1.0 . 0.0)
+                       '(1.0 . 1.0)
+                       '(0.0 . 1.0))))
+      (iter (with pos = (make-point3 (coerce (x position) 'single-float)
+                                     (coerce (y position) 'single-float)
+                                     (coerce (z position) 'single-float)))
+            (for (u . v) in order)
             (for xs = (* (- u 0.5) size))
             (for ys = (* (- v 0.5) size))
             (for i from start-index)
             (write-to-bb-stream
              stream i
-             (vec4+ position (vec4+
+             (vec4+ pos (vec4+
                               (vec-scale4 surface-right xs)
                               (vec-scale4 surface-up ys)))
              (vector u v))))))
 
-(defun flush-billboard-stream (stream count size align)
+#+disabled
+(defun flush-billboard-stream (stream count align)
   (gl:with-pushed-attrib (:depth-buffer-bit)
     ;; Turn off depth write /hack for transparency
+    
     (gl:depth-mask nil)
 
     (gl:enable-client-state :vertex-array)
     (gl:enable-client-state :texture-coord-array)
 
-    #+disabled
-    (progn
-      (gl:uniformf *size-loc* size)
-      (gl:uniformf *up-loc* (x surface-up) (y surface-up) (z surface-up))
-      (gl:uniformf *right-loc* 
-                   (x surface-right)
-                   (y surface-right)
-                   (z surface-right)))
-    #+disabled
-    (gl:with-pushed-matrix
-        (gl:mult-matrix (make-inv-ortho-basis surface-right 
-                                              surface-up 
-                                              surface-normal)))
+    (format t "Drawing ~a billboards~%~3Tlength of stream: ~a~%"
+            count (gl::gl-array-size stream))
 
-    (use-shader *billboard-shader*)
+    (enable-shader *billboard-shader*)
+
     (gl:bind-gl-vertex-array stream)
-    (gl::draw-arrays :quads 0 count)))
+    (gl::draw-arrays :quads 0 (min count (gl::gl-array-size stream)))
+    (disable-shader)
+    (gl:bind-gl-vertex-array dummy-array)))
+
+(defun render-particles (particles count num-alive texture)
+  (enable-shader *billboard-shader*)
+  (gl:enable :texture-2d)
+  (gl:bind-texture :texture-2d texture)
+  (gl:with-pushed-attrib (:depth-buffer-bit)    
+    (gl:depth-mask nil)
+    (gl:enable-client-state :vertex-array)
+    (gl:enable-client-state :texture-coord-array)
+    (gl:with-primitive :quads
+      (iter (for i below count)
+            (for particle = (cons particles i))
+            (count (is-alive particle) into alive-cnt)
+            (while (< alive-cnt num-alive))
+            (when (is-alive particle)
+              (let ((pos (p-pos particle))
+                    (color (p-color particle)))
+
+                (gl:color (r color) (g color) (b color)
+                          (* (p-energy particle) (a color)))
+
+                (gl:tex-coord 0.0 0.0)
+                (gl:vertex (x pos) (y pos) (z pos))
+                
+                (gl:tex-coord 1.0 0.0)
+                (gl:vertex (x pos) (y pos) (z pos))
+
+                (gl:tex-coord 1.0 1.0)
+                (gl:vertex (x pos) (y pos) (z pos))
+
+                (gl:tex-coord 0.0 1.0)
+                (gl:vertex (x pos) (y pos) (z pos)))))))
+  (use-texture 0)
+  (disable-shader))

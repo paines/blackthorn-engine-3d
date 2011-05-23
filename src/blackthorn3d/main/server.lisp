@@ -145,6 +145,7 @@
       (let ((camera (new-camera (new-player new-client))))
         (message-send :broadcast (make-event :entity-create))
         (message-send new-client (make-event :camera :camera camera))
+        #+disabled
         (message-send new-client
                       (make-message-list :event-sound :soundtrack t)))))
   (forget-server-entity-changes))

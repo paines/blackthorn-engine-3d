@@ -138,6 +138,7 @@
     ;; Set up the skeleton array
     (update-skeleton bind-skeleton)
 
+    #+disabled
     (labels ((skele-drawer (joint)
                (let ((point (matrix-multiply-v (joint-matrix joint)
                                                +origin+)))

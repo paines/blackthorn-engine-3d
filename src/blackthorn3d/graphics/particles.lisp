@@ -330,8 +330,14 @@
 
 ;; TODO: add textures/quads, not just points
 (defmethod render-ps ((this particle-system))
+  (with-slots (particles max-particles num-alive texture 
+                         particle-stream) this
+    (render-particles particles max-particles
+                      num-alive *particle-tex*))
+
+  #+disabled
   (with-slots (particles max-particles num-alive particle-stream) this
-    ;(gl:with-primitives :points)
+                                        ;(gl:with-primitives :points)
     (iter (for index below max-particles)
           (for particle = (cons particles index))
           (count (is-alive particle) into alive-cnt)
@@ -343,15 +349,17 @@
                   (color (p-color particle)))
               (gl:color (r color) (g color) (b color) (* (p-energy particle)
                                                          (a color)))
-              ;#+disabled
+                                        ;#+disabled
               (draw-billboard-quad position 0.1 0.1 *particle-tex*
                                    :screen)
-               #+disabled
-              (gl:vertex (x position) (y position) (z position))))))
+              #+disabled
+              (gl:vertex (x position) (y position) (z position)))))))
 
 
 
-  (defvar *system-list* nil))
+
+
+(defvar *system-list* nil)
 
 (defun update-particle-systems (dt)
   (iter (for system in *system-list*)

@@ -137,7 +137,7 @@
                       nil)))))
 
 
-(test move-bounding-volume-set
+(test move-bounding-volume
   (let* ((s1 (make-instance 'bounding-sphere 
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
@@ -275,13 +275,17 @@
 (test make-octree
       (let ((my-octree (make-octree (make-point3 0.0 0.0 0.0) 4 3))
 	    (my-octree2 (make-octree (make-point3 0.0 0.0 0.0) 4 3)))
-	(progn
-	  (format t "pos ~a~%" (center my-octree))
-	  (format t "width ~a~%" (width my-octree))
-	  ;(let* ((children (children my-octree))
-;		 (child (aref children 1)))
-;	    (progn 
-;              (format t "pos ~a~%" (pos child))
-;	      (format t "width ~a~%" (width child))
-;	    )))))
-)))
+	(is (center my-octree) (make-point3 0.0 0.0 0.0))
+	(is (width my-octree) 4)
+	(with-slots (children) my-octree
+	  (let* ((child (aref children 1)))
+	    (is (center child)(make-point3 -2.0 -2.0 2.0))
+	    (is (width child) 2)))
+	(let* ((vect-array (vector (make-vector3 1.0 0.0 0.0)
+				   (make-vector3 0.0 1.0 0.0)
+				   (make-vector3 0.0 0.0 1.0)))
+	       (b-sphere (make-bounding-sphere vect-array))
+	       (object (make-instance 'entity-server :bv b-sphere)))
+	  (octree-insert my-octree object))
+	
+))

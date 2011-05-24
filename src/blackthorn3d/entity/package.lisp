@@ -48,6 +48,7 @@
    :list-entities
    :remove-entity
    :forget-server-entity-changes
+   :current-room
 
    ;; event.lisp
    :make-event

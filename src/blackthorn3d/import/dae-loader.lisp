@@ -180,9 +180,13 @@
                         #+disabled(list geom-id elements inputs)
                         (list geom-id 
                               (duplicate-indices elements 0 2)
-                              (append inputs skin-inputs))))
+                              (append inputs skin-inputs))
+                      ;  3000
+                       ; 3500
+                        ))
                  (found-node (find-root-node *scene-table*
                                              root-node)))
+
             (format t "found-node: ~a~%" found-node)
             (let ((skeleton (compile-skeleton joint-arr
                                               found-node)))
@@ -191,19 +195,15 @@
               (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
                     (dae-debug "~a  ~%" elt))
               
-
-              ;; Apply the bind-pose
-              (format t "APPLYING BIND-POSE: ~a~%" bind-pose)
               (apply-transform mesh bind-pose)
-              
-              (dae-debug "Transformed Vertices:~%")
-              (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
-                    (dae-debug "~a  ~%" elt))
 
               (list 
+              ; mesh
+             ;  #+disabled
                (make-blt-skin :mesh mesh
                               :skeleton skeleton
-                              :bind-matrix bind-pose)
+                              :bind-matrix bind-pose
+                              )
                (build-material-array (elements mesh) materials)))))))))
 
 (defvar *xform-mappings* nil)
@@ -249,7 +249,7 @@
                 ;; anything else, we don't really care about much
                 (otherwise nil)))))
 
-      (format t "NODE ~a's transform: ~a~%" id xform)
+   ;   (format t "NODE ~a's transform: ~a~%" id xform)
 
       ;; Add an entry in *xform-mappings* for the animation pass
       (when new-node

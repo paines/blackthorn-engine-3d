@@ -68,7 +68,7 @@
     (blt3d-phy::move-camera c movement-vec))))
       
 (defun next-frame ()
-  (sleep 1/120)
+  ;; (sleep) call moved to with-timer-loop
   )
 
 (defvar *client-count* 0)
@@ -136,7 +136,13 @@
   `(unwind-protect
         (progn ,@body)
      (finalize-server)))
-     
+
+(defmacro with-timer-loop ((fps) &body body)
+  `(iter
+    (declare (special ,fps))
+    (progn ,@body)
+    (sleep (/ 1 ,fps))))
+
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
   (let ((new-client (check-for-clients)))
@@ -177,10 +183,8 @@
       
 (defun check-collisions ()
   (iter (for (e1 e2) in (combinations (list-entities)))
-      (when (blackthorn3d-physics:collide-p e1 e2)
-        (collide e1 e2))
-  )
-)
+        (when (blackthorn3d-physics:collide-p e1 e2)
+          (collide e1 e2))))
 
 (defun remove-disconnected-clients ()
   (iter (for client in *delay-disconnected-clients*)
@@ -190,6 +194,8 @@
 
 ;; added by Robert
 (defvar *level* nil)
+
+(defvar *server-frame-rate*)
       
 (defun server-main (host port)
   (declare (ignore host))
@@ -204,14 +210,14 @@
   
   (setf *level* (load-level))
   ;(make-monster :start-room (make-point3 20.0 0.0 0.0))
+
+  (setf *server-frame-rate* 120)
   
   (with-finalize-server ()
-    (loop
-       (next-frame)
-       (check-for-new-clients)
-       (remove-disconnected-clients)
-       (update-rooms)
-       (check-collisions)
-       (synchronize-clients)
-
-       )))
+    (with-timer-loop (*server-frame-rate*)
+      (next-frame)
+      (check-for-new-clients)
+      (remove-disconnected-clients)
+      (update-rooms)
+      (check-collisions)
+      (synchronize-clients))))

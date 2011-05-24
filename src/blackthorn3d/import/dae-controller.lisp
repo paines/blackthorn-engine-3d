@@ -106,7 +106,7 @@
                             pairs-lst)
                     (setf pairs-lst ()))
 
-                 ; (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
+                  (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
                   (progn
                     (iter (for i below (- 4 (length pairs-lst)))
                           (push '(0 . 0.0) pairs-lst))
@@ -118,8 +118,8 @@
                            (iter (for (index . weight) in pairs-lst)
                                  (for i below 4)
                                  (sum weight))))
-                      (when (zerop total))
-                      (setf total 1.0)
+                      (when (zerop total)
+                        (setf total 1.0))
 
                       (iter (with norm = (/ 1.0 total))
                             (for i below 4)
@@ -198,7 +198,8 @@
                                              joint-list)))
                      (iter (for joint-name in-vector joint-names)
                            (for i upfrom 0)
-                           (for ibm = (transpose
+                           (for ibm = (src-accessor ibm-source i)
+                                #+disabled(transpose
                                        (reshape
                                         (src-accessor ibm-source i)
                                         '(4 4))))

@@ -62,6 +62,7 @@
 
    ;; mesh.lisp
    :mesh
+   :mesh-elements
    
    ;; model.lisp
    :model-shape

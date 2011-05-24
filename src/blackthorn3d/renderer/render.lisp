@@ -69,27 +69,31 @@
   (gl:enable :blend :sample-alpha-to-coverage)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear-color 0 0 0 0)
-  (gl:enable :depth-test)
+  (gl:enable :depth-test :cull-face)
   (gl:depth-func :lequal)
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
 
-;  #+disabled
+ ; #+disabled
   (let ((scientist-model 
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
            #p "res/models/Player2Rigged.dae"
+         ;  #p "res/models/SwordTest.dae"
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
     (format t "SKELE: ~a~%" *test-skele*)
     (format t "~2T skele nodes: ~a~%" (mesh-nodes *test-skele*))
+    (format t "~2T skele elements: ~a~%" 
+            (mesh-elements (mesh (car (mesh-nodes *test-skele*)))))
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
  
+;    #+disabled
     (apply-transform *test-skele* 
-                     (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+                     (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
                                            (make-point3 0.0 0.0 1.0)
                                            (make-point3 0.0 1.0 0.0))))
 
@@ -224,7 +228,6 @@
 
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
-  #+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

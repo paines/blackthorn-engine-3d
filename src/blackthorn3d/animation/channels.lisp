@@ -73,7 +73,7 @@
     :initform :constant)
    (interpolation
     :initarg :interpolation
-    :initform :linear)
+    :initform :none)
    (ch-target
     :initarg :ch-target)
    (eval-fn)))
@@ -84,11 +84,11 @@
          (t-max (aref times(1- (length times))))
          (t-d (- t-max 0.0))
          (frames 
-          (make-array len
+          (make-array `(,len 2)
                       :initial-contents
                       (iter (for i below len)
                             (collect 
-                                (cons
+                                (list
                                  (if normalize 
                                      (- (/ (aref times i) t-d) t-min)
                                      (aref times i))
@@ -101,9 +101,9 @@
 
 
 (defmacro time-step (frames index)
-  `(car (aref ,frames ,index)))
+  `(aref ,frames ,index 0))
 (defmacro value (frames index)
-  `(cdr (aref ,frames ,index)))
+  `(aref ,frames ,index 1))
 
 (defun map-time (t0 t-max extrapolation)
   (cond ((< t0 0.0)
@@ -118,9 +118,16 @@
            (otherwise t-max)))
         (t t0)))
 
+(defmethod apply-transformation ((this channel) xform)
+  (iter (for i below (array-dimension (frames this) 0))
+        (for v = (value (frames this) i))
+        (setf (value (frames this) i) 
+              (matrix-multiply-m xform v))))
+
+
 (defmethod evaluate-channel ((this channel) t0)
   (with-slots (frames t-max extrapolation interpolation) this
-    (let* ((n-frames (length frames))
+    (let* ((n-frames (array-dimension frames 0))
            (m-time (map-time t0 t-max extrapolation))
            (i
             (iter (for i from (or *prev-frame* 0) below n-frames)
@@ -130,8 +137,8 @@
         (:linear (linear-interpolate 
                   frames i 
                   (case extrapolation
-                    (:loop (mod (1+ i) (length frames)))
-                    (otherwise (clamp (1+ i) 0 (1- (length frames)))))
+                    (:loop (mod (1+ i) n-frames))
+                    (otherwise (clamp (1+ i) 0 (1- n-frames))))
                   m-time))
         (otherwise (value frames i))))))
 
@@ -145,11 +152,11 @@
                    denom))))
    ; (format t "v1:  ~a~%v2:   ~a~%" v1 v2)
     (if (arrayp v1)
-        (iter (with len = (length v1))
+        (iter (with len = (array-dimensions v1))
               (with arr = (make-array len))
-              (for i below len)
-              (setf (svref arr i)
-                    (lerp s (svref v1 i) (svref v2 i)))
+              (for i below (reduce #'* len))
+              (setf (row-major-aref arr i)
+                    (lerp s (row-major-aref v1 i) (row-major-aref v2 i)))
               (finally (return arr)))
         (lerp s v1 v2))))
 

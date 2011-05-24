@@ -41,7 +41,8 @@
 ;;;
 
 (defmacro make-set-fn (place)
-  `#'(lambda (val) (setf ,place (transpose (reshape val '(4 4))))))
+  `#'(lambda (val) (setf ,place val 
+                         #+disabled(transpose (reshape val '(4 4))))))
 
 ;; this'll be fun....
 ;; gets a function that will modify a slot/location based on an id...
@@ -180,10 +181,7 @@
                         #+disabled(list geom-id elements inputs)
                         (list geom-id 
                               (duplicate-indices elements 0 2)
-                              (append inputs skin-inputs))
-                      ;  3000
-                       ; 3500
-                        ))
+                              (append inputs skin-inputs))))
                  (found-node (find-root-node *scene-table*
                                              root-node)))
 
@@ -197,13 +195,10 @@
               
               (apply-transform mesh bind-pose)
 
-              (list 
-              ; mesh
-             ;  #+disabled
+              (list
                (make-blt-skin :mesh mesh
                               :skeleton skeleton
-                              :bind-matrix bind-pose
-                              )
+                              :bind-matrix bind-pose)
                (build-material-array (elements mesh) materials)))))))))
 
 (defvar *xform-mappings* nil)

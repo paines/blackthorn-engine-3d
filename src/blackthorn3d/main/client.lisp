@@ -102,7 +102,7 @@
   ;; need to scale robot =(
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
   (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis (make-point3 0.0 0.0 1.0)
+                             (make-inv-ortho-basis (make-point3 0.0 0.0 -1.0)
                                                    (make-point3 -1.0 0.0 0.0)
                                                    (make-point3 0.0 1.0 0.0)))
   
@@ -112,7 +112,7 @@
 
   (blt3d-phy:apply-transform 
    *level* 
-   (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
+   (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
                          (make-point3 0.0 0.0 1.0)
                          (make-point3 0.0 1.0 0.0)))
   (blt3d-phy:apply-transform *level* (make-translate #(0.0 -2.0 0.0)))

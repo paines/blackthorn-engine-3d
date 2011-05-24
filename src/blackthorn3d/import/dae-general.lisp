@@ -64,7 +64,12 @@
 
 (defun src-accessor (src index)
   (with-slots (stride array) src
-    (subseq array (* index stride) (+ (* index stride) stride))))
+  ;  (subseq array (* index stride) (+ (* index stride) stride))
+  ;  #+disabled
+    (let ((val (subseq array (* index stride) (+ (* index stride) stride))))
+      (if (= stride 16)
+          (transpose (reshape val '(4 4)))
+          val))))
 
 (defun (setf src-accessor) (vec src index)
   (with-slots (stride array) src

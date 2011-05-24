@@ -83,6 +83,8 @@
                      (apply-helper child))
                bounding-volume)))
     
+    (when (animations this)
+      (apply-transform (animations this) xform))
     (combine-bounding-spheres
      (iter (for node in (mesh-nodes this))
            (collect (apply-helper node))))))

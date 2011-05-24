@@ -70,6 +70,13 @@
                    :next-clip next-clip
                    :elapsed elapsed)))
 
+
+(defmethod apply-transform ((this anim-controller) xform)
+  (with-slots (clips) this
+    (iter (for clip in clips)
+          (iter (for channel in (channel-lst clip))
+                (apply-transformation channel xform)))))
+
 (defun set-next-clip (controller clip)
   (with-slots (current-clip next-clip state) controller
     (if current-clip

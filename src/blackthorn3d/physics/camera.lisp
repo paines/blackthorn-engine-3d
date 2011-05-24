@@ -43,7 +43,7 @@
    (spring-k
     :accessor spring-k
     :initarg :spring-k
-    :initform 10.0)
+    :initform 6.0)
    (target
     :accessor target
     :initarg :target

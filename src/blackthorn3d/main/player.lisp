@@ -38,7 +38,7 @@
 (defun remove-player (client)
     (let ((player (getf *client->player* client)))
       (when player 
-        (remove-entity player)))
+        (kill-entity player)))
     (remf *client->player* client))
     
 (defun new-player (client-id)

@@ -74,12 +74,12 @@
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
 
-  #+disabled
+;  #+disabled
   (let ((scientist-model 
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-           #p "res/models/player-3.dae"
+           #p "res/models/Player2Rigged.dae"
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
@@ -126,6 +126,10 @@
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0))))
 
+
+
+
+
 (defun update-graphics (entities level time)
   (when *test-ps*
     (update-ui-element *test-ui* (num-alive *test-ps*))
@@ -146,6 +150,11 @@
         (with-slots (shape) e
           (when shape
             (update-model shape time)))))
+
+
+
+
+
 
 (defun render-frame (entities level)
   (gl:depth-mask t)
@@ -215,7 +224,7 @@
 
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
-  ;#+disabled
+  #+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

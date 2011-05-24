@@ -88,6 +88,7 @@
                             count pairs-lst))
 
                   ;; combine same-joint weights
+                  #+disabled
                   (setf 
                    pairs-lst
                    (iter (with result = (make-hash-table))
@@ -99,24 +100,27 @@
                           (return (iter (for (key value) in-hashtable result)
                                         (collect (cons key value)))))))
 
+                  #+disabled
                   (when (> count 4)
                     (format t "~2Tcombined: ~a~%"
                             pairs-lst)
                     (setf pairs-lst ()))
 
-                  (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
+                 ; (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
                   (progn
                     (iter (for i below (- 4 (length pairs-lst)))
                           (push '(0 . 0.0) pairs-lst))
                   
                     
                     ;; normalize
+                    ;#+disabled
                     (let ((total 
                            (iter (for (index . weight) in pairs-lst)
                                  (for i below 4)
                                  (sum weight))))
-                      (when (zerop total)
-                        (setf total 1.0))
+                      (when (zerop total))
+                      (setf total 1.0)
+
                       (iter (with norm = (/ 1.0 total))
                             (for i below 4)
                             (for (index . weight) in pairs-lst)
@@ -126,8 +130,10 @@
                                   (* norm weight)))))))))
 
       (iter (for vi below n-verts)
-            (for count in-vector counts)
             (for v-index first 0 then (+ v-index count))
+            (for count in-vector counts)
+            (when (< vi 20)
+              (format t "V-INDEX: ~a~%" v-index))
             ;; Build the index and weight streams
             (set-thingy v-index count)
             (finally (format t "Was vi = nverts?!? ~a: ~a~%" 

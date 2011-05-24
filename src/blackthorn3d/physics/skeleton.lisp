@@ -63,7 +63,7 @@
  ; (format t "joint ~a's local matrix: ~a~%" (id joint) (joint-matrix joint))
  ; (format t "~8TIBM: ~a~%~%" (joint-ibm joint))
   
- ; (make-identity-matrix)
+  ;(make-identity-matrix)
 
   ;#+disabled
   (matrix-multiply-m 

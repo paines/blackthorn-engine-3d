@@ -135,6 +135,8 @@
 
       (blt3d-snd:make-sound :soundtrack :music #p"res/sound/music.mp3")
 
+      (setf (sdl:frame-rate) 60)
+
       (sdl:with-events ()
         (:quit-event () t)
         (:key-down-event (:key k :mod m :mod-key m-k :unicode u)

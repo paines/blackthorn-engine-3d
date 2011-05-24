@@ -58,5 +58,5 @@
   (with-slots (channel-lst t-start t-end ref-time) this
     ;(let ((c-time (+ t-start (- time ref-time)))))
     (iter (for ch in channel-lst)
-          (with-slots (target) ch
-            (funcall target (evaluate-channel ch time))))))
+          (with-slots (ch-target) ch
+            (funcall ch-target (evaluate-channel ch time))))))

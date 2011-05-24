@@ -124,13 +124,20 @@
                                                         (elt ideal-coord 2))))
                (rotation (quat->matrix (spherical->quat ideal-coord)))
                (concat (matrix-multiply-m rotation translation))
-               (new-pos (vec4+ look-at
-                              (matrix-multiply-v concat +origin+))))
+               (ideal-pos (vec4+ look-at
+                              (matrix-multiply-v concat +origin+)))
+               (displace-vec (vec4- pos ideal-pos))
+               (spring-accel (vec4-
+                                (vec-scale4 displace-vec (- spring-k))
+                                (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
 
-          (setf pos look-at)
+          (setf veloc  (vec-scale4 spring-accel time))
+
           (setf (velocity c) 
-                (vec4- new-pos
+                (vec4- (vec4+ pos veloc)
                        look-at))
+          (setf pos look-at)
+     
 
           #+disabled
           (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))

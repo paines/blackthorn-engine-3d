@@ -57,7 +57,7 @@
                     :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
                     :rad *eyesight-radius*)))
     
-(defun make-monster (pos)
+(defun make-monster (in-room pos)
   (let ((the-monster (make-server-entity 'simple-monster
           :pos pos
           :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
@@ -67,6 +67,7 @@
                 :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
                 :rad 1.0)
           )))
+    (add-to-room the-monster in-room)
     (setf (eyesight the-monster) (make-eye the-monster))
     the-monster))
                     

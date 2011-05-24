@@ -46,7 +46,7 @@
          
     ;; camera should remove itself after the player disconnects
     (when (not (is-alive-p player))
-      (remove-entity c)
+      (kill-entity c)
       (return-from update))
       
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
@@ -143,7 +143,10 @@
     (when new-client
       (new-server-controller new-client)
       (send-all-entities new-client)
-      (let ((camera (new-camera (new-player new-client))))
+      (let* ((the-new-player (new-player new-client))
+             (camera (new-camera the-new-player)))
+        (add-to-room the-new-player :start-room)
+        (add-to-room camera :start-room)
         (message-send :broadcast (make-event :entity-create))
         (message-send new-client (make-event :camera :camera camera))
         #+disabled
@@ -198,15 +201,16 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  (make-monster (make-point3 20.0 0.0 0.0))
+  
   (setf *level* (load-level))
+  ;(make-monster :start-room (make-point3 20.0 0.0 0.0))
   
   (with-finalize-server ()
     (loop
        (next-frame)
        (check-for-new-clients)
        (remove-disconnected-clients)
-       (update-entities)
+       (update-rooms)
        (check-collisions)
        (synchronize-clients)
 

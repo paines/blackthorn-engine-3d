@@ -62,8 +62,10 @@
   "Return the local-to-model matrix for this joint"
  ; (format t "joint ~a's local matrix: ~a~%" (id joint) (joint-matrix joint))
  ; (format t "~8TIBM: ~a~%~%" (joint-ibm joint))
+  
+ ; (make-identity-matrix)
 
- ; #+disabled
+  ;#+disabled
   (matrix-multiply-m 
    parent-matrix ;(joint-matrix joint)
    ;#+disabled

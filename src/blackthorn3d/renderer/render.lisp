@@ -138,7 +138,7 @@
   (when *test-skele*
     (update-model *test-skele* time))
 
-  #+disabled
+ ; #+disabled
   (when level
     (update-model level time)) 
 

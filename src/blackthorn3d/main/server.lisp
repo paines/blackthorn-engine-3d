@@ -62,8 +62,9 @@
     (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
     (let ((movement-vec (collide-with-world 
-                       c
-                       (blt3d-res:get-model :companion-cube))))
+                         c
+                         (blt3d-res:get-model :companion-cube)
+                         1)))
     (blt3d-phy::move-camera c movement-vec))))
       
 (defun next-frame ()

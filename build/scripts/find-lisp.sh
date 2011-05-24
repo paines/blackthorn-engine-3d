@@ -53,13 +53,13 @@ test-for ecl ecl
 test-for ccl clozure
 
 if [[ $(uname) == CYGWIN* ]]; then
-    echo clozure-builtin
-    echo clozure-builtin > "$cached_result_file"
+    echo sbcl-builtin
+    echo sbcl-builtin > "$cached_result_file"
     exit 0
 fi
 if [[ $(uname) == MINGW* ]]; then
-    echo clozure-builtin
-    echo clozure-builtin > "$cached_result_file"
+    echo sbcl-builtin
+    echo sbcl-builtin > "$cached_result_file"
     exit 0
 fi
 

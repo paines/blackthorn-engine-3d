@@ -108,6 +108,7 @@
         ;; transform into sector coordinates
         (setf (pos test-sphere)
               (transform-to-sector pos a-sector)
+
               test-vel
               (transform-to-sector test-vel a-sector))
 

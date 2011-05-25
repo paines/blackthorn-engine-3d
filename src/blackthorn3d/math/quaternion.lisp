@@ -159,6 +159,4 @@
 (defun spherical->quat (spherical)
   (let* ((cart-vec (norm4 (spherical->cartesian spherical t)))
          (quat (quat-norm (quat-rotate-to-vec +z-axis+ cart-vec))))
-   ; (quat-identity)
-    quat
-    ))
+    quat))

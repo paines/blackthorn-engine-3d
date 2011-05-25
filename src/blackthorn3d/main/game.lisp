@@ -26,8 +26,8 @@
 (in-package :blackthorn3d-main)
 
 ;; the room players land in when they first connect
-(defun make-start-room (static-geom)
-  (new-room :start-room static-geom))
+(defun make-start-sector (static-geom)
+  (new-sector :start-sector static-geom))
 
 ;; server side only
 (defun load-level ()
@@ -51,6 +51,6 @@
                            (make-point3 0.0 0.0 1.0)
                            (make-point3 0.0 1.0 0.0)))
     (blt3d-phy:apply-transform level (make-translate #(0.0 -2.0 0.0)))
-    (make-start-room level)
+    (make-start-sector level)
     level))
 

@@ -25,9 +25,9 @@
 
 (in-package :blackthorn3d-main)
 
-(defvar *room-table* (make-hash-table))
+(defvar *sector-table* (make-hash-table))
 
-(defclass room (entity-server)
+(defclass sector (entity-server)
   ((contents
     :accessor contents
     :initform (make-hash-table))
@@ -41,44 +41,44 @@
     (maphash #'(lambda (k v) (setf (gethash k clone) v)) table)
     clone))
     
-(defmethod foreach-in-room ((a-room room) func)
-  (let ((new-table (clone-table (contents a-room))))
+(defmethod foreach-in-sector ((a-sector sector) func)
+  (let ((new-table (clone-table (contents a-sector))))
     (maphash #'(lambda (k v) 
                  (declare (ignore k))
                  (funcall func v))  
              new-table)))
              
-(defmethod foreach-in-room ((a-room symbol) func)
-  (foreach-in-room (lookup-room a-room) func))
+(defmethod foreach-in-sector ((a-sector symbol) func)
+  (foreach-in-sector (lookup-sector a-sector) func))
     
-(defmethod add-to-room (an-entity (a-room room))
-  (setf (gethash (oid an-entity) (contents a-room)) an-entity)
-  (setf (current-room an-entity) a-room))
+(defmethod add-to-sector (an-entity (a-sector sector))
+  (setf (gethash (oid an-entity) (contents a-sector)) an-entity)
+  (setf (current-sector an-entity) a-sector))
   
-(defmethod add-to-room (an-entity (a-room symbol))
-  (add-to-room an-entity (lookup-room a-room)))
+(defmethod add-to-sector (an-entity (a-sector symbol))
+  (add-to-sector an-entity (lookup-sector a-sector)))
   
-(defun remove-from-room (an-entity)
-  (let ((the-room (current-room an-entity)))
-    (remhash (oid an-entity) (contents the-room))
-    (setf (current-room an-entity) nil)))
+(defun remove-from-sector (an-entity)
+  (let ((the-sector (current-sector an-entity)))
+    (remhash (oid an-entity) (contents the-sector))
+    (setf (current-sector an-entity) nil)))
     
-(defmethod update ((a-room room))
-  (foreach-in-room a-room #'(lambda (an-entity) (update an-entity))))
+(defmethod update ((a-sector sector))
+  (foreach-in-sector a-sector #'(lambda (an-entity) (update an-entity))))
 
-(defun lookup-room (name-symbol)
-  (gethash name-symbol *room-table*))
+(defun lookup-sector (name-symbol)
+  (gethash name-symbol *sector-table*))
   
-(defun new-room (name-symbol geometry)
-  (let ((the-room (make-server-entity 'room :geometry geometry)))
-    (setf (gethash name-symbol *room-table*) the-room)))
+(defun new-sector (name-symbol geometry)
+  (let ((the-sector (make-server-entity 'sector :geometry geometry)))
+    (setf (gethash name-symbol *sector-table*) the-sector)))
     
-(defun update-rooms ()
-  (maphash #'(lambda (sym a-room) (declare (ignore sym)) (update a-room))
-           *room-table*))
+(defun update-sectors ()
+  (maphash #'(lambda (sym a-sector) (declare (ignore sym)) (update a-sector))
+           *sector-table*))
            
 ;; where the heck should this method go???
 (defun kill-entity (e)
-  (when (current-room e)
-    (remove-from-room e))
+  (when (current-sector e)
+    (remove-from-sector e))
   (remove-entity e))

@@ -151,8 +151,8 @@
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
              (camera (new-camera the-new-player)))
-        (add-to-room the-new-player :start-room)
-        (add-to-room camera :start-room)
+        (add-to-sector the-new-player :start-sector)
+        (add-to-sector camera :start-sector)
         (message-send :broadcast (make-event :entity-create))
         (message-send new-client (make-event :camera :camera camera))
         #+disabled
@@ -209,7 +209,7 @@
 
   
   (setf *level* (load-level))
-  ;(make-monster :start-room (make-point3 20.0 0.0 0.0))
+  ;(make-monster :start-sector (make-point3 20.0 0.0 0.0))
 
   (setf *server-frame-rate* 120)
   
@@ -218,6 +218,6 @@
       (next-frame)
       (check-for-new-clients)
       (remove-disconnected-clients)
-      (update-rooms)
+      (update-sectors)
       (check-collisions)
       (synchronize-clients))))

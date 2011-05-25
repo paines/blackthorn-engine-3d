@@ -44,7 +44,7 @@
   (setf *main-light* (make-instance 'light
                                     :position (make-point3 0.0 10.0 0.0)))
 
-  (setf *main-viewport* (create-viewport '(960 720) 0.1 200))
+  (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
 ;  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
   )
 
@@ -66,7 +66,7 @@
   (init-gfx)
 
   (gl:enable :texture-2d)
-  (gl:enable :blend :sample-alpha-to-coverage)
+  (gl:enable :blend)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test :cull-face)
@@ -101,7 +101,7 @@
   (gl:matrix-mode :modelview)
   (gl:load-identity)
 
- ; (gl:enable :lighting)
+  (gl:enable :lighting)
   (gl:enable :light0)
   (gl:enable :rescale-normal)
 
@@ -161,7 +161,9 @@
 
 
 (defun render-frame (entities level)
+  (gl:enable :depth-test)
   (gl:depth-mask t)
+  (gl:depth-func :lequal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
  
@@ -182,17 +184,6 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
 
-  ;; draw axes
-  #+disabled
-  (gl:with-primitive :lines
-    (gl:color 0.0 1.0 1.0)
-    (gl:vertex 0.0 0.0 0.0)
-    (gl:vertex 5.0 0.0 0.0)
-    (gl:vertex 0.0 0.0 0.0)
-    (gl:vertex 0.0 2.5 0.0)
-    (gl:vertex 0.0 0.0 0.0)
-    (gl:vertex 0.0 0.0 1.25))
-
   #+disabled
   (when animated
     (draw-object animated))
@@ -200,20 +191,11 @@
   ;#+disabled
   (when level
     (gl:with-pushed-matrix
-        ;; (use-material plane-mat)
-        ;;(draw-plane 20)
-        ;;(gl:scale .05 .05 .05)
-       
-      #+disabled
-      (gl:mult-matrix (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                                            (make-point3 0.0 0.0 1.0)
-                                            (make-point3 0.0 1.0 0.0)))
       (draw-object level)))
 
   ;#+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
-        ;(gl:scale 0.03 0.03 0.03)
       (draw-object *test-skele*)))
 
   ;#+disabled
@@ -228,11 +210,12 @@
 
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
+  (gl:depth-mask nil)
   (when *test-ps*
     (render-ps *test-ps*))
 
   ;; Lastly render the ui
-  (render-ui)
+;  (render-ui)
 
   (gl:flush)
   (sdl:update-display))

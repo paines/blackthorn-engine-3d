@@ -217,9 +217,6 @@
    (max-particles
     :initarg :max-particles
     :reader  max-particles)
-   (particle-stream
-    :initarg :particle-stream
-    :initform nil)
    (num-alive
     :accessor num-alive
     :initform 0)))
@@ -273,9 +270,7 @@
                  :color color
                  :max-particles max-particles
                  :particles (create-particle-array max-particles)
-                 :force-fn force-fn
-                 :particle-stream
-                 (create-billboard-stream max-particles)))
+                 :force-fn force-fn))
 
 (defmethod gen-particle ((this particle-system) index dt)
   (with-slots (particles size lifetime emitter color) this

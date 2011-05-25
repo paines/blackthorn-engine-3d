@@ -60,8 +60,8 @@
     :accessor shape-name
     :initform :cylinder
     :initarg  :shape-name)
-   (current-room
-    :accessor current-room
+   (current-sector
+    :accessor current-sector
     :initform nil)
    (shape
     :accessor shape

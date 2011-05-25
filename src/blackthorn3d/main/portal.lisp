@@ -26,10 +26,10 @@
 (in-package :blackthorn3d-main)
 
 (defclass portal (entity-server)
-    ((links-to-room
-        :accessor links-to-room
+    ((links-to-sector
+        :accessor links-to-sector
         :initform nil
-        :initarg :links-to-room)
+        :initarg :links-to-sector)
      (links-to-portal
         :accessor links-to-portal
         :initform nil

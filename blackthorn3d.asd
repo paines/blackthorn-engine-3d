@@ -146,7 +146,7 @@
                                      (:module main
                                               :components
                                               ((:file "package")
-                                               (:file "room")
+                                               (:file "sector")
                                                (:file "pos-edge-react")
                                                (:file "portal")
                                                (:file "player")

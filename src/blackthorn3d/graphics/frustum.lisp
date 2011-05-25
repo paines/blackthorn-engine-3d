@@ -80,6 +80,11 @@
       ;; do framebuffer stuff
       )))
 
+
+
+
+
+
 ;; notes- uses similar description for a frustum as opengl
 ;;        there is nothing forcing the left and right plane
 ;;        to be mirrored
@@ -96,8 +101,12 @@
    (bottom-right
     :accessor frstm-bottom-right
     :initarg :bottom-right)
+   (planes
+    :accessor planes
+    :initarg :planes)
    (proj-matrix
     :initarg :proj-matrix)))
+
 
 (defun make-frstm (near far aspect fov &key (type :projection))
   (let* ((width (/ (calc-width near fov) 2.0))
@@ -117,6 +126,11 @@
                       (make-orthographic (- width) width
                                          height (- height)
                                          near far))))))
+
+(defmethod initialize-instance :after ((frstm frustum) &key)
+  (with-slots (proj-matrix planes) frstm
+    (setf planes (make-planes proj-matrix))))
+
 
 (defun calc-width (near fov)
   (* near 
@@ -146,6 +160,7 @@
 
 (defvar +planes+ '(:left :right :bottom :top :near :far))
 
+;; Planes face 'outward'
 (defun get-plane (pmat plane)
   (labels ((plane-maker (row sign)
              (make-plane (vec3+ (row pmat 3) 
@@ -159,6 +174,16 @@
       (:near   (plane-maker 2 1))
       (:far    (plane-maker 2 -1))
       (otherwise nil))))
+
+
+(defun make-planes (p-mat)
+  (iter (for plane in +planes+)
+        (collect (get-plane p-mat plane))))
+
+(defun update-planes (frstm view-matrix)
+  (with-slots (planes proj-matrix) frstm
+    (let ((Amat (matrix-multiply-m proj-matrix view-matrix)))
+      (setf planes (make-planes Amat))0)))
 
 ;; We can do frustum culling at a viewport level...
 ;; generate the planes first, then process every sphere
@@ -176,7 +201,26 @@
 ;;  blt-model for level
 ;;    -> list of nodes w/bounding spheres
 
+;; 5/24/11
+;;
+;; Have the scene management handle what gets culled
+;; we only cull on spheres for now :P
 
+(defun cull-sphere (frstm sphere)
+  (with-slots (planes) frstm
+    (with-slots (pos rad) sphere
+      (iter (for plane in planes)
+            (for dist = (plane-dist plane pos))
+            (maximizing dist into max-dist)
+            (when (> dist rad)
+              (return-from cull-sphere :outside))
+            (finally
+             (return
+               (if (< max-dist (- rad))
+                   :inside
+                   :intersect)))))))
+
+#+disabled
 (defun cull-frustum (frstm view-matrix objects)
   (with-slots ((P proj-matrix)) frstm
     (let* ((M (matrix-multiply-m P view-matrix))

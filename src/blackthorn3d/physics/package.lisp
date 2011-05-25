@@ -31,14 +31,7 @@
   (:import-from :blt3d-ani :apply-transform)
   (:export
 
-   ;; blt-model.lisp
-   :id
-   :blt-model
-   :mesh-nodes
-   :animations
-   :expand-bounding-spheres
-   :apply-transform
-
+   ;; blt-mesh.lisp
    :blt-mesh
    :make-blt-mesh
    :vertex-streams
@@ -70,6 +63,15 @@
    :element-material
    :element-indices
    :element-count
+
+
+   ;; blt-model.lisp
+   :id
+   :blt-model
+   :mesh-nodes
+   :animations
+   :expand-bounding-spheres
+   :apply-transform
 
    :blt-material
    :make-blt-material
@@ -103,6 +105,8 @@
    :sphere-point-intersection
    :make-ray
    :ray-sphere-intersection
+   :make-plane
+   :plane-dist
 
    ;; collision.lisp
    :collide-p
@@ -149,4 +153,5 @@
    :mode
    :update-camera
    :move-player
+   :minor-mode
    ))

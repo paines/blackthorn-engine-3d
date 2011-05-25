@@ -155,6 +155,8 @@
                                (world blt-model)
                                &optional (depth +max-collision-depth+))
   "Updates the entity obj after performing world-collision"
+  (when (null depth)
+    (setf depth +max-collision-depth+))
 
   (let ((test-sph (copy-sphere sphere))
         (test-vel velocity))

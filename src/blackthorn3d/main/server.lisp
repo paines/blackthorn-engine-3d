@@ -39,7 +39,9 @@
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
-                          
+        
+
+                  
 (defmethod update ((c camera))
   (let* ((player (target c))
          (client (player-client player)))
@@ -50,12 +52,16 @@
       (return-from update))
       
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
-           (move-vec (move-player c input-vec))
+           (move-vec (vec-scale4 (move-player c input-vec) 0.4))
            (target (blt3d-phy::target c)))
 
       (setf (velocity target) move-vec)
 
       (standard-physics-step target)
+
+      (blt3d-phy::move-vec target
+       (collide-sector target (lookup-sector :start-sector)))
+
       (when (and (eql (minor-mode c) :free)
                  (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec))))
         (setf (dir target) (norm4 move-vec))))
@@ -63,14 +69,12 @@
     (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
     (let ((movement-vec (collide-sector 
-                         c (lookup-sector :start-sector) 1)
-            #+disabled
-            (collide-with-world 
-             c
-             (blt3d-res:get-model :companion-cube)
-             1)))
+                         c (lookup-sector :start-sector) 1)))
     (blt3d-phy::move-camera c movement-vec))))
       
+
+
+
 (defun next-frame ()
   ;; (sleep) call moved to with-timer-loop
   )
@@ -195,6 +199,11 @@
     (iter (for y in (rest x)) 
       (in outer (collect (list (first x) y))))))
       
+
+;;;
+;;; COLLISION STEP
+;;;
+
 (defmethod collide (a b)
   (declare (ignore a)
            (ignore b)))
@@ -208,6 +217,10 @@
   (iter (for (e1 e2) in (combinations (list-entities)))
         (when (blackthorn3d-physics:collide-p e1 e2)
           (collide e1 e2))))
+
+
+
+
 
 (defun remove-disconnected-clients ()
   (iter (for client in *delay-disconnected-clients*)

@@ -27,6 +27,7 @@
 
 
 (defvar *main-viewport* nil)
+(defvar *cam-view-matrix* (make-identity-matrix))
 (defvar *test-skele* nil)
 (defvar *test-ps* nil)
 (defvar *test-ui* nil)
@@ -132,9 +133,20 @@
 
 
 
-
+;;;
+;;; Render updates
+;;;
 
 (defun update-graphics (entities level time)
+  (when *main-cam*
+    (setf *cam-view-matrix* (look-dir-matrix (pos *main-cam*)
+                                             (dir *main-cam*)
+                                             (up  *main-cam*))))
+  
+  (update-planes (view-frustum *main-viewport*)
+                 *cam-view-matrix*)
+
+
   (when *test-ps*
     (update-ui-element *test-ui* (num-alive *test-ps*))
     (update-ps *test-ps* time))
@@ -157,8 +169,9 @@
 
 
 
-
-
+;;;
+;;; Render frame
+;;;
 
 (defun render-frame (entities level)
   (gl:enable :depth-test)
@@ -171,9 +184,8 @@
   (let ((PVS (find-pvs entities level))))
 
   (when *main-cam*
-    (gl:load-matrix (look-dir-matrix (pos *main-cam*)
-                                     (dir *main-cam*)
-                                     (up  *main-cam*)))
+    (gl:load-matrix *cam-view-matrix*)
+
     (update-billboarder (pos *main-cam*)
                         (dir *main-cam*)
                         (up *main-cam*)

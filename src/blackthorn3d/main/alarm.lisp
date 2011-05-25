@@ -25,53 +25,54 @@
 
 (in-package :blackthorn3d-main)
 
-(defclass alarm (entity-server)
-    ((time-left
-       :accessor time-left
-       :initarg :time-left
-       :documentation "How long until alarm is triggered, in seconds.")
-     (then
-       :accessor then
-       :initform (get-internal-real-time))
-     (callback
-       :accessor callback
-       :initarg :callback
-       :documentation "Called when alarm goes off.")))
+(defun get-real-time ()
+  "Real time in seconds."
+  (/ (get-internal-real-time)
+     internal-time-units-per-second))
 
+(defclass alarm (entity-server)
+  ((time-left
+    :accessor time-left
+    :initarg :time-left
+    :documentation "How long until alarm is triggered, in seconds.")
+   (then
+    :accessor then
+    :initform (get-real-time))
+   (callback
+    :accessor callback
+    :initarg :callback
+    :documentation "Called when alarm goes off.")))
 
 (defmethod update ((a alarm))
-    (let* ((now (get-internal-real-time))
-           (elapsed (- now (then a))))
+  (let* ((now (get-real-time))
+         (elapsed (- now (then a))))
    
-        (when (> elapsed 0)
-            (setf (then a) now)
-            (setf (time-left a) 
-              (- (time-left a) (/ elapsed internal-time-units-per-second))))
+    (when (> elapsed 0)
+      (setf (then a) now)
+      (setf (time-left a) 
+            (- (time-left a) elapsed)))
               
-        (when (< (time-left a) 0)
-            (if (not (eq (callback a) nil))
-              (funcall (callback a)))
-            (setf (callback a) nil)
-            (remove-entity a))))
+    (when (< (time-left a) 0)
+      (if (not (eq (callback a) nil))
+          (funcall (callback a)))
+      (setf (callback a) nil)
+      (remove-entity a))))
        
 (defclass cyclic-alarm (entity-server)
-    ((alarm
-      :accessor alarm
-      :initarg :alarm)))
-      
-      
-      
+  ((alarm
+    :accessor alarm
+    :initarg :alarm)))
+
 (defun make-cyclic-alarm (period callback)
-    (let ((external-alarm (make-server-only 'cyclic-alarm
-                             :alarm nil)))
-        (labels ((indirect-callback ()
-            (setf (alarm external-alarm) (make-server-only 'alarm
-                :time-left period
-                :callback #'indirect-callback))
-            (funcall callback)
-            ))
-            
-            (setf (alarm external-alarm) (make-server-only 'alarm
-                :time-left period
-                :callback #'indirect-callback)))
-            external-alarm))
+  (let ((external-alarm (make-server-only 'cyclic-alarm :alarm nil)))
+    (labels ((indirect-callback ()
+               (setf (alarm external-alarm)
+                     (make-server-only 'alarm
+                                       :time-left period
+                                       :callback #'indirect-callback))
+               (funcall callback)))
+      (setf (alarm external-alarm)
+            (make-server-only 'alarm
+                              :time-left period
+                              :callback #'indirect-callback)))
+    external-alarm))

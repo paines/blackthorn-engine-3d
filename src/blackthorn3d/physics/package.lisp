@@ -87,6 +87,7 @@
    ;; shapes.lisp
    :bounding-shape
    :bounding-sphere
+   :copy-sphere
 
    ;; aa-bounding-box
    :aa-bounding-box

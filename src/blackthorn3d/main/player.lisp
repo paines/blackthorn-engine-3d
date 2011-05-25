@@ -43,20 +43,25 @@
     
 (defun new-player (client-id)
     (let ((p (make-server-entity
-         'player
-         :client client-id
-         :pos (make-point3 0.0 2.0 0.0)
-         :dir (make-vec3 1.0 0.0 0.0)
-         :up  (make-vec3 0.0 1.0 0.0)
-         :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
-                :pos (make-point3 0.0 0.0 0.0)
-                :rad 1.0)
-         :shape-name :wedge
-         )))
+              'player
+              :client client-id
+              :pos (make-point3 0.0 2.0 0.0)
+              :dir (make-vec3 1.0 0.0 0.0)
+              :up  (make-vec3 0.0 1.0 0.0)
+              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
+                                  :pos (make-point3 0.0 0.0 0.0)
+                                  :rad 1.0)
+              :shape-name :wedge
+              )))
     
+      (setf (bounding-volume p) (expand-bounding-spheres 
+                    (blt3d-res:get-model (shape-name p))))
+      (format t "bounding volume: ~a ~a~%" 
+              (blt3d-phy::pos (bounding-volume p))
+              (blt3d-phy::rad (bounding-volume p)))
     
-    (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
-         (action () (format t "Client ~a started moving.~%" client-id)))
-    (make-pos-reactor #'test #'action))
+      (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
+             (action () (format t "Client ~a started moving.~%" client-id)))
+        (make-pos-reactor #'test #'action))
     
-    (register-player p client-id)))
+      (register-player p client-id)))

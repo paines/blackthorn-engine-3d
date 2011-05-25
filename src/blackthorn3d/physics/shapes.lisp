@@ -252,7 +252,7 @@
     (let ((mid-point (iter (for bv in list-bv)
                            (with-slots (pos) bv
                              (reducing pos by #'vec4+ into sum-vec 
-                                       initial-value +zero-vec+))
+                                       initial-value +origin+))
                            (finally 
                             (return (vec-scale4 sum-vec 
                                                 (/ 1 (length list-bv))))))))

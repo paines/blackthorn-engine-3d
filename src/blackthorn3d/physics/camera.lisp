@@ -47,7 +47,7 @@
    (spring-k
     :accessor spring-k
     :initarg :spring-k
-    :initform 6.0)
+    :initform 10.0)
    (spring-k2
     :accessor spring-k2
     :initarg :spring-k2
@@ -64,7 +64,7 @@
    (minor-mode
     :accessor minor-mode
     :initarg :minor-mode
-    :initform :strafe)
+    :initform :free)
    (matrix 
     :accessor matrix)))
 

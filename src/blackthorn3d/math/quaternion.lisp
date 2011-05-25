@@ -75,6 +75,13 @@
 (defun quat-identity ()
   (make-vector4 0.0 0.0 0.0 1.0))
 
+(defun quat-conjugate (q)
+  (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
+
+;; only valid for unit quaternions
+(defun quat-inverse (q)
+  (quat-conjugate q))
+
 (defun quat-norm (q)
   (normalize q))
   
@@ -100,8 +107,6 @@
              (* s (z q))
              (* s (w q))))
 
-(defun quat-conjugate (q)
-  (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
 
 (defun quat-rotate-vec (q v)
   "Rotates a vector or point v by quaternion q.

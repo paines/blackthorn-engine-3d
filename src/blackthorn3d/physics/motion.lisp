@@ -40,10 +40,15 @@
       
 (defun standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
-                             (velocity self))))
+                             (velocity self)))
+        (test-sphere (copy-sphere (bounding-volume self))))
+
+    (setf (pos test-sphere) (pos self))
+
     (setf (velocity self) movement-vec)
     (setf movement-vec (collide-with-world 
-                        self 
+                        test-sphere
+                        (velocity self)
                         (blt3d-res:get-model :companion-cube)))
     (move-vec self movement-vec)
     ))

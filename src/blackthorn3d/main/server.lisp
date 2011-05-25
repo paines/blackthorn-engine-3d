@@ -137,11 +137,25 @@
         (progn ,@body)
      (finalize-server)))
 
+(defun time-left-in-frame (fps last)
+  "Returns the amount of time that remains in a frame with a given frame rate
+   and the last time."
+  (let* ((now (get-real-time))
+         (elapsed (- now last))
+         (target (max 0 (- (/ 1.0 fps) elapsed))))
+    target))
+
 (defmacro with-timer-loop ((fps) &body body)
-  `(iter
-    (declare (special ,fps))
-    (progn ,@body)
-    (sleep (/ 1 ,fps))))
+  "Loops infinitely with a given frame rate. The parameter fps should be a
+   special variable so that the user can rebind it at runtime to change
+   the speed of the loop."
+  (with-gensyms (last delta)
+    `(iter
+      (declare (special ,fps))
+      (let ((,last (get-real-time)))
+        (progn ,@body)
+        (let ((,delta (time-left-in-frame ,fps ,last)))
+          (sleep ,delta))))))
 
 (defun check-for-new-clients ()
   (forget-server-entity-changes)

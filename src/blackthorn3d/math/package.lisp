@@ -109,6 +109,7 @@
    :quat-norm
    :quat-identity
    :quat-conjugate
+   :quat-inverse
    :quat-rotate-vec
    :quat->matrix
    :quat-rotate-to-vec

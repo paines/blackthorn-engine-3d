@@ -63,9 +63,11 @@
                       (remove-if #'null 
                                  (cons (node-bounding-volume node)
                                        children-bounding-spheres)))))))
+    (node-bounding-volume (car (mesh-nodes this)))
+    #+disabled
     (combine-bounding-spheres
      (iter (for node in (mesh-nodes this))
-           (collect (recurse-nodes node))))))
+           (collect  (recurse-nodes node))))))
 
 (defmethod apply-transform ((this blt-model) xform)
   "applies transform matrix to the nodes of this blt-model"

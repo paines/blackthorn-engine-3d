@@ -151,56 +151,48 @@
 (defvar +collision-eps+ 1.0e-3)
 
 ;; World = blt-model, for now
-(defmethod collide-with-world ((obj entity-server) (world blt-model)
+(defmethod collide-with-world ((sphere bounding-sphere) velocity 
+                               (world blt-model)
                                &optional (depth +max-collision-depth+))
   "Updates the entity obj after performing world-collision"
-  (with-slots ((sphere bounding-volume) velocity) obj
-    (let ((test-sph (copy-sphere sphere))
-          (test-vel velocity))
 
-      (setf (pos test-sph) (pos obj)
-            #+disabled (vec4+ (pos test-sph) (pos obj)))
-      (setf (svref test-vel 3) 0.0)
+  (let ((test-sph (copy-sphere sphere))
+        (test-vel velocity))
 
-      ;; Debug version: only do one iteration
-      #+disable
-      (let ((hit (min-collide
-                  (iter (for node in (mesh-nodes world))
-                        (collect (collide-with-world-node 
-                                  test-sph test-vel node))))))
-        (if hit
+    (setf (svref test-vel 3) 0.0)
+
+    ;; Debug version: only do one iteration
+    #+disable
+    (let ((hit (min-collide
+                (iter (for node in (mesh-nodes world))
+                      (collect (collide-with-world-node 
+                                test-sph test-vel node))))))
+      (if hit
           (slide-sphere test-sph velocity hit)))
 
-      ;; Loop to find the displacement vector
-      ;#+disabled
-      (iter (with test-vel = velocity)
-           ; (with end = (vec4+ (pos obj) velocity))
-            (setf (svref test-vel 3) 0.0)
-            (for i below depth)
-            ;(until (< (sq-mag test-vel) +min-collide-dist+))
-            (for hit = (min-collide
-                        (iter (for node in (mesh-nodes world))
-                              (collect (collide-with-world-node 
-                                        test-sph test-vel node)))))
-            (for end first (vec4+ (pos obj) test-vel) 
-                 then (vec4+ end test-vel))
-            (until (null hit))
-            (when hit
-          ;    (format t "top level hit = ~a~%" hit)
-              ;; get new origin and velocity
-              (destructuring-bind (new-pos new-vel)
-                  (slide-sphere test-sph test-vel hit)
-                (setf (pos test-sph) new-pos
-                      test-vel new-vel
-                      end new-pos))
-              ;; 
-            ;  (setf end (vec4+ end test-vel))
-              )
+    ;; Loop to find the displacement vector
+    (iter (with test-vel = velocity)
+          (setf (svref test-vel 3) 0.0)
+          (for i below depth)
+          (for hit = (min-collide
+                      (iter (for node in (mesh-nodes world))
+                            (collect (collide-with-world-node 
+                                      test-sph test-vel node)))))
+          (for end first (vec4+ (pos test-sph) test-vel) 
+               then (vec4+ end test-vel))
+          (until (null hit))
+          (when hit
+            ;; get new origin and velocity
+            (destructuring-bind (new-pos new-vel)
+                (slide-sphere test-sph test-vel hit)
+              (setf (pos test-sph) new-pos
+                    test-vel new-vel
+                    end new-pos)))
 
-            ;; At the end return the displacement from original sphere
-            ;; to new one
-            (finally (return  
-                       (vec4- end (pos obj))))))))
+          ;; At the end return the displacement from original sphere
+          ;; to new one
+          (finally (return  
+                     (vec4- end (pos sphere)))))))
 
 ;; x0 stays the same, but the position needs to be moved
 (defun transform-hit (transform hit)

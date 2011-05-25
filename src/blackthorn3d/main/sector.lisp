@@ -28,14 +28,29 @@
 (defvar *sector-table* (make-hash-table))
 
 (defclass sector (entity-server)
-  ((contents
+  ((transform
+    :reader transform
+    :initarg :transform
+    :initform (make-identity-matrix)
+    :documentation "transform matrix from sector coords to world")
+   (inverse-transform
+    :reader inverse-transform
+    :documentation "transform matrix from world coords to sector")
+   (contents
     :accessor contents
     :initform (make-hash-table))
    (geometry
     :accessor geometry
     :initarg :geometry
-    :initform nil)))
+    :initform nil
+    :documentation "contains the r-trees of the sectors geometry")))
     
+
+(defmethod initialize-instance :after ((this sector) &key)
+  (setf (slot-value this 'inverse-transform)
+        (rt-inverse (transform this))))
+
+
 (defun clone-table (table)
   (let ((clone (make-hash-table)))
     (maphash #'(lambda (k v) (setf (gethash k clone) v)) table)
@@ -69,14 +84,38 @@
 (defun lookup-sector (name-symbol)
   (gethash name-symbol *sector-table*))
   
-(defun new-sector (name-symbol geometry)
-  (let ((the-sector (make-server-entity 'sector :geometry geometry)))
+(defun new-sector (name-symbol geometry 
+                   &key
+                   (origin +origin+) 
+                   (orientation (quat-identity)))
+  (let ((the-sector (make-server-entity 'sector 
+                                        :geometry geometry)))
     (setf (gethash name-symbol *sector-table*) the-sector)))
     
 (defun update-sectors ()
   (maphash #'(lambda (sym a-sector) (declare (ignore sym)) (update a-sector))
            *sector-table*))
            
+(defmethod transform-to-sector (pos-or-vec (a-sector sector))
+  (matrix-multiply-v (inverse-transform a-sector) pos-or-vec))
+
+(defmethod collide-sector ((obj entity-server) (a-sector sector)
+                           &optional depth)
+  (with-slots (pos bounding-volume velocity) obj
+    (with-slots (geometry) a-sector
+      (let ((test-sphere (copy-sphere (bounding-volume obj)))
+            (test-vel velocity))
+        ;; transform into sector coordinates
+        (setf (pos test-sphere)
+              (transform-to-sector pos a-sector)
+              test-vel
+              (transform-to-sector test-vel a-sector))
+
+        ;; test against the geometry
+        (blt3d-phy:collide-with-world 
+         test-sphere velocity geometry depth)))))
+
+
 ;; where the heck should this method go???
 (defun kill-entity (e)
   (when (current-sector e)

@@ -266,7 +266,7 @@
       ;; Check if t0 and t1 are between 0 and 1
       ;#+DISABLED
       (when (or (< t0 0) (> t0 1.0))
-        (format t "~%OUT OF RANGE~%")
+    ;    (format t "~%OUT OF RANGE~%")
         (return-from moving-sphere-triangle-intersection nil))
 
 

@@ -29,7 +29,7 @@
 (defgeneric update (a-server-entity))
 
 (defmethod update ((e entity-server))
-    (declare (ignore e)))
+  (declare (ignore e)))
 
 (defmethod update ((p player))
   (with-slots (client) p
@@ -62,10 +62,13 @@
 
     (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
-    (let ((movement-vec (collide-with-world 
-                         c
-                         (blt3d-res:get-model :companion-cube)
-                         1)))
+    (let ((movement-vec (collide-sector 
+                         c (lookup-sector :start-sector) 1)
+            #+disabled
+            (collide-with-world 
+             c
+             (blt3d-res:get-model :companion-cube)
+             1)))
     (blt3d-phy::move-camera c movement-vec))))
       
 (defun next-frame ()
@@ -195,6 +198,11 @@
 (defmethod collide (a b)
   (declare (ignore a)
            (ignore b)))
+
+(defmethod collide ((obj entity-server) (p portal))
+  (when (crosses-portal-p obj p)
+    ;; Update the sector of the entity
+    (setf (current-sector obj) (links-to-sector p))))
       
 (defun check-collisions ()
   (iter (for (e1 e2) in (combinations (list-entities)))

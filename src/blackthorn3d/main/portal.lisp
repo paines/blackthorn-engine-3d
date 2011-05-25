@@ -39,3 +39,10 @@
 ;    (let ((portal-model (find-portal-model level-name portal-model-name)))
 ;        (make-entity-server 'portal
 ;            :
+
+
+;; Returns true if an entity (assumed to have already intersected 
+;; the bv) has crossed the portal
+(defmethod crosses-portal-p ((obj entity-server) (p portal))
+  (let ((p-plane (point-normal-plane (pos p) (dir p))))
+    (plusp (plane-dist p-plane (pos entity)))))

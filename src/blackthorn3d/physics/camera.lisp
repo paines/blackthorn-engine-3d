@@ -125,8 +125,10 @@
            (setf (elt ideal-coord 0)
                  (aif (/= 0 (x input-vec))
                       (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
-                      (let ((xd (- (x pos) (x t-pos)))
-                            (zd (- (z pos) (z t-pos))))
+                      (let ((xd (x tc-pos); (- (x pos) (x t-pos))
+                              )
+                            (zd (z tc-pos); (- (z pos) (z t-pos))
+                              ))
                         (atan xd zd))))
 
            ;; set theta
@@ -165,17 +167,14 @@
 
         ;; mat stuff
           
-        (let* ((basis (make-inv-ortho-basis (cross t-dir t-up)
-                                            t-up
-                                            (vec-neg4 t-dir)))
-               (translation
+        (let* ((translation
                 (make-translate (vec-scale4 +z-axis+ 
                                             (elt sphere-coord 2))))
                (rotation (quat->matrix (spherical->quat sphere-coord)))
                (concat (matrix-multiply-m rotation translation))
                (ideal-pos (vec4+ look-at
                                  (matrix-multiply-v 
-                                  basis
+                                  inv-basis
                                   (matrix-multiply-v concat +origin+))))
                (displace-vec (vec4- pos ideal-pos))
                (spring-accel (vec4-

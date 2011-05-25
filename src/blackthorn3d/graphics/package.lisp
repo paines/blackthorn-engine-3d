@@ -49,9 +49,12 @@
    :viewport
    :create-viewport
    :set-viewport
+   :view-frustum
    :frustum
    :make-frstm
    :load-frstm
+   :cull-sphere
+   :update-planes
 
  
 

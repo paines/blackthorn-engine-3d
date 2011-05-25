@@ -82,6 +82,7 @@
                                               :components
                                               ((:file "package")
                                                (:file "shapes")
+                                               (:file "blt-mesh")
                                                (:file "blt-model")
                                                (:file "camera")
                                                (:file "intersect")

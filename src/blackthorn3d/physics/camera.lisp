@@ -36,6 +36,10 @@
     :initform (list 0.0 (cos (/ pi 6.0)) 5.0 )
     :documentation "The ideal spherical coordinates of the camera relative to 
                     the target.  tuple is (phi theta dist)")
+   (ideal-coord2
+    :accessor ideal-coord2
+    :initarg :ideal-coord2
+    :initform (list 0.0 (cos (/ pi 6.0)) 0.5))
    (veloc
     :accessor veloc
     :initarg :veloc
@@ -44,6 +48,10 @@
     :accessor spring-k
     :initarg :spring-k
     :initform 6.0)
+   (spring-k2
+    :accessor spring-k2
+    :initarg :spring-k2
+    :initform 95.0)
    (target
     :accessor target
     :initarg :target
@@ -53,6 +61,10 @@
     :accessor mode
     :initarg :mode
     :initform :first-person)
+   (minor-mode
+    :accessor minor-mode
+    :initarg :minor-mode
+    :initform :strafe)
    (matrix 
     :accessor matrix)))
 
@@ -66,14 +78,22 @@
 (setf +theta-scale+ -0.2)
 
 (defmethod move-camera ((c camera) vec)
-  (with-slots (target pos velocity) c
+  (with-slots (target pos velocity minor-mode) c
     (with-slots ((t-pos pos) (t-up up)) target
       (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.4))))
         (setf (pos c) (vec4+ pos vec)
-              (dir c) (norm4 (vec4- t-pos (pos c))))))))
+              (dir c) (norm4 (vec-neg4 velocity)))
+        #+disabled
+        (when (eql minor-mode :strafe)
+          (setf (dir target) (norm4 (cross t-up (cross (dir c) t-up)))))))))
 
 (defmethod update-tp-camera ((c camera) time input-vec)
-  (with-slots (ideal-coord target pos veloc up dir spring-k) c
+  (with-slots (ideal-coord 
+               ideal-coord2 target 
+               pos veloc up dir 
+               spring-k spring-k2
+               minor-mode) c
+
     (with-slots ((t-pos pos)
                  (t-dir dir)
                  (t-up up)) target
@@ -82,11 +102,10 @@
       ;; note2: this allows the camera to lazily rotate around
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
-      
-      ;#+disabled
+ 
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
-      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 0.4)))
+      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42)))
              (t-right (cross t-dir t-up))
              (up-quat (quat-rotate-to-vec +y-axis+ t-up))
 
@@ -94,64 +113,84 @@
              (inv-basis (transpose basis))
              ;; camera point in object space
 ;             (tt-pos (matrix-multiply-v basis t-pos))
-             (tc-pos  (matrix-multiply-v basis (vec4- pos t-pos))))
+             (tc-pos  (matrix-multiply-v basis (vec4- pos t-pos)))
+             (sphere-coord nil)
+             (ks (ecase minor-mode
+                   (:free spring-k)
+                   (:strafe spring-k2))))
         
-        ;; set phi
-        ;; TODO:- make this suck less
-        ;; to make it suck less, use a quaternion?
-        ;; the axes to rotate around are
-        ;;    phi: (up target)
-        ;;    theta: (cross (dir target) (up target))
-      
-        (setf (elt ideal-coord 0)
-              (aif (/= 0 (x input-vec))
-                   (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
-                   (let ((xd (- (x pos) (x t-pos)))
-                         (zd (- (z pos) (z t-pos))))
-                     (atan xd zd))))
+        (ecase minor-mode
+          (:free
+           ;; set phi
+           (setf (elt ideal-coord 0)
+                 (aif (/= 0 (x input-vec))
+                      (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
+                      (let ((xd (- (x pos) (x t-pos)))
+                            (zd (- (z pos) (z t-pos))))
+                        (atan xd zd))))
 
-        ;; set theta
-        (aif (/= 0 (y input-vec))
-             (setf (elt ideal-coord 1)
-                   (clamp (+ (elt ideal-coord 1) 
-                             (* +theta-scale+ (y input-vec)))
-                          (- (/ (* 89 pi) 180))
-                          (/ (* 89 pi) 180) )))
+           ;; set theta
+           (aif (/= 0 (y input-vec))
+                (setf (elt ideal-coord 1)
+                      (clamp (+ (elt ideal-coord 1) 
+                                (* +theta-scale+ (y input-vec)))
+                             (- (/ (* 89 pi) 180))
+                             (/ (* 89 pi) 180) )))
+           (setf sphere-coord ideal-coord))
 
+          (:strafe
+           ;; set phi
+           ;; rotate target??
+          ; #+disabled
+           (setf (dir target)
+                 (quat-rotate-vec
+                  (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))
+                  (dir target)))
+
+           #+disabled
+           (aif (/= 0 (x input-vec))
+                (setf (elt ideal-coord2 0)
+                      (+ (elt ideal-coord2 0) 
+                         (* +phi-scale+ (x input-vec)))))
+
+           ;; set theta
+           (aif (/= 0 (y input-vec))
+                (setf (elt ideal-coord2 1)
+                      (clamp (+ (elt ideal-coord2 1) 
+                                (* +theta-scale+ (y input-vec)))
+                             (- (/ (* 89 pi) 180))
+                             (/ (* 89 pi) 180) )))
+
+           (setf sphere-coord ideal-coord2)))
 
         ;; mat stuff
-        (let* ((translation (make-translate (vec-scale4 +z-axis+ 
-                                                        (elt ideal-coord 2))))
-               (rotation (quat->matrix (spherical->quat ideal-coord)))
+          
+        (let* ((basis (make-inv-ortho-basis (cross t-dir t-up)
+                                            t-up
+                                            (vec-neg4 t-dir)))
+               (translation
+                (make-translate (vec-scale4 +z-axis+ 
+                                            (elt sphere-coord 2))))
+               (rotation (quat->matrix (spherical->quat sphere-coord)))
                (concat (matrix-multiply-m rotation translation))
                (ideal-pos (vec4+ look-at
-                              (matrix-multiply-v concat +origin+)))
+                                 (matrix-multiply-v 
+                                  basis
+                                  (matrix-multiply-v concat +origin+))))
                (displace-vec (vec4- pos ideal-pos))
                (spring-accel (vec4-
-                                (vec-scale4 displace-vec (- spring-k))
-                                (vec-scale4 veloc (* 2.0 (sqrt spring-k))))))
+                              (vec-scale4 displace-vec (- ks))
+                              (vec-scale4 veloc (* 2.0 (sqrt ks))))))
 
           (setf veloc  (vec-scale4 spring-accel time))
-
-          (setf (velocity c) 
-                (vec4- (vec4+ pos veloc)
-                       look-at))
-          (setf pos look-at)
-     
-
-          #+disabled
-          (setf (dir c) (matrix-multiply-v rotation (vec-neg4 +z-axis+)))
           
-          #+disabled
-          (setf (up c) 
-                (matrix-multiply-v
-                 (make-y-rot (elt ideal-coord 0))
-                 (matrix-multiply-v 
-                  (make-x-rot (elt ideal-coord 1))
-                  t-up)))
-          )
-
-
+          (setf (velocity c) 
+                ;(if (eql minor-mode :free))
+                (vec4- (vec4+ pos veloc)
+                       look-at)
+                #+disabled(vec4- ideal-pos
+                       look-at))
+          (setf pos look-at))
 
         #+disabled
         ;; quat stuff
@@ -215,19 +254,24 @@
       cam-inv)))
 
 (defmethod generate-move-vector ((c camera) input-vec)
-  (with-slots ((c-up up) (c-dir dir) target) c
+  (with-slots ((c-up up) (c-dir dir) target minor-mode) c
     (with-slots ((t-up up) (t-dir dir)) target
-      (let* ((x-axis (norm4 (cross c-dir t-up)))
-             (y-axis (cross t-up x-axis)))
+      (let (x-axis y-axis)
+        (ecase minor-mode
+          (:free
+           (setf x-axis (norm4 (cross c-dir t-up))
+                 y-axis (cross t-up x-axis)))
+          (:strafe
+           (setf x-axis (cross t-dir t-up)
+                 y-axis t-dir)))
+
         (vec4+ (vec-scale4 x-axis (x input-vec))
                (vec-scale4 y-axis (y input-vec)))))))
 
 (defmethod move-player ((c camera) input-vec)
   (with-slots (target (c-up up) (x2 dir) (c-pos pos)) c
     (with-slots ((t-up up) (x1 dir) (t-pos pos) client) target
-      (let* ((z1 (cross x1 t-up))
-             (z2 (cross x2 c-up))))
-        (generate-move-vector c input-vec))))
+      (generate-move-vector c input-vec))))
 
 (defmethod camera-move! ((c camera) vec4)
   "translates the camera by vec3. This is sort of temporary, as once we

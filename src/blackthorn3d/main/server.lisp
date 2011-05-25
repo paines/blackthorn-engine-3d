@@ -56,7 +56,8 @@
       (setf (velocity target) move-vec)
 
       (standard-physics-step target)
-      (when (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec)))
+      (when (and (eql (minor-mode c) :free)
+                 (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec))))
         (setf (dir target) (norm4 move-vec))))
 
     (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)

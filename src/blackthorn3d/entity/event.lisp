@@ -65,10 +65,10 @@
 
 (make-enum-serializer :input-type (:move-x :move-y :view-x :view-y :jmp))
 
-(make-slot-serializer :input
-                      (make-instance 'input-event)
-                      (:input-type input-type
-                       :float32 input-amount))
+(make-slot-serializer (:input input-event
+                       (make-instance 'input-event))
+                      :input-type input-type
+                      :float32 input-amount)
 
 (make-list-serializer :input-list :input)
 
@@ -98,9 +98,9 @@
     :accessor camera-event-camera
     :initarg :camera)))
 
-(make-slot-serializer :camera
-                      (make-instance 'camera-event)
-                      (:entity-oid camera))
+(make-slot-serializer (:camera camera-event
+                       (make-instance 'camera-event))
+                      :entity-oid camera)
 
 (defmessage :event-camera (:camera))
 

@@ -147,32 +147,33 @@
 (defun lookup-and-remove-entity (oid)
   (remove-entity (lookup-entity oid)))
   
-(make-uint-serializer :oid 4)
+(make-alias-serializer :oid :uint32)
 
-(make-vec-serializer :vec3 :single-float 3)
-(make-vec-serializer :vec4 :single-float 4)
+(make-vector-serializer :vec3 :single-float 3)
+(make-vector-serializer :vec4 :single-float 4)
 
-(make-init-slot-serializer :entity-create
-                           (make-client-entity) (:oid oid)
-                           (:vec4 pos
-                            :vec4 dir
-                            :vec4 up
-                            :symbol shape-name
-                            :symbol die-now))
+(make-key-slot-serializer (:entity-create entity
+                           (:oid oid oid)
+                           (make-client-entity oid))
+                          :vec4 pos
+                          :vec4 dir
+                          :vec4 up
+                          :symbol shape-name
+                          :symbol die-now)
 
-(make-init-slot-serializer :entity-update
-                           (lookup-entity) (:oid oid)
-                           (:vec4 pos
-                            :vec4 dir
-                            :vec4 up
-                            :symbol shape-name
-                            :symbol die-now))
+(make-key-slot-serializer (:entity-update entity
+                           (:oid oid oid)
+                           (lookup-entity oid))
+                          :vec4 pos
+                          :vec4 dir
+                          :vec4 up
+                          :symbol shape-name
+                          :symbol die-now)
 
-(make-init-slot-serializer :entity-oid
-                           (lookup-entity) (:oid oid)
-                           ())
-                           
-(make-init-slot-serializer :entity-remove
-                           (lookup-and-remove-entity) (:oid oid)
-                           ())
-                           
+(make-key-slot-serializer (:entity-oid entity
+                           (:oid oid oid)
+                           (lookup-entity oid)))
+
+(make-key-slot-serializer (:entity-remove entity
+                           (:oid oid oid)
+                           (lookup-and-remove-entity oid)))

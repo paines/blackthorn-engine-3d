@@ -189,7 +189,7 @@
   (let ((expected-size 4))
     (with-buffer *message-size-buffer*
       (buffer-rewind)
-      (buffer-advance :amount expected-size)
+      (buffer-advance expected-size)
       (let ((actual-size
              (read-sequence *buffer* (usocket:socket-stream connection))))
         (unless (= actual-size expected-size)
@@ -210,7 +210,7 @@
   (let ((expected-size (socket-receive-buffer-size connection)))
     (with-buffer buffer
       (buffer-rewind)
-      (buffer-advance :amount expected-size)
+      (buffer-advance expected-size)
       (let ((actual-size
              (read-sequence *buffer* (usocket:socket-stream connection))))
         (unless (= actual-size expected-size)

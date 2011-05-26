@@ -196,7 +196,7 @@
                    :child-nodes child-nodes
                    :bounding-volume bv)))
 
-(defun copy-model-node (node)
+(defmethod copy-node ((node model-node))
   (with-slots (id transform material-array mesh child-nodes bounding-volume) 
       node
     (make-instance 'model-node
@@ -205,5 +205,16 @@
      :material-array material-array
      :mesh mesh
      :child-nodes (iter (for child in  child-nodes)
-                        (collect (copy-model-node child)))
+                        (collect (copy-node child)))
      :bounding-volume bounding-volume)))
+
+(defmethod copy-node ((node node))
+  (with-slots (id transform child-nodes bounding-volume)
+      node
+    (make-instance 'node
+                   :id id
+                   :transform transform
+                   :child-nodes
+                   (iter (for child in child-nodes)
+                         (collect (copy-node child)))
+                   :bounding-volume bounding-volume)))

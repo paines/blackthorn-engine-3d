@@ -223,34 +223,23 @@
 ;; combines the vertex data so there is only one indice per vertex
 ;; returns  (ELEMENTS VERTEX-STREAMS) where elements is a list
 ;; of elem objects and VERTEX-STREAMS is a list of vertex-stream objects
-(defun unify-indices (elements inputs &optional begin end)
+(defun unify-indices (elements inputs)
   (let ((n-inputs (length inputs))
         (src-fns (get-source-functions inputs))
-        (vertex-ht (make-hash-table :test #'equalp))
-        (print-p (and begin end))
-        (start (if begin begin 0))
-        (end (if end end most-positive-fixnum)))
-    (format t "~%Inputs: ~a~%" inputs)
-    (format t "[~a, ~a]~%" begin end)
+        (vertex-ht (make-hash-table :test #'equalp)))
     (list 
      ;; ELEMENTS
      (iter 
-      (with c = 0)
-  
+      (with curr-index = 0)
       (for elt in elements)
       (let* ((indices (element-indices elt))
              (n-verts (/ (length indices) n-inputs))
-             (curr-index 0)
              (new-indices (make-array n-verts :fill-pointer 0)))
-     
+        
         ;; for each index in this element, build the array of unified 
         ;; vertex streams
         (iter (for i below (length indices) by n-inputs)
-              (incf c)
-              (when (< c start) (next-iteration))
-              (while (< c end))
               (let ((vertex (subseq indices i (+ i n-inputs))))
-             ;   (format t "vertex indices: ~a~%" vertex)
                 (aif (gethash vertex vertex-ht)
                      (vector-push it new-indices)
                      (progn
@@ -277,12 +266,12 @@
                            :stride (length (src-components source))))))))
 
 
-(defun mesh-list->blt-mesh (mesh-lst &optional begin end)
+(defun mesh-list->blt-mesh (mesh-lst)
   "Converts a list of form (id (element*) (input*)) into a
    blt-mesh object"
   (destructuring-bind (id elements inputs) mesh-lst
     (destructuring-bind (new-elements vertex-streams)
-        (unify-indices elements inputs begin end)
+        (unify-indices elements inputs)
           (make-blt-mesh :id id
                      :vertex-streams vertex-streams
                      :elements new-elements))))

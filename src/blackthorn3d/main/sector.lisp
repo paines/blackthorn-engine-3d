@@ -1,6 +1,7 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
 ;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>
+;;;;               2011 Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation

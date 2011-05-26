@@ -81,13 +81,12 @@
            ,@(mapcar #'(lambda (field var)
                          `(serialize ,field ,var))
                      fields
-                     field-vars))
-         buffer)
+                     field-vars)))
        (define-unserializer (,type)
          (let ((value
                 (list ,@(mapcar #'(lambda (field) `(unserialize ,field))
                                 fields))))
-           (values value buffer))))))
+           value)))))
 
 (defun apply-message-handler (handler src message)
   (apply handler src (message-value message)))

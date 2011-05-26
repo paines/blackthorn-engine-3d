@@ -191,7 +191,8 @@
       (buffer-rewind)
       (buffer-advance expected-size)
       (let ((actual-size
-             (read-sequence *buffer* (usocket:socket-stream connection))))
+             (read-sequence *message-size-buffer*
+                            (usocket:socket-stream connection))))
         (unless (= actual-size expected-size)
           (signal (make-condition
                    'end-of-file
@@ -212,7 +213,7 @@
       (buffer-rewind)
       (buffer-advance expected-size)
       (let ((actual-size
-             (read-sequence *buffer* (usocket:socket-stream connection))))
+             (read-sequence buffer (usocket:socket-stream connection))))
         (unless (= actual-size expected-size)
           (signal (make-condition
                    'end-of-file

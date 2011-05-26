@@ -60,38 +60,33 @@
 (defun make-message-list (type &rest values)
   (make-instance 'message :type type :value values))
 
-(defmethod serialize ((mtype (eql :message)) value &key (buffer *buffer*))
-  (with-buffer buffer
-    (with-slots (type value) value
-      (serialize :keyword type)
-      (serialize type value))))
+(define-serializer (:message value)
+  (with-slots (type value) value
+    (serialize :keyword type)
+    (serialize type value)))
 
-(defmethod unserialize ((mtype (eql :message)) &key (buffer *buffer*))
+(define-unserializer (:message)
   (let ((message (make-instance 'message)))
-    (with-buffer buffer
-      (with-slots (type value) message
-        (setf type (unserialize :keyword))
-        (setf value (unserialize type))
-        message))))
+    (with-slots (type value) message
+      (setf type (unserialize :keyword))
+      (setf value (unserialize type))
+      message)))
 
 (defmacro defmessage (type (&rest fields))
   (let ((field-vars (mapcar #'(lambda (field) (gensym (symbol-name field)))
                             fields)))
     `(progn
-       (defmethod serialize ((type (eql ,type)) value &key (buffer *buffer*))
+       (define-serializer (,type value)
          (destructuring-bind ,field-vars value
            ,@(mapcar #'(lambda (field var)
-                         `(serialize ,field ,var :buffer buffer))
+                         `(serialize ,field ,var))
                      fields
-                     field-vars))
-         buffer)
-       (defmethod unserialize ((type (eql ,type)) &key (buffer *buffer*))
+                     field-vars)))
+       (define-unserializer (,type)
          (let ((value
-                (list
-                 ,@(mapcar #'(lambda (field)
-                               `(unserialize ,field :buffer buffer))
-                           fields))))
-           (values value buffer))))))
+                (list ,@(mapcar #'(lambda (field) `(unserialize ,field))
+                                fields))))
+           value)))))
 
 (defun apply-message-handler (handler src message)
   (apply handler src (message-value message)))

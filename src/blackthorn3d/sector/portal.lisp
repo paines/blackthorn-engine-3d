@@ -23,7 +23,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-main)
+(in-package :blackthorn3d-sector)
 
 (defclass portal (entity-server)
     ((links-to-sector

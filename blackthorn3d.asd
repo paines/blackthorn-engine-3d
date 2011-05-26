@@ -92,6 +92,12 @@
                                                (:file "skeleton")
 					       (:file "octree"))
                                               :serial t)
+                                     (:module sector
+                                              :components
+                                              ((:file "package")
+                                               (:file "portal")
+                                               (:file "sector"))
+                                              :serial t)
                                      (:module import
                                               :components
                                               ((:file "package")
@@ -148,9 +154,7 @@
                                      (:module main
                                               :components
                                               ((:file "package")
-                                               (:file "sector")
                                                (:file "pos-edge-react")
-                                               (:file "portal")
                                                (:file "player")
                                                (:file "simple-monster")
                                                (:file "game")

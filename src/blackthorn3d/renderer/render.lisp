@@ -80,8 +80,8 @@
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-           #p "res/models/Player2Rigged.dae"
-         ;  #p "res/models/SwordTest.dae"
+         ;  #p "res/models/Player2Rigged.dae"
+           #p "res/models/SwordTest.dae"
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))

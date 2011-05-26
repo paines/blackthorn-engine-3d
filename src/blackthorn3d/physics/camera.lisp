@@ -122,6 +122,14 @@
         (ecase minor-mode
           (:free
            ;; set phi
+     ;      #+disabled
+           (setf (elt ideal-coord 0)
+                 (+ (let ((xd (x tc-pos))
+                          (zd (z tc-pos)))
+                      (atan xd zd))
+                    (* +phi-scale+ (x input-vec))))
+
+           #+disabled
            (setf (elt ideal-coord 0)
                  (aif (/= 0 (x input-vec))
                       (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
@@ -184,10 +192,9 @@
           (setf veloc  (vec-scale4 spring-accel time))
           
           (setf (velocity c) 
-                ;(if (eql minor-mode :free))
+                (vec4- ideal-pos look-at)
+                #+disabled
                 (vec4- (vec4+ pos veloc)
-                       look-at)
-                #+disabled(vec4- ideal-pos
                        look-at))
           (setf pos look-at))
 

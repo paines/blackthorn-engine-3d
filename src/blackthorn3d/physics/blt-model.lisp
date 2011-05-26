@@ -47,7 +47,7 @@
   (with-slots (mesh-nodes animations) model
     (make-instance 'blt-model
                    :mesh-nodes (iter (for node in mesh-nodes)
-                                     (collect (copy-model-node node)))
+                                     (collect (copy-node node)))
                    :animations (copy-anim-controller animations))))
 
 

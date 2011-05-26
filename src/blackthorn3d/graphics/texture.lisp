@@ -73,6 +73,31 @@
       (gl:bind-texture :texture-2d 0)
       tex-id)))
 
+
+(defun create-texture (width height int-format  &key
+                       (format :rgba)
+                       (min-filter :linear-mipmap-linear)
+                       (mag-filter :linear)
+                       (wrap-s :repeat)
+                       (wrap-t :repeat)
+                       (border 0)
+                       (type :unsigned-byte))
+  (let ((tex-id (gen-texture)))
+    (gl:bind-texture :texture-2d tex-id)
+    (gl:tex-parameter :texture-2d :texture-min-filter min-filter)
+    (gl:tex-parameter :texture-2d :texture-mag-filter mag-filter)
+    (gl:tex-parameter :texture-2d :texture-wrap-s wrap-s)
+    (gl:tex-parameter :texture-2d :texture-wrap-t wrap-t)
+    
+    (gl:tex-image-2d :texture-2d 0
+                     int-format
+                     width height border
+                     format type 
+                     (cffi:null-pointer))
+    (gl:bind-texture :texture-2d 0)
+    tex-id))
+
+
 (defun use-texture (texture)
   (gl:bind-texture :texture-2d texture))
 

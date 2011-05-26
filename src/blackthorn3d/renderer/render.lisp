@@ -31,6 +31,10 @@
 (defvar *test-skele* nil)
 (defvar *test-ps* nil)
 (defvar *test-ui* nil)
+(defvar *test-fbo* nil)
+(defvar *render-tex* nil)
+(defvar *test-tex* nil)
+(defvar *depth-tex* nil)
 
 (defparameter vao-cube nil)
 (defparameter shader nil)
@@ -42,9 +46,7 @@
   (format t "Initializing Rendering Subsystem~%")
   (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
  
-  (setf *main-light* (make-instance 'light
-                                    :position (make-point3 0.0 10.0 0.0)))
-
+ 
   (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
 ;  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
   )
@@ -73,15 +75,18 @@
   (gl:enable :depth-test :cull-face)
   (gl:depth-func :lequal)
 
-  (format t "### LOADING CONTROLLER MODEL ###~%")
 
+  (setf *main-light* (make-light
+                      :position (make-point3 0.0 5.0 0.0)))
+
+  (format t "### LOADING CONTROLLER MODEL ###~%")
  ; #+disabled
   (let ((scientist-model 
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-           #p "res/models/Player2Rigged.dae"
-         ;  #p "res/models/SwordTest.dae"
+         ;  #p "res/models/Player2Rigged.dae"
+           #p "res/models/SwordTest.dae"
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
@@ -129,7 +134,32 @@
                                   :current-value 0)))
 
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
-                                         :diffuse #(1.0 0.0 0.0))))
+                                         :diffuse #(1.0 0.0 0.0)))
+
+  (setf *test-tex*
+        (image->texture2d (load-image #p"res/images/round-particle1.png")))
+
+  (setf *test-fbo* (make-framebuffer))
+  (setf *render-tex* 
+        (create-texture 960 720 :rgba
+                        :format :rgba))
+  (setf *depth-tex*
+        (create-texture 960 720 :depth-component
+                        :min-filter :nearest
+                        :mag-filter :nearest
+                        :wrap-s :clamp
+                        :wrap-t :clamp
+                        :format :depth-component))
+  (attach-texture *test-fbo* :color-attachment0-ext
+                  *render-tex*)
+  (attach-texture *test-fbo* :depth-attachment-ext
+                  *depth-tex*)
+
+  (with-framebuffer *test-fbo*
+    (format t "Framebuffer Status: ~a~%"
+            (gl::enum= 
+             (gl:check-framebuffer-status-ext :framebuffer-ext) 
+             :framebuffer-complete-ext))))
 
 
 
@@ -174,57 +204,89 @@
 ;;;
 
 (defun render-frame (entities level)
-  (gl:enable :depth-test)
+
+  (gl:enable :depth-test :lighting)
   (gl:depth-mask t)
   (gl:depth-func :lequal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
-  (gl:clear :color-buffer-bit :depth-buffer-bit)
+  (gl:cull-face :back)
+
+  ;; Test framebuffer
+  ;(shadow-pass *main-light* entities)
  
-  ;; Create PVS from entities and level
-  (let ((PVS (find-pvs entities level))))
+  (with-framebuffer *test-fbo*
+    (gl:clear :color-buffer-bit :depth-buffer-bit)
+    (gl:enable :depth-test :lighting)
+    (gl:depth-mask t)
+    (gl:depth-func :lequal)
+    (gl:blend-func :src-alpha :one-minus-src-alpha)
+    (gl:cull-face :back)
 
-  (when *main-cam*
-    (gl:load-matrix *cam-view-matrix*)
+    ;; Create PVS from entities and level
+    (let ((PVS (find-pvs entities level))))
 
-    (update-billboarder (pos *main-cam*)
-                        (dir *main-cam*)
-                        (up *main-cam*)
-                        +y-axis+))
+    (set-viewport *main-viewport*)
 
-  (init-light *main-light* :light0)
+    (when *main-cam*
+      (gl:load-matrix *cam-view-matrix*)
 
-  (gl:color-material :front :diffuse)
-  (gl:enable :color-material)
+      (update-billboarder (pos *main-cam*)
+                          (dir *main-cam*)
+                          (up *main-cam*)
+                          +y-axis+))
 
-  #+disabled
-  (when animated
-    (draw-object animated))
+    (use-light *main-light* :light0)
 
-  ;#+disabled
-  (when level
-    (gl:with-pushed-matrix
-      (draw-object level)))
+    (gl:color-material :front :diffuse)
+    (gl:enable :color-material)
 
-  ;#+disabled
-  (when *test-skele*
-    (gl:with-pushed-matrix
-      (draw-object *test-skele*)))
+    #+disabled
+    (when animated
+      (draw-object animated))
 
-  ;#+disabled
-  (dolist (e entities)
-    (when (and (shape e) (not (eql e *main-cam*)))
-      (with-slots (pos dir up shape) e
-        (let ((z-axis (cross dir up)))
-          (gl:with-pushed-matrix
-            (gl:translate (x pos) (y pos) (z pos))
-            (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
-            (draw-object shape))))))
+    ;#+disabled
+    (when level
+      (gl:with-pushed-matrix
+          (draw-object level)))
 
-  ;; DO PARTICLES YEAH!
-  (gl:blend-func :src-alpha :one)  
-  (gl:depth-mask nil)
-  (when *test-ps*
-    (render-ps *test-ps*))
+    ;#+disabled
+    (when *test-skele*
+      (gl:with-pushed-matrix
+          (draw-object *test-skele*)))
+
+    ;#+disabled
+    (dolist (e entities)
+      (when (and (shape e) (not (eql e *main-cam*)))
+        (draw-object e)))
+
+    ;; DO PARTICLES YEAH!
+    (gl:blend-func :src-alpha :one)  
+    (gl:depth-mask nil)
+   ;; #+disabled
+    (when *test-ps*
+      (render-ps *test-ps*)))
+
+  ;; now render the texture
+  ;; #+disabled
+  (progn
+    (gl:depth-mask t)
+    (gl:blend-func :src-alpha :one-minus-src-alpha)
+    (gl:clear :color-buffer-bit :depth-buffer-bit)
+    (disable-shader)
+    (gl:disable :lighting)
+
+    (gl:matrix-mode :projection)
+    (gl:load-identity)
+    (gl:ortho 0 1 0 1 -10 10)
+    (gl:matrix-mode :modelview)
+    (gl:load-identity)
+    (gl:enable :texture-2d)
+    (gl:bind-texture :texture-2d *render-tex*)
+    (gl:generate-mipmap-ext :texture-2d)
+    (gl:color 1 1 1)
+  ;  (gl:translate 0 0 -2)
+    (draw-screen-quad)
+    (gl:bind-texture :texture-2d 0))
 
   ;; Lastly render the ui
 ;  (render-ui)

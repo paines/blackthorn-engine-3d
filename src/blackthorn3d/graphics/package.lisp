@@ -29,6 +29,7 @@
   (:nicknames :blt3d-gfx)
   (:use :iter :cl :blt3d-utils :alexandria
         :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani)
+  (:import-from :blt3d-ent :entity)
   (:export
 
    ;; init.lisp
@@ -44,6 +45,7 @@
    :gfx-init
    :gfx-draw
    :draw-object
+   :draw-screen-quad
 
    ;; frustum.lisp
    :viewport
@@ -56,12 +58,21 @@
    :cull-sphere
    :update-planes
 
- 
 
    ;; texture.lisp
    :load-image
    :image->texture2d
+   :create-texture
    :use-texture
+
+   ;; framebuffer.lisp
+   :framebuffer
+   :make-framebuffer
+   :attach-texture
+   :get-attachment
+   :bind-framebuffer
+   :unbind-framebuffer
+   :with-framebuffer
 
    ;; mesh.lisp
    :mesh
@@ -75,13 +86,15 @@
 
    ;; light.lisp
    :light
-   :init-light
+   :use-light
    :make-light
+   :shadow-pass
 
    ;; shader.lisp
    :*shader*
    :make-shader
    :enable-shader
+   :disable-shader
 
    ;; particles.lisp
    :particle-system

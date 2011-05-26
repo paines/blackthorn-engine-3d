@@ -74,7 +74,8 @@
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
-(setf +phi-scale+ -0.2)
+(defvar +theta-limit+ 90)
+(setf +phi-scale+ -2)
 (setf +theta-scale+ -0.2)
 
 (defmethod move-camera ((c camera) vec)
@@ -122,6 +123,14 @@
         (ecase minor-mode
           (:free
            ;; set phi
+     ;      #+disabled
+           (setf (elt ideal-coord 0)
+                 (+ (let ((xd (x tc-pos))
+                          (zd (z tc-pos)))
+                      (atan xd zd))
+                    (* +phi-scale+ (x input-vec))))
+
+           #+disabled
            (setf (elt ideal-coord 0)
                  (aif (/= 0 (x input-vec))
                       (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
@@ -136,8 +145,8 @@
                 (setf (elt ideal-coord 1)
                       (clamp (+ (elt ideal-coord 1) 
                                 (* +theta-scale+ (y input-vec)))
-                             (- (/ (* 89 pi) 180))
-                             (/ (* 89 pi) 180) )))
+                             (- (/ (* +theta-limit+ pi) 180))
+                             (/ (* +theta-limit+ pi) 180) )))
            (setf sphere-coord ideal-coord))
 
           (:strafe
@@ -184,10 +193,9 @@
           (setf veloc  (vec-scale4 spring-accel time))
           
           (setf (velocity c) 
-                ;(if (eql minor-mode :free))
+                ;(vec4- ideal-pos look-at)
+               ; #+disabled
                 (vec4- (vec4+ pos veloc)
-                       look-at)
-                #+disabled(vec4- ideal-pos
                        look-at))
           (setf pos look-at))
 

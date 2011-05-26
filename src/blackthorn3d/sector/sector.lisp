@@ -24,7 +24,7 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-main)
+(in-package :blackthorn3d-sector)
 
 (defvar *sector-table* (make-hash-table))
 
@@ -114,7 +114,7 @@
               (transform-to-sector test-vel a-sector))
 
         ;; test against the geometry
-        (blt3d-phy:collide-with-world 
+        (collide-with-world 
          test-sphere velocity geometry depth)))))
 
 

@@ -29,54 +29,8 @@
 
 
 
-
-
-(defun make-ray (e d)
-  (cons e d))
-(defun ray-d (ray)
-  (cdr ray))
-(defun ray-e (ray)
-  (car ray))
 (blt3d-math::gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
 
-(defun ray-sphere-intersection (ray sphere t-max)
-  (let* ((r2 (sq (rad sphere)))
-         (L (vec3- (pos sphere) (ray-e ray)))
-         (l2 (sq-mag L))
-         (s (dot L (ray-d ray))))
-    (when (and (< s 0) (> l2 r2))
-      (return-from ray-sphere-intersection nil))
-    
-    (let ((m2 (- l2 (sq s))))
-      (when (> m2 r2)
-        (return-from ray-sphere-intersection nil))
-      (let* ((q (sqrt (- r2 m2)))
-             (t0 (if (> l2 r2) (- s q) (+ s q))))
-        (list t0 (vec4+ (ray-e ray) (vec-scale4 (ray-d ray) t0)))))))
-
-(defun ray-triangle-intersection (ray tri)
-  "Detect whether a ray (e-vec . d-vec) intersects a triangle
-   returns nil if no intersection occurs, or (P s) where P
-   is the point on the triangle and s is the distance, 
-   or time (in e + s*d).  Returns nil or values (s u v)"
-  (let* ((e1 (vec3- (svref tri 1) (svref tri 0)))
-         (e2 (vec3- (svref tri 2) (svref tri 0)))
-         (p (cross3 (ray-d ray) e2))
-         (alpha (dot e1 p)))
-    (when (range alpha (- +eps+) +eps+)
-      (return-from ray-triangle-intersection nil))
-    (let* ((f (/ 1 alpha))
-           (s (vec3- (ray-e ray) (svref tri 0)))
-           (u (* f (dot s p))))
-      (when (or (< u 0.0) (> u 1.0))
-        (return-from ray-triangle-intersection nil))
-      (let* ((q (cross3 s e1))
-             (v (* f (dot d q))))
-        (when (or (< v 0.0) (> v 1.0))
-          (return-from ray-triangle-intersection nil))
-        (values (* f (dot e2 q)) 
-                u 
-                v)))))
 
 (defun make-plane (n d)
   (cons n d))

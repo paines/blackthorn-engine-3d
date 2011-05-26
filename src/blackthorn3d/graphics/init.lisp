@@ -54,6 +54,6 @@
                                  (blt3d-res:file-contents
                                   (blt3d-res:resolve-resource
                                    #p "res/shaders/FinalProjShader.frag"))))
-  
+  (light-init)
   (billboard-init))
 

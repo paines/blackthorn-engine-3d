@@ -29,6 +29,23 @@
                   :ambient #(1.0 .7 0.0 1.0)
                   :diffuse #(1.0 .7 0.0 1.0)))
 
+(defmethod draw-object ((e entity))
+  (when (and (shape e))
+    (with-slots (pos dir up shape) e
+      (let ((z-axis (cross dir up)))
+          (gl:with-pushed-matrix
+            (gl:translate (x pos) (y pos) (z pos))
+            (gl:mult-matrix (make-inv-ortho-basis dir up z-axis))
+            (draw-object shape))))))
+
+
+(defun draw-screen-quad ()
+  (gl:with-primitives :quads
+    (gl:tex-coord 0 0) (gl:vertex 0 0)
+    (gl:tex-coord 1 0) (gl:vertex 1 0)
+    (gl:tex-coord 1 1) (gl:vertex 1 1)
+    (gl:tex-coord 0 1) (gl:vertex 0 1)))
+
 (defun draw-cube (&key (color #(1.0 1.0 1.0)))
   (gl:color (r color) (g color) (b color))
   (gl:with-primitive :quads

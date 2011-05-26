@@ -45,6 +45,7 @@
     :accessor view-fov
     :initarg :fov)
    (framebuffer
+    :accessor view-fbo
     :initarg :fbo
     :initform nil
     :documentation "if not nil, is a fbo that the viewport
@@ -70,15 +71,14 @@
                    (make-frstm near far aspect-ratio fov :type type))))
 
 (defmethod set-viewport ((this viewport))
-  (format t "starting set-viewport~%")
+ ; (format t "starting set-viewport~%")
   (with-slots (size vfrustum framebuffer) this
-    (format t "setting viewport of size ~a~%" size)
+   ; (format t "setting viewport of size ~a~%" size)
     (gl:viewport 0 0 (car size) (cadr size))
-    (format t "load-frustum~%")
+   ; (format t "load-frustum~%")
     (load-frstm vfrustum)
     (when framebuffer
-      ;; do framebuffer stuff
-      )))
+      (bind-framebuffer framebuffer))))
 
 
 
@@ -144,8 +144,7 @@
     (gl:push-attrib :transform-bit)
     (gl:matrix-mode :projection)
     (gl:load-matrix (slot-value this 'proj-matrix))
-    (gl:pop-attrib)
-    #+disabled(gl:matrix-mode :modelview)))
+    (gl:pop-attrib)))
 
 (defmethod frustum-projection-matrix ((this frustum))
   (with-slots ((near near-dist)

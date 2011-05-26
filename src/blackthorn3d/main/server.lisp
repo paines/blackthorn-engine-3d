@@ -60,7 +60,7 @@
       (standard-physics-step target)
 
       (blt3d-phy::move-vec target
-       (collide-sector target (lookup-sector :start-sector)))
+       (collide-sector target (current-sector target)))
 
       (when (and (eql (minor-mode c) :free)
                  (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec))))
@@ -69,7 +69,7 @@
     (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                                      (s-input-view-y client)))
     (let ((movement-vec (collide-sector 
-                         c (lookup-sector :start-sector) 1)))
+                         c (current-sector c) 1)))
     (blt3d-phy::move-camera c movement-vec))))
       
 
@@ -173,6 +173,7 @@
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
              (camera (new-camera the-new-player)))
+        
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
         (message-send :broadcast (make-event :entity-create))

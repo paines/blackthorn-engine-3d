@@ -110,6 +110,7 @@
                                               ((:file "package")
                                                (:file "scene-graph")
                                                (:file "texture")
+                                               (:file "framebuffer")
                                                (:file "shader")
                                                (:file "light")
                                                (:file "material")

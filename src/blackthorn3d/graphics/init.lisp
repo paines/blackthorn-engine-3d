@@ -29,11 +29,21 @@
 ;; Tells draw methods to use their shadow vertex shader
 (defvar *use-shadow-shader* nil)
 (defvar *cam-view-matrix* (make-identity-matrix))
+(defvar *default-texture* nil)
+(defvar *tex-loc* nil)
 
+
+(defvar *standard-texture* nil)
+(defvar *standard-color* nil)
+(defvar *skinned-texture* nil)
+(defvar *skinned-color* nil)
 
 (defun init-gfx ()
   (setf *particle-tex*
         (image->texture2d (load-image #p"res/images/round-particle1.png")))
+
+  (setf *default-texture*
+        (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 
   (setf skin-shader
         (make-shader (blt3d-res:file-contents
@@ -41,7 +51,7 @@
                        #p "res/shaders/skin-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
-                       #p "res/shaders/FinalProjShader.frag"))))
+                       #p "res/shaders/texture-std.frag"))))
 
   (enable-shader skin-shader)
   (setf joint-indices-loc 
@@ -53,12 +63,19 @@
         joint-mats-loc
         (gl:get-uniform-location skin-shader "jointMats"))
 
-  (setf mesh-shader (make-shader (blt3d-res:file-contents
-                                  (blt3d-res:resolve-resource 
-                                   #p "res/shaders/FinalProjShader.vert"))
-                                 (blt3d-res:file-contents
-                                  (blt3d-res:resolve-resource
-                                   #p "res/shaders/FinalProjShader.frag"))))
+  (setf *standard-tex*
+        (make-shader (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource 
+                       #p "res/shaders/texture-std.vert"))
+                     (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource
+                       #p "res/shaders/texture-std.frag"))))
+
+  (setf mesh-shader *standard-tex*)
+
+  (setf *tex-loc*
+        (gl:get-uniform-location *standard-tex* "tex"))
+
   (light-init)
   (billboard-init))
 

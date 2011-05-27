@@ -26,10 +26,6 @@
 (in-package :blackthorn3d-main)
 
         
-(defgeneric update (a-server-entity))
-
-(defmethod update ((e entity-server))
-  (declare (ignore e)))
 
 (defmethod update ((p player))
   (with-slots (client) p

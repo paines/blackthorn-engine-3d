@@ -108,7 +108,7 @@
   
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:dae-geometry
-                  (blt3d-imp:load-dae #p"res/models/MovingPlatRoom.dae"))))
+                  (blt3d-imp:load-dae #p"res/models/DeadEndRoom.dae"))))
 
   (blt3d-phy:apply-transform 
    *level* 

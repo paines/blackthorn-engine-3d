@@ -45,7 +45,7 @@
     (let ((p (make-server-entity
               'player
               :client client-id
-              :pos (make-point3 0.0 2.0 0.0)
+              :pos (make-point3 0.0 18.0 0.0)
               :dir (make-vec3 1.0 0.0 0.0)
               :up  (make-vec3 0.0 1.0 0.0)
               :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 

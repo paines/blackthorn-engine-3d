@@ -85,6 +85,15 @@
   ((oid
     :initarg :oid)))
 
+
+
+(defgeneric update (a-server-entity))
+(defmethod update ((e entity-server))
+  (declare (ignore e)))
+
+
+
+
 (defvar *global-oid-table* (make-hash-table))
 (defvar *recently-created-server-entities* nil)
 (defvar *recently-removed-server-entities* nil)

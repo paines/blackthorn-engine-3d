@@ -48,7 +48,7 @@
   (let ((level
          (blt3d-phy:initialize-cube
           (blt3d-res:load-model 
-           :companion-cube :dae #p "res/models/MovingPlatRoom.dae"))))
+           :companion-cube :dae #p "res/models/DeadEndRoom.dae"))))
     ;; we have to scale it!
     ;(blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
     

@@ -24,11 +24,11 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-main)
+(in-package :blackthorn3d-sector)
 
 (defvar *sector-table* (make-hash-table))
 
-(defclass sector (entity-server)
+(defclass sector ()
   ((transform
     :reader transform
     :initarg :transform
@@ -89,8 +89,8 @@
                    &key
                    (origin +origin+) 
                    (orientation (quat-identity)))
-  (let ((the-sector (make-server-entity 'sector 
-                                        :geometry geometry)))
+  (let ((the-sector (make-instance 'sector 
+                                   :geometry geometry)))
     (setf (gethash name-symbol *sector-table*) the-sector)))
     
 (defun update-sectors ()

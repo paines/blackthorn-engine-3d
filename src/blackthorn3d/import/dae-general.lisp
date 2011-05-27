@@ -149,7 +149,8 @@
           (collect (list (intern (get-attribute "semantic" attribs) "KEYWORD")
                          (input->source (uri-indirect 
                                          (get-attribute "source" attribs))
-                                        sources))))))
+                                        sources)
+                         (parse-integer (get-attribute "offset" attribs)))))))
 
 (defun input-by-semantic (semantic inputs)
   (second (find semantic inputs :key #'car)))
@@ -176,13 +177,11 @@
                 (attrib-vec (make-array attrib-len
                                         :fill-pointer 0
                                         :adjustable t)))
-           (cons #'(lambda (index)
-                     #+disabled(if (eql :joint-weight (car src))
-                         (dae-debug "index: ~a~%" index))
+           (list #'(lambda (index)
                      (let ((src-vec (src-accessor source index)))
-                       (vector-push-extend src-vec attrib-vec))0
-                  )
-                 attrib-vec)))))
+                       (vector-push-extend src-vec attrib-vec))0)
+                 attrib-vec
+                 (third src))))))
 
 
 (defun duplicate-indices (elements index times)
@@ -225,21 +224,23 @@
 ;; of elem objects and VERTEX-STREAMS is a list of vertex-stream objects
 (defun unify-indices (elements inputs)
   (let ((n-inputs (length inputs))
+        (stride (1+ (apply #'max (mapcar #'third inputs))))
         (src-fns (get-source-functions inputs))
         (vertex-ht (make-hash-table :test #'equalp)))
+    (format t "lenght of ")
     (list 
      ;; ELEMENTS
      (iter 
       (with curr-index = 0)
       (for elt in elements)
       (let* ((indices (element-indices elt))
-             (n-verts (/ (length indices) n-inputs))
+             (n-verts (/ (length indices) stride))
              (new-indices (make-array n-verts :fill-pointer 0)))
         
         ;; for each index in this element, build the array of unified 
         ;; vertex streams
-        (iter (for i below (length indices) by n-inputs)
-              (let ((vertex (subseq indices i (+ i n-inputs))))
+        (iter (for i below (length indices) by stride)
+              (let ((vertex (subseq indices i (+ i stride))))
                 (aif (gethash vertex vertex-ht)
                      (vector-push it new-indices)
                      (progn
@@ -247,8 +248,8 @@
                              curr-index)
                        (vector-push curr-index new-indices)
                        (iter (for f in src-fns)
-                             (for i in-vector vertex)
-                             (funcall (car f) i))
+;                             (for i in-vector vertex)
+                             (funcall (first f) (svref vertex (third f))))
                        (incf curr-index)))))
         (collect (make-element
                   :indices new-indices
@@ -262,7 +263,7 @@
            (collect 
             (make-instance 'vertex-stream
                            :semantic semantic
-                           :stream (cdr fn)
+                           :stream (second fn)
                            :stride (length (src-components source))))))))
 
 

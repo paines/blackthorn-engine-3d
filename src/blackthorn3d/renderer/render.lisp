@@ -76,7 +76,7 @@
 
 
   (setf *main-light* (make-light
-                      :position (make-point3 0.0 5.0 0.0)))
+                      :position (make-point3 0.0 18.0 0.0)))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
  ; #+disabled
@@ -85,7 +85,7 @@
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
          ;  #p "res/models/Player2Rigged.dae"
-           #p "res/models/SwordTest.dae"
+           #p "res/models/SwordTextured.dae"
            ))))
     
     (setf *test-skele* (load-obj->models scientist-model))
@@ -100,7 +100,9 @@
     (apply-transform *test-skele* 
                      (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
                                            (make-point3 0.0 0.0 1.0)
-                                           (make-point3 0.0 1.0 0.0))))
+                                           (make-point3 0.0 1.0 0.0)))
+    (apply-transform *test-skele*
+                     (make-translate #(0.0 12.0 0.0 0.0))))
 
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)
@@ -209,8 +211,7 @@
   (gl:cull-face :back)
 
   ;; Test framebuffer
-  ;(shadow-pass *main-light* entities)
- 
+  
 ;  (with-framebuffer *test-fbo*)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:enable :depth-test :lighting)
@@ -219,8 +220,7 @@
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:cull-face :back)
 
-    ;; Create PVS from entities and level
-    
+  ;; Create PVS from entities and level
   (let ((PVS (find-pvs entities level))))
 
   (set-viewport *main-viewport*)
@@ -263,13 +263,11 @@
     (when (and (shape e) (not (eql e *main-cam*)))
       (draw-object e)))
 
-    ;; DO PARTICLES YEAH!
-    
+  ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
   (gl:depth-mask nil)
-   ;; #+disabled
-    
-  (when *test-ps*
+   #+disabled
+   (when *test-ps*
     (render-ps *test-ps*))
 
   ;; now render the texture

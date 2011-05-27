@@ -47,7 +47,7 @@
   (sdl-image:load-image (blt3d-res:resolve-resource filename)))
 
 (defun image->texture2d (image &key
-                         (min-filter :linear) 
+                         (min-filter :linear-mipmap-linear) 
                          (mag-filter :linear)
                          (wrap-s :repeat)
                          (wrap-t :repeat))  
@@ -70,6 +70,8 @@
                        width height 0 
                        image-fmt :unsigned-byte 
                        (sdl:pixel-data pix))
+      (when (eql min-filter :linear-mipmap-linear)
+        (gl:generate-mipmap-ext :texture-2d))
       (gl:bind-texture :texture-2d 0)
       tex-id)))
 

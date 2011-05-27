@@ -92,18 +92,11 @@
                                                (:file "skeleton")
 					       (:file "octree"))
                                               :serial t)
-                                     (:module import
+                                     (:module sector
                                               :components
                                               ((:file "package")
-                                               (:file "xmls-helpers")
-                                               (:file "dae-general")
-                                               (:file "loaded-dae")
-                                               (:file "dae-geometry")
-                                               (:file "dae-material")
-                                               (:file "dae-scene")
-                                               (:file "dae-animation")
-                                               (:file "dae-controller")
-                                               (:file "dae-loader"))
+                                               (:file "sector")
+                                               (:file "portal"))
                                               :serial t)
                                      (:module graphics
                                               :components
@@ -124,6 +117,19 @@
                                                (:file "frustum")
                                                (:file "ui")
                                                (:file "init"))
+                                              :serial t)
+                                     (:module import
+                                              :components
+                                              ((:file "package")
+                                               (:file "xmls-helpers")
+                                               (:file "dae-general")
+                                               (:file "loaded-dae")
+                                               (:file "dae-geometry")
+                                               (:file "dae-material")
+                                               (:file "dae-scene")
+                                               (:file "dae-animation")
+                                               (:file "dae-controller")
+                                               (:file "dae-loader"))
                                               :serial t)
                                      (:module renderer
                                               :components
@@ -148,9 +154,7 @@
                                      (:module main
                                               :components
                                               ((:file "package")
-                                               (:file "sector")
                                                (:file "pos-edge-react")
-                                               (:file "portal")
                                                (:file "player")
                                                (:file "simple-monster")
                                                (:file "game")

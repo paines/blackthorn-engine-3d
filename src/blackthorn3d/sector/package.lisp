@@ -27,7 +27,8 @@
 
 (defpackage :blackthorn3d-sector
   (:nicknames :blt3d-sec)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
+        :blt3d-phy)
   (:export
    
    ;; sector.lisp

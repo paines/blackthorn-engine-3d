@@ -25,6 +25,78 @@
 
 (in-package :blackthorn3d-import)
 
+(defvar +image-path+ #p "res/images/")
+(defvar *param-table* nil)
+(defvar *epic-texture* nil)
+
+(defun get-filename (dumb-string)
+  (let ((p (position #\_ dumb-string :from-end t)))
+    (concatenate 'string
+                 (subseq dumb-string 0 p)
+                 "."
+                 (subseq dumb-string (1+ p)))))
+
+(defun mat-prop-finder (attrib e)
+  (aif (find-tag attrib (children e))
+       (let ((value (first-child it)))
+         (cond 
+           ((equal "color" (tag-name value))
+            (string->sv (third value)))
+           ((equal "float" (tag-name value))
+            (float (read-from-string (third value))))
+           ((equal "texture" (tag-name value))
+            ;; We'll just load it to texture here, I think.
+            ;; save me some trouble
+            (let ((filename (get-filename
+                             (gethash 
+                              (get-attribute "texture" (attributes value))
+                              *param-table*))))
+              (setf *epic-texture*
+                    (image->texture2d
+                     (load-image (merge-pathnames 
+                                  (pathname filename)
+                                  +image-path+))))))
+           (t nil)))))
+
+(defun load-param (param)
+  (let ((child (first-child param)))
+    (cond 
+      ((equal "surface" (tag-name child))
+       ;; Texture, return the image name
+       (format t "param val ~a~%" (third (first-child child)))
+       (third (first-child child)))
+      ((equal "sampler2D" (tag-name child))
+       ;; 'sampler' for texture. just get the name and put it in
+       (format  t "param val ~a~%" (gethash (third (first-child child)) *param-table*))
+       (gethash (third (first-child child)) *param-table*)))))
+
+(defun process-effect (effect-tag effect-table)
+  ;; Find 'newparam's that contain texture data (this is annoyingly
+  ;; similar to the way sources/inputs work)
+  
+  (let ((profile-elem (find-tag-in-children "profile_COMMON" effect-tag))
+        (*param-table* (make-id-table)))
+
+    (iter (for param in (children-with-tag "newparam" profile-elem))
+          (format t "param sid: ~a~%" (get-attribute "sid" (attributes param)))
+          (setf (gethash (get-attribute "sid" (attributes param))
+                         *param-table*)
+                (load-param param)))
+
+    (setf (gethash (get-attribute "id" (attributes effect-tag))
+                   effect-table)
+          (make-blt-material
+           :ambient     (mat-prop-finder "ambient" effect-tag)
+           :diffuse     (mat-prop-finder "diffuse" effect-tag)
+           :specular    (mat-prop-finder "specular" effect-tag)
+           :shininess   (mat-prop-finder "shininess" effect-tag)
+           :textures
+           (aif (find-tag "texture" (children effect-tag))
+                #+disabled(load-image (gethash
+                                       (get-attribute "texture" 
+                                                      (attributes it)) 
+                                       images-ht))
+                nil)))))
 
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)
@@ -40,31 +112,9 @@
                     (third (first-child image))))))
 
     ;; construct effects table
-    (labels ((mat-prop-finder (attrib e)
-               (aif (find-tag attrib (children e))
-                    (let ((value (first-child it)))
-                      (cond 
-                        ((equal "color" (tag-name value))
-                         (string->sv (third value)))
-                        ((equal "float" (tag-name value))
-                         (float (read-from-string (third value))))
-                        (t nil))))))
-      (iter (for effect in (children effect-library))
-            (when (consp effect)
-              (setf (gethash (get-attribute "id" (attributes effect))
-                             effects-ht)
-                    (make-blt-material
-                     :ambient     (mat-prop-finder "ambient" effect)
-                     :diffuse     (mat-prop-finder "diffuse" effect)
-                     :specular    (mat-prop-finder "specular" effect)
-                     :shininess   (mat-prop-finder "shininess" effect)
-                     :textures
-                     (aif (find-tag "texture" (children effect))
-                          #+disabled(load-image (gethash
-                                       (get-attribute "texture" 
-                                                      (attributes it)) 
-                                       images-ht))
-                          nil))))))
+    (iter (for effect in (children effect-library))
+          (when (consp effect)
+            (process-effect effect effects-ht)))
     
     ;; Finally the materials
     (iter (for material in (children mat-library))

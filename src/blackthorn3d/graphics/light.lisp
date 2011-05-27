@@ -108,7 +108,17 @@
 
 (defmethod shadow-pass ((this light) objects)
   (with-slots (light-viewport position direction) this
- ;   (format t "Beginning shadow pass~%")
+    (let* ((light-view-matrix 
+            (matrix-multiple-m (make-translate 
+                                (- (x position))
+                                (- (y position))
+                                (- (z position)))
+                               (quat->matrix
+                                (quat-rotate-to-vec
+                                 direction
+                                 (vec-neg4 +z-axis+)))))
+           (light-inv-view-matrix
+            (rt-inverse light-view-matrix))))
 
     ;; first load the viewport (and by extension the framebuffer)
     (set-viewport light-viewport)
@@ -120,26 +130,20 @@
     (gl:clear :color-buffer-bit :depth-buffer-bit)
 
     ;; Load the light matrix
-    (gl:load-identity)
-    (gl:translate (- (x position)) (- (y position)) (- (z position)))
-    (gl:mult-matrix (quat->matrix
-                     (quat-rotate-to-vec
-                      direction
-                      (vec-neg4 +z-axis+))))
+    (gl:load-matrix light-view-matrix)
    
-
     ;; only render back faces
   ;  (gl:cull-face :front)
     
     ;; now we can has draw?
-    (iter (for obj in objects)
-          (draw-object obj))
+    (let ((*use-shadow-shader* t))
+      (iter (for obj in objects)
+            (draw-object obj)))
 
     ;; generate mipmaps
     (gl:generate-mipmap-ext :texture-2d)
 
     ;; Setup texture matrix
-    ;; Do later /lazy
     
     ;; display the depth buffer
     (let ((depth-texture (get-attachment 
@@ -151,6 +155,7 @@
       (gl:viewport 0 0 960 720)
       (gl:clear :color-buffer-bit :depth-buffer-bit)
       (gl:matrix-mode :projection)
+      (gl:load-identity)
       (gl:ortho 0 1 0 1 -10 10)
       (gl:matrix-mode :modelview)
       (gl:load-identity)

@@ -26,6 +26,10 @@
 
 (in-package :blackthorn3d-graphics)
 
+;; Tells draw methods to use their shadow vertex shader
+(defvar *use-shadow-shader* nil)
+
+
 (defun init-gfx ()
   (setf *particle-tex*
         (image->texture2d (load-image #p"res/images/round-particle1.png")))

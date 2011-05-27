@@ -107,7 +107,8 @@
                         :id name-symbol
                         :geometry geometry
                         :portals portals)))
-
+    (format t "~%~%CREATING SECTOR ~a with geometry ~a~%"
+            name-symbol geometry)
     (setf (gethash name-symbol *sector-table*) the-sector)))
     
 

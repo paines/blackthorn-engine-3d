@@ -36,8 +36,9 @@
 ;;;
 ;;; Load models here
 ;;;
-
+  
   ;; maps
+  (format t "##### Loading Maps~%")
   (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
   (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
 

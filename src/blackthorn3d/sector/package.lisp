@@ -33,6 +33,7 @@
    
    ;; sector.lisp
    :sector
+   :geometry
    :foreach-in-sector
    :add-to-sector
    :remove-from-sector

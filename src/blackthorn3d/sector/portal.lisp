@@ -53,6 +53,9 @@
                  :dir dir
                  :bv bv))
 
+(defmethod transform-portal ((this portal) xform)
+  (transform-entity this xfrom))
+
 ;; Returns true if an entity (assumed to have already intersected 
 ;; the bv) has crossed the portal
 (defmethod crosses-portal-p ((obj entity-server) (p portal))

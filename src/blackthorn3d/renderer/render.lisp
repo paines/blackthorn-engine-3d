@@ -168,7 +168,7 @@
 ;;; Render updates
 ;;;
 
-(defun update-graphics (entities level time)
+(defun update-graphics (entities time)
   (when *main-cam*
     (setf *cam-view-matrix* (look-dir-matrix (pos *main-cam*)
                                              (dir *main-cam*)
@@ -189,10 +189,6 @@
   (when *test-skele*
     (update-model *test-skele* time))
 
- ; #+disabled
-  (when level
-    (update-model level time)) 
-
   (iter (for e in entities)
         (with-slots (shape) e
           (when shape
@@ -203,8 +199,8 @@
 ;;;
 ;;; Render frame
 ;;;
-
-(defun render-frame (entities level)
+(defvar home-sector nil)
+(defun render-frame (entities)
 
   (gl:enable :depth-test :lighting)
   (gl:depth-mask t)
@@ -224,11 +220,12 @@
   (gl:cull-face :back)
 
   ;; Create PVS from entities and level
-  (let ((PVS (find-pvs entities level))))
+;  (let ((PVS (find-pvs entities level))))
 
   (set-viewport *main-viewport*)
 
   (when *main-cam*
+    (setf home-sector (lookup-sector (current-sector *main-cam*)))
     (gl:matrix-mode :modelview)
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)
@@ -250,9 +247,9 @@
 
     ;#+disabled
     
-  (when level
+  (when home-sector
     (gl:with-pushed-matrix
-        (draw-object level)))
+        (draw-object home-sector)))
 
     ;#+disabled
     

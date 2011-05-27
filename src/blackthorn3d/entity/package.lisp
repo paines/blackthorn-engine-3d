@@ -51,6 +51,7 @@
    :forget-server-entity-changes
    :current-sector
    :movers
+   :transform-entity
 
    ;; event.lisp
    :make-event

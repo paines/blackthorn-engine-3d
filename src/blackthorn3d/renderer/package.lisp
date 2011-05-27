@@ -28,7 +28,7 @@
 (defpackage :blackthorn3d-renderer
   (:nicknames :blt3d-rend)
   (:use :iter :cl :blt3d-utils :blt3d-gfx 
-        :blt3d-math :blt3d-ent :blt3d-phy)
+        :blt3d-math :blt3d-ent :blt3d-phy :blt3d-sec)
   (:export
 
    ; render.lisp

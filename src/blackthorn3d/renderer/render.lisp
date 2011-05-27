@@ -225,7 +225,7 @@
   (set-viewport *main-viewport*)
 
   (when *main-cam*
-    (setf home-sector (current-sector *main-cam*))
+    (setf home-sector (lookup-sector (current-sector *main-cam*)))
     (gl:matrix-mode :modelview)
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)

@@ -32,6 +32,7 @@
 
 (defun handle-entity-create-client (src entities)
   (iter (for entity in entities)
+        (format t "entity's sector: ~a~%" (current-sector entity))
         (use-model-on (shape-name entity) entity)
         #+disabled (setf (blt3d-ani:state 
                           (blt3d-rend:controller (shape entity))) :loop)))

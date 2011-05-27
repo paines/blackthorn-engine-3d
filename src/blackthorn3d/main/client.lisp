@@ -86,30 +86,15 @@
 
 (defvar *music* nil)
 
+
+
 (defun client-main (host port)
   (setup-paths)
   (load-dlls)
-  (blt3d-rend:init)
 
-  (register-model-loader 
-   :dae 
-   #'(lambda (path) 
-       (blt3d-gfx:load-obj->models 
-        (blt3d-imp:dae-geometry (blt3d-imp:load-dae path)))))
-    
-  (load-models-n-stuff)
+  (init-client)
 
-  ;; need to scale robot =(
-  (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
-  (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis 
-                              (make-point3 0.0 0.0 1.0)
-                              (make-point3 0.0 1.0 0.0)
-                              (make-point3 -1.0 0.0 0.0)))
-  
-  (setf *level* (blt3d-gfx:load-obj->models 
-                 (blt3d-imp:dae-geometry
-                  (blt3d-imp:load-dae #p"res/models/DeadEndRoom.dae"))))
+  (blt3d-rend:init)       
 
   (setf *random-state* (make-random-state t))
 
@@ -161,9 +146,9 @@
                                              :jmp jmp)))
 
 
-         (blt3d-rend:update-graphics (list-entities) *level* 1/60)
+         (blt3d-rend:update-graphics (list-entities) 1/60)
 
-         (blt3d-rend:render-frame (list-entities) *level*)
+         (blt3d-rend:render-frame (list-entities))
 ;         (blt3d-rend::render-2d)
 
          (iter (for (src message) in (message-receive-all :timeout 0))

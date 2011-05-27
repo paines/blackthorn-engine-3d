@@ -29,6 +29,11 @@
                   :ambient #(1.0 .7 0.0 1.0)
                   :diffuse #(1.0 .7 0.0 1.0)))
 
+(defmethod draw-object ((s sector))
+  (with-slots (geometry) s
+    (format t "sector geometry: ~a~%" geometry)
+    (draw-object geometry)))
+
 (defmethod draw-object ((e entity))
   (when (and (shape e))
     (with-slots (pos dir up shape) e

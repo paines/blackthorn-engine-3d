@@ -37,6 +37,10 @@
    (inverse-transform
     :reader inverse-transform
     :documentation "transform matrix from world coords to sector")
+   (origin
+    :accessor origin
+    :initarg :origin
+    :documentation "the world location of the origin of this sector")
    (portals
     :accessor portals
     :initarg :portals

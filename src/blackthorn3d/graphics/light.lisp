@@ -63,25 +63,48 @@
     :initform 0)
    (light-viewport
     :accessor light-viewport
-    :initarg :viewport)
+    :initarg :viewport
+    :initform
+    (create-viewport
+     (list *shadow-map-width* *shadow-map-height*)
+     0.2 200
+     :aspect-ratio 1.0
+     :framebuffer (create-shadow-framebuffer
+                   *shadow-map-width* *shadow-map-height*)))
    (texture-matrix
     :accessor light-texmat
     :initarg :texture-matrix)))
 
+
+(defclass spot-light (light)
+  ((spot-expt
+    :accessor light-spot-expt
+    :initarg :exponent
+    :initform 1.0)
+   (spot-cutoff
+    :accessor light-spot-cutoff
+    :initarg :cutoff
+    :initform 1.0)))
+
+#+disabled
+(defmethod initialize-instance ((this light) &key)
+  (with-slots (light-viewport) this
+    (setf light-viewport
+          )))
+
+(defun make-light (type &rest keys)
+  (apply
+   #'make-instance type
+   keys))
+
+#+disabled
 (defun make-light (&key position 
                    (diffuse +white+) 
                    (ambient +black+))
   (make-instance 'light
                  :position position
                  :diffuse diffuse
-                 :ambient ambient
-                 :viewport
-                 (create-viewport
-                  (list *shadow-map-width* *shadow-map-height*)
-                  0.2 200
-                  :aspect-ratio 1.0
-                  :framebuffer (create-shadow-framebuffer
-                                *shadow-map-width* *shadow-map-height*))))
+                 :ambient ambient))
 
 (defmethod use-light ((this light) gl-light)
   (gl:light gl-light :position (light-pos this))

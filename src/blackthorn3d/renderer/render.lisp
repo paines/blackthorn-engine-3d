@@ -75,7 +75,7 @@
   (gl:depth-func :lequal)
 
 
-  (setf *main-light* (make-light
+  (setf *main-light* (make-light 'light
                       :position (make-point3 0.0 18.0 0.0)))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
@@ -114,17 +114,20 @@
 
   (setf *test-ps* (create-particle-system 
                    (make-instance 'point-emitter
-                                  :pos (make-point3 0.0 -0.5 0.0)
+                                  :pos (make-point3 0.0 12.3 0.0)
                                   :dir +y-axis+
                                   :up +y-axis+
-                                  :angle (/ pi 1.5)
-                                  :speed '(.7 . 4.5))
-                   1000
-                   8000
-                   :lifetime 4
+                                  :angle (/ pi 6)
+                                  :speed '(.05 . .13 ))
+                   5
+                   80
+                   :lifetime '(5.0 . 7.0)
+                   :color #(0.0 .3 1.0 2.0)
                    :force-fn
                    #'(lambda (vel dt)
-                       (vec-neg3 (vec3+ vel +y-axis+)))))
+                       +zero-vec+
+                       ;(vec-neg3 (vec3+ vel +y-axis+))
+                       )))
 
   (add-ui-element
    (setf *test-ui* (make-instance 'ui-gauge
@@ -266,7 +269,7 @@
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
   (gl:depth-mask nil)
-   #+disabled
+  ;;  #+disabled
    (when *test-ps*
     (render-ps *test-ps*))
 

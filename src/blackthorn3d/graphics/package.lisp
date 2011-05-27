@@ -34,6 +34,7 @@
 
    ;; init.lisp
    :init-gfx
+   :*cam-view-matrix*
 
    ;; draw.lisp
    :draw-triangle

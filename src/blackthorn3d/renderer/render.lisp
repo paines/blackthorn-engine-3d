@@ -27,7 +27,6 @@
 
 
 (defvar *main-viewport* nil)
-(defvar *cam-view-matrix* (make-identity-matrix))
 (defvar *test-skele* nil)
 (defvar *test-ps* nil)
 (defvar *test-ui* nil)
@@ -136,9 +135,6 @@
   (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
                                          :diffuse #(1.0 0.0 0.0)))
 
-  (setf *test-tex*
-        (image->texture2d (load-image #p"res/images/round-particle1.png")))
-
   (setf *test-fbo* (make-framebuffer))
   (setf *render-tex* 
         (create-texture 960 720 :rgba
@@ -150,6 +146,7 @@
                         :wrap-s :clamp
                         :wrap-t :clamp
                         :format :depth-component))
+
   (attach-texture *test-fbo* :color-attachment0-ext
                   *render-tex*)
   (attach-texture *test-fbo* :depth-attachment-ext
@@ -214,60 +211,69 @@
   ;; Test framebuffer
   ;(shadow-pass *main-light* entities)
  
-  (with-framebuffer *test-fbo*
-    (gl:clear :color-buffer-bit :depth-buffer-bit)
-    (gl:enable :depth-test :lighting)
-    (gl:depth-mask t)
-    (gl:depth-func :lequal)
-    (gl:blend-func :src-alpha :one-minus-src-alpha)
-    (gl:cull-face :back)
+;  (with-framebuffer *test-fbo*)
+  (gl:clear :color-buffer-bit :depth-buffer-bit)
+  (gl:enable :depth-test :lighting)
+  (gl:depth-mask t)
+  (gl:depth-func :lequal)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
+  (gl:cull-face :back)
 
     ;; Create PVS from entities and level
-    (let ((PVS (find-pvs entities level))))
+    
+  (let ((PVS (find-pvs entities level))))
 
-    (set-viewport *main-viewport*)
+  (set-viewport *main-viewport*)
 
-    (when *main-cam*
-      (gl:load-matrix *cam-view-matrix*)
+  (when *main-cam*
+    (gl:matrix-mode :modelview)
+    (gl:load-matrix (look-dir-matrix (pos *main-cam*)
+                                     (dir *main-cam*)
+                                     (up  *main-cam*)))
 
-      (update-billboarder (pos *main-cam*)
-                          (dir *main-cam*)
-                          (up *main-cam*)
-                          +y-axis+))
+    (update-billboarder (pos *main-cam*)
+                        (dir *main-cam*)
+                        (up *main-cam*)
+                        +y-axis+))
 
-    (use-light *main-light* :light0)
+  (use-light *main-light* :light0)
 
-    (gl:color-material :front :diffuse)
-    (gl:enable :color-material)
+  (gl:color-material :front :diffuse)
+  (gl:enable :color-material)
 
-    #+disabled
-    (when animated
-      (draw-object animated))
-
-    ;#+disabled
-    (when level
-      (gl:with-pushed-matrix
-          (draw-object level)))
-
-    ;#+disabled
-    (when *test-skele*
-      (gl:with-pushed-matrix
-          (draw-object *test-skele*)))
+  #+disabled
+  (when animated
+    (draw-object animated))
 
     ;#+disabled
-    (dolist (e entities)
-      (when (and (shape e) (not (eql e *main-cam*)))
-        (draw-object e)))
+    
+  (when level
+    (gl:with-pushed-matrix
+        (draw-object level)))
+
+    ;#+disabled
+    
+  (when *test-skele*
+    (gl:with-pushed-matrix
+        (draw-object *test-skele*)))
+
+    ;#+disabled
+    
+  (dolist (e entities)
+    (when (and (shape e) (not (eql e *main-cam*)))
+      (draw-object e)))
 
     ;; DO PARTICLES YEAH!
-    (gl:blend-func :src-alpha :one)  
-    (gl:depth-mask nil)
+    
+  (gl:blend-func :src-alpha :one)  
+  (gl:depth-mask nil)
    ;; #+disabled
-    (when *test-ps*
-      (render-ps *test-ps*)))
+    
+  (when *test-ps*
+    (render-ps *test-ps*))
 
   ;; now render the texture
-  ;; #+disabled
+  #+disabled
   (progn
     (gl:depth-mask t)
     (gl:blend-func :src-alpha :one-minus-src-alpha)

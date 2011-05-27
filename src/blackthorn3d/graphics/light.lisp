@@ -106,6 +106,7 @@
       (gl:load-matrix *bias-matrix*)
       )))
 
+#+disabled
 (defmethod shadow-pass ((this light) objects)
   (with-slots (light-viewport position direction) this
     (let* ((light-view-matrix 

@@ -28,6 +28,7 @@
 
 ;; Tells draw methods to use their shadow vertex shader
 (defvar *use-shadow-shader* nil)
+(defvar *cam-view-matrix* (make-identity-matrix))
 
 
 (defun init-gfx ()

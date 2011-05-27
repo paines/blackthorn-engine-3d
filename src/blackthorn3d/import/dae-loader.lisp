@@ -108,7 +108,7 @@
                 (collect (src-accessor vertex-source i)
                          result-type 'vector))))
     (push (list (portal-name mesh-id) (make-bounding-box vertices))
-          *portal-list*))) 
+          *portal-list*)))
 
 (defun compile-geometry (data)
   (destructuring-bind (mesh-id materials) data

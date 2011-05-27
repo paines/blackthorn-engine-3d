@@ -48,24 +48,25 @@
       
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (vec-scale4 (move-player c input-vec) 0.4))
-           (target (blt3d-phy::target c)))
+           (target (blt3d-phy::target c))
+           (c-sector (lookup-sector (current-sector c))))
 
       (setf (velocity target) move-vec)
 
       (standard-physics-step target)
 
       (blt3d-phy::move-vec target
-       (collide-sector target (current-sector target)))
+       (collide-sector target c-sector))
 
       (when (and (eql (minor-mode c) :free)
                  (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec))))
-        (setf (dir target) (norm4 move-vec))))
+        (setf (dir target) (norm4 move-vec)))
 
-    (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
-                                                     (s-input-view-y client)))
-    (let ((movement-vec (collide-sector 
-                         c (current-sector c) 1)))
-    (blt3d-phy::move-camera c movement-vec))))
+      (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
+                                             (s-input-view-y client)))
+      (let ((movement-vec (collide-sector 
+                           c c-sector 1)))
+        (blt3d-phy::move-camera c movement-vec)))))
       
 
 
@@ -207,7 +208,7 @@
 (defmethod collide ((obj entity-server) (p portal))
   (when (crosses-portal-p obj p)
     ;; Update the sector of the entity
-    (setf (current-sector obj) (links-to-sector p))))
+    (setf (current-sector obj) (sector-id (links-to-sector p)))))
       
 (defun check-collisions ()
   (iter (for (e1 e2) in (combinations (list-entities)))

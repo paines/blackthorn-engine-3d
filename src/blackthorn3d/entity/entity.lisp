@@ -181,7 +181,8 @@
                           :vec4 dir
                           :vec4 up
                           :symbol shape-name
-                          :symbol die-now)
+                          :symbol die-now
+                          :symbol current-sector)
 
 (make-key-slot-serializer (:entity-update entity
                            (:oid oid oid)
@@ -190,7 +191,8 @@
                           :vec4 dir
                           :vec4 up
                           :symbol shape-name
-                          :symbol die-now)
+                          :symbol die-now
+                          :symbol current-sector)
 
 (make-key-slot-serializer (:entity-oid entity
                            (:oid oid oid)

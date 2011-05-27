@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2007-2011, Elliott Slaughter <elliottslaughter@gmail.com>
+;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -23,20 +23,26 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :cl-user)
+(in-package :blackthorn3d-sector)
 
-(defpackage :blackthorn3d-main
-  (:nicknames :blt3d-main)
-  (:use :cl :alexandria :iter :blt3d-utils :blt3d-math :blt3d-res
-        :blt3d-input :blt3d-ent :blt3d-net :blt3d-phy :blt3d-sec)
-  #+allegro (:import-from :cl-user :exit)
-  (:export
+(defclass portal (entity-server)
+    ((links-to-sector
+        :accessor links-to-sector
+        :initform nil
+        :initarg :links-to-sector)
+     (links-to-portal
+        :accessor links-to-portal
+        :initform nil
+        :initarg  :links-to-portal)))
+        
+;(defun make-portal (level-name portal-name portal-model-name)
+;    (let ((portal-model (find-portal-model level-name portal-model-name)))
+;        (make-entity-server 'portal
+;            :
 
-   ;; main.lisp
-   :main
 
-   ))
-
-#-allegro
-(eval-when (:compile-toplevel :load-toplevel)
-  (setf (symbol-function 'blt3d-main::exit) #'quit))
+;; Returns true if an entity (assumed to have already intersected 
+;; the bv) has crossed the portal
+(defmethod crosses-portal-p ((obj entity-server) (p portal))
+  (let ((p-plane (point-normal-plane (pos p) (dir p))))
+    (plusp (plane-dist p-plane (pos entity)))))

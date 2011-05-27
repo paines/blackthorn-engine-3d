@@ -255,7 +255,6 @@
       (next-frame)
       (check-for-new-clients)
       (remove-disconnected-clients)
-      #+disabled
       (update-sectors)
       (check-collisions)
       (synchronize-clients))))

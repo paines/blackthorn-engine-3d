@@ -25,7 +25,6 @@
 
 (in-package :blackthorn3d-main)
 
-        
 
 (defmethod update ((p player))
   (with-slots (client) p
@@ -233,6 +232,8 @@
 (defun server-main (host port)
   (declare (ignore host))
   
+  (init-server)
+
   ;; Start the server, or print a message and quit if we can't use desired port
   (when (not (socket-server-start port))
     (format t "Unable to start the server~%")
@@ -241,7 +242,8 @@
   (format t "Server running on port ~a.~%" port)
 
   
-  (setf *level* (load-level))
+  
+;  (setf *level* (load-level))
   ;(make-monster :start-sector (make-point3 20.0 0.0 0.0))
 
   (setf *server-frame-rate* 120)

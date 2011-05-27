@@ -91,7 +91,10 @@
 (defun jointp (node)
   (equal "JOINT" (get-attribute "type" (attributes node))))
 (defun portalp (node)
-  (string-equal "_portal" (subseq (get-attribute "name" (attributes node)) 0 6)))
+  (let ((name (get-attribute "name" (attributes node))))
+    (string-equal "_portal" 
+                  (subseq name
+                          0 (min (length name) 7)))))
 (defun classify-node (node)
   (cond
     ((portalp node) :portal)

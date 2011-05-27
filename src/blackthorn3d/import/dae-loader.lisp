@@ -106,8 +106,7 @@
                                   (src-stride vertex-source)))
                   (collect (src-accessor vertex-source i)
                            result-type 'vector))))
-      (push (list name (make-bounding-box vertices))
-            *portal-list*))))
+      (list name (make-bounding-box vertices)))))
 
 (defun compile-geometry (data)
   (destructuring-bind (mesh-id materials) data
@@ -212,6 +211,14 @@
             (progn   
               (dae-debug "node ~a is of type ~a~%" id type)
               (case type
+                (:portal
+                 (destructuring-bind (name bounding-volume)
+                     (compile-portal extra)
+                   (let* ((pos (extract-translation xform))
+                          (dir (setf (w (vec-norm4 pos)) 0.0)))
+                     (push (list name pos dir bounding-volume) *portal-list*)
+                     ;; don't make a node for the portal??
+                     nil)))
                 (:geometry 
                  (destructuring-bind (mesh materials) 
                      (compile-geometry extra)
@@ -228,7 +235,6 @@
                                     :material-array materials
                                     :mesh skin
                                     :child-nodes node-children)))
-                ;;#+disabled
                 (:parent
                  (if (find-if-not #'null node-children)
                      (progn
@@ -322,11 +328,18 @@
       ;; Combine all the tables into a list of model-shape objects
       (make-instance 'loaded-dae
                      :geometry
-                     (compile-dae-data :geometry *geometry-table*
-                                       :scenes   *scene-table*
-                                       :materials *material-table*
-                                       ;; TODO: implement animations
-                                       :animations *animation-table*
-                                       )
+                     (apply-transform
+                      (compile-dae-data :geometry *geometry-table*
+                                        :scenes   *scene-table*
+                                        :materials *material-table*
+                                        ;; TODO: implement animations
+                                        :animations *animation-table*
+                                        )
+                      (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
+                                            (make-point3 0.0 0.0 1.0)
+                                            (make-point3 0.0 1.0 0.0)))
                      :portals
-                     *portal-list*))))
+                      (iter (for portal in *portal-list*)
+                            (collect 
+                             (destructuring-bind (name pos dir bv) portal
+                               (make-portal name pos dir bv))))))))

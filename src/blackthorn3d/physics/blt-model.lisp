@@ -116,7 +116,8 @@
       (apply-transform (animations this) xform))
     (combine-bounding-spheres
      (iter (for node in (mesh-nodes this))
-           (collect (apply-helper node))))))
+           (collect (apply-helper node))))
+    this))
 
 
 (defclass vertex-stream ()

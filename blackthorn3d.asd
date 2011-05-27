@@ -155,9 +155,11 @@
                                               :components
                                               ((:file "package")
                                                (:file "pos-edge-react")
+                                               (:file "base")
                                                (:file "player")
                                                (:file "simple-monster")
                                                (:file "game")
+                                               (:file "level-01")
                                                (:file "alarm")
                                                (:file "server")
                                                (:file "client")

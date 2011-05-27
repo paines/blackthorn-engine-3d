@@ -28,7 +28,7 @@
 (defpackage :blackthorn3d-graphics
   (:nicknames :blt3d-gfx)
   (:use :iter :cl :blt3d-utils :alexandria
-        :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani)
+        :blt3d-math :blt3d-phy :blt3d-ent :blt3d-ani :blt3d-sec)
   (:import-from :blt3d-ent :entity)
   (:export
 

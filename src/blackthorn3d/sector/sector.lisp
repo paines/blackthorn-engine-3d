@@ -29,7 +29,10 @@
 (defvar *sector-table* (make-hash-table))
 
 (defclass sector ()
-  ((transform
+  ((id
+    :reader sector-id
+    :initarg :id)
+   (transform
     :reader transform
     :initarg :transform
     :initform (make-identity-matrix)
@@ -37,6 +40,10 @@
    (inverse-transform
     :reader inverse-transform
     :documentation "transform matrix from world coords to sector")
+   (origin
+    :accessor origin
+    :initarg :origin
+    :documentation "the world location of the origin of this sector")
    (portals
     :accessor portals
     :initarg :portals
@@ -73,13 +80,13 @@
     
 (defmethod add-to-sector (an-entity (a-sector sector))
   (setf (gethash (oid an-entity) (contents a-sector)) an-entity)
-  (setf (current-sector an-entity) a-sector))
+  (setf (current-sector an-entity) (sector-id a-sector)))
   
 (defmethod add-to-sector (an-entity (a-sector symbol))
   (add-to-sector an-entity (lookup-sector a-sector)))
   
 (defun remove-from-sector (an-entity)
-  (let ((the-sector (current-sector an-entity)))
+  (let ((the-sector (lookup-sector (current-sector an-entity))))
     (remhash (oid an-entity) (contents the-sector))
     (setf (current-sector an-entity) nil)))
     
@@ -89,8 +96,6 @@
 (defun lookup-sector (name-symbol)
   (gethash name-symbol *sector-table*))
   
-
-
 (defun new-sector (name-symbol geometry
                    &key
                    portals
@@ -99,12 +104,12 @@
 
   (let ((the-sector 
          (make-instance 'sector 
+                        :id name-symbol
                         :geometry geometry
                         :portals portals)))
 
     (setf (gethash name-symbol *sector-table*) the-sector)))
     
-
 
 (defun update-sectors ()
   (maphash #'(lambda (sym a-sector) (declare (ignore sym)) (update a-sector))

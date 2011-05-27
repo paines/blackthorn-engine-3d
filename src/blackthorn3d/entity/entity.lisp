@@ -95,7 +95,16 @@
 (defmethod update ((e entity-server))
   (declare (ignore e)))
 
+(defgeneric transform-entity (a-entity xform))
+(defmethod transform-entity ((e entity) xform)
+  (with-slots (pos dir up)
+      (setf (pos e) (matrix-multiply-v xform pos)
+            (dir e) (matrix-multiply-v xform dir)
+            (up e)  (matrix-multiply-v xform up))
+    e))
 
+(defmethod transform-entity :before ((e entity-server) xform)
+  (setf (velocity e) (matrix-multiply-v xform (velocity e))))
 
 
 (defvar *global-oid-table* (make-hash-table))
@@ -172,7 +181,8 @@
                           :vec4 dir
                           :vec4 up
                           :symbol shape-name
-                          :symbol die-now)
+                          :symbol die-now
+                          :symbol current-sector)
 
 (make-key-slot-serializer (:entity-update entity
                            (:oid oid oid)
@@ -181,7 +191,8 @@
                           :vec4 dir
                           :vec4 up
                           :symbol shape-name
-                          :symbol die-now)
+                          :symbol die-now
+                          :symbol current-sector)
 
 (make-key-slot-serializer (:entity-oid entity
                            (:oid oid oid)

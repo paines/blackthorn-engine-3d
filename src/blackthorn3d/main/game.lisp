@@ -1,6 +1,7 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>
+;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>,
+;;;;               2011 Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -25,19 +26,7 @@
 
 (in-package :blackthorn3d-main)
 
-(defun make-sector (name level)
-  (new-sector name
-              (blt3d-imp:dae-geometry level)
-              :portals (blt3d-imp:dae-portals level)))
-
-
-;; the room players land in when they first connect
-(defun make-start-sector (loaded-dae)
-  (make-sector :start-sector loaded-dae))
-
-
-;; server side only
-(defun load-level ()
+(defun init-server ()
   (register-model-loader :dae 
                          #'(lambda (path) 
                              (blt3d-imp:dae-geometry
@@ -49,23 +38,36 @@
                                      (blt3d-phy:initialize-cube
                                       (blt3d-imp:dae-geometry level)))
                                level)))
-                            
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
+  (blt3d-phy:apply-transform (get-model :wedge) 
+                             (make-inv-ortho-basis 
+                              (make-point3 0.0 0.0 1.0)
+                              (make-point3 0.0 1.0 0.0)
+                              (make-point3 -1.0 0.0 0.0)))
+  (load-level))
 
 
-  ;; load our test model
-  (let ((level
-         (blt3d-res:load-model 
-          :companion-cube :level #p "res/models/DeadEndRoom.dae")))
 
-      
-    #+disable
-    (blt3d-phy:apply-transform 
-     level
-     (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
-                           (make-point3 0.0 0.0 1.0)
-                           (make-point3 0.0 1.0 0.0)))
-    (make-start-sector level)
-    level))
+
+(defun init-client ()
+  (register-model-loader 
+   :dae
+   #'(lambda (path) 
+       (blt3d-gfx:load-obj->models 
+        (blt3d-imp:dae-geometry (blt3d-imp:load-dae path)))))
+
+  (register-model-loader
+   :level
+   #'(lambda (path)
+       (blt3d-imp:load-dae path)))
+  
+  (load-models-n-stuff)
+  (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
+  (blt3d-phy:apply-transform (get-model :wedge) 
+                             (make-inv-ortho-basis 
+                              (make-point3 0.0 0.0 1.0)
+                              (make-point3 0.0 1.0 0.0)
+                              (make-point3 -1.0 0.0 0.0)))
+  (load-level))
 

@@ -32,18 +32,18 @@
 ;;;           layout
 ;;;
 
-
+(defun load-level ()
 ;;;
 ;;; Load models here
 ;;;
 
-;; maps
-(load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
-(load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
+  ;; maps
+  (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
+  (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
 
 
 ;;;
 ;;; Level layout
 ;;;
 
-(make-start-sector (get-model :dead-end-room))
+  (make-start-sector (get-model :dead-end-room)))

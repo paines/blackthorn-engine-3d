@@ -76,7 +76,7 @@
 
 
   (setf *main-light* (make-light 'light
-                      :position (make-point3 0.0 18.0 0.0)))
+                      :position (make-point3 0.0 20.0 0.0)))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
  ; #+disabled
@@ -95,14 +95,13 @@
             (mesh-elements (mesh (car (mesh-nodes *test-skele*)))))
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
- 
-;    #+disabled
+    #+disabled
     (apply-transform *test-skele* 
                      (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
                                            (make-point3 0.0 0.0 1.0)
                                            (make-point3 0.0 1.0 0.0)))
     (apply-transform *test-skele*
-                     (make-translate #(0.0 12.0 0.0 0.0))))
+                     (make-translate #(0.0 13.0 0.0 0.0))))
 
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)
@@ -114,7 +113,7 @@
 
   (setf *test-ps* (create-particle-system 
                    (make-instance 'point-emitter
-                                  :pos (make-point3 0.0 12.3 0.0)
+                                  :pos (make-point3 0.0 13.3 0.0)
                                   :dir +y-axis+
                                   :up +y-axis+
                                   :angle (/ pi 6)
@@ -215,7 +214,8 @@
 
   ;; Test framebuffer
   
-;  (with-framebuffer *test-fbo*)
+; (with-framebuffer *test-fbo*)
+;  (bind-framebuffer *test-fbo*)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:enable :depth-test :lighting)
   (gl:depth-mask t)
@@ -276,6 +276,7 @@
   ;; now render the texture
   #+disabled
   (progn
+    (unbind-framebuffer)
     (gl:depth-mask t)
     (gl:blend-func :src-alpha :one-minus-src-alpha)
     (gl:clear :color-buffer-bit :depth-buffer-bit)

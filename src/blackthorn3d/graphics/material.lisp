@@ -85,8 +85,6 @@
             (gl:material :front :diffuse diffuse))
           (progn
             (gl:material :front :diffuse +white+)
-       ;     (gl:active-texture :texture1)
-       ;     (gl:uniformi *tex-location* 0)
             (use-texture diffuse))))
     (when specular 
       (gl:material :front :specular specular)

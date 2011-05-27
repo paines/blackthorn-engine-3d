@@ -102,21 +102,14 @@
   ;; need to scale robot =(
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
   (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis (make-point3 0.0 0.0 -1.0)
-                                                   (make-point3 -1.0 0.0 0.0)
-                                                   (make-point3 0.0 1.0 0.0)))
+                             (make-inv-ortho-basis 
+                              (make-point3 0.0 0.0 1.0)
+                              (make-point3 0.0 1.0 0.0)
+                              (make-point3 -1.0 0.0 0.0)))
   
   (setf *level* (blt3d-gfx:load-obj->models 
                  (blt3d-imp:dae-geometry
                   (blt3d-imp:load-dae #p"res/models/DeadEndRoom.dae"))))
-
-  (blt3d-phy:apply-transform 
-   *level* 
-   (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
-                         (make-point3 0.0 0.0 1.0)
-                         (make-point3 0.0 1.0 0.0)))
-  (blt3d-phy:apply-transform *level* (make-translate #(0.0 -2.0 0.0)))
-  
 
   (setf *random-state* (make-random-state t))
 

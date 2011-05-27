@@ -23,38 +23,27 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(in-package :blackthorn3d-sector)
+(in-package :blackthorn3d-main)
 
-(defvar *default-count* 0)
-
-(defclass portal (entity-server)
-  ((id 
-    :accessor portal-id
-    :initarg :id)
-   (links-to-sector
-    :accessor links-to-sector
-    :initform nil
-    :initarg :links-to-sector)
-   (links-to-portal
-    :accessor links-to-portal
-    :initform nil
-    :initarg  :links-to-portal)))
-        
-;(defun make-portal (level-name portal-name portal-model-name)
-;    (let ((portal-model (find-portal-model level-name portal-model-name)))
-;        (make-entity-server 'portal
-;            :
+;;;
+;;; Level 1.  For the demo.  This file contains the information
+;;;           that is loaded by the server and client to add all
+;;;           all the assets to the game.  this includes the level
+;;;           layout
+;;;
 
 
-(defun make-portal (portal-name pos dir bv)
-  (make-instance 'portal
-                 :id portal-name
-                 :pos pos
-                 :dir dir
-                 :bv bv))
+;;;
+;;; Load models here
+;;;
 
-;; Returns true if an entity (assumed to have already intersected 
-;; the bv) has crossed the portal
-(defmethod crosses-portal-p ((obj entity-server) (p portal))
-  (let ((p-plane (point-normal-plane (pos p) (dir p))))
-    (plusp (plane-dist p-plane (pos entity)))))
+;; maps
+(load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
+(load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
+
+
+;;;
+;;; Level layout
+;;;
+
+(make-start-sector (get-model :dead-end-room))

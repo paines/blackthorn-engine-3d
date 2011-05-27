@@ -37,6 +37,10 @@
    (inverse-transform
     :reader inverse-transform
     :documentation "transform matrix from world coords to sector")
+   (portals
+    :accessor portals
+    :initarg :portals
+    :initform ())
    (contents
     :accessor contents
     :initform (make-hash-table))
@@ -85,14 +89,23 @@
 (defun lookup-sector (name-symbol)
   (gethash name-symbol *sector-table*))
   
-(defun new-sector (name-symbol geometry 
+
+
+(defun new-sector (name-symbol geometry
                    &key
+                   portals
                    (origin +origin+) 
                    (orientation (quat-identity)))
-  (let ((the-sector (make-instance 'sector 
-                                   :geometry geometry)))
+
+  (let ((the-sector 
+         (make-instance 'sector 
+                        :geometry geometry
+                        :portals portals)))
+
     (setf (gethash name-symbol *sector-table*) the-sector)))
     
+
+
 (defun update-sectors ()
   (maphash #'(lambda (sym a-sector) (declare (ignore sym)) (update a-sector))
            *sector-table*))

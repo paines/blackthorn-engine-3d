@@ -25,9 +25,16 @@
 
 (in-package :blackthorn3d-main)
 
+(defun make-sector (name level)
+  (new-sector name
+              (blt3d-imp:dae-geometry level)
+              :portals (blt3d-imp:dae-portals level)))
+
+
 ;; the room players land in when they first connect
-(defun make-start-sector (static-geom)
-  (new-sector :start-sector static-geom))
+(defun make-start-sector (loaded-dae)
+  (make-sector :start-sector loaded-dae))
+
 
 ;; server side only
 (defun load-level ()
@@ -35,30 +42,30 @@
                          #'(lambda (path) 
                              (blt3d-imp:dae-geometry
                               (blt3d-imp:load-dae path))))
+  (register-model-loader :level
+                         #'(lambda (path)
+                             (let ((level (blt3d-imp:load-dae path)))
+                               (setf (blt3d-imp:dae-geometry level)
+                                     (blt3d-phy:initialize-cube
+                                      (blt3d-imp:dae-geometry level)))
+                               level)))
                             
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
-  (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis (make-point3 0.0 0.0 -1.0)
-                                                   (make-point3 -1.0 0.0 0.0)
-                                                   (make-point3 0.0 1.0 0.0)))
 
 
   ;; load our test model
   (let ((level
-         (blt3d-phy:initialize-cube
-          (blt3d-res:load-model 
-           :companion-cube :dae #p "res/models/DeadEndRoom.dae"))))
-    ;; we have to scale it!
-    ;(blt3d-phy:apply-transform level (make-scale #(0.05 0.05 0.05)))
-    
-   ; #+disable
+         (blt3d-res:load-model 
+          :companion-cube :level #p "res/models/DeadEndRoom.dae")))
+
+      
+    #+disable
     (blt3d-phy:apply-transform 
      level
      (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                            (make-point3 0.0 0.0 1.0)
                            (make-point3 0.0 1.0 0.0)))
-    (blt3d-phy:apply-transform level (make-translate #(0.0 -2.0 0.0)))
     (make-start-sector level)
     level))
 

@@ -297,3 +297,6 @@
           (counting t into len)
           (iter (for i below v-len)
                 (collect )))))
+                
+(defun vector-sum (vectors)
+  (reduce #'vec4+ vectors :initial-value +zero-vec+))

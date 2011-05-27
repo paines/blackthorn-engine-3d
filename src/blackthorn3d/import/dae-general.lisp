@@ -164,6 +164,10 @@
   (when (equal tag (tag-name xml-lst))
     (transpose (reshape (string->sv (third xml-lst)) '(4 4)))))
 
+(defun portal-name (id)
+  (subseq id 7))
+
+
 
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
 ;; fn is designed to take in index to a source and add the corresponding value

@@ -53,7 +53,7 @@
                                   :rad 1.0)
               :shape-name :wedge
               )))
-    
+      (push #'blackthorn3d-physics:gravity-mover (movers p))
       (setf (bounding-volume p) (expand-bounding-spheres 
                     (blt3d-res:get-model (shape-name p))))
       (format t "bounding volume: ~a ~a~%" 

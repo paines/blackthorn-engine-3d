@@ -76,10 +76,14 @@
     :accessor velocity
     :initarg :velocity
     :initform blt3d-math:+zero-vec+)
+   (movers
+    :accessor movers
+    :initform nil)
    (bounding-volume
     :accessor bounding-volume
     :initform nil
     :initarg :bv)))
+    
 
 (defclass entity-client (entity)
   ((oid

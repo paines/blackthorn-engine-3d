@@ -38,8 +38,9 @@
   (let ((direction (norm4 (vec4- (pos who) (pos self)))))
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
-      
-#+disabled
+   
+; crappy old hacked up way of doing it   
+;#+disabled
 (defun standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
                              (velocity self))))
@@ -55,6 +56,8 @@
     (move-vec self movement-vec)
     ))
     
+; this will be the real one eventually
+#+disabled
 (defun standard-physics-step (self)
   (let ((movement-vector (update-movement self 1)))
     (setf (velocity self) movement-vector)

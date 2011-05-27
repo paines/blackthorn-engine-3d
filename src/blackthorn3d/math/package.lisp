@@ -67,6 +67,7 @@
    :pt-dist
    :mid-point
    :get-perpendicular
+   :vector-sum
    
    ;; matrix.lisp
    :make-matrix

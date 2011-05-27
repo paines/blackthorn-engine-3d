@@ -91,35 +91,31 @@
                         nil) result-type 'vector))))
 
 (defun geometry-type (id)
-  (if (char= #\$ (char id 0))
+  (if (char= #\_ (char id 0))
       :portal
       :mesh))
 
-(defun portal-name (id)
-  (subseq id 6))
-
-(defun compile-portal (id)
-  (let* ((vertex-source (input-by-semantic 
-                         :vertex
-                         (third (gethash id *geometry-table*))))
-         (vertices
-          (iter (for i below (/ (length (src-array vertex-source))
-                                (src-stride vertex-source)))
-                (collect (src-accessor vertex-source i)
-                         result-type 'vector))))
-    (push (list (portal-name mesh-id) (make-bounding-box vertices))
-          *portal-list*)))
+(defun compile-portal (data)
+  (destructuring-bind (name geom-id) data
+    (let* ((mesh-lst (gethash geom-id *geometry-table*))
+           (vertex-source (input-by-semantic 
+                           :vertex
+                           (third mesh-list)))
+           (vertices
+            (iter (for i below (/ (length (src-array vertex-source))
+                                  (src-stride vertex-source)))
+                  (collect (src-accessor vertex-source i)
+                           result-type 'vector))))
+      (push (list name (make-bounding-box vertices))
+            *portal-list*))))
 
 (defun compile-geometry (data)
   (destructuring-bind (mesh-id materials) data
     ;; Check on mesh-id.  portals need to be separated out
-    (case (geometry-type mesh-id)
-      (:mesh
-       (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
-              (mat-array (build-material-array (elements mesh) materials)))
-         (list mesh mat-array)))
-      (:portal
-       (compile-portal mesh-id)))))
+    
+    (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
+           (mat-array (build-material-array (elements mesh) materials)))
+      (list mesh mat-array))))
 
 ;; For now, lets assume the skeleton data is well formed
 ;; that is, all the nodes are in joint-arr

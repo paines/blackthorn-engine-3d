@@ -218,3 +218,19 @@
                    (iter (for child in child-nodes)
                          (collect (copy-node child)))
                    :bounding-volume bounding-volume)))
+
+
+(defmethod find-node ((obj string) (node node))
+  (if (equal obj (id node))
+      node
+      (iter (for child in (child-nodes node))
+            (find-node obj child))))
+
+
+(defmethod attach-node ((obj node) (node node))
+  (setf (node-bounding-volume node)
+        (combine-bounding-spheres
+         (node-bounding-volume node)
+         (node-bounding-volume obj)))
+  (push obj (child-nodes node)))
+

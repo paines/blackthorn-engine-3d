@@ -90,8 +90,11 @@
 (defvar *transform* nil)
 (defun jointp (node)
   (equal "JOINT" (get-attribute "type" (attributes node))))
+(defun portalp (node)
+  (string-equal "_portal" (subseq (get-attribute "name" (attributes node)) 0 6)))
 (defun classify-node (node)
   (cond
+    ((portalp node) :portal)
     ((jointp node) :joint)
     ((find-tag-in-children +instance-geometry+ node) :geometry)
     ((find-tag-in-children +instance-controller+ node) :controller)
@@ -109,6 +112,23 @@
                node-id geom-id)
 
     (make-node node-id :geometry *transform* (list geom-id material-map)
+               (iter (for node in (children-with-tag "node" node-tag))
+                     (aif (process-node node)
+                          (collect it))))))
+
+(defun process-portal-node (node-tag)
+  (let* ((node-id (get-attribute "id" (attributes node-tag)))
+         (portal-name (portal-name (get-attribute "name" (attributes node-tag))))
+         (geometry-tag (find-tag-in-children +instance-geometry+ node-tag))
+         (geom-id (get-url geometry-tag)))
+    
+    (dae-debug "loading portal node: ~a name: ~a~%"
+               node-id portal-name)
+    
+    (make-node node-id :portal *transform* (list portal-name geom-id)
+               nil 
+               ;; it is an error for a portal node to have children.
+               #+disabled
                (iter (for node in (children-with-tag "node" node-tag))
                      (aif (process-node node)
                           (collect it))))))

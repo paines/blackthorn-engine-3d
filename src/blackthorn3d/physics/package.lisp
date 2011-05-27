@@ -142,7 +142,7 @@
    ;; octree-lisp
    :octree
    :octree-node
-   :children
+   :octree-children
    :center
    :width
    :make-octree

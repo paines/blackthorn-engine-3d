@@ -48,9 +48,9 @@
    (depth :accessor depth :initarg :depth :initform 0)
    (growth-k :accessor growth-k :initarg :growth-k :initform 2)
    (width :accessor width :initarg :width :initform 8) ;width is 1/2 full box
-   (children :accessor children :initarg :children :initform nil)
-   (objects :accessor objects :initarg :objects :initform (make-array 0 
-                                          :fill-pointer 0 :adjustable t))
+   (octree-children :accessor octree-children :initarg :octree-children :initform nil)
+   (objects :accessor objects :initarg :objects 
+                   :initform (make-array 0 :fill-pointer 0 :adjustable t))
    (center :accessor center :initarg :center :initform nil)
    ))
 
@@ -76,16 +76,16 @@
 						  (/ width 2))))))
 
 (defmethod make-children ((node octree-node))
-  ;(format t "~%~%~%~a~%~%~%"  (setf (children node)
+  ;(format t "~%~%~%~a~%~%~%"  (setf (octree-children node)
 ;	(iter (for i below 8)
 ;	      (collect (make-child-node node i) result-type 'vector))))
-  (with-slots (children) node
-    (setf children
+  (with-slots (octree-children) node
+    (setf octree-children
 	  (iter (for i below 8)
 		(collect (make-child-node node i) result-type 'vector)))
   ;(when (< (depth node) (max-depth node))
   ;  (iter (for i below 8)
-  ;    (make-children (aref (children node) i))))
+  ;    (make-children (aref (octree-children node) i))))
 ))
 
 (defmethod initialize-instance :after ((octree-node octree-node) &key)
@@ -93,7 +93,7 @@
     (make-children octree-node)))
       
 (defmethod octree-insert ((node octree-node) (object blt3d-ent:entity-server))
-  (with-slots (width center children) node
+  (with-slots (width center octree-children) node
     (let* ((moved-object 
              (move-bounding-volume (blt3d-ent:bounding-volume object) 
                                  (pos object)))
@@ -108,30 +108,40 @@
 )))
 
 (defmethod octree-delete ((node octree-node) (object blt3d-ent:entity-server))
-  (with-slots (width center children) node
-    (let* ((object-pos 
+  (with-slots (width center octree-children) node
+    (let* ((moved-object 
            (move-bounding-volume (blt3d-ent:bounding-volume object) 
                                  (pos object)))
+	   (object-pos (pos moved-object))
            (object-rad (rad (blt3d-ent:bounding-volume object)))
            (good-node (find-appropiate-node node object-pos object-rad))
            (good-objects (objects good-node)))
-      (setf good-objects (delete object good-objects :test #'equalp)))))
+      ;(format t "~%~% HERE ~%~%")
+      ;(format t "~%~%~% ~a ~%" (objects good-node))
+      (delete object good-objects :test #'equalp)
+      ;(format t "~%~%~% ~a ~%" (objects good-node))
+       )))
 
 (defmethod octree-query ((node octree-node)(object blt3d-ent:entity-server))
-  (octree-query node node (bounding-volume object)))
+  (octree-query node (bounding-volume object)))
 
 (defmethod octree-query ((node octree-node) (object bounding-shape))
-  (let ((good-node (find-appropiate-node node obj-center obj-width)))
+  (let ((good-node (find-appropiate-node node (pos object) 
+					      (rad object))))
     (gather-objects good-node)))
 
 (defmethod gather-objects ((node octree-node))
-  (let ((object-list (objects node)))
-    (iter (for child in-vector (children node))
-      (setf object-list (vconcat object-list (gather-objects child))))))
+  (let ((object-list (make-array 0 :fill-pointer 0 :adjustable t)))
+    (iter (for object in-vector (objects node))
+      (vector-push-extend object object-list))
+    (iter (for child in-vector (octree-children node))
+      (iter (for object in-vector (gather-objects child))
+	(vector-push-extend object object-list)))
+    (return-from gather-objects object-list)))
 
 #+disabled
 (defmethod find-appropiate-node ((node octree-node) obj-center obj-width)
-  (with-slots (width center children) node
+  (with-slots (width center octree-children) node
       (let* ((width3 (make-point3 width width width))
              (min-point (vec4- center width3))
              (max-point (vec4+ center width3)))
@@ -146,7 +156,7 @@
 ;	  (format t "~%~% width ~a" width)
           (when (< obj-width (/ width 2))
             ;descend
-            (iter (for child in-vector children)
+            (iter (for child in-vector octree-children)
         	(find-appropiate-node child obj-center obj-width)))
 	  (when (< obj-width width)
 	    ;this node is good
@@ -157,10 +167,10 @@
 	  
    
 (defmethod find-appropiate-node ((node octree-node) obj-center obj-width)
-  (with-slots (width center children) node
+  (with-slots (width center octree-children) node
     (if (< obj-width (/ width 2))
       ;decide which child to descend into
-      (iter (for child in-vector children)
+      (iter (for child in-vector octree-children)
 	(let* ((child-width (width child))
 	       (child-center (center child))
 	       (width3 (make-point3 child-width child-width child-width))
@@ -180,8 +190,8 @@
 			   (find-appropiate-node child obj-center obj-width)))))
     (when (< obj-width width)
       ;this node is good
-      ;(format t "~%~% obj ~a" obj-center)
+      ;(format t "~%~%~%~% obj ~a" obj-center)
       ;(format t "~%~% obj ~a" obj-width)
       ;(format t "~%~% good-node ~a" (center node))
-      ;(format t "~%~% good-node ~a" (width node))
+      ;(format t "~%~% good-node ~a~%" (width node))
       (return-from find-appropiate-node node)))))

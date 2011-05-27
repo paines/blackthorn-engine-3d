@@ -277,8 +277,8 @@
 	    (my-octree2 (make-octree (make-point3 0.0 0.0 0.0) 4 3)))
 	(is (center my-octree) (make-point3 0.0 0.0 0.0))
 	(is (width my-octree) 4)
-	(with-slots (children) my-octree
-	  (let* ((child (aref children 1)))
+	(with-slots (octree-children) my-octree
+	  (let* ((child (aref octree-children 1)))
 	    (is (center child)(make-point3 -2.0 -2.0 2.0))
 	    (is (width child) 2)))
 	(let* ((vect-array (vector (make-vector3 1.0 0.0 0.0)
@@ -286,6 +286,8 @@
 				   (make-vector3 0.0 0.0 1.0)))
 	       (b-sphere (make-bounding-sphere vect-array))
 	       (object (make-instance 'entity-server :bv b-sphere)))
-	  (octree-insert my-octree object))
+	  (octree-insert my-octree object)
+	  (is (= (length (octree-query my-octree object)) 1))
+	  (octree-delete my-octree object))
 	
 ))

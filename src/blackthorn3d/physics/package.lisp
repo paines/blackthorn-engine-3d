@@ -72,6 +72,9 @@
    :animations
    :expand-bounding-spheres
    :apply-transform
+   :find-node
+   :attach-node-to-model
+   :detach-node-from-model
 
    :blt-material
    :make-blt-material

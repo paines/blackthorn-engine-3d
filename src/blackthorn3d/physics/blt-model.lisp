@@ -51,6 +51,33 @@
                    :animations (copy-anim-controller animations))))
 
 
+;; We will need the capability to add/remove nodes
+(defmethod find-node (obj (model blt-model))
+  (iter (for node in (mesh-nodes model))
+        (when (find-node obj node)
+          (return-from find-node node))))
+
+(defmethod attach-node-to-model ((new-node node) 
+                                 (node-id string) 
+                                 (model blt-model))
+  (attach-node new-node (find-node node-id model)))
+
+(defmethod detach-node-from-model ((node-id string) (model blt-model))
+  (labels ((detach-helper (id node)
+             (iter (for child in (child-nodes node))
+                   (if (equal id (id child))
+                       (progn 
+                         (setf (child-nodes node)
+                               (delete child (child-nodes node)))
+                         (return-from detach-helper child))
+                       (aif (detach-helper id child)
+                           (return-from detach-helper it))))))
+
+    (iter (for node in (mesh-nodes model))
+          (for test = (detach-helper node-id node))
+          (until test)
+          (finally (return test)))))
+
 (defmethod expand-bounding-spheres ((this blt-model))
   "sets each nodes bounding sphere to be the union of it's bounding
    sphere with all its children's bounding spheres"
@@ -232,6 +259,7 @@
            (iter (for (semantic n-elts) in format) 
                  (for fn in vs-fns)
                  (collect (list semantic (funcall fn index)))))))))
+
 
 ;;;
 ;;; Triangle access

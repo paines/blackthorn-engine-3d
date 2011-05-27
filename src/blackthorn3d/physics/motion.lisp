@@ -26,6 +26,7 @@
 (in-package :blackthorn3d-physics)
 
 (defvar *velocity-threshold-squared* 0.02)
+(defvar *gravity-accel* 0.0)
 
 (defun move-component (thing x y z)
   (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
@@ -38,6 +39,7 @@
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
       
+#+disabled
 (defun standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
                              (velocity self))))
@@ -52,6 +54,19 @@
     #+disabled
     (move-vec self movement-vec)
     ))
+    
+(defun standard-physics-step (self)
+  (let ((movement-vector (update-movement self 1)))
+    (setf (velocity self) movement-vector)
+    (setf (pos self) (vector-sum (list (pos self) (velocity self))))
+    ))
 
 (defun jump (p)
   (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+  
+(defun update-movement (an-entity dt)
+  (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 
+                   (movers an-entity))))
+
+(defun gravity-mover (an-entity dt)
+  (vec-scale4 (vec-neg4 (up an-entity)) (* dt *gravity-accel*)))

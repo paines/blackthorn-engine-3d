@@ -117,7 +117,8 @@
    :chase 
    :jump
    :standard-physics-step
-
+   :gravity-mover
+   
    ;; skeleton.lisp
    :joint-id
    :joint-matrix

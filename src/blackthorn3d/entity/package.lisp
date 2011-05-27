@@ -49,6 +49,7 @@
    :remove-entity
    :forget-server-entity-changes
    :current-sector
+   :movers
 
    ;; event.lisp
    :make-event

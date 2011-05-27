@@ -31,7 +31,6 @@
 
 (defmethod draw-object ((s sector))
   (with-slots (geometry) s
-    (format t "sector geometry: ~a~%" geometry)
     (draw-object geometry)))
 
 (defmethod draw-object ((e entity))

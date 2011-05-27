@@ -241,24 +241,17 @@
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
 
-  #+disabled
-  (when animated
-    (draw-object animated))
-
-    ;#+disabled
-    
+    ;#+disabled    
   (when home-sector
     (gl:with-pushed-matrix
         (draw-object home-sector)))
 
-    ;#+disabled
-    
+    ;#+disabled    
   (when *test-skele*
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
 
-    ;#+disabled
-    
+    ;#+disabled    
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))
       (draw-object e)))
@@ -289,7 +282,6 @@
     (gl:bind-texture :texture-2d *render-tex*)
     (gl:generate-mipmap-ext :texture-2d)
     (gl:color 1 1 1)
-  ;  (gl:translate 0 0 -2)
     (draw-screen-quad)
     (gl:bind-texture :texture-2d 0))
 

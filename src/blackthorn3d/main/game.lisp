@@ -60,7 +60,11 @@
   (register-model-loader
    :level
    #'(lambda (path)
-       (blt3d-imp:load-dae path)))
+       (let ((level (blt3d-imp:load-dae path)))
+         (setf (blt3d-imp:dae-geometry level)
+               (blt3d-gfx:load-obj->models
+                (blt3d-imp:dae-geometry level)))
+         level)))
   
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))

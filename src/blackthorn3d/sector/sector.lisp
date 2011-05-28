@@ -136,11 +136,11 @@
 
         (unless (> (mag o2-o1) +sector-size+)
           ;; Find if they share a portal
+          (format t "s1 portals: ~a~%" (portals sec1))
+          (format t "s2 portals: ~a~%" (portals sec2))
           (let ((p1 (find-portal-in-direction sec1 direction))
                 (p2 (find-portal-in-direction 
                      sec2 (opposite-dir direction))))
-            (format t "portals found: ~a, ~a~%" (portal-id p1)
-                    (portal-id p2))
             (when (and p1 p2)
               (link-portals sec1 p1 sec2 p2))))))))
 

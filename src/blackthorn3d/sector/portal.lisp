@@ -69,7 +69,11 @@
         (links-to-sector p2) s1))
 
 (defmethod transform-portal ((this portal) xform)
-  (transform-entity this xform))
+  (with-slots (pos dir direction) this
+    (setf (pos this) (matrix-multiply-v xform pos)
+          (dir this) (norm4 pos)
+          direction (get-direction dir))
+    this))
 
 ;; Returns true if an entity (assumed to have already intersected 
 ;; the bv) has crossed the portal

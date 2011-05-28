@@ -33,6 +33,7 @@
    
    ;; sector.lisp
    :sector
+   :sector-id
    :geometry
    :portals
 
@@ -52,6 +53,7 @@
    
    ;; portal.lisp
    :portal
+   :portal-id
    :links-to-portal
    :links-to-sector
    :transform-portal

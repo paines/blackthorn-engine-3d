@@ -30,15 +30,10 @@
                   :diffuse #(1.0 .7 0.0 1.0)))
 
 (defun draw-portal (portal)
-  (with-slots (pos bounding-volume) portal
+  (with-slots (pos dir bounding-volume) portal
     (with-slots (a-min a-max) bounding-volume
       (gl:with-pushed-matrix
         (gl:translate (x pos) (y pos) (z pos))
-        (gl:mult-matrix
-         (make-inv-ortho-basis 
-          (make-point3 -1.0 0.0 0.0)
-          (make-point3 0.0 0.0 1.0)
-          (make-point3 0.0 1.0 0.0)))
         (gl:color 0.0 1.0 1.0)
         (gl:with-primitives :line-strip
           ;; front
@@ -75,13 +70,18 @@
           (gl:vertex (x a-max) (y a-max) (z a-max))
           (gl:vertex (x a-min) (y a-max) (z a-max))
           (gl:vertex (x a-min) (y a-min) (z a-max))
-          (gl:vertex (x a-max) (y a-min) (z a-max)))))))
+          (gl:vertex (x a-max) (y a-min) (z a-max))
+ 
+          (let ((dir-vec (vec-scale4 dir 5)))
+            (gl:vertex 0 0 0)
+            (gl:vertex (x dir-vec) (y dir-vec) (z dir-vec))))))))
 
 (defmethod draw-object ((s sector))
   (with-slots (geometry portals) s
     (gl:with-pushed-matrix 
       (gl:mult-matrix (get-transform-to-world s))
-      (draw-object geometry))
+    ;  (draw-object geometry)
+      )
 
     ;; and then draw all the adjacent sectors
     (iter (for portal in portals)
@@ -90,7 +90,8 @@
                  (draw-portal portal)
                  (gl:with-pushed-matrix
                      (gl:mult-matrix (get-transform-to-world it))
-                   (draw-object (geometry it))))))))
+               ;    (draw-object (geometry it))
+                   ))))))
 
 (defmethod draw-object ((e entity))
   (when (and (shape e))

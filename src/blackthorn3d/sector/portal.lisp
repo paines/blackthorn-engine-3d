@@ -72,11 +72,43 @@
   (with-slots (pos dir direction) this
     (setf (pos this) (matrix-multiply-v xform pos)
           (dir this) (norm4 pos)
-          direction (get-direction dir))
+          direction (get-direction dir)
+          (dir this) (getf +directions+ direction))
     this))
+
+
+;;;
+;;; Portal Collision
+;;;
 
 ;; Returns true if an entity (assumed to have already intersected 
 ;; the bv) has crossed the portal
+(defmethod crosses-portal-p ((sph bounding-sphere) (p portal))
+  (let ((p-plane (point-normal->plane (pos p) (dir p))))
+    (plusp (plane-dist p-plane (pos sph)))))
+
 (defmethod crosses-portal-p ((obj entity-server) (p portal))
-  (let ((p-plane (point-normal-plane (pos p) (dir p))))
-    (plusp (plane-dist p-plane (pos entity)))))
+  (crosses-portal-p 
+   (move-bounding-volume (bounding-volume obj) (pos obj))
+   p))
+
+
+;; Sphere should be a sphere in the sector coordinates
+(defmethod collide-p ((sphere bounding-sphere) (p portal))
+  (with-slots (pos dir bounding-volume) p
+    ;; move the sphere into the coordinates of the aabb
+    ;; p' = p - p_aabb_rotated
+    ;; p_abb_rotated = the pos of portal rotated back to the -z direction
+    (let ((moved-sphere (move-bounding-volume
+                         sphere
+                         (quat-rotate-vec
+                          (quat-rotate-to-vec 
+                           dir 
+                           (vec-neg4 +z-axis+))
+                          (vec-neg4 pos)))))
+
+      (crosses-portal-p sphere p)
+      #+disabled
+      (when (collide-p moved-sphere bounding-volume)
+        (format t "We hit the protal!! id: ~a~%" (portal-id p))
+        (crosses-portal-p moved-sphere p)))))

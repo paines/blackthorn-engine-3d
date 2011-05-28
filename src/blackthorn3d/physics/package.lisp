@@ -115,6 +115,7 @@
    :ray-sphere-intersection
    :make-plane
    :plane-dist
+   :point-normal->plane
 
    ;; collision.lisp
    :collide-p

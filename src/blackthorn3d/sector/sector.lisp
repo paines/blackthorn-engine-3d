@@ -202,23 +202,46 @@
      (make-translate origin)
      (quat->matrix orientation))))
 
-#+disabled
-(defmethod transform-from-sector)
+(defmethod get-transform-to-sector ((this sector))
+  (with-slots (origin orientation) this
+    (matrix-multiply-m
+     (quat->matrix (quat-conjugate orientation))
+     (make-translate (vec-neg4 origin)))))
+
+(defmethod collide-sector-portals ((obj entity-server) (a-sector sector))
+  (with-slots (pos bounding-volume) obj
+    (with-slots (portals) a-sector
+      
+      ;; Test against portals
+      (iter (with test-sphere = (move-bounding-volume 
+                                 bounding-volume 
+                                 (transform-to-sector pos a-sector)))
+            (for portal in portals)
+            (when (collide-p test-sphere portal)
+              (format t "Collided with portal: ~a @~a~%" 
+                      (portal-id portal) (pos portal))
+              ;; We need to change the sector of the object
+              (format t "Setting sector to: ~a~%" 
+                      (sector-id (links-to-sector portal)))
+              (setf (current-sector obj) 
+                    (sector-id (links-to-sector portal))))))))
 
 (defmethod collide-sector ((obj entity-server) (a-sector sector)
                            &optional depth)
   (with-slots (pos bounding-volume velocity) obj
-    (with-slots (geometry) a-sector
-      (let ((test-sphere (copy-sphere (bounding-volume obj)))
+    (with-slots (geometry portals) a-sector
+      (let ((test-sphere (move-bounding-volume bounding-volume pos))
             (test-vel velocity))
+
         ;; transform into sector coordinates
         (setf (pos test-sphere)
               (transform-to-sector pos a-sector)
 
               test-vel
               (transform-to-sector test-vel a-sector))
+
         ;; test against the geometry
-        (blt3d-phy:collide-with-world 
+        (blt3d-phy:collide-with-world
          test-sphere velocity geometry depth)))))
 
 

@@ -80,7 +80,7 @@
   (with-slots (geometry portals) s
     (gl:with-pushed-matrix 
       (gl:mult-matrix (get-transform-to-world s))
-    ;  (draw-object geometry)
+      (draw-object geometry)
       )
 
     ;; and then draw all the adjacent sectors
@@ -90,7 +90,7 @@
                  (draw-portal portal)
                  (gl:with-pushed-matrix
                      (gl:mult-matrix (get-transform-to-world it))
-               ;    (draw-object (geometry it))
+                   (draw-object (geometry it))
                    ))))))
 
 (defmethod draw-object ((e entity))

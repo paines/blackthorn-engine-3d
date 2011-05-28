@@ -217,16 +217,21 @@
         (setf t0 (min t0 t1))
         (setf t1 (max temp t1)))
 
+
       ;; Check if t0 and t1 are between 0 and 1
       ;#+DISABLED
-      (when (or (< t0 0) (> t0 1.0))
-    ;    (format t "~%OUT OF RANGE~%")
+      (when (or (< t1 0) (> t0 1.0))
         (return-from moving-sphere-triangle-intersection nil))
 
+      ;; Check for and handle the t0 < 0 case 
+      ;; (we start inside the triangle!)
+      #+disabled
+      (when (< t0 0)
+        (return-from moving-sphere-triangle-intersection
+          ()))
 
-
-      ;; clamp
-      (setf t0 (clamp t0 0 1)
+      ;; clamp t1, we don't care what happens after 1.0
+      (setf ;t0 (clamp t0 0 1)
             t1 (clamp t1 0 1))
       
       ;; TEST 1: check if the sphere intersects with the surface of tri

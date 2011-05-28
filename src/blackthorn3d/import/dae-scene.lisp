@@ -188,6 +188,8 @@
     ;;    with the initial pose matrices. joint nodes should look like:
     ;;    (node-id transform joint-name children)
     (case (classify-node node-tag)
+      (:portal
+       (process-portal-node node-tag))
       (:joint
        (process-joint-node node-tag))
       (:geometry

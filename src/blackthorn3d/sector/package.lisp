@@ -34,6 +34,8 @@
    ;; sector.lisp
    :sector
    :geometry
+   :portals
+
    :foreach-in-sector
    :add-to-sector
    :remove-from-sector
@@ -43,8 +45,16 @@
    :kill-entity
    :update-sectors
 
+   :add-sector-relative
+   :link-sectors
+
+   :get-transform-to-world
+   
    ;; portal.lisp
    :portal
    :links-to-portal
    :links-to-sector
+   :transform-portal
+   :make-portal
+   :link-portals
    ))

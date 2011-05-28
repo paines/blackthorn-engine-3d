@@ -97,10 +97,10 @@
 
 (defgeneric transform-entity (a-entity xform))
 (defmethod transform-entity ((e entity) xform)
-  (with-slots (pos dir up)
-      (setf (pos e) (matrix-multiply-v xform pos)
-            (dir e) (matrix-multiply-v xform dir)
-            (up e)  (matrix-multiply-v xform up))
+  (with-slots (pos dir up) e
+    (setf (pos e) (matrix-multiply-v xform pos)
+          (dir e) (matrix-multiply-v xform dir)
+          (up e)  (matrix-multiply-v xform up))
     e))
 
 (defmethod transform-entity :before ((e entity-server) xform)

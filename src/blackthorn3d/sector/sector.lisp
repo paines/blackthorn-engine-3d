@@ -28,22 +28,22 @@
 
 (defvar *sector-table* (make-hash-table))
 
+(defvar +sector-size+ 30.0)
+
 (defclass sector ()
   ((id
     :reader sector-id
     :initarg :id)
-   (transform
-    :reader transform
-    :initarg :transform
-    :initform (make-identity-matrix)
-    :documentation "transform matrix from sector coords to world")
-   (inverse-transform
-    :reader inverse-transform
-    :documentation "transform matrix from world coords to sector")
    (origin
     :accessor origin
     :initarg :origin
     :documentation "the world location of the origin of this sector")
+   (orientation
+    :accessor orientation
+    :initarg :orientation
+    :initform (quat-identity)
+    :documentation "quatenion representing the rotation of the sector
+                    Is expected to be in increments of 90 degrees")
    (portals
     :accessor portals
     :initarg :portals
@@ -57,7 +57,7 @@
     :initform nil
     :documentation "contains the r-trees of the sectors geometry")))
     
-
+#+disabled
 (defmethod initialize-instance :after ((this sector) &key)
   (setf (slot-value this 'inverse-transform)
         (rt-inverse (transform this))))
@@ -68,13 +68,97 @@
     (maphash #'(lambda (k v) (setf (gethash k clone) v)) table)
     clone))
     
+
+(defun lookup-sector (name-symbol)
+  (gethash name-symbol *sector-table*))
+  
+(defun new-sector (name-symbol geometry
+                   &key
+                   portals
+                   (origin +origin+) 
+                   (orientation (quat-identity)))
+  (let ((the-sector 
+         (make-instance 'sector 
+                        :id name-symbol
+                        :origin origin
+                        :orientation orientation
+                        :geometry geometry
+                        :portals portals)))
+
+    (format t "~%CREATING SECTOR ~a with geometry ~a ~%~3Tand portals ~a~%"
+            name-symbol geometry portals)
+
+    ;; we really ought to update portals here
+    (iter (for p in (portals the-sector))
+          (setf (portal-direction p)
+                (get-direction 
+                 (quat-rotate-vec orientation (dir p))))
+          (format t "~2TPORTAL ~a's DIRECTION:   ~a~%"
+                  (portal-id p) (portal-direction p)))
+
+    (setf (gethash name-symbol *sector-table*) the-sector)))
+
+
+
+;;;
+;;; Setting up sectors in world space
+;;;
+
+(defmethod find-portal-in-direction ((s sector) direction)
+  (find direction (portals s) :key #'portal-direction))
+
+
+(defmethod add-sector-relative ((rel-sector sector) direction (sector sector))
+  (with-slots ((base-origin origin)) rel-sector
+    (with-slots ((new-origin origin)) sector
+      (setf new-origin 
+            (vec4+  base-origin
+                    (vec-scale4
+                     (getf +directions+ direction)
+                     +sector-size+))))))
+
+(defmethod add-sector-relative ((rel-sector symbol) direction (sector sector))
+  (add-sector-relative (lookup-sector rel-sector) direction sector))
+
+(defmethod link-sectors ((sec1 sector) (sec2 sector))
+  (format t "~%Linking sectors ~a and ~a~%"
+          (sector-id sec1) (sector-id sec2))
+
+  (with-slots ((o1 origin)) sec1
+    (with-slots ((o2 origin)) sec2
+      (let* ((o2-o1 (vec4- o2 o1))
+             (direction (get-direction o2-o1)))
+        (format t "DIRECTION from ~a to ~a is ~a~%" 
+                (sector-id sec1) (sector-id sec2) direction)
+        ;; First check if they are next to each other
+        (format t "Distance from ~a to ~a is ~a~%"
+                (sector-id sec1) (sector-id sec2) (mag o2-o1))
+
+        (unless (> (mag o2-o1) +sector-size+)
+          ;; Find if they share a portal
+          (let ((p1 (find-portal-in-direction sec1 direction))
+                (p2 (find-portal-in-direction 
+                     sec2 (opposite-dir direction))))
+            (format t "portals found: ~a, ~a~%" (portal-id p1)
+                    (portal-id p2))
+            (when (and p1 p2)
+              (link-portals sec1 p1 sec2 p2))))))))
+
+(defmethod link-sectors ((sec1 symbol) (sec2 symbol))
+  (link-sectors (lookup-sector sec1) (lookup-sector sec2)))
+
+
+;;;
+;;;  Updates
+;;;
+
 (defmethod foreach-in-sector ((a-sector sector) func)
   (let ((new-table (clone-table (contents a-sector))))
     (maphash #'(lambda (k v) 
                  (declare (ignore k))
                  (funcall func v))  
-             new-table)))
-             
+             new-table)))             
+
 (defmethod foreach-in-sector ((a-sector symbol) func)
   (foreach-in-sector (lookup-sector a-sector) func))
     
@@ -93,31 +177,33 @@
 (defmethod update ((a-sector sector))
   (foreach-in-sector a-sector #'(lambda (an-entity) (update an-entity))))
 
-(defun lookup-sector (name-symbol)
-  (gethash name-symbol *sector-table*))
-  
-(defun new-sector (name-symbol geometry
-                   &key
-                   portals
-                   (origin +origin+) 
-                   (orientation (quat-identity)))
-
-  (let ((the-sector 
-         (make-instance 'sector 
-                        :id name-symbol
-                        :geometry geometry
-                        :portals portals)))
-    (format t "~%~%CREATING SECTOR ~a with geometry ~a~%"
-            name-symbol geometry)
-    (setf (gethash name-symbol *sector-table*) the-sector)))
-    
-
 (defun update-sectors ()
-  (maphash #'(lambda (sym a-sector) (declare (ignore sym)) (update a-sector))
-           *sector-table*))
-           
+  (maphash #'(lambda (sym a-sector) (declare (ignore sym)) 
+                     (update a-sector))
+           *sector-table*))           
+
+
+;;;
+;;; Collisions
+;;;
+
 (defmethod transform-to-sector (pos-or-vec (a-sector sector))
-  (matrix-multiply-v (inverse-transform a-sector) pos-or-vec))
+  (with-slots (origin orientation) a-sector
+    (let ((xformed
+           (quat-rotate-vec 
+            (quat-conjugate orientation)       ; use the inverse
+            (vec4- pos-or-vec origin))))
+      (setf (w xformed) (w pos-or-vec))
+      xformed)))
+
+(defmethod get-transform-to-world ((this sector))
+  (with-slots (origin orientation) this
+    (matrix-multiply-m 
+     (make-translate origin)
+     (quat->matrix orientation))))
+
+#+disabled
+(defmethod transform-from-sector)
 
 (defmethod collide-sector ((obj entity-server) (a-sector sector)
                            &optional depth)
@@ -131,7 +217,6 @@
 
               test-vel
               (transform-to-sector test-vel a-sector))
-
         ;; test against the geometry
         (blt3d-phy:collide-with-world 
          test-sphere velocity geometry depth)))))

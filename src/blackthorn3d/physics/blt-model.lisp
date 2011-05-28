@@ -316,8 +316,6 @@
                   (setf (svref triangles index) 
                         (tri-in-elt element vertices i))
                   (incf index)))
-      (format t "TRIANGLES: ~%~a~%"
-              (subseq triangles 0 (min (length triangles) 20)))
       triangles)))
 
 

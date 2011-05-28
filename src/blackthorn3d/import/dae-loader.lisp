@@ -100,7 +100,7 @@
     (let* ((mesh-lst (gethash geom-id *geometry-table*))
            (vertex-source (input-by-semantic 
                            :vertex
-                           (third mesh-list)))
+                           (third mesh-lst)))
            (vertices
             (iter (for i below (/ (length (src-array vertex-source))
                                   (src-stride vertex-source)))
@@ -214,8 +214,9 @@
                 (:portal
                  (destructuring-bind (name bounding-volume)
                      (compile-portal extra)
-                   (let* ((pos (extract-translation xform))
-                          (dir (setf (w (vec-norm4 pos)) 0.0)))
+                   (let* ((pos (matrix-multiply-v xform +origin+))
+                          (dir (to-vec4 (norm4 pos))))
+                     (format t "adding portal ~a~%" name)
                      (push (list name pos dir bounding-volume) *portal-list*)
                      ;; don't make a node for the portal??
                      nil)))
@@ -308,7 +309,8 @@
                    #+disabled(blt3d-res:resolve-resource filename) 
                                    (cxml-xmls:make-xmls-builder))))
     
-    (let ((*material-table* 
+    (let ((*portal-list* ())
+          (*material-table* 
            (process-materials
             (find-tag-in-children +material-library+ dae-file)
             (find-tag-in-children +image-library+ dae-file)
@@ -333,18 +335,9 @@
                                         :scenes   *scene-table*
                                         :materials *material-table*
                                         ;; TODO: implement animations
-                                        :animations *animation-table*
-                                        )
+                                        :animations *animation-table*)
                       (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
                                             (make-point3 0.0 0.0 1.0)
                                             (make-point3 0.0 1.0 0.0)))
                      :portals
-                      (iter (for portal in *portal-list*)
-                            (collect 
-                             (destructuring-bind (name pos dir bv) portal
-                               (transform-portal
-                                (make-portal name pos dir bv)
-                                (make-inv-ortho-basis 
-                                 (make-point3 -1.0 0.0 0.0)
-                                 (make-point3 0.0 0.0 1.0)
-                                 (make-point3 0.0 1.0 0.0))))))))))
+                     *portal-list*))))

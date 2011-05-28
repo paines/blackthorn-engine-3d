@@ -300,3 +300,49 @@
                 
 (defun vector-sum (vectors)
   (reduce #'vec4+ vectors :initial-value +zero-vec+))
+
+(defun max-axis (vector)
+  (iter (with max-axis = 0)
+        (with max = most-negative-single-float)
+        (for i below 3)
+        (when (> (svref vector i) max)
+          (setf max-axis i))
+        (finally (return max-axis))))
+
+
+(defvar +directions+
+  (list :north (vec-neg4 +z-axis+)
+        :east  +x-axis+
+        :south +z-axis+
+        :west (vec-neg4 +x-axis+)
+        :up +y-axis+
+        :down (vec-neg4 +y-axis+)))
+
+
+
+(defun get-direction (vector)
+  "returns the direction (axis) the vector points most in"
+  (let ((max-axis (max-axis vector))
+        axis)
+    (case max-axis
+      (0 (if (< (x vector) 0.0) :west :east))
+      (1 (if (< (y vector) 0.0) :down :up))
+      (2 (if (< (z vector) 0.0) :north :south)))))
+
+(defmethod opposite-dir ((vec symbol))
+  (case vec
+    (:east :west)
+    (:west :east)
+    (:south :north)
+    (:north :south)
+    (:up :down)
+    (:down :up)))
+
+(defmethod opposite-dir ((vec vector))
+  (vec-neg4 vec))
+
+(defun to-vec4 (point)
+  (make-vec3 (x point) (y point) (z point)))
+
+(defun to-point4 (vec)
+  (make-point3 (x vec) (y vec) (z vec)))

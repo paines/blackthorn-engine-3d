@@ -43,6 +43,8 @@
           (format t  "Killed by monster!~%")
           (setf *should-quit* t))
         ;; this really shouldn't be done every step
+        ;(setf (current-sector entity) (lookup-sector (current-sector entity)))
+        #+disabled
         (use-model-on (shape-name entity) entity)))
 
 (defun handle-entity-remove-client (src entity)

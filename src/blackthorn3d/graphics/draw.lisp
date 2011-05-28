@@ -30,8 +30,22 @@
                   :diffuse #(1.0 .7 0.0 1.0)))
 
 (defmethod draw-object ((s sector))
-  (with-slots (geometry) s
-    (draw-object geometry)))
+  (with-slots (geometry portals) s
+    (gl:with-pushed-matrix 
+      (gl:mult-matrix (get-transform-to-world s))
+      (draw-object geometry))
+
+    ;; and then draw all the adjacent sectors
+    (iter (for portal in portals)
+          (aif (links-to-sector portal)
+               (gl:with-pushed-matrix
+                   (gl:mult-matrix (get-transform-to-world it))
+                 (draw-object (geometry it)))))
+    #+disabled
+    (iter (for portal in portals)
+          (aif (links-to-sector portal)
+               (unless (eql it s)
+                 (draw-object it))))))
 
 (defmethod draw-object ((e entity))
   (when (and (shape e))

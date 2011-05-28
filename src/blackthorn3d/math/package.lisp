@@ -34,6 +34,7 @@
    :+y-axis+
    :+z-axis+
    :+origin+
+   :+directions+
    :to-float
    :make-vector4
    :make-vector3
@@ -42,6 +43,8 @@
    :make-color
    :vec3->point
    :vec3->vec
+   :to-vec4
+   :to-point4
    :x :y :z :w
    :r :g :b :a   
    :zero-vec-p
@@ -68,6 +71,9 @@
    :mid-point
    :get-perpendicular
    :vector-sum
+   :get-direction
+   :max-axis
+   :opposite-dir
    
    ;; matrix.lisp
    :make-matrix

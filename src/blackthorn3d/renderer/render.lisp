@@ -76,7 +76,7 @@
 
 
   (setf *main-light* (make-light 'light
-                      :position (make-point3 0.0 20.0 0.0)))
+                      :position (make-point3 0.0 5.0 0.0)))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
  ; #+disabled
@@ -101,7 +101,7 @@
                                            (make-point3 0.0 0.0 1.0)
                                            (make-point3 0.0 1.0 0.0)))
     (apply-transform *test-skele*
-                     (make-translate #(0.0 13.0 0.0 0.0))))
+                     (make-translate #(0.0 -2.0 0.0 0.0))))
 
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)
@@ -113,7 +113,7 @@
 
   (setf *test-ps* (create-particle-system 
                    (make-instance 'point-emitter
-                                  :pos (make-point3 0.0 13.3 0.0)
+                                  :pos (make-point3 0.0 -1.7 0.0)
                                   :dir +y-axis+
                                   :up +y-axis+
                                   :angle (/ pi 6)
@@ -226,6 +226,7 @@
 
   (when *main-cam*
     (setf home-sector (lookup-sector (current-sector *main-cam*)))
+;    (setf home-sector (current-sector *main-cam*))
     (gl:matrix-mode :modelview)
     (gl:load-matrix (look-dir-matrix (pos *main-cam*)
                                      (dir *main-cam*)

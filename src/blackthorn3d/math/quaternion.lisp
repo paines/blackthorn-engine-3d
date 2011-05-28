@@ -104,7 +104,7 @@
              (* s (w q))))
 
 (defun quat-inverse (q)
-  (quat-scale (quat-conjugate q) (/ 1 (sq quat-norm q))))
+  (quat-scale (quat-conjugate q) (/ 1 (sq (magnitude q)))))
 
 
 (defun quat-rotate-vec (q v)

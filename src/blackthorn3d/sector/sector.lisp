@@ -190,8 +190,14 @@
 (defmethod transform-to-sector (pos-or-vec (a-sector sector))
   (with-slots (origin orientation) a-sector
     (let ((xformed
+           (matrix-multiply-v
+            (matrix-multiply-m
+             (rt-inverse (quat->matrix orientation))
+             (make-translate (vec-neg4 origin)))
+            pos-or-vec)
+            #+disabled
            (quat-rotate-vec 
-            (quat-conjugate orientation)       ; use the inverse
+            (quat-inverse orientation)       ; use the inverse
             (vec4- pos-or-vec origin))))
       (setf (w xformed) (w pos-or-vec))
       xformed)))
@@ -205,26 +211,8 @@
 (defmethod get-transform-to-sector ((this sector))
   (with-slots (origin orientation) this
     (matrix-multiply-m
-     (quat->matrix (quat-conjugate orientation))
+     (rt-inverse (quat->matrix orientation))
      (make-translate (vec-neg4 origin)))))
-
-(defmethod collide-sector-portals ((obj entity-server) (a-sector sector))
-  (with-slots (pos bounding-volume) obj
-    (with-slots (portals) a-sector
-      
-      ;; Test against portals
-      (iter (with test-sphere = (move-bounding-volume 
-                                 bounding-volume 
-                                 (transform-to-sector pos a-sector)))
-            (for portal in portals)
-            (when (collide-p test-sphere portal)
-              (format t "Collided with portal: ~a @~a~%" 
-                      (portal-id portal) (pos portal))
-              ;; We need to change the sector of the object
-              (format t "Setting sector to: ~a~%" 
-                      (sector-id (links-to-sector portal)))
-              (setf (current-sector obj) 
-                    (sector-id (links-to-sector portal))))))))
 
 (defmethod collide-sector ((obj entity-server) (a-sector sector)
                            &optional depth)
@@ -243,6 +231,27 @@
         ;; test against the geometry
         (blt3d-phy:collide-with-world
          test-sphere velocity geometry depth)))))
+
+(defvar +p-eps+ 1e-3)
+(defmethod collide-sector-portals ((obj entity-server) (a-sector sector))
+  (with-slots (pos bounding-volume) obj
+    (with-slots (portals) a-sector
+      
+      ;; Test against portals
+      (iter (with test-sphere = (move-bounding-volume 
+                                 bounding-volume 
+                                 (transform-to-sector pos a-sector)))
+            (for portal in portals)
+            (when (collide-p test-sphere portal)
+              (format t "Collided with portal: ~a @~a~%" 
+                      (portal-id portal) (pos portal))
+              ;; We need to change the sector of the object
+              (format t "Setting sector to: ~a~%" 
+                      (sector-id (links-to-sector portal)))
+              (setf (pos obj) (vec4+ pos (vec-scale4 (dir portal) +p-eps+)))
+              (setf (current-sector obj) 
+                    (sector-id (links-to-sector portal))))))))
+
 
 
 ;; where the heck should this method go???

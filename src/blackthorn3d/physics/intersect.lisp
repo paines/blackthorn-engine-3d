@@ -228,7 +228,8 @@
       #+disabled
       (when (< t0 0)
         (return-from moving-sphere-triangle-intersection
-          ()))
+          (list t0 (vec3+ (vec3- sph-pos (tri-n tri))
+                          (vec-scale3 velocity t0)))))
 
       ;; clamp t1, we don't care what happens after 1.0
       (setf ;t0 (clamp t0 0 1)
@@ -343,13 +344,13 @@
               
     ;; only move the base point if we aren't already
     ;; very close to the hit
-    (if (>= closest-dist 0.0001)
+    (if (>= closest-dist 0.00001)
         (setf new-bp 
               (vec4+ new-bp 
                      (set-length4 velocity 
-                                  (- closest-dist 0.0001)))
+                                  (- closest-dist 0.00001)))
               hit-pt (vec4- hit-pt (set-length4 velocity
-                                                0.0001))))
+                                                0.00001))))
 
     ;; make sliding plane
     (let* ((plane-normal (norm4 (vec4- new-bp hit-pt)))

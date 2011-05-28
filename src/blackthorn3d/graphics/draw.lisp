@@ -76,22 +76,34 @@
             (gl:vertex 0 0 0)
             (gl:vertex (x dir-vec) (y dir-vec) (z dir-vec))))))))
 
-(defmethod draw-object ((s sector))
-  (with-slots (geometry portals) s
+(defvar +max-sect-depth+ 3)
+(defun draw-sectors (current-sector visited depth)
+  (with-slots (geometry portals) current-sector
     (gl:with-pushed-matrix 
-      (gl:mult-matrix (get-transform-to-world s))
-      (draw-object geometry)
-      )
-
+      (gl:mult-matrix (get-transform-to-world current-sector))
+      (draw-object geometry))
+    
     ;; and then draw all the adjacent sectors
-    (iter (for portal in portals)
-          (aif (links-to-sector portal)
-               (progn
-                 (draw-portal portal)
-                 (gl:with-pushed-matrix
-                     (gl:mult-matrix (get-transform-to-world it))
-                   (draw-object (geometry it))
-                   ))))))
+    (when (< depth +max-sect-depth+)
+      (iter (for portal in portals)
+            (aif (links-to-sector portal)
+                 (if (member (sector-id it) visited)
+                     nil
+                     (draw-sectors 
+                      it 
+                      (cons (sector-id current-sector) visited)
+                      (1+ depth)))
+
+                 #+disabled
+                 (progn
+                   (draw-portal portal)
+                   (gl:with-pushed-matrix
+                       (gl:mult-matrix (get-transform-to-world it))
+                     (draw-object (geometry it))
+                     )))))
+    ))
+(defmethod draw-object ((s sector))
+  (draw-sectors s () 0))
 
 (defmethod draw-object ((e entity))
   (when (and (shape e))

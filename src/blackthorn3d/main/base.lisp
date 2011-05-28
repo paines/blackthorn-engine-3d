@@ -38,12 +38,7 @@
                     (collect 
                      (destructuring-bind (name pos dir bv) portal
                        (transform-portal
-                        (transform-portal
-                         (make-portal name pos dir bv)
-                         (make-inv-ortho-basis 
-                          (make-point3 -1.0 0.0 0.0)
-                          (make-point3 0.0 0.0 1.0)
-                          (make-point3 0.0 1.0 0.0)))
+                        (make-portal name pos dir bv)
                         (make-translate #(0.0 -15.0 0.0 1.0))))))
               :orientation orientation))
 

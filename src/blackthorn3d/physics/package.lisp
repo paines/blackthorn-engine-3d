@@ -27,10 +27,9 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
-        :spatial-trees-impl :spatial-trees-protocol)
-  (:shadow :search :delete)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent)
   (:import-from :blt3d-ani :apply-transform)
+  (:shadow :search :delete)
   (:export
 
    ;; blt-mesh.lisp
@@ -112,15 +111,10 @@
    :sphere-triangle-intersection
    :sphere-edge-intersection
    :sphere-point-intersection
+   :make-ray
+   :ray-sphere-intersection
    :make-plane
    :plane-dist
-
-   ;; ray-trace.lisp
-   :make-ray
-   :ray-e
-   :ray-d
-   :ray-sphere-intersection
-   :ray-aabb-intersection
 
    ;; collision.lisp
    :collide-p

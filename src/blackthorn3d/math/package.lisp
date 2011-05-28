@@ -76,6 +76,7 @@
    :opposite-dir
    
    ;; matrix.lisp
+   :+3dsmax-convert+
    :make-matrix
    :make-matrix3x3
    :make-matrix4x4

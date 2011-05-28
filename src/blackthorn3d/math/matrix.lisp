@@ -415,3 +415,9 @@
   (make-vec3 (aref mat 3 0)
              (aref mat 3 1)
              (aref mat 3 2)))
+
+
+(defvar +3dsmax-convert+ 
+  (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
+                        (make-point3 0.0 0.0 1.0)
+                        (make-point3 0.0 1.0 0.0)))

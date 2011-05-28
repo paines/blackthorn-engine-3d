@@ -214,10 +214,18 @@
                 (:portal
                  (destructuring-bind (name bounding-volume)
                      (compile-portal extra)
-                   (let* ((pos (matrix-multiply-v xform +origin+))
-                          (dir (to-vec4 (norm4 pos))))
+                   (let* ((pos (matrix-multiply-v
+                                +3dsmax-convert+
+                                (matrix-multiply-v xform +origin+)))
+                          (dir (matrix-multiply-v
+                                +3dsmax-convert+
+                                (to-vec4 (norm4 pos)))))
                      (format t "adding portal ~a~%" name)
-                     (push (list name pos dir bounding-volume) *portal-list*)
+                     (push (list name pos dir 
+                                 (transform-bounding-volume
+                                  bounding-volume
+                                  +3dsmax-convert+)) 
+                           *portal-list*)
                      ;; don't make a node for the portal??
                      nil)))
                 (:geometry 
@@ -336,8 +344,6 @@
                                         :materials *material-table*
                                         ;; TODO: implement animations
                                         :animations *animation-table*)
-                      (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
-                                            (make-point3 0.0 0.0 1.0)
-                                            (make-point3 0.0 1.0 0.0)))
+                      +3dsmax-convert+)
                      :portals
                      *portal-list*))))

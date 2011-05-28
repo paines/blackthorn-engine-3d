@@ -262,13 +262,17 @@
                               :pos mid-point
                               :rad radius)))))))
 
-(defmethod transform-bounding-volume ((this bounding-sphere) xform
-                                      &optional ignore-r)
+(defmethod transform-bounding-volume ((this bounding-sphere) xform)
   (with-slots (rad pos) this
     (make-instance 'bounding-sphere
                    :pos (matrix-multiply-v xform pos)
-                   :rad (if ignore-r
-                            rad
-                            (mag (matrix-multiply-v 
-                                  xform
-                                  (make-vec3 rad 0.0 0.0)))))))
+                   :rad 
+                   (mag (matrix-multiply-v 
+                         xform
+                         (make-vec3 rad 0.0 0.0))))))
+
+(defmethod transform-bounding-volume ((this aa-bounding-box) xform)
+  (with-slots (a-min a-max) this
+    (make-instance 'aa-bounding-box
+                   :a-min (matrix-multiply-v xform a-min)
+                   :a-max (matrix-multiply-v xform a-max))))

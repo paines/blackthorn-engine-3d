@@ -27,7 +27,9 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
+        :spatial-trees-impl :spatial-trees-protocol)
+  (:shadow :search :delete)
   (:import-from :blt3d-ani :apply-transform)
   (:export
 
@@ -94,6 +96,8 @@
 
    ;; aa-bounding-box
    :aa-bounding-box
+   :a-min
+   :a-max
 
    :move-bounding-volume
    :move-bounding-volume-set
@@ -101,16 +105,22 @@
    :make-bounding-box
    :make-bounding-sphere
    :make-bounding-volume
+   :transform-bounding-volume
 
    ;; intersect.lisp
    :point-line-sq-distance
    :sphere-triangle-intersection
    :sphere-edge-intersection
    :sphere-point-intersection
-   :make-ray
-   :ray-sphere-intersection
    :make-plane
    :plane-dist
+
+   ;; ray-trace.lisp
+   :make-ray
+   :ray-e
+   :ray-d
+   :ray-sphere-intersection
+   :ray-aabb-intersection
 
    ;; collision.lisp
    :collide-p

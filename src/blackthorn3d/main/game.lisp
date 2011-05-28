@@ -37,6 +37,9 @@
                                (setf (blt3d-imp:dae-geometry level)
                                      (blt3d-phy:initialize-cube
                                       (blt3d-imp:dae-geometry level)))
+                               (apply-transform
+                                (blt3d-imp:dae-geometry level)
+                                (make-translate #(0.0 -15.0 0.0 1.0)))
                                level)))
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
@@ -64,6 +67,9 @@
          (setf (blt3d-imp:dae-geometry level)
                (blt3d-gfx:load-obj->models
                 (blt3d-imp:dae-geometry level)))
+         (apply-transform
+          (blt3d-imp:dae-geometry level)
+          (make-translate #(0.0 -15.0 0.0 1.0)))
          level)))
   
   (load-models-n-stuff)

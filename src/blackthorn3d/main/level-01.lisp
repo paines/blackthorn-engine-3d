@@ -47,4 +47,21 @@
 ;;; Level layout
 ;;;
 
-  (make-start-sector (get-model :dead-end-room)))
+  (make-start-sector (get-model :dead-end-room))
+
+  (progn
+    (add-sector-relative
+     :start-sector
+     :north
+     (make-sector :hall-01 (get-model :hallway-straight)))
+    
+    (add-sector-relative
+     :hall-01
+     :north
+     (make-sector :end-room (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ pi)))
+
+    ;; Now link them all
+    (link-sectors :start-sector :hall-01)
+    (link-sectors :hall-01 :end-room)
+    ))

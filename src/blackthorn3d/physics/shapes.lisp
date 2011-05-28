@@ -125,10 +125,7 @@
 ;; for triangles only!!! even though it allows all simple vectors
 (defmethod shape-bounds ((tri vector))
   (let ((bounds (find-bounding-points (subseq tri 0 3))))
-    (format t 
-"### tri-bounds: ~a
-                ~a~%" (x bounds) (y bounds))
-    (list (svref bounds 0) (svref bounds 1))))
+     (list (svref bounds 0) (svref bounds 1))))
 
 (defmethod make-bounding-box (vect-array)
   (let* ((pos-list (find-bounding-points vect-array))

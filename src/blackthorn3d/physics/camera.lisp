@@ -74,7 +74,7 @@
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
-(defvar +theta-limit+ 90)
+(defvar +theta-limit+ 89)
 (setf +phi-scale+ -2)
 (setf +theta-scale+ -0.2)
 

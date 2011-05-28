@@ -78,10 +78,6 @@
 (defun quat-conjugate (q)
   (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
 
-;; only valid for unit quaternions
-(defun quat-inverse (q)
-  (quat-conjugate q))
-
 (defun quat-norm (q)
   (normalize q))
   
@@ -106,6 +102,9 @@
              (* s (y q))
              (* s (z q))
              (* s (w q))))
+
+(defun quat-inverse (q)
+  (quat-scale (quat-conjugate q) (/ 1 (sq quat-norm q))))
 
 
 (defun quat-rotate-vec (q v)

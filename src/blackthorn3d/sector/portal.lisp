@@ -31,6 +31,14 @@
   ((id 
     :accessor portal-id
     :initarg :id)
+   (direction
+    :accessor portal-direction
+    :initarg :direction
+    :documentation "World direction (:east :north etc) of the portal
+                    this is different from the dir slot inherited from
+                    entity in that dir is a local-to-sector direction
+                    that is used to test if we've crossed the portal's
+                    edge.  this direction is more useful for linking")
    (links-to-sector
     :accessor links-to-sector
     :initform nil
@@ -53,8 +61,15 @@
                  :dir dir
                  :bv bv))
 
+(defmethod link-portals ((s1 sector) (p1 portal)
+                         (s2 sector) (p2 portal))
+  (setf (links-to-portal p1) p2
+        (links-to-sector p1) s2
+        (links-to-portal p2) p1
+        (links-to-sector p2) s1))
+
 (defmethod transform-portal ((this portal) xform)
-  (transform-entity this xfrom))
+  (transform-entity this xform))
 
 ;; Returns true if an entity (assumed to have already intersected 
 ;; the bv) has crossed the portal

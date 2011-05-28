@@ -92,6 +92,11 @@
   (collide-p (move-bounding-volume (blt3d-ent:bounding-volume e1) (pos e1))
 	     (move-bounding-volume (blt3d-ent:bounding-volume e2) (pos e2))))
 
+#+disabled
+(defmethod collide-p ((e1 blt3d-ent:entity-server)
+                      (p2 blt3d-sec:portal))
+  (collide-p (move-bounding-volume (blt3d-ent:bounding-volume e1) (pos e1))
+             ))
 ;;;
 ;;; Oriented Bounding Box
 ;;;

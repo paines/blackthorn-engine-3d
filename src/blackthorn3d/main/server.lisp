@@ -34,18 +34,17 @@
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
-        
 
-                  
+
 (defmethod update ((c camera))
   (let* ((player (target c))
          (client (player-client player)))
-         
+
     ;; camera should remove itself after the player disconnects
     (when (not (is-alive-p player))
       (kill-entity c)
       (return-from update))
-      
+
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (vec-scale4 (move-player c input-vec) 0.4))
            (target (blt3d-phy::target c))

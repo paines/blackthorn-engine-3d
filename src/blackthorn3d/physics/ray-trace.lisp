@@ -107,7 +107,53 @@
       (if (> t-min 0) 
           t-min t-max))))
 
-#+disabled
+
+(defun ray-rect-intersection (ray rect)
+  (with-slots (a-min a-max) aabb
+    (let ((o (ray-e ray))
+          (d (ray-d ray))
+          (t-min most-positive-single-float)
+          (t-max most-negative-single-float)
+          t0 t1)
+
+      (iter (for i below 3)
+            (for min-e in (lows rect))
+            (for max-e in (highs rect))
+            (for one/d = (/ 1 (svref d i)))
+            (if (plusp (svref d i))
+                ;; If di is positive
+                (setf t0 (* (- min-e (svref o i)) one/d)
+                      t1 (* (- max-e (svref o i)) one/d))
+                ;; If di is negative
+                (setf t1 (* (- min-e (svref o i)) one/d)
+                      t0 (* (- max-e (svref o i)) one/d)))
+            
+            (if (< t0 t1)
+                (setf t-min (max t0 t-min)
+                      t-max (min t1 t-max))
+
+                (setf t-min (max t1 t-min)
+                      t-max (min t0 t-max)))
+            (when (or (> t-min t-max)
+                      (< t-max 0)) 
+              (return-from ray-rect-intersection nil)))
+      (if (> t-min 0) 
+          t-min t-max))))
+
 (defmethod search (ray (tree r-tree))
   (labels ((%search (r node)
-             ()))))
+             (cond
+               ((typep node 'spatial-tree-leaf-node)
+                (let (result)
+                  (dolist (entry (records node) (nreverse result))
+                    (when (ray-rect-intersection 
+                           r (leaf-node-entry-rectangle entry))
+                      (push (leaf-node-entry-datum entry) result)))))
+               (t
+                (let (result)
+                  (dolist (child (children node) result)
+                    (when (ray-rect-intersection
+                           r (mbr child tree))
+                      (setq result (append (%search r child) result)))))))))
+    (let ((root (root-node tree)))
+      (%search r root))))

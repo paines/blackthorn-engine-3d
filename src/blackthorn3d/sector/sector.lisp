@@ -190,17 +190,30 @@
 (defmethod transform-to-sector (pos-or-vec (a-sector sector))
   (with-slots (origin orientation) a-sector
     (let ((xformed
+           #+disabled
            (matrix-multiply-v
             (matrix-multiply-m
              (quat->matrix orientation)
              (make-translate (vec-neg4 origin)))
             pos-or-vec)
-            #+disabled
+          ;  #+disabled
            (quat-rotate-vec 
             (quat-inverse orientation)       ; use the inverse
-            (vec4- pos-or-vec origin))))
+            (if (zerop (w pos-or-vec)) 
+                pos-or-vec
+                (vec4- pos-or-vec origin)))))
       (setf (w xformed) (w pos-or-vec))
       xformed)))
+
+(defmethod transform-to-world (pos-or-vec (a-sector sector))
+  (with-slots (origin orientation) a-sector
+    (let ((xformed
+           (quat-rotate-vec
+            orientation
+            pos-or-vec)))
+      (if (zerop (w pos-or-vec))
+          xformed
+          (to-point4 (vec4+ xformed origin))))))
 
 (defmethod get-transform-to-world ((this sector))
   (with-slots (origin orientation) this
@@ -219,7 +232,7 @@
   (with-slots (pos bounding-volume velocity) obj
     (with-slots (geometry portals) a-sector
       (let ((test-sphere (move-bounding-volume bounding-volume pos))
-            (test-vel velocity))
+            (test-vel (to-vec4 velocity)))
 
         ;; transform into sector coordinates
         (setf (pos test-sphere)
@@ -228,9 +241,12 @@
               test-vel
               (transform-to-sector test-vel a-sector))
 
-        ;; test against the geometry
-        (blt3d-phy:collide-with-world
-         test-sphere velocity geometry depth)))))
+        ;; test against the geometry (and transform the result back)
+        (transform-to-world
+         (to-vec4
+          (blt3d-phy:collide-with-world
+           test-sphere test-vel geometry depth))
+         a-sector)))))
 
 (defvar +p-eps+ 1e-3)
 (defmethod collide-sector-portals ((obj entity-server) (a-sector sector))

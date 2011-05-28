@@ -192,7 +192,7 @@
     (let ((xformed
            (matrix-multiply-v
             (matrix-multiply-m
-             (rt-inverse (quat->matrix orientation))
+             (quat->matrix orientation)
              (make-translate (vec-neg4 origin)))
             pos-or-vec)
             #+disabled

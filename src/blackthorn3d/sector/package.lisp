@@ -43,6 +43,7 @@
    :lookup-sector
    :new-sector
    :collide-sector
+   :collide-sector-portals
    :kill-entity
    :update-sectors
 

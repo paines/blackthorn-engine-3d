@@ -58,24 +58,25 @@
    returns nil if no intersection occurs, or (P s) where P
    is the point on the triangle and s is the distance, 
    or time (in e + s*d).  Returns nil or values (s u v)"
-  (let* ((e1 (vec3- (svref tri 1) (svref tri 0)))
-         (e2 (vec3- (svref tri 2) (svref tri 0)))
-         (p (cross3 (ray-d ray) e2))
-         (alpha (dot e1 p)))
-    (when (range alpha (- +eps+) +eps+)
-      (return-from ray-triangle-intersection nil))
-    (let* ((f (/ 1 alpha))
-           (s (vec3- (ray-e ray) (svref tri 0)))
-           (u (* f (dot s p))))
-      (when (or (< u 0.0) (> u 1.0))
-        (return-from ray-triangle-intersection nil))
-      (let* ((q (cross3 s e1))
-             (v (* f (dot d q))))
-        (when (or (< v 0.0) (> v 1.0))
-          (return-from ray-triangle-intersection nil))
-        (let ((t0 (* f (dot e2 q))))
-          (when (<  t0 tmax)
-            (values t0 u v)))))))
+   (let* ((e1 (vec3- (svref tri 1) (svref tri 0)))
+          (e2 (vec3- (svref tri 2) (svref tri 0)))
+          (p (cross3 (ray-d ray) e2))
+          (alpha (dot e1 p))
+          (tmax (or tmax most-positive-single-float)))
+     (when (range alpha (- +eps+) +eps+)
+       (return-from ray-triangle-intersection nil))
+     (let* ((f (/ 1 alpha))
+            (s (vec3- (ray-e ray) (svref tri 0)))
+            (u (* f (dot s p))))
+       (when (or (< u 0.0) (> u 1.0))
+         (return-from ray-triangle-intersection nil))
+       (let* ((q (cross3 s e1))
+              (v (* f (dot (ray-d ray) q))))
+         (when (or (< v 0.0) (> v 1.0))
+           (return-from ray-triangle-intersection nil))
+         (let ((t0 (* f (dot e2 q))))
+           (when (<  t0 tmax)
+             (values t0 u v)))))))
 
 (defun ray-aabb-intersection (ray aabb tmax)
   (with-slots (a-min a-max) aabb
@@ -105,7 +106,6 @@
                         t-max (min t0 t-max)))
               (when (or (> t-min t-max)
                         (< t-max 0)) 
-                (format t "early out ~a~%" i)
                 (return-from ray-aabb-intersection nil))))
       
       (let ((t0 (if (> t-min 0) 
@@ -115,55 +115,47 @@
 
 
 (defun ray-rect-intersection (ray rect)
-  (with-slots (a-min a-max) aabb
-    (let ((o (ray-e ray))
-          (d (ray-d ray))
-          (t-min most-positive-single-float)
-          (t-max most-negative-single-float)
-          t0 t1)
+  (let ((o (ray-e ray))
+        (d (ray-d ray))
+        (t-min most-negative-single-float)
+        (t-max most-positive-single-float)
+        t0 t1)
 
-      (iter (for i below 3)
-            (for min-e in (lows rect))
-            (for max-e in (highs rect))
-            (for d-i = (svref d i))
-            (when (not (zerop d-i))
-              (for one/d = (/ 1 d-i))
-              (if (plusp d-i)
-                  ;; If di is positive
-                  (setf t0 (* (- min-e (svref o i)) one/d)
-                        t1 (* (- max-e (svref o i)) one/d))
-                  ;; If di is negative
-                  (setf t1 (* (- min-e (svref o i)) one/d)
-                        t0 (* (- max-e (svref o i)) one/d)))
-              
-              (if (< t0 t1)
-                  (setf t-min (max t0 t-min)
-                        t-max (min t1 t-max))
+    (iter (for i below 3)
+          (for min-e in (lows rect))
+          (for max-e in (highs rect))
+          (for d-i = (svref d i))
+          (when (not (zerop d-i))
+            (for one/d = (/ 1 d-i))
+            (if (plusp d-i)
+                ;; If di is positive
+                (setf t0 (* (- min-e (svref o i)) one/d)
+                      t1 (* (- max-e (svref o i)) one/d))
+                ;; If di is negative
+                (setf t1 (* (- min-e (svref o i)) one/d)
+                      t0 (* (- max-e (svref o i)) one/d)))
+            
+            (if (< t0 t1)
+                (setf t-min (max t0 t-min)
+                      t-max (min t1 t-max))
 
-                  (setf t-min (max t1 t-min)
-                        t-max (min t0 t-max)))
-              (when (or (> t-min t-max)
-                        (< t-max 0)) 
-                (return-from ray-rect-intersection nil))))
+                (setf t-min (max t1 t-min)
+                      t-max (min t0 t-max)))
+            (when (or (> t-min t-max)
+                      (< t-max 0))                    
+              (return-from ray-rect-intersection nil))))
 
-      (let ((t0 (if (> t-min 0) 
-                    t-min t-max)))
-        (when (< t0 tmax)
-          t0)))))
+    (let ((t0 (if (> t-min 0) 
+                  t-min t-max)))
+      t0)))
 
 (defmethod search (ray (tree spatial-tree))
   (labels ((%search (r node)
              (cond
                ((typep node 'spatial-tree-leaf-node)
                 (let (result)
-                 ; (format t "intersected leaf node~%")
                   (dolist (entry (spatial-trees-impl::records node) 
                            (nreverse result))
-       #+disabled             (format t "~%lows ~a~%highs ~a~%"
-                            (lows
-                             (spatial-trees-impl::leaf-node-entry-rectangle entry))
-                            (highs
-                             (spatial-trees-impl::leaf-node-entry-rectangle entry)))
                     (when 
                         (ray-rect-intersection 
                          r 
@@ -225,13 +217,10 @@
 
 (defmethod ray-cast (ray (r-tree spatial-trees-protocol:spatial-tree))
   (let ((results (search ray r-tree)))
-  ;  (format t "lvl0: Tracing Ray: ~a~%" ray)
-  ;  (format t "Results: ~a~%" results)
     (iter (with min-hit = nil)
           (for tri in results)
           (for hit = (ray-triangle-intersection
                       ray tri min-hit))
           (when (and hit (or (null min-hit) (< hit min-hit)))
-    ;        (format t "We have a hit at level0~%")
             (setf min-hit hit))
           (finally (return min-hit)))))

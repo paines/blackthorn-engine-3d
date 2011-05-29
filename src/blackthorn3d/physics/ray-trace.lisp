@@ -228,4 +228,4 @@
 
 (defvar +standing-thresh+ 0.1)          ; 10 cm
 (defun standing-on-p (ent obj)
-  (< (ray-cast (make-ray (pos ent) (to-vec4 (dir ent))) obj)))
+  (< (ray-cast (make-ray (pos ent) (to-vec4 (vec-neg4 (up ent)))) obj)))

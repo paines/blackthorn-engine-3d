@@ -271,8 +271,14 @@
 (defmethod ray-cast (ray (a-sector sector))
   (let ((x-ray (make-ray (transform-to-sector (ray-e ray) a-sector)
                          (transform-to-sector (ray-d ray) a-sector))))
-    (with-slots (geometry) a-sector
-         (ray-cast x-ray geometry))))
+    (with-slots (geometry portals) a-sector
+      (aif (ray-cast x-ray geometry)
+           it
+           ;; also check for portals!!
+           (iter (for portal in portals)
+                 (when (ray-cast x-ray portal)
+                   (aif (ray-cast ray (links-to-sector portal))
+                        (return-from ray-cast it))))))))
 
 
 

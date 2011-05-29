@@ -81,9 +81,9 @@
 (defmethod move-camera ((c camera) vec)
   (with-slots (target pos velocity minor-mode) c
     (with-slots ((t-pos pos) (t-up up)) target
-      (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.4))))
+      (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42))))
         (setf (pos c) (vec4+ pos vec)
-              (dir c) (norm4 (vec-neg4 velocity)))
+              (dir c) (norm4 (vec4- look-at pos)))
         #+disabled
         (when (eql minor-mode :strafe)
           (setf (dir target) (norm4 (cross t-up (cross (dir c) t-up)))))))))
@@ -196,8 +196,9 @@
                 ;(vec4- ideal-pos look-at)
                ; #+disabled
                 (vec4- (vec4+ pos veloc)
-                       look-at))
-          (setf pos look-at))
+                       t-pos))
+          (setf pos t-pos; look-at
+                ))
 
         #+disabled
         ;; quat stuff

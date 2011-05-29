@@ -112,3 +112,20 @@
       (when (collide-p moved-sphere bounding-volume)
         (format t "We hit the protal!! id: ~a~%" (portal-id p))
         (crosses-portal-p moved-sphere p)))))
+
+(defmethod ray-cast (ray (portal portal))
+  (with-slots (pos dir bounding-volume) portal
+    (when (plusp (dot (ray-d ray) dir))
+      (let* ((rot-quat (quat-rotate-to-vec
+                        dir (vec-neg4 +z-axis+)))
+             (x-ray (make-ray
+                     (quat-rotate-vec 
+                      rot-quat 
+                      (vec4- (ray-e ray) pos))
+                     (quat-rotate-vec
+                      rot-quat
+                      (ray-d ray))))
+             (res (ray-aabb-intersection x-ray 
+                                         bounding-volume
+                                         most-positive-single-float)))
+        res))))

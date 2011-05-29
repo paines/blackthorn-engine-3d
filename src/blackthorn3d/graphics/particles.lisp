@@ -38,6 +38,7 @@
 ;;        #(energy fade-rate pos.x pos.y pos.z old.x old.y old.z
 ;;          vel.x vel.y vel.z color.r color.g color.b color.a size)
 ;; total length: 16 floats
+
 (defun create-particle (particles index
                         position velocity
                         energy fade-rate
@@ -48,20 +49,20 @@
                 (x position)            ; 2
                 (y position)            ; 3
                 (z position)            ; 4
-                (x position)            ; 5
-                (y position)            ; 6
-                (z position)            ; 7
-                (x velocity)            ; 8
-                (y velocity)            ; 9
-                (z velocity)            ; 10
-                (r color)               ; 11
-                (g color)               ; 12
-                (b color)               ; 13
-                (a color)               ; 14
-                size)))                 ; 15
+            ;    (x position)            ; 5
+            ;    (y position)            ; 6
+            ;    (z position)            ; 7
+                (x velocity)            ; 8 -> 5
+                (y velocity)            ; 9 -> 6
+                (z velocity)            ; 10 -> 7
+                (r color)               ; 11 -> 8
+                (g color)               ; 12 -> 9
+                (b color)               ; 13 -> 10
+                (a color)               ; 14 -> 11
+                size)))                 ; 15 -> 12
 
 (defun create-particle-array (max-particles)
-  (make-array (list max-particles 16) :element-type 'float))
+  (make-array (list max-particles 13) :element-type 'float))
 
 ;; ENERGY
 (defun p-energy (particle)
@@ -87,10 +88,12 @@
         (aref (car particle) (cdr particle) 4) (z pos)))
 
 ;; OLD POSITION
+#+disabled
 (defun p-old-pos (particle)
   (make-point3 (aref (car particle) (cdr particle) 5)
                (aref (car particle) (cdr particle) 6)
                (aref (car particle) (cdr particle) 7)))
+#+disabled
 (defun (setf p-old-pos) (pos particle)
   (setf (aref (car particle) (cdr particle) 5) (x pos)
         (aref (car particle) (cdr particle) 6) (y pos)
@@ -98,31 +101,31 @@
 
 ;; VELOCITY
 (defun p-vel (particle)
-  (make-vec3 (aref (car particle) (cdr particle) 8)
-             (aref (car particle) (cdr particle) 9)
-             (aref (car particle) (cdr particle) 10)))
+  (make-vec3 (aref (car particle) (cdr particle) 5)
+             (aref (car particle) (cdr particle) 6)
+             (aref (car particle) (cdr particle) 7)))
 (defun (setf p-vel) (vel particle)
-  (setf (aref (car particle) (cdr particle) 8) (x vel)
-        (aref (car particle) (cdr particle) 9) (y vel)
-        (aref (car particle) (cdr particle) 10) (z vel)))
+  (setf (aref (car particle) (cdr particle) 5) (x vel)
+        (aref (car particle) (cdr particle) 6) (y vel)
+        (aref (car particle) (cdr particle) 7) (z vel)))
 
 ;; COLOR
 (defun p-color (particle)
-  (make-vector4 (aref (car particle) (cdr particle) 11)
-                (aref (car particle) (cdr particle) 12)
-                (aref (car particle) (cdr particle) 13)
-                (aref (car particle) (cdr particle) 14)))
+  (make-vector4 (aref (car particle) (cdr particle) 8)
+                (aref (car particle) (cdr particle) 9)
+                (aref (car particle) (cdr particle) 10)
+                (aref (car particle) (cdr particle) 11)))
 (defun (setf p-color) (color particle)
-  (setf (aref (car particle) (cdr particle) 11) (r color)
-        (aref (car particle) (cdr particle) 12) (g color)
-        (aref (car particle) (cdr particle) 13) (b color)
-        (aref (car particle) (cdr particle) 14) (a color)))
+  (setf (aref (car particle) (cdr particle) 8) (r color)
+        (aref (car particle) (cdr particle) 9) (g color)
+        (aref (car particle) (cdr particle) 10) (b color)
+        (aref (car particle) (cdr particle) 11) (a color)))
 
 ;; SIZE
 (defun p-size (particle)
-  (aref (car particle) (cdr particle) 15))
+  (aref (car particle) (cdr particle) 12))
 (defun (setf p-size) (new-size particle)
-  (setf (aref (car particle) (cdr particle) 15) new-size))
+  (setf (aref (car particle) (cdr particle) 12) new-size))
 
 ;;;
 ;;; Particle use functions
@@ -135,8 +138,7 @@
   (setf (p-energy particle) 
         (- (p-energy particle) (* (p-fade particle) dt)))
   (when (is-alive particle)
-    (setf (p-old-pos particle) (p-pos particle)
-          (p-pos particle) 
+    (setf (p-pos particle) 
           (vec3+ (p-pos particle)
                  (vec-scale3 (p-vel particle) dt))
           (p-vel particle) (vec3+ (p-vel particle) 

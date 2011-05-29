@@ -26,6 +26,9 @@
 
 (in-package :blackthorn3d-graphics)
 
+(defvar *gl-version*)
+(defvar *glsl-version*)
+
 ;; Tells draw methods to use their shadow vertex shader
 (defvar *use-shadow-shader* nil)
 (defvar *cam-view-matrix* (make-identity-matrix))
@@ -39,12 +42,18 @@
 (defvar *skinned-color* nil)
 
 (defun init-gfx ()
+  (format t "Initializing Graphics subsystem~%")
+  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
+  (setf *gl-version* (gl:major-version))
+  (setf *glsl-version* (gl:minor-version))
+
   (setf *particle-tex*
         (image->texture2d (load-image #p"res/images/round-particle1.png")))
 
   (setf *default-texture*
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 
+  ;; Init Skin Shader(s)
   (setf skin-shader
         (make-shader (blt3d-res:file-contents
                       (blt3d-res:resolve-resource 
@@ -53,8 +62,7 @@
                       (blt3d-res:resolve-resource
                        #p "res/shaders/texture-std.frag"))))
 
-  (enable-shader skin-shader)
-  (setf joint-indices-loc 
+   (setf joint-indices-loc 
         (gl:get-attrib-location skin-shader "jointIndices")
         
         joint-weights-loc
@@ -78,4 +86,3 @@
 
   (light-init)
   (billboard-init))
-

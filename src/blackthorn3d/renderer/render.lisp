@@ -43,50 +43,17 @@
 (defun init ()
   "Called to initialize the graphics subsystem"
   (format t "Initializing Rendering Subsystem~%")
-  (setf %gl:*gl-get-proc-address* #'sdl:sdl-gl-get-proc-address)
- 
- 
-  (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
-;  (setf *frustum* (make-frstm 1.0 1000.0 8/6 (/ pi 2)))
-  )
-
-
-(defun set-camera (cam)
-  (setf *main-cam* cam))
-
-(defvar *collide-mat* nil)
-
-(defun prepare-scene ()
-  "Called after sdl is initialized, before first frame is drawn
-   or when changing the 'scene' settings"
-  ;; Display our version #s
-  (format t "GL Version: ~a.~a~%GLSL Version: ~a.~a~%"
-          (gl:major-version) (gl:minor-version)
-          (gl:glsl-major-version) (gl:glsl-minor-version))
-  
-
   (init-gfx)
 
-  (gl:enable :texture-2d)
-  (gl:enable :blend)
-  (gl:blend-func :src-alpha :one-minus-src-alpha)
-  (gl:clear-color 0 0 0 0)
-  (gl:enable :depth-test :cull-face)
-  (gl:depth-func :lequal)
-
-
-  (setf *main-light* (make-light 'light
-                      :position (make-point3 0.0 5.0 0.0)))
+ 
+  (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
- ; #+disabled
   (let ((scientist-model 
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-           #p "res/models/player-3.dae"
-         ;  #p "res/models/SwordTextured.dae"
-           )))
+           #p "res/models/player-3.dae")))
         (epic-sword
          (blt3d-imp:dae-geometry
           (blt3d-imp:load-dae
@@ -99,25 +66,13 @@
 
     (attach-node-to-model (car (mesh-nodes *test-sword*))
                           "Bip003_R_Hand" *test-skele*)
-    (let ((node  (find-node "Bip003_R_Hand" *test-skele*)))
-      (format t "children of ~a node: ~a~%"
-              (id node)
-              (iter (for child in (child-nodes node))
-                    (collect (id child)))))
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     (apply-transform *test-skele*
-                     (make-translate #(0.0 -2.0 0.0 0.0)))
-    #+disabled
-    (apply-transform *test-sword* (make-scale #(0.008 0.008 0.008))))
+                     (make-translate #(0.0 -2.0 0.0 0.0))))
 
-  (set-viewport *main-viewport*)
-  (gl:matrix-mode :modelview)
-  (gl:load-identity)
-
-  (gl:enable :lighting)
-  (gl:enable :light0)
-  (gl:enable :rescale-normal)
+  (setf *main-light* (make-light 'light
+                      :position (make-point3 0.0 5.0 0.0)))
 
   (setf *test-ps* (create-particle-system 
                    (make-instance 'point-emitter
@@ -144,9 +99,6 @@
                                   :max-value (max-particles *test-ps*)
                                   :current-value 0)))
 
-  (setf *collide-mat* (make-blt-material :ambient #(0.5 0.0 0.0)
-                                         :diffuse #(1.0 0.0 0.0)))
-
   (setf *test-fbo* (make-framebuffer))
   (setf *render-tex* 
         (create-texture 960 720 :rgba
@@ -169,6 +121,41 @@
             (gl::enum= 
              (gl:check-framebuffer-status-ext :framebuffer-ext) 
              :framebuffer-complete-ext))))
+
+
+(defun set-camera (cam)
+  (setf *main-cam* cam))
+
+(defvar *collide-mat* nil)
+
+(defun prepare-scene ()
+  "Called after sdl is initialized, before first frame is drawn
+   or when changing the 'scene' settings"
+  ;; Display our version #s
+  (format t "GL Version: ~a.~a~%GLSL Version: ~a.~a~%"
+          (gl:major-version) (gl:minor-version)
+          (gl:glsl-major-version) (gl:glsl-minor-version))
+  
+
+  
+  (gl:enable :texture-2d)
+  (gl:enable :blend)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
+  (gl:clear-color 0 0 0 0)
+  (gl:enable :depth-test :cull-face)
+  (gl:depth-func :lequal)
+
+
+ 
+  (set-viewport *main-viewport*)
+  (gl:matrix-mode :modelview)
+  (gl:load-identity)
+
+  (gl:enable :lighting)
+  (gl:enable :light0)
+  (gl:enable :rescale-normal)
+
+  )
 
 
 
@@ -295,7 +282,7 @@
     (gl:bind-texture :texture-2d 0))
 
   ;; Lastly render the ui
-;  (render-ui)
+  (render-ui)
 
   (gl:flush)
   (sdl:update-display))

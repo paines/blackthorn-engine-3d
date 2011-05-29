@@ -150,7 +150,8 @@
                          (input->source (uri-indirect 
                                          (get-attribute "source" attribs))
                                         sources)
-                         (parse-integer (get-attribute "offset" attribs)))))))
+                         (aif (get-attribute "offset" attribs)
+                              (parse-integer it)))))))
 
 (defun input-by-semantic (semantic inputs)
   (second (find semantic inputs :key #'car)))

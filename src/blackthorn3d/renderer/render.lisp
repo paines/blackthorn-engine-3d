@@ -84,24 +84,32 @@
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-         ;  #p "res/models/Player2Rigged.dae"
-           #p "res/models/SwordTextured.dae"
-           ))))
+           #p "res/models/player-3.dae"
+         ;  #p "res/models/SwordTextured.dae"
+           )))
+        (epic-sword
+         (blt3d-imp:dae-geometry
+          (blt3d-imp:load-dae
+           #p "res/models/SwordTextured.dae"))))
     
     (setf *test-skele* (load-obj->models scientist-model))
-    (format t "SKELE: ~a~%" *test-skele*)
-    (format t "~2T skele nodes: ~a~%" (mesh-nodes *test-skele*))
-    (format t "~2T skele elements: ~a~%" 
-            (mesh-elements (mesh (car (mesh-nodes *test-skele*)))))
+    (setf *test-sword* (load-obj->models epic-sword))
+    (apply-transform *test-sword* +3dsmax-convert+)
+    (apply-transform *test-sword* (make-translate #(2.0 0.0 -22.0 1.0)))
+
+    (attach-node-to-model (car (mesh-nodes *test-sword*))
+                          "Bip003_R_Hand" *test-skele*)
+    (let ((node  (find-node "Bip003_R_Hand" *test-skele*)))
+      (format t "children of ~a node: ~a~%"
+              (id node)
+              (iter (for child in (child-nodes node))
+                    (collect (id child)))))
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
-    #+disabled
-    (apply-transform *test-skele* 
-                     (make-inv-ortho-basis (make-point3 -1.0 0.0 0.0)
-                                           (make-point3 0.0 0.0 1.0)
-                                           (make-point3 0.0 1.0 0.0)))
     (apply-transform *test-skele*
-                     (make-translate #(0.0 -2.0 0.0 0.0))))
+                     (make-translate #(0.0 -2.0 0.0 0.0)))
+    #+disabled
+    (apply-transform *test-sword* (make-scale #(0.008 0.008 0.008))))
 
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)

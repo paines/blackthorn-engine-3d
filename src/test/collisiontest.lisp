@@ -202,6 +202,15 @@
         (format t "~%ray-sphere result: ~a~%" result)
         (is (not (null result)))))
 
+(test ray-aabb-intersection
+      (let* ((ray (make-ray +origin+ +x-axis+))
+             (aabb (make-instance 'aa-bounding-box
+                                  :a-min (make-point3 2.0 -1.0 -2.0)
+                                  :a-max (make-point3 4.0 1.0 2.0)))
+             (result (ray-aabb-intersection ray aabb 100)))
+        (format t "~%ray-abb result: ~a~%" result)
+        (is (not (null result)))))
+
 (test sphere-edge-intersection
       (let* ((sphere (make-instance 'bounding-sphere
                                     :pos (make-point3 2.344 0.0 4.0)

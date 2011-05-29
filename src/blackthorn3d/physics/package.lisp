@@ -27,9 +27,10 @@
 
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
-  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent :blt3d-input)
+  (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
+        :blt3d-input :rectangles :spatial-trees-protocol)
   (:import-from :blt3d-ani :apply-transform)
-  (:shadow :search :delete)
+  (:shadow :search :delete :intersection)
   (:export
 
    ;; blt-mesh.lisp
@@ -112,7 +113,11 @@
    :sphere-edge-intersection
    :sphere-point-intersection
    :make-ray
-   :ray-sphere-intersection
+   :ray-d
+   :ray-e
+   :ray-sphere-intersection   
+   :ray-aabb-intersection
+   :ray-cast
    :make-plane
    :plane-dist
    :point-normal->plane
@@ -129,6 +134,7 @@
    :make-camera-relative-player-mover
    
    ;; skeleton.lisp
+   :joint
    :joint-id
    :joint-matrix
    :child-joints

@@ -72,7 +72,9 @@
     ))
 
 (defun jump (p)
-  (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+  (declare (ignore p))
+  ;(setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+  )
   
 (defun update-movement (an-entity dt)
   (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 
@@ -89,3 +91,9 @@
           (move-vec (vec-scale4 (move-player camera input-vec) (* 0.4 dt))))
       move-vec)))
     
+(defun make-stupid-jump-mover (client)
+  (lambda (an-entity dt)
+    (if (> (s-input-jump client) 0)
+      (vec-scale4 (vec-neg4 (up an-entity)) (* -2.0 dt *gravity-accel*))
+      +zero-vec+
+      )))

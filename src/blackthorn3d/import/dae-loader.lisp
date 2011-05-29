@@ -121,13 +121,15 @@
 (defun compile-skeleton (joint-arr root-node)
   (format t "root node: ~a~%" root-node)
   (labels ((skele-builder (root-node)
-             (let* ((joint-name (car (node-extra root-node)))
-                    (joint-obj (find joint-name ;(read-from-string joint-name)
+             (let* ((joint-id (car (node-extra root-node)))
+                    (joint-name (cadr (node-extra root-node)))
+                    (joint-obj (find joint-id
                                      joint-arr
                                      :key #'joint-id)))
-              ; (format t "joint-name: ~a  object~a~%" joint-name joint-obj)
+       
                ;; set initial local matrix
                (setf (joint-matrix joint-obj) (node-xform root-node))
+               (setf (id joint-obj) joint-name)
 
                ;; Add a mapping to *xform-mappings* so that animations
                ;; can find us!
@@ -175,7 +177,8 @@
           (let* ((mesh (mesh-list->blt-mesh 
                         #+disabled(list geom-id elements inputs)
                         (list geom-id 
-                              (duplicate-indices elements 0 2)
+                              elements
+                           ;   (duplicate-indices elements 0 2)
                               (append inputs skin-inputs))))
                  (found-node (find-root-node *scene-table*
                                              root-node)))
@@ -208,54 +211,57 @@
                                          geometry-table
                                          material-table))))
            (new-node
-            (progn   
-              (dae-debug "node ~a is of type ~a~%" id type)
-              (case type
-                (:portal
-                 (destructuring-bind (name bounding-volume)
-                     (compile-portal extra)
-                   (let* ((pos (matrix-multiply-v
-                                +3dsmax-convert+
-                                (matrix-multiply-v xform +origin+)))
-                          (dir (matrix-multiply-v
-                                +3dsmax-convert+
-                                (to-vec4 (norm4 pos)))))
-                     (format t "adding portal ~a~%" name)
-                     (push (list name pos dir 
-                                 (transform-bounding-volume
-                                  bounding-volume
-                                  +3dsmax-convert+)) 
-                           *portal-list*)
-                     ;; don't make a node for the portal??
-                     nil)))
-                (:geometry 
-                 (destructuring-bind (mesh materials) 
-                     (compile-geometry extra)
-                   (make-model-node :id id
-                                    :transform xform
-                                    :material-array materials
-                                    :mesh mesh
-                                    :child-nodes node-children)))
-                (:controller 
-                 (destructuring-bind (skin materials) 
-                     (compile-controller extra)
-                   (make-model-node :id id
-                                    :transform xform
-                                    :material-array materials
-                                    :mesh skin
-                                    :child-nodes node-children)))
-                (:parent
-                 (if (find-if-not #'null node-children)
-                     (progn
-                       (format t "parent ~a is saved!~%" id)
-                       (make-scene-node :id id
-                                        :transform xform
-                                        :child-nodes node-children))
-                     (format t "parent ~a is killed!~%" id)))
-                ;; anything else, we don't really care about much
-                (otherwise nil)))))
+             (case type
+               (:portal
+                (destructuring-bind (name bounding-volume)
+                    (compile-portal extra)
+                  (let* ((pos (matrix-multiply-v
+                               +3dsmax-convert+
+                               (matrix-multiply-v xform +origin+)))
+                         (dir (matrix-multiply-v
+                               +3dsmax-convert+
+                               (to-vec4 (norm4 pos)))))
+                    (format t "adding portal ~a~%" name)
+                    (push (list name pos dir 
+                                (transform-bounding-volume
+                                 bounding-volume
+                                 +3dsmax-convert+)) 
+                          *portal-list*)
+                    ;; don't make a node for the portal??
+                    nil)))
+               (:geometry 
+                (destructuring-bind (mesh materials) 
+                    (compile-geometry extra)
+                  (make-model-node :id id
+                                   :transform xform
+                                   :material-array materials
+                                   :mesh mesh
+                                   :child-nodes node-children)))
+               (:controller 
+                (destructuring-bind (skin materials) 
+                    (compile-controller extra)
+                  (make-model-node :id id
+                                   :transform xform
+                                   :material-array materials
+                                   :mesh skin
+                                   :child-nodes 
+                                   ;; add the skeleton root node 
+                                   ;; so we can do things with the joints
+                                   ;; later (in the application)
+                                   (cons (root-joint (bind-skeleton skin)) 
+                                         node-children))))
+               (:parent
+                (if (find-if-not #'null node-children)
+                    (progn
+                      (format t "parent ~a is saved!~%" id)
+                      (make-scene-node :id id
+                                       :transform xform
+                                       :child-nodes node-children))
+                    (format t "parent ~a is killed!~%" id)))
+               ;; anything else, we don't really care about much
+               (otherwise nil))))
 
-   ;   (format t "NODE ~a's transform: ~a~%" id xform)
+      (dae-debug "node ~a is of type ~a~%" id type)
 
       ;; Add an entry in *xform-mappings* for the animation pass
       (when new-node

@@ -100,12 +100,6 @@
                           (return (iter (for (key value) in-hashtable result)
                                         (collect (cons key value)))))))
 
-                  #+disabled
-                  (when (> count 4)
-                    (format t "~2Tcombined: ~a~%"
-                            pairs-lst)
-                    (setf pairs-lst ()))
-
                   (setf pairs-lst (sort pairs-lst #'> :key #'cdr))
                   (progn
                     (iter (for i below (- 4 (length pairs-lst)))
@@ -113,7 +107,6 @@
                   
                     
                     ;; normalize
-                    ;#+disabled
                     (let ((total 
                            (iter (for (index . weight) in pairs-lst)
                                  (for i below 4)
@@ -143,12 +136,14 @@
              (make-instance 'source
                             :array index-array
                             :stride 4
-                            :components '(i0 i1 i2 i3)))
+                            :components '(i0 i1 i2 i3))
+             0)
        (list :joint-weight
              (make-instance 'source
                             :array weight-array
                             :stride 4
-                            :components '(w0 w1 w2 w3)))))))
+                            :components '(w0 w1 w2 w3))
+             0)))))
 
 
 (defun process-controllers (controller-library)

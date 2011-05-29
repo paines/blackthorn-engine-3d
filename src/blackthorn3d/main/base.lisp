@@ -46,4 +46,3 @@
 ;; the room players land in when they first connect
 (defun make-start-sector (loaded-dae)
   (make-sector :start-sector loaded-dae))
-

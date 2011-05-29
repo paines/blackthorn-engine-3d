@@ -56,6 +56,9 @@
                  :id id
                  :inverse-bind-matrix inverse-bind-matrix
                  :transform joint-matrix
+                 :bounding-volume (make-instance 'bounding-sphere
+                                                 :rad 0.33
+                                                 :pos +origin+)
                  :child-nodes child-joints))
 
 (defun calc-joint-matrix (joint parent-matrix)
@@ -76,11 +79,12 @@
   "Updates the cached joint->model space matrices for each joint
   recursively starting at ROOT"
   (labels ((%update-r (joint parent-m)
-             (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
-             (iter (with joint-world = 
-                         (matrix-multiply-m parent-m (joint-matrix joint)))
-                   (for child-j in (child-joints joint))
-                   (%update-r child-j joint-world))))
+             (when (eql (find-class 'blt3d-phy:joint) (class-of joint))
+               (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
+               (iter (with joint-world = 
+                           (matrix-multiply-m parent-m (joint-matrix joint)))
+                     (for child-j in (child-joints joint))
+                     (%update-r child-j joint-world)))))
     (%update-r root (make-identity-matrix))))
 
 

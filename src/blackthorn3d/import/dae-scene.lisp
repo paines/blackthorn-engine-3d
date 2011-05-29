@@ -139,10 +139,12 @@
 (defun process-joint-node (node-tag)
   (let ((node-id (get-attribute "id" (attributes node-tag)))
         (joint-id (read-from-string 
-                   (get-attribute "sid" (attributes node-tag)))))
+                   (get-attribute "sid" (attributes node-tag))))
+        (joint-name
+          (get-attribute "name" (attributes node-tag))))
     (dae-debug "loading joint node: ~a with joint ~a~%" node-id joint-id)
     
-    (make-node node-id :joint *transform* (list joint-id) 
+    (make-node node-id :joint *transform* (list joint-id joint-name) 
                (iter (for node in (children-with-tag "node" node-tag))
                      (aif (process-node node)
                           (collect it))))))

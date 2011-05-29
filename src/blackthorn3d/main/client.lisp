@@ -97,8 +97,6 @@
 
   (init-client)
 
-  (blt3d-rend:init)       
-
   (setf *random-state* (make-random-state t))
 
   (unless (socket-client-connect host port :timeout 1.0)
@@ -112,6 +110,8 @@
       (sdl:window 960 720 :bpp 32 :flags sdl:sdl-opengl
                   :title-caption "Test" :icon-caption "Test")
       (blt3d-snd:init)
+      (blt3d-rend:init)       
+
       (blt3d-rend:prepare-scene)
 
       (blt3d-snd:make-sound :soundtrack :music #p"res/sound/music.mp3")

@@ -184,7 +184,7 @@
                           :depth-buffer-bit
                           :transform-bit)
 
-    (gl:disable :depth-test)
+    (gl:disable :depth-test :lighting)
     (gl:depth-func :always)
     (gl:blend-func :src-alpha :one-minus-src-alpha)
     (disable-shader)

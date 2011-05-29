@@ -66,11 +66,11 @@
 
 
       ;; Ray-test: Lets have the main character shoot out a ray
-      ;; every frame and see what it hits!
+      ;; every step and see what it hits!
+      #+disabled
       (aif (ray-cast (make-ray (pos target) (to-vec4 (dir target)))
                      t-sector)
-        ;   (format t "Ray hit something! dist: ~a~%" it)
-           )
+           (format t "Ray hit something! dist: ~a~%" it))
 
 
 

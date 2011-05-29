@@ -224,3 +224,8 @@
           (when (and hit (or (null min-hit) (< hit min-hit)))
             (setf min-hit hit))
           (finally (return min-hit)))))
+
+
+(defvar +standing-thresh+ 0.1)          ; 10 cm
+(defun standing-on-p (ent obj)
+  (< (ray-cast (make-ray (pos ent) (to-vec4 (dir ent))) obj)))

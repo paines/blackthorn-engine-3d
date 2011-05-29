@@ -121,6 +121,7 @@
    :make-plane
    :plane-dist
    :point-normal->plane
+   :standing-on-p
 
    ;; collision.lisp
    :collide-p

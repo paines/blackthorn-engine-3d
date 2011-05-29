@@ -28,7 +28,7 @@
 (defpackage :blackthorn3d-physics
   (:nicknames :blt3d-phy)
   (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
-        :rectangles :spatial-trees-protocol)
+        :blt3d-input :rectangles :spatial-trees-protocol)
   (:import-from :blt3d-ani :apply-transform)
   (:shadow :search :delete :intersection)
   (:export
@@ -131,6 +131,7 @@
    :jump
    :standard-physics-step
    :gravity-mover
+   :make-camera-relative-player-mover
    
    ;; skeleton.lisp
    :joint

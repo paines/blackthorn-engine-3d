@@ -26,7 +26,7 @@
 (in-package :blackthorn3d-physics)
 
 (defvar *velocity-threshold-squared* 0.02)
-(defvar *gravity-accel* 0.0)
+(defvar *gravity-accel* 0.02)
 
 (defun move-component (thing x y z)
   (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
@@ -40,7 +40,7 @@
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
    
 ; crappy old hacked up way of doing it   
-;#+disabled
+#+disabled
 (defun standard-physics-step (self)
   (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
                              (velocity self))))
@@ -56,16 +56,25 @@
     (move-vec self movement-vec)
     ))
     
+(defvar *hackity-hack__lookup-sector* nil)
+(defvar *hackity-hack__collide-sector* (lambda (&rest whatever) (declare (ignore whatever)) nil))
+
 ; this will be the real one eventually
-#+disabled
+;#+disabled
 (defun standard-physics-step (self)
   (let ((movement-vector (update-movement self 1)))
     (setf (velocity self) movement-vector)
-    (setf (pos self) (vector-sum (list (pos self) (velocity self))))
+    ;(setf (pos self) (vector-sum (list (pos self) (velocity self))))
+    
+    (let ((t-sector (funcall *hackity-hack__lookup-sector* (current-sector self))))
+      (move-vec self
+        (funcall *hackity-hack__collide-sector* self t-sector)))
     ))
 
 (defun jump (p)
-  (setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+  (declare (ignore p))
+  ;(setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
+  )
   
 (defun update-movement (an-entity dt)
   (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 
@@ -73,3 +82,18 @@
 
 (defun gravity-mover (an-entity dt)
   (vec-scale4 (vec-neg4 (up an-entity)) (* dt *gravity-accel*)))
+
+;; need to correct for orientation, most likely
+(defun make-camera-relative-player-mover (client camera)
+  (lambda (an-entity dt)
+    (let* ((input-vec (vector (s-input-move-x client) 
+                             (s-input-move-y client)))
+          (move-vec (vec-scale4 (move-player camera input-vec) (* 0.4 dt))))
+      move-vec)))
+    
+(defun make-stupid-jump-mover (client)
+  (lambda (an-entity dt)
+    (if (> (s-input-jump client) 0)
+      (vec-scale4 (vec-neg4 (up an-entity)) (* -2.0 dt *gravity-accel*))
+      +zero-vec+
+      )))

@@ -51,12 +51,11 @@
            (c-sector (lookup-sector (current-sector c)))
            (t-sector (lookup-sector (current-sector target))))
 
-      (setf (velocity target) move-vec)
+      ;(setf (velocity target) move-vec)
 
+      (setf blt3d-phy::*hackity-hack__lookup-sector* #'lookup-sector)
+      (setf blt3d-phy::*hackity-hack__collide-sector* #'collide-sector)
       (standard-physics-step target)
-
-      (blt3d-phy::move-vec target
-       (collide-sector target t-sector))
 
       ;; And we do the sector check here:
       (collide-sector-portals target t-sector)
@@ -192,6 +191,9 @@
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
+        (push (make-camera-relative-player-mover new-client camera) 
+              (movers the-new-player))
+        
         (message-send :broadcast (make-event :entity-create))
         (message-send new-client (make-event :camera :camera camera))
         #+disabled

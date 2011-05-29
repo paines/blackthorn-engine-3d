@@ -78,6 +78,14 @@
                                                (:file "entity")
                                                (:file "event"))
                                               :serial t)
+                                     (:module input
+                                              :components
+                                              ((:file "package")
+                                               (:file "input-control")
+                                               (:file "server-control")
+                                               #+(or win32 windows)
+                                               (:file "xbox360"))
+                                              :serial t)
                                      (:module physics
                                               :components
                                               ((:file "package")
@@ -138,14 +146,7 @@
                                                (:file "scene-manager")
                                                (:file "render"))
                                               :serial t)
-                                     (:module input
-                                              :components
-                                              ((:file "package")
-                                               (:file "input-control")
-                                               (:file "server-control")
-                                               #+(or win32 windows)
-                                               (:file "xbox360"))
-                                              :serial t)
+                                     
                                      (:module sound
                                               :components
                                               ((:file "package")

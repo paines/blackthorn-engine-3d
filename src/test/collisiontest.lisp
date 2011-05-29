@@ -203,12 +203,21 @@
         (is (not (null result)))))
 
 (test ray-aabb-intersection
-      (let* ((ray (make-ray +origin+ +x-axis+))
+      (let* ((ray (make-ray (make-point3 0.0 0.0 7.6) (vec-neg4 +z-axis+)))
              (aabb (make-instance 'aa-bounding-box
-                                  :a-min (make-point3 2.0 -1.0 -2.0)
-                                  :a-max (make-point3 4.0 1.0 2.0)))
+                                  :a-min (make-point3 -3.5 -10.0 0.0)
+                                  :a-max (make-point3 3.5 10.0 0.0)))
              (result (ray-aabb-intersection ray aabb 100)))
-        (format t "~%ray-abb result: ~a~%" result)
+        (format t "~%ray-aabb result: ~a~%" result)
+        (is (not (null result)))))
+
+(test ray-rect-intersection
+      (let* ((ray (make-ray (make-point3 0.0 0.0 7.6) (vec-neg4 +z-axis+)))
+             (lows '(-3.75 -10.0 0.0))
+             (highs '(3.75 10.0 0.0))
+             (rect (spatial-trees-impl::make-rectangle :lows lows :highs highs))
+             (result (blt3d-phy::ray-rect-intersection ray rect)))
+        (format t "~%ray-rect result: ~a~%" result)
         (is (not (null result)))))
 
 (test sphere-edge-intersection

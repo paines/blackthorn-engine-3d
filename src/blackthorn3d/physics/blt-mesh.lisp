@@ -79,6 +79,7 @@
           bind-shape-matrix bind-matrix))
   mesh)
 
+;; makes a vertex array of the bind pose...
 (defmethod bind-pose->vert-array ((this blt-skin))
   (labels ((get-vert-attrib (semantic data)
              (second (find semantic data :key #'car))))
@@ -221,16 +222,19 @@
 
 
 (defmethod find-node ((obj string) (node node))
+  (format t "find-node visiting ~a~%" (id node))
   (if (equal obj (id node))
-      node
+      (progn (format t "Found it!~%") node)
       (iter (for child in (child-nodes node))
-            (find-node obj child))))
-
+            (for result =
+                 (find-node obj child))
+            (until result)
+            (finally (return result)))))
 
 (defmethod attach-node ((obj node) (node node))
+  (format t "Attaching ~a to ~a~%" (id obj) (id node))
   (setf (node-bounding-volume node)
         (combine-bounding-spheres
-         (node-bounding-volume node)
-         (node-bounding-volume obj)))
+         (list (node-bounding-volume node)
+               (node-bounding-volume obj))))
   (push obj (child-nodes node)))
-

@@ -86,6 +86,7 @@
                                                (:file "blt-model")
                                                (:file "camera")
                                                (:file "intersect")
+                                               (:file "ray-trace")
                                                (:file "static-collision")
                                                (:file "collision")
                                                (:file "motion")

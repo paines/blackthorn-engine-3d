@@ -268,6 +268,13 @@
               (setf (current-sector obj) 
                     (sector-id (links-to-sector portal))))))))
 
+(defmethod ray-cast (ray (a-sector sector))
+  (let ((x-ray (make-ray (transform-to-sector (ray-e ray) a-sector)
+                         (transform-to-sector (ray-d ray) a-sector))))
+    (with-slots (geometry) a-sector
+      (format t "~%top lvl: Tracing Ray: ~a~%" ray)
+      (ray-cast x-ray geometry))))
+
 
 
 ;; where the heck should this method go???

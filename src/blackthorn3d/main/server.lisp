@@ -65,6 +65,16 @@
                  (or (/= 0.0 (x input-vec)) (/= 0.0 (y input-vec))))
         (setf (dir target) (norm4 move-vec)))
 
+
+      ;; Ray-test: Lets have the main character shoot out a ray
+      ;; every frame and see what it hits!
+      (aif (ray-cast (make-ray (pos target) (to-vec4 (dir target)))
+                     t-sector)
+           (format t "Ray hit something! dist: ~a~%" it))
+
+
+
+
       (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                              (s-input-view-y client)))
 

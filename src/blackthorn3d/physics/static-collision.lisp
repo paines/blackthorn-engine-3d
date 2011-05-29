@@ -237,11 +237,6 @@
           (matrix-multiply-v inv-mat velocity)))
 
   
-   #+disabled
-   (format t "Sphere @ node ~a: ~a~%" 
-            (id node)
-            (pos sphere))
-
     (transform-hit (transform node)
      (min-collide
       (append

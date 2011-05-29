@@ -54,13 +54,15 @@
 ;; We will need the capability to add/remove nodes
 (defmethod find-node (obj (model blt-model))
   (iter (for node in (mesh-nodes model))
-        (when (find-node obj node)
-          (return-from find-node node))))
+        (aif (find-node obj node)
+          (return-from find-node it))))
 
 (defmethod attach-node-to-model ((new-node node) 
                                  (node-id string) 
                                  (model blt-model))
-  (attach-node new-node (find-node node-id model)))
+  (format t "~%ATTACHING node to model at node ~a~%" node-id)
+  (aif (find-node node-id model)
+       (attach-node new-node it)))
 
 (defmethod detach-node-from-model ((node-id string) (model blt-model))
   (labels ((detach-helper (id node)

@@ -33,95 +33,150 @@
 (defvar *bill-screen-normal* (vec-neg4 +z-axis+))
 (defvar *bill-eye-pos* +origin+)
 (defvar *bill-eye-up* +y-axis+)
+(defvar *bill-eye-right* +x-axis+)
 (defvar *bill-world-up* +y-axis+)
 
 (defvar *billboard-shader* nil)
+(defvar *billboard-world-shader* nil)
+(defvar *billboard-vel-shader* nil)
 (defvar *right-loc* nil)
 (defvar *up-loc* nil)
-(defvar *size-loc* nil)
+(defvar *size1-loc* nil)
+(defvar *size2-loc* nil)
 
 
 (defun billboard-init ()
-   (setf *billboard-shader*
+  (format t "Loading billboard-shader:~%")
+  (setf *billboard-shader*
         (make-shader (blt3d-res:file-contents
                       (blt3d-res:resolve-resource 
                        #p "res/shaders/billboard-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
-                       #p "res/shaders/billboard-shader.frag"))))
-   #+disabled
-   (progn
-     (setf *right-loc*
-           (gl:get-uniform-location
-            *billboard-shader*
-            "right"))
-     (setf *up-loc*
-           (gl:get-uniform-location
-            *billboard-shader*
-            "up"))
-     (setf *size-loc*
-           (gl:get-uniform-location
-            *billboard-shader*
-            "size"))))
+                       #p "res/shaders/billboard-shader.frag"))
+                     :uniforms '("size")))
+
+  (format t "Loading billboard-world-shader:~%")
+  (setf *billboard-world-shader* 
+        (make-shader (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource 
+                       #p "res/shaders/billboard-world-shader.vert"))
+                     (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource
+                       #p "res/shaders/billboard-shader.frag"))
+                     :uniforms '("size" "right" "up")))
+
+  (format t "Loading billboard-vel-shader:~%")
+  (setf *billboard-vel-shader* 
+        (make-shader (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource 
+                       #p "res/shaders/billboard-vel-shader.vert"))
+                     (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource
+                       #p "res/shaders/billboard-shader.frag"))
+                     :uniforms '("size")
+                     :attributes '("velocity")))
+  
+
+  #+disabled
+  (progn
+    (setf *size1-loc*
+        (gl:get-uniform-location
+         *billboard-shader*
+         "size"))
+    (setf *right-loc*
+          (gl:get-uniform-location
+           *billboard-world-shader*
+           "right"))
+    (setf *up-loc*
+          (gl:get-uniform-location
+           *billboard-world-shader*
+           "up"))
+    (setf *size2-loc*
+          (gl:get-uniform-location
+           *billboard-world-shader*
+           "size"))))
 
 (defun update-billboarder (eye-pos eye-dir eye-up world-up)
   (setf *bill-eye-pos* eye-pos
-        *bill-eye-up* (cross (norm4 (cross eye-up eye-dir)) eye-dir)
+        *bill-eye-right* (norm4 (cross eye-dir eye-up))
+        *bill-eye-up* (cross *bill-eye-right*  eye-dir)
         *bill-screen-normal* eye-dir
         *bill-world-up* world-up))
 
-(defun draw-billboard-quad (pos size-x size-y texture alignment
-                            &rest rest)
-  (use-texture texture)
-  (let (surface-normal
-        surface-up
-        surface-right
-        (s1 (* size-x 0.5))
-        (s2 (* size-y 0.5)))
-    (case alignment
-      (:screen
-       (setf surface-normal (vec-neg4 *bill-screen-normal*)
-             surface-up     *bill-eye-up*
-             surface-right  (cross surface-normal surface-up)))
-      (:world
-       (setf surface-normal (vec-neg4 *bill-screen-normal*)
-             surface-right  (norm4 (cross surface-normal *bill-world-up*))
-             surface-up     (cross surface-right surface-normal)))
-      (:axis
-       (destructuring-bind (axis &rest dc) rest
-         (setf surface-up axis
-               surface-right (norm4 (cross *bill-screen-normal* surface-up))
-               surface-normal (cross surface-up surface-normal)))))
-    (gl:with-pushed-matrix
-      (gl:translate (x pos) (y pos) (z pos))
-      (gl:mult-matrix (make-inv-ortho-basis surface-right 
-                                            surface-up 
-                                            surface-normal))
-    
-      (gl:with-primitives :quads
+(defun setup-shader (align axis size-x size-y)
+  (case align
+    (:screen (enable-shader *billboard-shader*)
+             (set-uniform "size" (vector size-x size-y)))
 
-        (gl:tex-coord 0.0 0.0)
-        (gl:vertex (- s1) (- s2) 0.0)
-        
-        (gl:tex-coord 1.0 0.0)
-        (gl:vertex s1 (- s2) 0.0)
-        
-        (gl:tex-coord 1.0 1.0)
-        (gl:vertex s1 s2 0.0)
+    (:world
+     (enable-shader *billboard-world-shader*)
+     (let* ((surface-normal (vec-neg4 *bill-screen-normal*))
+            (surface-right *bill-eye-right*)
+            (surface-up (cross surface-normal surface-right)))
+       (set-uniform "right"
+                    (to-vec4 surface-right))
+       (set-uniform "up"
+                    (to-vec4 surface-up)))
+     (set-uniform  "size" (vector size-x size-y)))
 
-        (gl:tex-coord 0.0 1.0)
-        (gl:vertex (- s1) s2 0.0)))))
+    (:axis
+     (enable-shader *billboard-world-shader*)
+     (let* ((surface-up axis)
+            (surface-right (norm4 (cross *bill-screen-normal* axis))))
+       (set-uniform "right"
+                    (to-vec4 surface-right))
+       (set-uniform  "up"
+                    (to-vec4 surface-up)))
+     (set-uniform "size" (vector size-x size-y)))
 
+    (:velocity
+     (enable-shader *billboard-vel-shader*)
+     (set-uniform "size" (vector size-x size-y)))))
 
+(defun draw-billboard-quad (pos size-x size-y texture color
+                            &optional (align :screen) axis)
+  (setup-shader align axis size-x size-y)
+  (use-texture texture)    
+  (gl:color (r color) (g color) (b color) (a color))
+  (gl:with-primitives :quads
+      
+    (gl:tex-coord 0.0 0.0)
+    (gl:vertex (x pos) (y pos) (z pos))
+      
+    (gl:tex-coord 1.0 0.0)
+    (gl:vertex (x pos) (y pos) (z pos))
+      
+    (gl:tex-coord 1.0 1.0)
+    (gl:vertex (x pos) (y pos) (z pos))
 
-(defun render-particles (particles count num-alive texture)
-  (enable-shader *billboard-shader*)
-  (gl:enable :texture-2d)
-  (gl:bind-texture :texture-2d texture)
-  (gl:with-pushed-attrib (:depth-buffer-bit)    
-    (gl:enable-client-state :vertex-array)
-    (gl:enable-client-state :texture-coord-array)
-    
+    (gl:tex-coord 0.0 1.0)
+    (gl:vertex (x pos) (y pos) (z pos))))
+
+(defun draw-particles (particles count num-alive)
+  (gl:with-primitive :quads
+    (iter (for i below count)
+          (for particle = (cons particles i))
+          (count (is-alive particle) into alive-cnt)
+          (while (< alive-cnt num-alive))
+          (when (is-alive particle)
+            (let ((pos (p-pos particle))
+                  (color (p-color particle)))
+
+              (gl:color (r color) (g color) (b color)
+                        (* (p-energy particle) (a color)))
+
+              (gl:tex-coord 0.0 0.0)
+              (gl:vertex (x pos) (y pos) (z pos))                
+              (gl:tex-coord 1.0 0.0)
+              (gl:vertex (x pos) (y pos) (z pos))
+              (gl:tex-coord 1.0 1.0)
+              (gl:vertex (x pos) (y pos) (z pos))
+              (gl:tex-coord 0.0 1.0)
+              (gl:vertex (x pos) (y pos) (z pos)))))))
+
+(defun draw-v-particles (particles count num-alive)
+  (let ((vel-place (get-attribute-loc *billboard-vel-shader* "velocity")))
     (gl:with-primitive :quads
       (iter (for i below count)
             (for particle = (cons particles i))
@@ -129,24 +184,42 @@
             (while (< alive-cnt num-alive))
             (when (is-alive particle)
               (let ((pos (p-pos particle))
-                    (color (p-color particle)))
-
+                    (color (p-color particle))
+                    (vel (p-vel particle)))
 
                 (gl:color (r color) (g color) (b color)
                           (* (p-energy particle) (a color)))
 
                 (gl:tex-coord 0.0 0.0)
                 (gl:vertex (x pos) (y pos) (z pos))
+                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
                 
                 (gl:tex-coord 1.0 0.0)
                 (gl:vertex (x pos) (y pos) (z pos))
+                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
 
                 (gl:tex-coord 1.0 1.0)
                 (gl:vertex (x pos) (y pos) (z pos))
+                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
 
                 (gl:tex-coord 0.0 1.0)
                 (gl:vertex (x pos) (y pos) (z pos))
-                )))))
+                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))))))))
+
+(defun render-particles (particles count num-alive texture size
+                         &optional (align :screen) axis)
+  
+  (setup-shader align axis size size)
+  
+  (gl:enable :texture-2d)
+  (gl:bind-texture :texture-2d texture)
+  (gl:with-pushed-attrib (:depth-buffer-bit)   
+  ;  (gl:enable-client-state :vertex-array)
+ ;   (gl:enable-client-state :texture-coord-array)
+    
+    (case align
+      (:velocity (draw-v-particles particles count num-alive))
+      (otherwise (draw-particles particles count num-alive))))
 
   (use-texture 0)
   (disable-shader))

@@ -61,6 +61,14 @@
 
 
    ;; texture.lisp
+   
+   :+white+
+   :+black+
+   :+red+
+   :+green+
+   :+blue+
+   :+orange+
+   :+aqua+ 
    :load-image
    :image->texture2d
    :create-texture
@@ -104,6 +112,8 @@
    :update-ps
    :render-ps
    :create-particle-system
+   :create-explosion-ps
+   :create-spark-ps
    :point-emitter  
    
    ;; billboards.lisp

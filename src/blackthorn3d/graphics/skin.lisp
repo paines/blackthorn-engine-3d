@@ -83,7 +83,7 @@
                         :ambient #(1.0 1.0 1.0 1.0)
                         :diffuse #(1.0 1.0 1.0 1.0)))
 
-;#+disabled
+
 (defmethod draw-object ((this skin))
   (with-slots (vert-data elements bind-skeleton bind-shape-matrix)
       this
@@ -107,7 +107,6 @@
                          (skele-drawer c))))))
 
       (use-material bone-mat)
-      ;#+disabled
       (let ((joint-mats (get-joint-matrices bind-skeleton)))
         (iter (for mat in-vector joint-mats)
               (gl:with-pushed-matrix
@@ -115,7 +114,6 @@
                 (gl:with-primitives :points
                   (gl:vertex 0.0 0.0 0.0)))))
 
-      ;;  #+disabled
       (skele-drawer (root-joint bind-skeleton)))
 
    ; #+disabled
@@ -124,8 +122,10 @@
       (gl:enable-client-state :vertex-array)
       (gl:enable-client-state :normal-array)
       (gl:enable-client-state :texture-coord-array)
-      (gl::enable-vertex-attrib-array joint-indices-loc)
-      (gl::enable-vertex-attrib-array joint-weights-loc))
+      (gl::enable-vertex-attrib-array 
+       joint-indices-loc)
+      (gl::enable-vertex-attrib-array
+       joint-weights-loc))
  
 
     ;#+disabled
@@ -143,5 +143,4 @@
                                     (car (element-material elt)))))
               (gl:draw-elements :triangles (element-indices elt)))
           
-        (gl::disable-vertex-attrib-array joint-indices-loc)
-        (gl::disable-vertex-attrib-array joint-weights-loc)))))
+        (disable-attributes skin-shader)))))

@@ -60,16 +60,18 @@
                        #p "res/shaders/skin-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
-                       #p "res/shaders/texture-std.frag"))))
+                       #p "res/shaders/texture-std.frag"))
+                     :attributes '("jointIndices" "jointWeights")
+                     :uniforms '("jointMats")))
 
-   (setf joint-indices-loc 
-        (gl:get-attrib-location skin-shader "jointIndices")
+  (setf joint-indices-loc 
+        (get-attribute-loc skin-shader "jointIndices")
         
         joint-weights-loc
-        (gl:get-attrib-location skin-shader "jointWeights")
+        (get-attribute-loc skin-shader "jointWeights")
         
         joint-mats-loc
-        (gl:get-uniform-location skin-shader "jointMats"))
+        (get-uniform-loc skin-shader "jointMats"))
 
   (setf *standard-tex*
         (make-shader (blt3d-res:file-contents
@@ -77,10 +79,11 @@
                        #p "res/shaders/texture-std.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
-                       #p "res/shaders/texture-std.frag"))))
+                       #p "res/shaders/texture-std.frag"))
+                     :uniforms '("tex")))
 
   (setf mesh-shader *standard-tex*)
-
+  #+disabled
   (setf *tex-loc*
         (gl:get-uniform-location *standard-tex* "tex"))
 

@@ -33,7 +33,18 @@
 ;; Global shader (should always be the one that's bound
 (defvar *shader* nil)
 
-(defun make-shader (vert frag) 
+(defclass shader ()
+  ((program
+    :reader program
+    :initarg :program)
+   (uniforms
+    :reader uniforms
+    :initarg :uniforms)
+   (attributes
+    :reader attributes
+    :initarg :attributes)))
+
+(defun make-shader (vert frag &key uniforms attributes) 
   "@arg[vert]{string of vert shader}
    @arg[frag]{string of frag shader}
    @return{the shader program}"
@@ -52,11 +63,47 @@
     (gl:attach-shader shader vs)
     (gl:attach-shader shader fs)
     (gl:link-program shader)
-    shader))
+
+    (make-instance 'shader
+                   :program shader
+                   :uniforms 
+                   (iter (for u in uniforms)
+                         (collect 
+                          (cons u
+                                (gl:get-uniform-location
+                                 shader u))))
+                   :attributes 
+                   (iter (for a in attributes)
+                         (collect
+                          (cons a
+                                (gl:get-attrib-location
+                                 shader a)))))))
+
+(defun set-uniform (uniform value)
+  (let ((place (cdr (assoc uniform (uniforms *shader*) :test #'equal))))
+    (apply #'gl:uniformf
+           place
+           (if (arrayp value)
+               (concatenate 'list value)
+               value))))
+
+(defun enable-attributes (shader)
+  (iter (for (a . loc) in (attributes shader))
+        (gl::enable-vertex-attrib-array loc)))
+
+(defun disable-attributes (shader)
+  (iter (for (a . loc) in (attributes shader))
+        (gl::disable-vertex-attrib-array loc)))
+
+(defun get-attribute-loc (shader attribute)
+   (cdr (assoc attribute (attributes shader) :test #'equal)))
+
+(defun get-uniform-loc (shader uniform)
+  (cdr (assoc uniform (uniforms shader) :test #'equal)))
 
 (defun enable-shader (shader) 
   (setf *shader* shader)
-  (gl:use-program shader))
+  (gl:use-program (program shader)))
 
 (defun disable-shader () 
   (setf *shader* nil)

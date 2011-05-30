@@ -74,7 +74,37 @@
   (setf *main-light* (make-light 'light
                       :position (make-point3 0.0 5.0 0.0)))
 
-  (setf *test-ps* (create-particle-system 
+  (setf *test-ps* 
+        #+disabled
+        (create-spark-ps
+         (make-instance 'point-emitter
+                        :pos (make-point3 0.0 -1.7 0.0)
+                        :dir +y-axis+
+                        :up +y-axis+
+                        :angle (* 2 pi);(/ pi 6)
+                        :speed 8)
+         100
+         :size 0.01
+         :lifetime 0.2
+         :color +orange+
+         :drag-coeff 8.5)
+
+       ; #+disabled
+        (create-explosion-ps 
+         (make-instance 'point-emitter
+                        :pos (make-point3 0.0 -1.7 0.0)
+                        :dir +y-axis+
+                        :up +y-axis+
+                        :angle (* 2 pi);(/ pi 6)
+                        :speed '(8.0 . 16.0 ))
+         300
+         :lifetime 2.0
+         :gravity (vec-neg4 +y-axis+)
+         :grav-coeff 3.5
+         :drag-coeff 4.0)
+
+        #+disabled
+        (create-particle-system 
                    (make-instance 'point-emitter
                                   :pos (make-point3 0.0 -1.7 0.0)
                                   :dir +y-axis+

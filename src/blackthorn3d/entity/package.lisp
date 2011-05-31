@@ -50,7 +50,8 @@
    :remove-entity
    :forget-server-entity-changes
    :current-sector
-   :movers
+   :forces
+   :displacers
    :transform-entity
 
    ;; event.lisp

@@ -76,8 +76,11 @@
     :accessor velocity
     :initarg :velocity
     :initform blt3d-math:+zero-vec+)
-   (movers
-    :accessor movers
+   (displacers
+    :accessor displacers
+    :initform nil)
+   (forces
+    :accessor forces
     :initform nil)
    (bounding-volume
     :accessor bounding-volume

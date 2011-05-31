@@ -26,13 +26,23 @@
 (in-package :blackthorn3d-physics)
 
 (defvar *velocity-threshold-squared* 0.02)
-(defvar *gravity-accel* 0.02)
+(defvar *gravity-accel* 0.002)
 
 (defun move-component (thing x y z)
   (setf (pos thing) (vec4+ (pos thing) (make-vec3 x y z))))
   
 (defun move-vec (thing vec)
   (setf (pos thing) (vec4+ (pos thing) vec)))
+  
+(defun add-velocity (an-entity v)
+  (setf (velocity an-entity) (vector-sum (list (velocity an-entity) v))))
+  
+(defun set-velocity (an-entity v)
+  (setf (velocity an-entity) v))
+  
+(defun move-and-set-velocity (an-entity v)
+  (set-velocity an-entity v)
+  (move-vec an-entity v))
   
 (defun chase (self who speed)
   (let ((direction (norm4 (vec4- (pos who) (pos self)))))
@@ -59,16 +69,29 @@
 (defvar *hackity-hack__lookup-sector* nil)
 (defvar *hackity-hack__collide-sector* (lambda (&rest whatever) (declare (ignore whatever)) nil))
 
+(defun collide-displace (an-entity vector sector)
+  (let ((old-velocity (velocity an-entity))
+        (result nil))
+    (add-velocity an-entity vector)
+    (setf result (funcall *hackity-hack__collide-sector* an-entity sector))
+    (setf (velocity an-entity) old-velocity)
+    result))
+
 ; this will be the real one eventually
 ;#+disabled
 (defun standard-physics-step (self)
-  (let ((movement-vector (update-movement self 1)))
-    (setf (velocity self) movement-vector)
-    ;(setf (pos self) (vector-sum (list (pos self) (velocity self))))
+  (let* ((t-sector (funcall *hackity-hack__lookup-sector* (current-sector self)))
+         (force-vector    (force-step self 1))
+         (displace-vector (displace-step self 1))
+         (old-velocity (velocity self))
+        )
     
-    (let ((t-sector (funcall *hackity-hack__lookup-sector* (current-sector self))))
-      (move-vec self
-        (funcall *hackity-hack__collide-sector* self t-sector)))
+    (setf (velocity self) (vector-sum (list force-vector old-velocity)))
+    (move-and-set-velocity self
+        (funcall *hackity-hack__collide-sector* self t-sector))
+    (move-vec self
+        (collide-displace self displace-vector t-sector))
+    
     ))
 
 (defun jump (p)
@@ -76,12 +99,16 @@
   ;(setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
   )
   
-(defun update-movement (an-entity dt)
+(defun force-step (an-entity dt)
   (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 
-                   (movers an-entity))))
+                   (forces an-entity))))
+                   
+(defun displace-step (an-entity dt)
+  (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 
+                   (displacers an-entity)))) 
 
-(defun gravity-mover (an-entity dt)
-  (vec-scale4 (vec-neg4 (up an-entity)) (* dt *gravity-accel*)))
+(defun make-gravity-mover () (lambda (an-entity dt)
+  (vec-scale4 (vec-neg4 (up an-entity)) (* dt *gravity-accel*))))
 
 ;; need to correct for orientation, most likely
 (defun make-camera-relative-player-mover (client camera)
@@ -108,6 +135,6 @@
   (lambda (an-entity dt)
     (if (and (> (s-input-jump client) 0)
              (standing-on-jumpable-p an-entity))
-      (vec-scale4 (vec-neg4 (up an-entity)) (* -100.0 dt *gravity-accel*))
+      (vec-scale4 (vec-neg4 (up an-entity)) (* -25.0 dt *gravity-accel*))
       +zero-vec+
       )))

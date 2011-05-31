@@ -51,9 +51,8 @@
   ;; TODO: Do it.
   )
 
-(defun handle-camera-client (src camera-event)
-  (let ((camera (camera-event-camera camera-event)))
-    (blt3d-rend:set-camera camera)))
+(defun handle-camera-client (src camera)
+  (blt3d-rend:set-camera camera))
 
 (defun handle-message-client (src message)
   (ecase (message-type message)

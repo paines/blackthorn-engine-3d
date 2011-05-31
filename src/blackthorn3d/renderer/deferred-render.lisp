@@ -218,7 +218,9 @@
   (gl:load-identity)
 
   (iter (for light in lights)
-        (use-light light :light0)
+        (gl:with-pushed-matrix
+            (gl:load-matrix *cam-view-matrix*)
+          (use-light light :light0))
         (let* ((z-near (frstm-near (view-frustum *main-viewport*)))
                (world-width (* z-near
                                (tan (* 0.5 (view-fov *main-viewport*)))))
@@ -307,7 +309,7 @@
   (gl:load-identity)
 
   (gl:color 1 1 1)
- ; (enable-shader *depth-shader*)
+  (enable-shader *depth-shader*)
  ; (gl:uniformi (gl:get-uniform-location (program *depth-shader*) "tex") 0)
   (gl:enable :texture-2d)
   (gl:disable :lighting)

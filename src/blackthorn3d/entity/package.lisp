@@ -56,8 +56,7 @@
 
    ;; event.lisp
    :make-event
-   :input-type
-   :input-amount
-   :camera-event-camera
+   :send-input
+   :send-camera
 
    ))

@@ -81,7 +81,7 @@
   (with-slots (vert-data elements primitive-type) m
   ;  (format t "drawing mesh~%")
     
-  ;  (enable-shader mesh-shader)
+    (unless *disable-shading* (enable-shader mesh-shader))
   
     (gl:enable-client-state :vertex-array)
     (gl:enable-client-state :normal-array)

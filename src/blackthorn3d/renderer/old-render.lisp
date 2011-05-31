@@ -106,7 +106,7 @@
   ;; DO PARTICLES YEAH!
                                         ; (gl:blend-func :src-alpha :one)  
                                         ; (gl:depth-mask nil)
-  #+disabled
+ ; #+disabled
   (when *test-ps*
     (render-ps *test-ps*))
 

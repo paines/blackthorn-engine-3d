@@ -57,12 +57,13 @@
                           :format :depth-component))
     (setf *normal-buffer*
           (create-texture *screen-width* *screen-height*
-                          :rgb16
+                          :rgba16f
                           :min-filter :nearest
                           :mag-filter :nearest
                           :wrap-s :clamp
                           :wrap-t :clamp
-                          :format :rgb))
+                          :format :rgba
+                          :type :float))
     (gl:bind-framebuffer-ext :framebuffer-ext (fbo framebuffer))
 
     ;; Attach the depth buffer
@@ -164,7 +165,7 @@
 
   (gl:clear :color-buffer-bit  :depth-buffer-bit)
    
-  (let ((mesh-shader *pre-z-shader*))
+  (let ((*disable-shading* t))
     (enable-shader *pre-z-shader*)
     
     ;; Draw objects

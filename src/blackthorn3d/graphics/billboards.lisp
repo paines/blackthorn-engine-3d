@@ -177,6 +177,7 @@
 
 (defun draw-v-particles (particles count num-alive)
   (let ((vel-place (get-attribute-loc *billboard-vel-shader* "velocity")))
+ ;   (gl:disable :rescale-normal)
     (gl:with-primitive :quads
       (iter (for i below count)
             (for particle = (cons particles i))
@@ -191,20 +192,26 @@
                           (* (p-energy particle) (a color)))
 
                 (gl:tex-coord 0.0 0.0)
+                (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
-                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
+;                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
+                
                 
                 (gl:tex-coord 1.0 0.0)
+                (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
-                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
+             ;   (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
 
                 (gl:tex-coord 1.0 1.0)
+                (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
-                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
+              ;  (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
 
                 (gl:tex-coord 0.0 1.0)
+                (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
-                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))))))))
+               ; (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
+                ))))))
 
 (defun render-particles (particles count num-alive texture size
                          &optional (align :screen) axis)

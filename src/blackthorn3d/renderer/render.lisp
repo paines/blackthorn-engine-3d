@@ -56,9 +56,9 @@
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
         ;   #p "res/models/PlayerAnimationTest.dae"
-          ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
+           #p "res/models/KatanaSpiderMaterialAnimated.dae"
          ;  #p "res/models/player-3.dae"
-           #p "res/models/FireBeastAnimated.dae"
+         ;  #p "res/models/FireBeastAnimated.dae"
            )))
         (epic-sword
          (blt3d-imp:dae-geometry
@@ -79,7 +79,8 @@
     (attach-node-to-model (car (mesh-nodes *test-sword*))
                           "Bip001_Head" *test-skele*)
 
-    (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
+    (apply-transform *test-skele* (make-scale #(0.2 0.2 0.2)))
+ ;   (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     (apply-transform *test-skele*
                      (make-translate #(0.0 -2.0 0.0 0.0))))
 

@@ -97,3 +97,17 @@
       (vec-scale4 (vec-neg4 (up an-entity)) (* -2.0 dt *gravity-accel*))
       +zero-vec+
       )))
+      
+(defun its-sector (an-entity)
+  (funcall *hackity-hack__lookup-sector* (current-sector an-entity)))
+      
+(defun standing-on-jumpable-p (an-entity)
+  (standing-on-p an-entity (its-sector an-entity)))
+      
+(defun make-smarter-jump-mover (client)
+  (lambda (an-entity dt)
+    (if (and (> (s-input-jump client) 0)
+             (standing-on-jumpable-p an-entity))
+      (vec-scale4 (vec-neg4 (up an-entity)) (* -100.0 dt *gravity-accel*))
+      +zero-vec+
+      )))

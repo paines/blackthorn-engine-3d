@@ -193,7 +193,7 @@
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
         (push (make-camera-relative-player-mover new-client camera) 
-              (movers the-new-player))
+              (displacers the-new-player))
         
         (message-send :broadcast (make-event :entity-create))
         (message-send new-client (make-event :camera :camera camera))

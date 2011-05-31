@@ -100,8 +100,8 @@
                    (gl:with-pushed-matrix
                        (gl:mult-matrix (get-transform-to-world it))
                      (draw-object (geometry it))
-                     )))))
-    ))
+                     )))))))
+
 (defmethod draw-object ((s sector))
   (draw-sectors s () 0))
 

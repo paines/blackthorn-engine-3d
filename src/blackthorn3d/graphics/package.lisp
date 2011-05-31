@@ -34,7 +34,14 @@
 
    ;; init.lisp
    :init-gfx
+   :*gl-version*
+   :*glsl-version*
    :*cam-view-matrix*
+   :*cam-inv-view-matrix*
+   :*depth-shader*
+   :*standard-tex*
+   :*screen-height*
+   :*screen-width*
 
    ;; draw.lisp
    :draw-triangle
@@ -54,10 +61,15 @@
    :set-viewport
    :view-frustum
    :frustum
+   :frstm-near
+   :frstm-far
    :make-frstm
    :load-frstm
    :cull-sphere
    :update-planes
+   :view-fbo
+   :view-fov
+   :view-ratio
 
 
    ;; texture.lisp
@@ -76,12 +88,16 @@
 
    ;; framebuffer.lisp
    :framebuffer
+   :fbo
    :make-framebuffer
    :attach-texture
+   :attachments
    :get-attachment
+   :depth-attachment
    :bind-framebuffer
    :unbind-framebuffer
    :with-framebuffer
+   :check-framebuffer-status
 
    ;; mesh.lisp
    :mesh
@@ -95,15 +111,24 @@
 
    ;; light.lisp
    :light
+   :light-viewport
+   :light-texmat
    :use-light
    :make-light
+   :position
+   :direction
+   :set-texture-matrix
    :shadow-pass
+   :*shadow-depth-tex*
+   :*shadow-texture-unit*
 
    ;; shader.lisp
    :*shader*
+   :program
    :make-shader
    :enable-shader
    :disable-shader
+   :get-uniform-loc
 
    ;; particles.lisp
    :particle-system

@@ -32,14 +32,18 @@
 ;; Tells draw methods to use their shadow vertex shader
 (defvar *use-shadow-shader* nil)
 (defvar *cam-view-matrix* (make-identity-matrix))
+(defvar *cam-inv-view-matrix* (make-identity-matrix))
 (defvar *default-texture* nil)
 (defvar *tex-loc* nil)
 
+(defvar *screen-width* 960)
+(defvar *screen-height* 720)
 
 (defvar *standard-texture* nil)
-(defvar *standard-color* nil)
+(defvar *standard-shadow* nil)
 (defvar *skinned-texture* nil)
-(defvar *skinned-color* nil)
+(defvar *skinned-shadow* nil)
+(defvar *depth-shader* nil)
 
 (defun init-gfx ()
   (format t "Initializing Graphics subsystem~%")
@@ -54,7 +58,8 @@
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 
   ;; Init Skin Shader(s)
-  (setf skin-shader
+  (format t "Loading skin shader:~%")
+  (setf *skinned-tex*
         (make-shader (blt3d-res:file-contents
                       (blt3d-res:resolve-resource 
                        #p "res/shaders/skin-shader.vert"))
@@ -64,15 +69,8 @@
                      :attributes '("jointIndices" "jointWeights")
                      :uniforms '("jointMats")))
 
-  (setf joint-indices-loc 
-        (get-attribute-loc skin-shader "jointIndices")
-        
-        joint-weights-loc
-        (get-attribute-loc skin-shader "jointWeights")
-        
-        joint-mats-loc
-        (get-uniform-loc skin-shader "jointMats"))
 
+  (format t "Loading std shader:~%")
   (setf *standard-tex*
         (make-shader (blt3d-res:file-contents
                       (blt3d-res:resolve-resource 
@@ -80,9 +78,23 @@
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
                        #p "res/shaders/texture-std.frag"))
-                     :uniforms '("tex")))
+                     :uniforms '("tex" "shadow" "shadowMat")))
+
+  (enable-shader *standard-tex*)
+  (gl:uniformi (get-uniform-loc *standard-tex* "tex") 0)
+  (gl:uniformi (get-uniform-loc *standard-tex* "shadow") 3)
+  (disable-shader)
+
+  (setf *depth-shader*
+        (make-shader (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource 
+                       #p "res/shaders/depth-buffer.vert"))
+                     (blt3d-res:file-contents
+                      (blt3d-res:resolve-resource
+                       #p "res/shaders/depth-buffer.frag"))))
 
   (setf mesh-shader *standard-tex*)
+  (setf skin-shader *skinned-tex*)
   #+disabled
   (setf *tex-loc*
         (gl:get-uniform-location *standard-tex* "tex"))

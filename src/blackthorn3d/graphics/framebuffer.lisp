@@ -89,28 +89,45 @@
     (otherwise
      (second (find attach-point (attachments fbo) :key #'car)))))
 
+(defun check-framebuffer-status ()
+  (gl::enum= 
+   (gl:check-framebuffer-status-ext :framebuffer-ext) 
+   :framebuffer-complete-ext))
+
 (defun create-shadow-framebuffer (width height)
   (let ((framebuffer (make-framebuffer))
-        (depth-texture 
-         (create-texture width height :depth-component
-                         :min-filter :nearest
-                         :mag-filter :nearest
-                         :wrap-s :clamp
-                         :wrap-t :clamp
-                         :format :depth-component))
         (color-texture
          (create-texture width height :rgb16f
                          :wrap-s :clamp
                          :wrap-t :clamp
-                         :format :rgb
+                         :format :rgba
                          :type :float)))
 
-    (attach-texture framebuffer :depth-attachment-ext depth-texture)
-    (attach-texture framebuffer :color-attachment0-ext color-texture)
-    (with-framebuffer framebuffer
-      (format t "Framebuffer Status: ~a~%"
-              (gl::enum= 
-               (gl:check-framebuffer-status-ext :framebuffer-ext) 
-               :framebuffer-complete-ext)))
-    (gl:bind-framebuffer-ext :framebuffer-ext 0)
-    framebuffer))
+    (gl:active-texture :texture3)
+    (gl:enable :texture-2d )
+    (let ((depth-texture 
+           (create-texture width height :depth-component
+                           :min-filter :nearest
+                           :mag-filter :nearest
+                           :wrap-s :clamp-to-edge
+                           :wrap-t :clamp-to-edge
+                           :format :depth-component)))
+      (use-texture depth-texture)
+      (gl:tex-parameter :texture-2d
+                        :depth-texture-mode
+                        :intensity)
+      (gl:tex-parameter :texture-2d 
+                        :texture-compare-mode 
+                        :compare-r-to-texture)
+      (gl:tex-parameter :texture-2d
+                        :texture-compare-func
+                        :lequal)
+      (use-texture 0)
+      (gl:active-texture :texture0)
+
+
+      (attach-texture framebuffer :depth-attachment-ext depth-texture)
+      (attach-texture framebuffer :color-attachment0-ext color-texture)
+      
+      (gl:bind-framebuffer-ext :framebuffer-ext 0)
+      framebuffer)))

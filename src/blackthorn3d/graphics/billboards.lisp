@@ -104,10 +104,10 @@
         *bill-screen-normal* eye-dir
         *bill-world-up* world-up))
 
-(defun setup-shader (align axis size-x size-y)
+(defun setup-shader (align axis size)
   (case align
     (:screen (enable-shader *billboard-shader*)
-             (set-uniform "size" (vector size-x size-y)))
+             (set-uniform "size" size))
 
     (:world
      (enable-shader *billboard-world-shader*)
@@ -118,7 +118,7 @@
                     (to-vec4 surface-right))
        (set-uniform "up"
                     (to-vec4 surface-up)))
-     (set-uniform  "size" (vector size-x size-y)))
+     (set-uniform  "size" size))
 
     (:axis
      (enable-shader *billboard-world-shader*)
@@ -128,15 +128,15 @@
                     (to-vec4 surface-right))
        (set-uniform  "up"
                     (to-vec4 surface-up)))
-     (set-uniform "size" (vector size-x size-y)))
+     (set-uniform "size" size))
 
     (:velocity
      (enable-shader *billboard-vel-shader*)
-     (set-uniform "size" (vector size-x size-y)))))
+     (set-uniform "size" size))))
 
 (defun draw-billboard-quad (pos size-x size-y texture color
                             &optional (align :screen) axis)
-  (setup-shader align axis size-x size-y)
+  (setup-shader align axis (vector size-x size-y))
   (use-texture texture)    
   (gl:color (r color) (g color) (b color) (a color))
   (gl:with-primitives :quads
@@ -209,10 +209,10 @@
 (defun render-particles (particles count num-alive texture size
                          &optional (align :screen) axis)
   
-  (setup-shader align axis size size)
+  (setup-shader align axis size)
   
   (gl:enable :texture-2d)
-  (gl:bind-texture :texture-2d texture)
+  (use-texture texture)
   (gl:with-pushed-attrib (:depth-buffer-bit)   
   ;  (gl:enable-client-state :vertex-array)
  ;   (gl:enable-client-state :texture-coord-array)
@@ -223,3 +223,35 @@
 
   (use-texture 0)
   (disable-shader))
+
+
+;;;
+;;; LAZORS!!   - probably don't belong here, but wth
+;;;
+
+(defun draw-beam (start end color texture size)
+  (let* ((line (vec4- end start))
+         (tex-len (svref size 1))
+         (beam-len (mag line))
+         (axis (norm4 line))
+         (step-axis (vec-scale3 axis tex-len)))
+
+    (setup-shader :axis axis size)
+    (use-texture texture)    
+    (gl:color (r color) (g color) (b color) (a color))
+
+    (gl:with-primitives :quads
+      (iter (for i below (ceiling (/ beam-len tex-len)))
+            (for pos first start then (vec3+ pos step-axis))
+
+            (gl:tex-coord 0.0 0.0)
+            (gl:vertex (x pos) (y pos) (z pos))
+                               
+            (gl:tex-coord 1.0 0.0)
+            (gl:vertex (x pos) (y pos) (z pos))
+               
+            (gl:tex-coord 1.0 1.0)
+            (gl:vertex (x pos) (y pos) (z pos))
+               
+            (gl:tex-coord 0.0 1.0)
+            (gl:vertex (x pos) (y pos) (z pos))))))

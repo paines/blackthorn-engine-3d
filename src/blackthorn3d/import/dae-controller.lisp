@@ -83,12 +83,9 @@
                                      (sum weight)))
                     (format t "ZERO-TOTAL!: pairs: ~a~%" pairs-lst))
 
-                  (when (> count 4)
-                    (format t "WE HAVE ~a WEIGHTS!~%~2Tpairs: ~a~%"
-                            count pairs-lst))
-
+                  
                   ;; combine same-joint weights
-                  #+disabled
+                  ;#+disabled
                   (setf 
                    pairs-lst
                    (iter (with result = (make-hash-table))

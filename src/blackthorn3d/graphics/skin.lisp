@@ -44,10 +44,10 @@
   (gl:normal :type :float :components (nx ny nz))
   (gl:tex-coord :type :float :components (u v))
   (gl:vertex-attrib :type :float 
-                    :index joint-indices-loc
+                    :index (get-attribute-loc skin-shader "jointIndices")
                     :components (i0 i1 i2 i3))
   (gl:vertex-attrib :type :float 
-                    :index joint-weights-loc
+                    :index (get-attribute-loc skin-shader "jointWeights")
                     :components (w0 w1 w2 w3)))
 (defparameter *blt-skin-components* '(px py pz 
                                       nx ny nz 
@@ -123,9 +123,9 @@
       (gl:enable-client-state :normal-array)
       (gl:enable-client-state :texture-coord-array)
       (gl::enable-vertex-attrib-array 
-       joint-indices-loc)
+       (get-attribute-loc skin-shader "jointIndices"))
       (gl::enable-vertex-attrib-array
-       joint-weights-loc))
+       (get-attribute-loc skin-shader "jointWeights")))
  
 
     ;#+disabled
@@ -133,7 +133,7 @@
       (gl:with-pushed-matrix 
       ;    (gl:mult-matrix bind-shape-matrix)
         (gl:uniform-matrix 
-         joint-mats-loc 4
+         (get-uniform-loc skin-shader "jointMats") 4
          (get-joint-matrices bind-skeleton) nil)
 
         (gl:bind-gl-vertex-array vert-data)

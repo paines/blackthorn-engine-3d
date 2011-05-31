@@ -35,6 +35,8 @@
 (defvar *test-tex* nil)
 (defvar *depth-tex* nil)
 
+(defvar home-sector nil)
+
 (defparameter vao-cube nil)
 (defparameter shader nil)
 (defparameter animated nil)
@@ -45,7 +47,6 @@
   (format t "Initializing Rendering Subsystem~%")
   (init-gfx)
 
- 
   (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
@@ -72,10 +73,10 @@
                      (make-translate #(0.0 -2.0 0.0 0.0))))
 
   (setf *main-light* (make-light 'light
-                      :position (make-point3 0.0 5.0 0.0)))
+                      :position (make-point3 0.0 2.0 0.0)))
 
   (setf *test-ps* 
-        #+disabled
+       ; #+disabled
         (create-spark-ps
          (make-instance 'point-emitter
                         :pos (make-point3 0.0 -1.7 0.0)
@@ -84,12 +85,12 @@
                         :angle (* 2 pi);(/ pi 6)
                         :speed 8)
          100
-         :size 0.01
+         :size #(0.05 0.3)
          :lifetime 0.2
          :color +orange+
          :drag-coeff 8.5)
 
-       ; #+disabled
+       #+disabled
         (create-explosion-ps 
          (make-instance 'point-emitter
                         :pos (make-point3 0.0 -1.7 0.0)
@@ -129,28 +130,8 @@
                                   :max-value (max-particles *test-ps*)
                                   :current-value 0)))
 
-  (setf *test-fbo* (make-framebuffer))
-  (setf *render-tex* 
-        (create-texture 960 720 :rgba
-                        :format :rgba))
-  (setf *depth-tex*
-        (create-texture 960 720 :depth-component
-                        :min-filter :nearest
-                        :mag-filter :nearest
-                        :wrap-s :clamp
-                        :wrap-t :clamp
-                        :format :depth-component))
-
-  (attach-texture *test-fbo* :color-attachment0-ext
-                  *render-tex*)
-  (attach-texture *test-fbo* :depth-attachment-ext
-                  *depth-tex*)
-
-  (with-framebuffer *test-fbo*
-    (format t "Framebuffer Status: ~a~%"
-            (gl::enum= 
-             (gl:check-framebuffer-status-ext :framebuffer-ext) 
-             :framebuffer-complete-ext))))
+  (when (>= *gl-version* 3.0)
+    (init-deferred-renderer)))
 
 
 (defun set-camera (cam)
@@ -195,9 +176,17 @@
 
 (defun update-graphics (entities time)
   (when *main-cam*
+    (setf home-sector (lookup-sector (current-sector *main-cam*)))
+  
     (setf *cam-view-matrix* (look-dir-matrix (pos *main-cam*)
                                              (dir *main-cam*)
-                                             (up  *main-cam*))))
+                                             (up  *main-cam*)))
+    (setf *cam-inv-view-matrix* (rt-inverse *cam-view-matrix*))
+
+    (update-billboarder (pos *main-cam*)
+                        (dir *main-cam*)
+                        (up *main-cam*)
+                        +y-axis+))
   
   (update-planes (view-frustum *main-viewport*)
                  *cam-view-matrix*)
@@ -224,95 +213,53 @@
 ;;;
 ;;; Render frame
 ;;;
-(defvar home-sector nil)
+
+
+#+disabled
 (defun render-frame (entities)
-
   (gl:enable :depth-test :lighting)
   (gl:depth-mask t)
   (gl:depth-func :lequal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:cull-face :back)
-
-  ;; Test framebuffer
   
-; (with-framebuffer *test-fbo*)
-;  (bind-framebuffer *test-fbo*)
-  (gl:clear :color-buffer-bit :depth-buffer-bit)
-  (gl:enable :depth-test :lighting)
-  (gl:depth-mask t)
-  (gl:depth-func :lequal)
-  (gl:blend-func :src-alpha :one-minus-src-alpha)
-  (gl:cull-face :back)
-
-  ;; Create PVS from entities and level
-;  (let ((PVS (find-pvs entities level))))
-
-  (set-viewport *main-viewport*)
-
-  (when *main-cam*
-    (setf home-sector (lookup-sector (current-sector *main-cam*)))
-;    (setf home-sector (current-sector *main-cam*))
-    (gl:matrix-mode :modelview)
-    (gl:load-matrix (look-dir-matrix (pos *main-cam*)
-                                     (dir *main-cam*)
-                                     (up  *main-cam*)))
-
-    (update-billboarder (pos *main-cam*)
-                        (dir *main-cam*)
-                        (up *main-cam*)
-                        +y-axis+))
-
   (use-light *main-light* :light0)
 
-  (gl:color-material :front :diffuse)
-  (gl:enable :color-material)
+  
+  
+; (set-viewport *main-viewport*)
+ ;#+disabled
+  (when *main-cam*
+    (let ((depth-buffer (get-attachment 
+                          (view-fbo (light-viewport *main-light*))
+                          :depth-attachment-ext)))
 
-    ;#+disabled    
-  (when home-sector
-    (gl:with-pushed-matrix
-        (draw-object home-sector)))
 
-    ;#+disabled    
-  (when *test-skele*
-    (gl:with-pushed-matrix
-        (draw-object *test-skele*)))
+       (enable-shader *depth-shader*)
+        (gl:uniformi (gl:get-uniform-location (program *depth-shader*) "tex")
+                   3)
 
-    ;#+disabled    
-  (dolist (e entities)
-    (when (and (shape e) (not (eql e *main-cam*)))
-      (draw-object e)))
-
-  ;; DO PARTICLES YEAH!
-  (gl:blend-func :src-alpha :one)  
-  (gl:depth-mask nil)
-  ;;  #+disabled
-   (when *test-ps*
-    (render-ps *test-ps*))
-
-  ;; now render the texture
-  #+disabled
-  (progn
-    (unbind-framebuffer)
-    (gl:depth-mask t)
-    (gl:blend-func :src-alpha :one-minus-src-alpha)
-    (gl:clear :color-buffer-bit :depth-buffer-bit)
-    (disable-shader)
-    (gl:disable :lighting)
-
-    (gl:matrix-mode :projection)
-    (gl:load-identity)
-    (gl:ortho 0 1 0 1 -10 10)
-    (gl:matrix-mode :modelview)
-    (gl:load-identity)
-    (gl:enable :texture-2d)
-    (gl:bind-texture :texture-2d *render-tex*)
-    (gl:generate-mipmap-ext :texture-2d)
-    (gl:color 1 1 1)
-    (draw-screen-quad)
-    (gl:bind-texture :texture-2d 0))
-
-  ;; Lastly render the ui
-  (render-ui)
-
+        ;(unbind-framebuffer)
+        (gl:depth-mask t)
+        (gl:blend-func :src-alpha :one-minus-src-alpha)
+        (gl:viewport 0 0 960 720)
+        (gl:clear :color-buffer-bit :depth-buffer-bit)
+        (enable-shader *depth-shader*)
+       ; (disable-shader)
+        (gl:disable :lighting)
+        (gl:matrix-mode :projection)
+        (gl:load-identity)
+        (gl:ortho 0 1 0 1 -10 10)
+        (gl:matrix-mode :modelview)
+        (gl:load-identity)
+        (gl:active-texture :texture3)
+        (gl:enable :texture-2d)
+        (gl:bind-texture :texture-2d depth-buffer)
+  ;      (gl:generate-mipmap-ext :texture-2d)
+        (gl:color 1 1 1)
+        (draw-screen-quad)
+        (gl:bind-texture :texture-2d 0)))
   (gl:flush)
   (sdl:update-display))
+
+

@@ -79,9 +79,10 @@
 
 (defmethod draw-object ((m mesh))
   (with-slots (vert-data elements primitive-type) m
-
-    (enable-shader mesh-shader)
-
+  ;  (format t "drawing mesh~%")
+    
+  ;  (enable-shader mesh-shader)
+  
     (gl:enable-client-state :vertex-array)
     (gl:enable-client-state :normal-array)
     (gl:enable-client-state :texture-coord-array)

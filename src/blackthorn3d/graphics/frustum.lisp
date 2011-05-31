@@ -73,14 +73,10 @@
 (defmethod set-viewport ((this viewport))
  ; (format t "starting set-viewport~%")
   (with-slots (size vfrustum framebuffer) this
-   ; (format t "setting viewport of size ~a~%" size)
     (gl:viewport 0 0 (car size) (cadr size))
-   ; (format t "load-frustum~%")
     (load-frstm vfrustum)
     (when framebuffer
       (bind-framebuffer framebuffer))))
-
-
 
 
 
@@ -105,6 +101,7 @@
     :accessor planes
     :initarg :planes)
    (proj-matrix
+    :accessor proj-matrix
     :initarg :proj-matrix)))
 
 

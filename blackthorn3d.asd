@@ -144,7 +144,9 @@
                                               :components
                                               ((:file "package")
                                                (:file "scene-manager")
-                                               (:file "render"))
+                                               (:file "render")
+                                               (:file "deferred-render")
+                                               (:file "old-render"))
                                               :serial t)
                                      
                                      (:module sound

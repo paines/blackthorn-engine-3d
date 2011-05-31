@@ -189,8 +189,8 @@
                     is generated between start and end") 
    (size
     :initarg :size
-    :initform 0.1
-    :documentation "size of particle.  same rule applies as lifetime")
+    :initform #(0.1 0.1)
+    :documentation "size of particle")
    (color
     :accessor color
     :initarg :color
@@ -210,7 +210,7 @@
    (texture
     :accessor texture
     :initarg :texture
-    :initform 0)
+    :initform *particle-tex*)
    (type
     :accessor ps-type
     :initarg :type
@@ -294,6 +294,7 @@
                                (color +white+)
                                (lifetime 2.0)
                                (size 0.1)
+                               (texture *particle-tex*)
                                (mode '(:loop))
                                (force-fn #'(lambda (vel dt)
                                              (vec-neg4 +y-axis+))))
@@ -301,7 +302,7 @@
                  :emitter emitter
                  :spawn-rate spawn-rate
                  :lifetime lifetime
-                 :size size
+                 :size (if (arrayp size) size (vector size size))
                  :color color
                  :mode mode
                  :max-particles max-particles
@@ -323,7 +324,7 @@
                  :emitter emitter
                  :spawn-rate 0
                  :lifetime lifetime
-                 :size size
+                 :size (if (arrayp size) size (vector size size))
                  :color color
                  :texture texture
                  :mode '(:loop 4)
@@ -352,6 +353,7 @@
                  :color color
                  :texture texture
                  :lifetime lifetime
+                 :size (if (arrayp size) size (vector size size))
                  :max-particles max-particles
                  :spawn-rate (ceiling
                               (/ max-particles 
@@ -431,17 +433,14 @@
          (when (<= num-alive 0) (setf mode '(:stop))))
         (:stop (when (<= num-alive 0) (setf mode '(:kill))))))))
 
-;; TODO: add textures/quads, not just points
-(defmethod render-ps ((this particle-system))
+(defun render-ps (ps) (draw-object ps))
+(defmethod draw-object ((this particle-system))
   (with-slots (particles max-particles num-alive texture size type) this
     (render-particles particles max-particles
-                      num-alive *particle-tex* size
+                      num-alive texture size
                       (case type
                         ((:explosion :sparks) :velocity)
                         (otherwise :screen)))))
-
-
-
 
 
 (defvar *system-list* nil)
@@ -463,7 +462,7 @@
 
 (defun render-particle-systems (dt)
   (iter (for system in *system-list*)
-        (render-ps system)))
+        (draw-object system)))
 
 (defun particles-init ())
 

@@ -51,7 +51,7 @@
   
   ;; create shadow map
   ;#+disabled
-  (when (and *main-cam* (< *gl-version* 3.0))
+  (when (and *main-cam* (> *gl-version* 3.0))
     (shadow-pass *main-light* 
                  (cons home-sector 
                    ;(cons *test-skele*)

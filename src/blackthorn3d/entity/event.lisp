@@ -54,44 +54,15 @@
   (let ((entities *recently-removed-server-entities*))
     (make-message-list :event-entity-remove entities)))
 
-;; TODO: MOVE ELSEWHERE!!! (E.g. input package, hint hint.)
-(defclass input-event ()
-  ((input-type
-    :accessor input-type
-    :initarg :input-type)
-   (input-amount
-    :accessor input-amount
-    :initarg :input-amount)))
-
-(make-enum-serializer :input-type (:move-x :move-y :view-x :view-y :jmp))
-
-(make-slot-serializer (:input input-event
-                       (make-instance 'input-event))
-                      :input-type input-type
-                      :float32 input-amount)
-
-(make-list-serializer :input-list :input)
-
-(defmessage :event-input (:input-list))
+(defmessage :event-input (:single-float ; move-x
+                          :single-float ; move-y 
+                          :single-float ; view-x
+                          :single-float ; view-y
+                          :single-float ; jmp
+                          ))
 
 (defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y jmp)
-  (make-message-list
-   :event-input
-   (list (make-instance 'input-event
-                        :input-type :move-x
-                        :input-amount move-x)
-         (make-instance 'input-event
-                        :input-type :move-y
-                        :input-amount move-y)
-         (make-instance 'input-event
-                        :input-type :view-x
-                        :input-amount view-x)
-         (make-instance 'input-event
-                        :input-type :view-y
-                        :input-amount view-y)
-         (make-instance 'input-event
-                        :input-type :jmp
-                        :input-amount jmp))))
+  (make-message-list :event-input move-x move-y view-x view-y jmp))
 
 (defmessage :event-camera (:entity-oid))
 

@@ -113,13 +113,8 @@
 (defun send-all-entities (destination)
   (message-send destination (make-event :entity-create :include-all t)))
 
-(defun handle-input-server (src inputs)
-  (let ((move-x-amt (input-amount (find :move-x inputs :key #'input-type)))
-        (move-y-amt (input-amount (find :move-y inputs :key #'input-type)))
-        (view-x-amt (input-amount (find :view-x inputs :key #'input-type)))
-        (view-y-amt (input-amount (find :view-y inputs :key #'input-type)))
-        (jmp-amt (input-amount (find :jmp inputs :key #'input-type))))
-    (s-input-update src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)))
+(defun handle-input-server (src move-x move-y view-x view-y jmp)
+  (s-input-update src move-x move-y view-x view-y jmp))
 
 (defun handle-message-server (src message)
   (ecase (message-type message)

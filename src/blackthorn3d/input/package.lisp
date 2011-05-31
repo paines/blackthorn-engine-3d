@@ -61,5 +61,7 @@
    :xbox360_get_ly
    :xbox360_get_rx
    :xbox360_get_ry
+   :xbox360_get_ltrig
+   :xbox360_get_rtrig
 
    ))

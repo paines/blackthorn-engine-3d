@@ -42,3 +42,5 @@ short xbox360_get_ly(int controller) { return controller_state.Gamepad.sThumbLY;
 short xbox360_get_rx(int controller) { return controller_state.Gamepad.sThumbRX; }
 short xbox360_get_ry(int controller) { return controller_state.Gamepad.sThumbRY; }
 
+int xbox360_get_ltrig(int controller) { return controller_state.Gamepad.bLeftTrigger; }
+int xbox360_get_rtrig(int controller) { return controller_state.Gamepad.bRightTrigger; }

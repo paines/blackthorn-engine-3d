@@ -36,6 +36,8 @@
 (defvar *default-texture* nil)
 (defvar *tex-loc* nil)
 
+(defvar *disable-shading* nil)
+
 (defvar *screen-width* 960)
 (defvar *screen-height* 720)
 

@@ -42,6 +42,7 @@
    :*standard-tex*
    :*screen-height*
    :*screen-width*
+   :*disable-shading*
 
    ;; draw.lisp
    :draw-triangle

@@ -267,7 +267,7 @@
                                       (* (sin theta) (sin (+ phi step))) 
                                       (cos theta)))
                     (for normal = (cross3 (vec3- v2 v1) (vec3- v3 v1)))
-                    ;(gl:normal (x normal) (y normal) (z normal))
+                    (gl:normal (x normal) (y normal) (z normal))
                     (gl:vertex (x v1) (y v1) (z v1))
                     (gl:vertex (x v2) (y v2) (z v2))
                     (gl:vertex (x v3) (y v3) (z v3))

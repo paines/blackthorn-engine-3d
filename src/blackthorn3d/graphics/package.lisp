@@ -43,6 +43,7 @@
    :*screen-height*
    :*screen-width*
    :*disable-shading*
+   :*laser-tex*
 
    ;; draw.lisp
    :draw-triangle

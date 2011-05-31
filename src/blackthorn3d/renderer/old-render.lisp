@@ -32,10 +32,9 @@
   (gl:enable :color-material)
   
   (if (>= *gl-version* 3.0)
-;      (old-render-frame entities)
-      (dr-render-frame entities)
+      (old-render-frame entities)
+;      (dr-render-frame entities)
       (old-render-frame entities)))
-
 
 
 ;#+disabled
@@ -51,7 +50,7 @@
   ;; (let ((PVS (find-pvs entities level))))
   
   ;; create shadow map
-  #+disabled
+  ;#+disabled
   (when *main-cam*
     (shadow-pass *main-light* 
                  (cons home-sector 
@@ -93,27 +92,29 @@
     (gl:with-pushed-matrix
         (draw-object home-sector)))
 
-  #+disabled    
+  ;#+disabled    
   (when *test-skele*
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
 
-  ;#+disabled    
+  ;#+disabled    sssssssssss
   (dolist (e entities)
     (when (and (shape e) (not (eql e *main-cam*)))
       (draw-object e)))
 
   ;; DO PARTICLES YEAH!
-                                        ; (gl:blend-func :src-alpha :one)  
-                                        ; (gl:depth-mask nil)
- ; #+disabled
+  (gl:blend-func :src-alpha :one)  
+  (gl:depth-mask nil)
   (when *test-ps*
     (render-ps *test-ps*))
+  (when *laser-ps*
+    (render-ps *laser-ps*))
 
   ;; test lazor
   #+disabled
   (blt3d-gfx::draw-beam +origin+ (make-point3 15.0 0.0 0.0)
-                        +blue+ blt3d-gfx::*particle-tex* #(0.1 0.1))
+                       #(0.0 0.4 1.0 1.0) 
+                       *laser-tex* #(0.1 .5))
 
   ;; now render the texture
   #+disabled

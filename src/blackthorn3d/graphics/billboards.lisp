@@ -46,6 +46,7 @@
 
 
 (defun billboard-init ()
+ 
   (format t "Loading billboard-shader:~%")
   (setf *billboard-shader*
         (make-shader (blt3d-res:file-contents
@@ -76,8 +77,8 @@
                        #p "res/shaders/billboard-shader.frag"))
                      :uniforms '("size")
                      :attributes '("velocity")))
-  
 
+  
   #+disabled
   (progn
     (setf *size1-loc*

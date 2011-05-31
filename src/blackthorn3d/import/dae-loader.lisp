@@ -41,8 +41,7 @@
 ;;;
 
 (defmacro make-set-fn (place)
-  `#'(lambda (val) (setf ,place val 
-                         #+disabled(transpose (reshape val '(4 4))))))
+  `#'(lambda (val) (setf ,place val)))
 
 ;; this'll be fun....
 ;; gets a function that will modify a slot/location based on an id...

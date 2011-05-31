@@ -91,7 +91,7 @@
 (defmethod play-clip ((this anim-controller)))
 
 (defun next-clip (controller)
-  (with-slots (current-clip next-clip state) this
+  (with-slots (current-clip next-clip state) controller
     (setf current-clip next-clip)
     (setf next-clip nil)
     (setf elapsed 0)))

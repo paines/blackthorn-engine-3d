@@ -62,7 +62,7 @@
                         (build-input-lst sampler source-table)))
 
             ;; Setup channels
-            (setf 
+            (setf
              channel-list
              (iter (for channel in (children-with-tag +channel+ animation))
                    (let ((inputs 

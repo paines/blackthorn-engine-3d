@@ -54,12 +54,16 @@
   (setf *glsl-version* (gl:minor-version))
 
   (setf *particle-tex*
-        (image->texture2d (load-image #p"res/images/round-particle1.png")))
+        (image->texture2d (load-image #p "res/images/round-particle1.png")))
 
   (setf *default-texture*
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 
-  ;; Init Skin Shader(s)
+  (setf *laser-tex*
+        (image->texture2d (load-image #p "res/images/laser-1.png")))
+
+
+   ;; Init Skin Shader(s)
   (format t "Loading skin shader:~%")
   (setf *skinned-tex*
         (make-shader (blt3d-res:file-contents

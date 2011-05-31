@@ -116,7 +116,7 @@
 
       (skele-drawer (root-joint bind-skeleton)))
 
-   ; #+disabled
+    ;#+disabled
     (progn
       (enable-shader skin-shader)
       (gl:enable-client-state :vertex-array)

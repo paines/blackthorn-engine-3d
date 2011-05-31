@@ -28,6 +28,7 @@
 ;; This var is for applying external forces like gravity/wind
 (defvar *external-force* +zero-vec+)
 (defvar *particle-tex* nil)
+(defvar *laser-tex* nil)
 
 ;;;
 ;;; particles
@@ -254,7 +255,7 @@
     ;; Generate random coordinates
     (let* ((angle/2 (* 0.5 angle))
            (phi (random (* 2.0 pi)))
-           (theta (random (float angle/2)))
+           (theta (if (zerop angle/2) 0.0 (random (float angle/2))))
            (u dir)
            (v (get-perpendicular dir))
            (w (cross3 u v))
@@ -452,6 +453,7 @@
     systems))
 
 (defun update-particle-systems (dt)
+  (format t "should not be seen~%")
   (iter (for system in *system-list*)
         (update-ps system dt)
         (when (eql (car (mode system)) :kill)

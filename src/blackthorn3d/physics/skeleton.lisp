@@ -81,6 +81,7 @@
   (labels ((%update-r (joint parent-m)
              (when (eql (find-class 'blt3d-phy:joint) (class-of joint))
                (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
+               (when (equal "Bip001_Head" (joint-id joint)))
                (iter (with joint-world = 
                            (matrix-multiply-m parent-m (joint-matrix joint)))
                      (for child-j in (child-joints joint))

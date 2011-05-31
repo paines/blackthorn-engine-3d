@@ -180,11 +180,12 @@
   (gl:bind-framebuffer-ext :framebuffer-ext (fbo light-pass-fbo))
   (gl:disable :depth-test)
   (gl:depth-mask nil)
+;  (gl:cull-face :back)
 
-  (gl:clear :color-buffer-bit)
+  (gl:clear :color-buffer-bit :depth-buffer-bit)
 
-  (gl:enable :blend)
-  (gl:blend-func :src-alpha :one)
+ ; (gl:enable :blend)
+ ; (gl:blend-func :src-alpha :one)
 
   (enable-shader *light-pass-shader*)
 
@@ -209,13 +210,14 @@
   (gl:active-texture :texture1)
   (gl:bind-texture :texture-2d *normal-buffer*)
 
-  ;#+disabled
+ ; #+disabled
   (progn
     (gl:matrix-mode :projection)
     (gl:load-identity)
     (gl:ortho 0 1 0 1 -10 10))
   (gl:matrix-mode :modelview)
   (gl:load-identity)
+ ; (gl:load-matrix *cam-view-matrix*)
 
   (iter (for light in lights)
         (gl:with-pushed-matrix
@@ -224,11 +226,13 @@
         (let* ((z-near (frstm-near (view-frustum *main-viewport*)))
                (world-width (* z-near
                                (tan (* 0.5 (view-fov *main-viewport*)))))
-               (world-height (/ world-width (view-ratio *main-viewport*))))
+               (world-height (/ world-width (view-ratio *main-viewport*)))
+               (*disable-shading* t))
           (setf world-width .2)
           (setf world-height .2)
     
           (draw-screen-quad)
+
           #+disabled
           (gl:with-primitives :quads
             (gl:vertex (- world-width) (- world-height) (- z-near))

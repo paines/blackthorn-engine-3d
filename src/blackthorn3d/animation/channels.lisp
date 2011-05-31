@@ -121,8 +121,11 @@
 (defmethod apply-transformation ((this channel) xform)
   (iter (for i below (array-dimension (frames this) 0))
         (for v = (value (frames this) i))
+      ;  (format t "~%Old value: ~a~%" v)
         (setf (value (frames this) i) 
-              (matrix-multiply-m xform v))))
+              (matrix-multiply-m xform v))
+       ; (format t "New value: ~a~%" (value (frames this) i))
+        ))
 
 
 (defmethod evaluate-channel ((this channel) t0)

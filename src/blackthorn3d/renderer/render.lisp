@@ -34,6 +34,7 @@
 (defvar *render-tex* nil)
 (defvar *test-tex* nil)
 (defvar *depth-tex* nil)
+(defvar *laser-ps* nil)
 
 (defvar home-sector nil)
 
@@ -50,11 +51,15 @@
   (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
+  ;#+disabled
   (let ((scientist-model 
          (blt3d-imp:dae-geometry 
           (blt3d-imp:load-dae 
+        ;   #p "res/models/PlayerAnimationTest.dae"
           ; #p "res/models/KatanaSpiderMaterialAnimated.dae"
-           #p "res/models/player-3.dae")))
+         ;  #p "res/models/player-3.dae"
+           #p "res/models/FireBeastAnimated.dae"
+           )))
         (epic-sword
          (blt3d-imp:dae-geometry
           (blt3d-imp:load-dae
@@ -62,11 +67,17 @@
     
     (setf *test-skele* (load-obj->models scientist-model))
     (setf *test-sword* (load-obj->models epic-sword))
-    (apply-transform *test-sword* +3dsmax-convert+)
-    (apply-transform *test-sword* (make-translate #(2.0 0.0 -22.0 1.0)))
+   ; (apply-transform *test-sword* +3dsmax-convert+)
+    (apply-transform *test-sword* (make-inv-ortho-basis 
+                                   (make-vec3 0.0 0.0 1.0)
+                                   (make-vec3 1.0 0.0 0.0)
+                                   (make-vec3 0.0 1.0 0.0)))
+    (apply-transform *test-sword* (make-scale #(0.02 0.02 0.02)))
+    (apply-transform *test-sword* (make-translate #(1.0 0.0 0.0 1.0)))
 
+   ; #+disabled
     (attach-node-to-model (car (mesh-nodes *test-sword*))
-                          "Bip003_R_Hand" *test-skele*)
+                          "Bip001_Head" *test-skele*)
 
     (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     (apply-transform *test-skele*
@@ -75,8 +86,24 @@
   (setf *main-light* (make-light 'light
                       :position (make-point3 0.0 2.0 0.0)))
 
+  ;#+disabled
+  (setf *laser-ps*
+        (create-particle-system
+         (make-instance 'point-emitter
+                        :pos +origin+
+                        :dir +x-axis+
+                        :up +y-axis+
+                        :angle 0.1
+                        :speed '(0.5 . 2.5))
+         10
+         300
+         :lifetime '(5.0 . 10.0)
+         :color #(0.0 0.5 2.0 1.0)
+         :force-fn #'(lambda (x y) +zero-vec+)))
+
+  ;#+disabled
   (setf *test-ps* 
-       ; #+disabled
+        #+disabled
         (create-spark-ps
          (make-instance 'point-emitter
                         :pos (make-point3 0.0 -1.7 0.0)
@@ -90,19 +117,20 @@
          :color +orange+
          :drag-coeff 8.5)
 
-       #+disabled
+      ; #+disabled
         (create-explosion-ps 
          (make-instance 'point-emitter
                         :pos (make-point3 0.0 -1.7 0.0)
                         :dir +y-axis+
                         :up +y-axis+
                         :angle (* 2 pi);(/ pi 6)
-                        :speed '(8.0 . 16.0 ))
+                        :speed '(15.0 . 24.0 ))
          300
-         :lifetime 2.0
-         :gravity (vec-neg4 +y-axis+)
-         :grav-coeff 3.5
-         :drag-coeff 4.0)
+         :lifetime '(1.3 . 2.4)
+         :color +orange+
+         :gravity +zero-vec+;(vec-neg4 +y-axis+)
+         :grav-coeff 0.0
+         :drag-coeff 8.0)
 
         #+disabled
         (create-particle-system 
@@ -122,6 +150,7 @@
                        ;(vec-neg3 (vec3+ vel +y-axis+))
                        )))
 
+  #+disabled
   (add-ui-element
    (setf *test-ui* (make-instance 'ui-gauge
                                   :offset '(0 0)
@@ -130,6 +159,8 @@
                                   :max-value (max-particles *test-ps*)
                                   :current-value 0)))
 
+  (format t "laser tex: ~a~%" *laser-tex*)
+  #+disabled
   (when (>= *gl-version* 3.0)
     (init-deferred-renderer)))
 
@@ -176,13 +207,11 @@
 
 (defun update-graphics (entities time)
   (when *main-cam*
-    (setf home-sector (lookup-sector (current-sector *main-cam*)))
-  
+    (setf home-sector (lookup-sector (current-sector *main-cam*)))  
     (setf *cam-view-matrix* (look-dir-matrix (pos *main-cam*)
                                              (dir *main-cam*)
                                              (up  *main-cam*)))
     (setf *cam-inv-view-matrix* (rt-inverse *cam-view-matrix*))
-
     (update-billboarder (pos *main-cam*)
                         (dir *main-cam*)
                         (up *main-cam*)
@@ -191,15 +220,19 @@
   (update-planes (view-frustum *main-viewport*)
                  *cam-view-matrix*)
 
-
   (when *test-ps*
+    #+disabled
     (update-ui-element *test-ui* (num-alive *test-ps*))
     (update-ps *test-ps* time))
 
+  (when *laser-ps*
+    (update-ps *laser-ps* time))
+  
+  #+disabled
   (when animated
     (update-model animated time))
 
-  #+disabled
+  ;#+disabled
   (when *test-skele*
     (update-model *test-skele* time))
 

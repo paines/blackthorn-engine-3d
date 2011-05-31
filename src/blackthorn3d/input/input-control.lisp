@@ -131,7 +131,7 @@
         (if (sdl:get-key-state *jump-key*) 1.0 0.0))
       #+windows
       (:xbox 
-        (if (xbox360_get_a) 1.0 0.0))
+        (if (eql (xbox360_get_a 0) 1) 1.0 0.0))
       (otherwise 0.0))))
             
 (defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)

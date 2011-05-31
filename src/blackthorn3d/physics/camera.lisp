@@ -64,7 +64,7 @@
    (minor-mode
     :accessor minor-mode
     :initarg :minor-mode
-    :initform :strafe)
+    :initform :free)
    (matrix 
     :accessor matrix)))
 

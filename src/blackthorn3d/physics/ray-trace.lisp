@@ -230,7 +230,5 @@
 (defun standing-on-p (ent obj)
   (with-slots (pos up bounding-volume) ent
     (let ((r-d (to-vec4 (vec-neg4 up))))
-      (< (ray-cast 
-          (make-ray (vec4+ (vec-scale4 r-d (rad bounding-volume)) pos) 
-                    r-d) 
-          obj)))))
+      (aif (ray-cast (make-ray pos r-d) obj)
+        (< it (+ +standing-thresh+ (rad bounding-volume)))))))

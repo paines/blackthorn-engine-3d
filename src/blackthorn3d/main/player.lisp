@@ -54,7 +54,7 @@
               :shape-name :wedge
               )))
       (push #'blackthorn3d-physics:gravity-mover (movers p))
-      (push (blackthorn3d-physics::make-stupid-jump-mover client-id)
+      (push (blackthorn3d-physics::make-smarter-jump-mover client-id)
             (movers p))
       (setf (bounding-volume p) (expand-bounding-spheres 
                     (blt3d-res:get-model (shape-name p))))

@@ -135,6 +135,9 @@
           ;; move camera based on keyboard/xbox controller
           #+windows
          (xbox360_poll 0)
+         
+         #+windows
+         (format t "Left: ~a    Right ~a~%" (xbox360_get_ltrig 0) (xbox360_get_rtrig 0))
 
          (let ((mx (float (input-move-x *input*)))
                (my (float (input-move-y *input*)))

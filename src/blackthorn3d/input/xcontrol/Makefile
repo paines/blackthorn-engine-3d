@@ -2,7 +2,7 @@
 
 #TODO: What's the standard way of doing this?
 SWIG ?= C:/code/swigwin-2.0.3/swig.exe
-CC = gcc
+CC = C:/mingw/bin/gcc
 
 # these outputs should be manually moved to desired destination
 all: xbox360.dll xbox360.lisp
@@ -16,7 +16,7 @@ XInput.lib:
 xbox360.c : XInput.h
 	
 xbox360.dll : xbox360.o XInput.lib
-	gcc -shared -o $@ $+
+	$(CC) -shared -o $@ $+
 	
 %.o : %.c
 	@echo "Compiling C file: $<"

@@ -97,7 +97,17 @@
 
 (defun xbox360-vibrate (controller left-motor right-motor)
     "Makes the xbox360 controller vibrate. Provide values in range [0,65535]."
-	(setf left-motor  (min left-motor 65535))   ; xbox360_vibrate takes shorts
-	(setf right-motor (min right-motor 65535))
-	(xbox360_vibrate controller left-motor right-motor))
-	
+        (setf left-motor  (min left-motor 65535))   ; xbox360_vibrate takes shorts
+        (setf right-motor (min right-motor 65535))
+        (xbox360_vibrate controller left-motor right-motor))
+
+
+(cffi:defcfun ("xbox360_get_ltrig" xbox360_get_ltrig) :int
+  "Returns the left trigger position (range 0 - 255)"
+  (controller :int))
+
+(cffi:defcfun ("xbox360_get_rtrig" xbox360_get_rtrig) :int
+  "Returns the right trigger position (range 0 - 255)"
+  (controller :int))
+
+

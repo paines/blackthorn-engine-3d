@@ -29,9 +29,9 @@
 (make-list-serializer :entity-update-list :entity-update)
 (make-list-serializer :entity-remove-list :entity-remove)
 
-(defmessage :event-entity-create (:entity-create-list))
-(defmessage :event-entity-update (:entity-update-list))
-(defmessage :event-entity-remove (:entity-remove-list))
+(defmessage :event-entity-create nil (:entity-create-list))
+(defmessage :event-entity-update nil (:entity-update-list))
+(defmessage :event-entity-remove nil (:entity-remove-list))
 
 (defgeneric make-event (type &key))
 
@@ -54,17 +54,13 @@
   (let ((entities *recently-removed-server-entities*))
     (make-message-list :event-entity-remove entities)))
 
-(defmessage :event-input (:single-float ; move-x
-                          :single-float ; move-y 
-                          :single-float ; view-x
-                          :single-float ; view-y
-                          :single-float ; jmp
-                          ))
+(defmessage :event-input send-input
+  (:single-float ; move-x
+   :single-float ; move-y 
+   :single-float ; view-x
+   :single-float ; view-y
+   :single-float ; jmp
+   ))
 
-(defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y jmp)
-  (make-message-list :event-input move-x move-y view-x view-y jmp))
-
-(defmessage :event-camera (:entity-oid))
-
-(defmethod make-event ((type (eql :camera)) &key camera)
-  (make-message-list :event-camera camera))
+(defmessage :event-camera send-camera
+  (:entity-oid))

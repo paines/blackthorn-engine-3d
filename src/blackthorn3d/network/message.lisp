@@ -72,9 +72,10 @@
       (setf value (unserialize type))
       message)))
 
-(defmacro defmessage (type (&rest fields))
+(defmacro defmessage (type sender (&rest fields))
   (let ((field-vars (mapcar #'(lambda (field) (gensym (symbol-name field)))
-                            fields)))
+                            fields))
+        (dest (gensym (symbol-name 'dest))))
     `(progn
        (define-serializer (,type value)
          (destructuring-bind ,field-vars value
@@ -86,7 +87,10 @@
          (let ((value
                 (list ,@(mapcar #'(lambda (field) `(unserialize ,field))
                                 fields))))
-           value)))))
+           value))
+       ,(when sender
+          `(defun ,sender (,dest ,@field-vars)
+             (message-send ,dest (make-message-list ,type ,@field-vars)))))))
 
 (defun apply-message-handler (handler src message)
   (apply handler src (message-value message)))

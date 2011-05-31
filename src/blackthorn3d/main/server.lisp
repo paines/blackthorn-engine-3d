@@ -113,9 +113,6 @@
 (defun send-all-entities (destination)
   (message-send destination (make-event :entity-create :include-all t)))
 
-(defun handle-input-server (src move-x move-y view-x view-y jmp)
-  (s-input-update src move-x move-y view-x view-y jmp))
-
 (defun handle-message-server (src message)
   (ecase (message-type message)
     (:string
@@ -124,7 +121,7 @@
        (send-string src (concatenate 'string "ACK: " str))))
     ;; TODO: Register these handlers globally.
     (:event-input
-     (apply-message-handler #'handle-input-server src message))))
+     (apply-message-handler #'s-input-update src message))))
 
 (defvar *delay-disconnected-clients* nil)
        
@@ -191,10 +188,9 @@
               (displacers the-new-player))
         
         (message-send :broadcast (make-event :entity-create))
-        (message-send new-client (make-event :camera :camera camera))
+        (send-camera new-client camera)
         #+disabled
-        (message-send new-client
-                      (make-message-list :event-sound :soundtrack t)))))
+        (send-sound new-client :soundtrack t))))
   (forget-server-entity-changes))
 
 (defun synchronize-clients ()

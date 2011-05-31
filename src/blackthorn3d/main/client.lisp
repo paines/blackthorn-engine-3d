@@ -144,7 +144,7 @@
                (vy (float (input-view-y *input*)))
                (jmp (float (input-jump *input*))))
            (send-input :server
-                       (* 0.1 mx) 
+                       (* 0.1 mx)
                        (* 0.1 my)
                        (* 0.1 vx)
                        (* 0.1 vy)

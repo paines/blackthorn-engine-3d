@@ -93,17 +93,7 @@
                         :input-type :jmp
                         :input-amount jmp))))
 
-(defclass camera-event ()
-  ((camera
-    :accessor camera-event-camera
-    :initarg :camera)))
-
-(make-slot-serializer (:camera camera-event
-                       (make-instance 'camera-event))
-                      :entity-oid camera)
-
-(defmessage :event-camera (:camera))
+(defmessage :event-camera (:entity-oid))
 
 (defmethod make-event ((type (eql :camera)) &key camera)
-  (make-message-list :event-camera
-                     (make-instance 'camera-event :camera camera)))
+  (make-message-list :event-camera camera))

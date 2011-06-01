@@ -28,9 +28,10 @@
 
 (defmethod update ((p player))
   (with-slots (client) p
+    #+disabled
     (when (> (s-input-jump client) 0)
-      (format t "JUMP!~%")
-      (jump p))))
+      (quickhit p)
+      (try-die p))))
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))

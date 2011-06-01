@@ -258,7 +258,7 @@
                                  bounding-volume 
                                  (transform-to-sector pos a-sector)))
             (for portal in portals)
-            (when (collide-p test-sphere portal)
+            (when (and (links-to-sector portal) (collide-p test-sphere portal))
               (format t "Collided with portal: ~a @~a~%" 
                       (portal-id portal) (pos portal))
               ;; We need to change the sector of the object

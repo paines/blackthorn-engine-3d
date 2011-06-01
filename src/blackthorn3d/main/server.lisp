@@ -93,6 +93,12 @@
     (when (not (is-alive-p player))
       (kill-entity c)
       (return-from update))
+    
+    (setf (minor-mode c)
+      (if (> (s-input-camera-mode client) 0)
+        :strafe
+        :free))
+    
 
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (vec-scale4 (move-player c input-vec) 0.4))

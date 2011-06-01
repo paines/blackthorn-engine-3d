@@ -74,6 +74,7 @@
   (gl:active-texture :texture0)
  ; (gl:color-material :front :diffuse)
   (gl:enable :texture-2d)
+  (gl:color 1 1 1 1)
 
  
   #+disabled

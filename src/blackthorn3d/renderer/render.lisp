@@ -188,8 +188,6 @@
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test :cull-face)
   (gl:depth-func :lequal)
-
-
  
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)

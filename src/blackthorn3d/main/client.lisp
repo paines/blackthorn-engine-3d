@@ -47,8 +47,8 @@
         #+disabled
         (use-model-on (shape-name entity) entity)))
         
-(defun handle-play-explosion-at (src x y z)
-  (format t "Explosion goes boom at ~a, ~a, ~a~%" x y z))
+(defun handle-play-explosion-at (src pos)
+  (format t "Explosion goes boom at ~a~%" pos))
 
 (defun handle-entity-remove-client (src entity)
   ;; TODO: Do it.

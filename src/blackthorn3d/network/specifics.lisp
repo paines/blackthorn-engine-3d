@@ -25,8 +25,6 @@
 
 (in-package :blackthorn3d-network)
 
-(defmessage :play-explosion-at send-play-explosion-at (
-    :single-float  ; x
-    :single-float  ; y
-    :single-float  ; z
-))
+(defmessage :play-explosion-at send-play-explosion-at
+  (:vec3 ; pos
+   ))

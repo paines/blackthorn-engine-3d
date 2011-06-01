@@ -25,7 +25,6 @@
 
 (in-package :blackthorn3d-physics)
 
-(defvar *velocity-threshold-squared* 0.02)
 (defvar *gravity-accel* 0.002)
 
 (defun move-component (thing x y z)
@@ -48,23 +47,6 @@
   (let ((direction (norm4 (vec4- (pos who) (pos self)))))
       (setf (dir self) direction)
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
-   
-; crappy old hacked up way of doing it   
-#+disabled
-(defun standard-physics-step (self)
-  (let ((movement-vec (vec4+ (vec-scale4 (vec-neg4 +y-axis+) 0.02) 
-                             (velocity self))))
-
-    (setf (velocity self) movement-vec)
-
-    #+disabled
-    (setf movement-vec (collide-with-world 
-                        test-sphere
-                        (velocity self)
-                        (blt3d-res:get-model :companion-cube)))
-    #+disabled
-    (move-vec self movement-vec)
-    ))
     
 (defvar *hackity-hack__lookup-sector* nil)
 (defvar *hackity-hack__collide-sector* (lambda (&rest whatever) (declare (ignore whatever)) nil))
@@ -77,7 +59,6 @@
     (setf (velocity an-entity) old-velocity)
     result))
 
-;#+disabled
 (defun standard-physics-step (self)
   (let ((t-sector 
          (funcall *hackity-hack__lookup-sector* (current-sector self)))
@@ -100,30 +81,9 @@
              (setf (new-up self) 
                    it
                    #+disabled
-                   ;; store the quarternion
+                   ;; store the quaternion
                    (quat-rotate-to-vec (up self) it)))))))
 
-; this will be the real one eventually
-#+disabled
-(defun standard-physics-step (self)
-  (let* ((t-sector (funcall *hackity-hack__lookup-sector* (current-sector self)))
-         (force-vector    (force-step self 1))
-         (displace-vector (displace-step self 1))
-         (old-velocity (velocity self))
-        )
-    
-    (setf (velocity self) (vector-sum (list force-vector old-velocity)))
-    (move-and-set-velocity self
-        (funcall *hackity-hack__collide-sector* self t-sector))
-    (move-vec self
-        (collide-displace self displace-vector t-sector))
-    
-    ))
-
-(defun jump (p)
-  (declare (ignore p))
-  ;(setf (velocity p) (vec4+ (velocity p) (make-vec3 0.0 5.0 0.0))))
-  )
   
 (defun force-step (an-entity dt)
   (vector-sum (mapcar #'(lambda (m) (funcall m an-entity dt)) 

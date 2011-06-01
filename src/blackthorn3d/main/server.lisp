@@ -217,8 +217,8 @@
         
         (message-send :broadcast (make-event :entity-create))
         (send-camera new-client camera)
-        #+disabled
-        (send-sound new-client :soundtrack t))))
+        ;#+disabled
+        (blt3d-snd:send-sound new-client :soundtrack t))))
   (forget-server-entity-changes))
 
 (defun synchronize-clients ()

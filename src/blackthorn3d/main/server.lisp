@@ -296,6 +296,6 @@
       (next-frame)
       (check-for-new-clients)
       (remove-disconnected-clients)
-      (update-sectors)
+      (update-entities)
       (check-collisions)
       (synchronize-clients))))

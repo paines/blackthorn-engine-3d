@@ -29,8 +29,25 @@
   ((client
         :accessor player-client
         :initarg :client
-        :documentation "The socket symbol for the player's client")))
+        :documentation "The socket symbol for the player's client")
+   (health
+        :accessor health
+        :initform 1.0
+        :documentation "Health in range [0.0, 1.0]")))
+        
+(defmethod on-die ((self player))
+  (setf (pos self) (make-vec3 0.0 2.0 0.0))
+  (setf (velocity self) (make-vec3 0.0 0.0 0.0))
+  (setf (health self) 1.0))
+  
+(defmethod quickhit ((self player))
+  (setf (health self) (- (health self) 0.01))
+  (format t "Player health now: ~a~%" (health self)))
 
+(defmethod try-die ((self player))
+  (when (< (health self) 0.0)
+    (on-die self)))
+  
 (defvar *client->player* '())
 (defun register-player (p c)
     (setf (getf *client->player* c) p))

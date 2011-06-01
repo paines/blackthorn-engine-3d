@@ -51,6 +51,10 @@
 (defvar *fly-up-key* :sdl-key-e)
 (defvar *fly-down-key* :sdl-key-q)
 
+(defvar *use-key* :sdl-key-j)
+(defvar *xbox-y-key* :sdl-key-k)
+(defvar *alt-attack-key* :sdl-key-l)
+
 (defvar *deadzone-range-lx* 0.1)
 (defvar *deadzone-range-ly* 0.1)
 (defvar *deadzone-range-rx* 0.1)
@@ -179,6 +183,36 @@
       (:xbox 
         (xbox360_get_lbump 0))
       (otherwise 0.0))))
+      
+(defmethod input-use ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *use-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_x 0) 1) 1.0 0.0))
+      (otherwise 0.0))))      
+      
+(defmethod input-xbox-y ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *xbox-y-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_y 0) 1) 1.0 0.0))
+      (otherwise 0.0))))
+      
+(defmethod input-alt-attack ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *alt-attack-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_b 0) 1) 1.0 0.0))
+      (otherwise 0.0))))
 
             
 (defun s-input-update (  src 
@@ -186,7 +220,8 @@
   view-x-amt    view-y-amt 
   jmp-amt 
   cam-amt      attack-amt 
-  fly-up-amt fly-down-amt )
+  fly-up-amt fly-down-amt 
+  use-amt xbox-y-amt alt-attack-amt)
   
     (when (getf *client-controllers* src)
               (setf (move-x (getf *client-controllers* src)) move-x-amt)
@@ -200,4 +235,8 @@
               
               (setf (fly-up (getf *client-controllers* src)) fly-up-amt)
               (setf (fly-down (getf *client-controllers* src)) fly-down-amt)
+              
+              (setf (use (getf *client-controllers* src)) use-amt)
+              (setf (xbox-y (getf *client-controllers* src)) xbox-y-amt)
+              (setf (alt-attack (getf *client-controllers* src)) alt-attack-amt)
               ))

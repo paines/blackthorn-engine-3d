@@ -166,6 +166,10 @@
                        (input-attack *input*)
                        (input-fly-up *input*)
                        (input-fly-down *input*)
+                       
+                       (input-use *input*)
+                       (input-xbox-y *input*)
+                       (input-alt-attack *input*)
                        ))
 
 

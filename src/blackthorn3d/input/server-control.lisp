@@ -59,6 +59,15 @@
       (fly-down
         :accessor fly-down
         :initform 0)  
+      (use
+        :accessor use
+        :initform 0)
+      (xbox-y
+        :accessor xbox-y
+        :initform 0)
+      (alt-attack
+        :accessor alt-attack
+        :initform 0)
       )
       (:documentation "Represents state of a client's controller"))
       
@@ -92,5 +101,12 @@
       (with-controller client-id #'fly-up))
     (defun s-input-fly-down (client-id)
       (with-controller client-id #'fly-down))
+      
+    (defun s-input-use (client-id)
+      (with-controller client-id #'use))
+    (defun s-input-xbox-y (client-id)
+      (with-controller client-id #'xbox-y))      
+    (defun s-input-alt-attack (client-id)
+      (with-controller client-id #'alt-attack))
 )
       

@@ -71,7 +71,7 @@
 
       (move-vec self move-to)
 
-      #+disabled
+      ;#+disabled
       (unless (standing-on-p self t-sector)
         (destructuring-bind (move-to new-up2)
             (funcall *hackity-hack__collide-sector*

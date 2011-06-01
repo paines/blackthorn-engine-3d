@@ -43,6 +43,9 @@
    :input-attack
    :input-fly-up
    :input-fly-down
+   :input-use
+   :input-xbox-y
+   :input-alt-attack
    
    ;; server-control.lisp
    :new-server-controller
@@ -57,6 +60,9 @@
    :s-input-attack
    :s-input-fly-up
    :s-input-fly-down
+   :s-input-use
+   :s-input-xbox-y
+   :s-input-alt-attack
    
    ;; xbox360.lisp
    :xbox360-vibrate

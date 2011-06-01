@@ -60,6 +60,8 @@
    :single-float ; view-x
    :single-float ; view-y
    :single-float ; jmp
+   :single-float ; left trigger
+   :single-float ; right trigger
    ))
 
 (defmessage :event-camera send-camera

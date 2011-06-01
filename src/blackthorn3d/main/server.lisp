@@ -47,6 +47,11 @@
   (with-slots (client pos) p
     ;; TODO: Testing our various messages, remove at some point.
     ;; (It's terrible for performance, for one.)
+    (when (> (s-input-camera-mode (player-client p)) 0)
+      (format t "Camera mode pressed for player: ~a~%" p))
+    (when (> (s-input-attack (player-client p)) 0)
+      (format t "Attack pressed for player: ~a~%" p))
+    
     (when (> (s-input-jump client) 0)
       (send-play-explosion
        :broadcast :some-explosion-name pos)

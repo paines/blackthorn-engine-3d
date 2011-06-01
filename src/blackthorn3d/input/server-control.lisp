@@ -46,6 +46,12 @@
         :documentation "the state of the view-y axis")
      (jump
         :accessor jump
+        :initform 0)
+     (attacking
+        :accessor attacking
+        :initform 0)
+     (camera-mode-button
+        :accessor camera-mode-button
         :initform 0))
       (:documentation "Represents state of a client's controller"))
       
@@ -70,5 +76,10 @@
     (defun s-input-view-y (client-id)
       (with-controller client-id #'view-y))
     (defun s-input-jump (client-id)
-      (with-controller client-id #'jump)))
+      (with-controller client-id #'jump))
+    (defun s-input-attack (client-id)
+      (with-controller client-id #'attacking))
+    (defun s-input-camera-mode (client-id)
+      (with-controller client-id #'camera-mode-button))
+    )
       

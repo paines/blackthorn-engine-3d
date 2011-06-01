@@ -70,7 +70,7 @@
            #p "res/models/SwordTextured.dae"))))
     
     (setf *beast* (load-obj->models beast-model))
-    (apply-transform *beast* (make-translate #(0.0 -2.0 -45.0)))
+    (apply-transform *beast* (make-translate #(0.0 -2.0 -55.0)))
     (apply-transform *beast* (make-z-rot pi))
     (setf *test-skele* (load-obj->models scientist-model))
     (setf *test-sword* (load-obj->models epic-sword))

@@ -46,7 +46,29 @@
         :documentation "the state of the view-y axis")
      (jump
         :accessor jump
-        :initform 0))
+        :initform 0)
+     (attacking
+        :accessor attacking
+        :initform 0)
+     (camera-mode-button
+        :accessor camera-mode-button
+        :initform 0)
+     (fly-up
+        :accessor fly-up
+        :initform 0)
+      (fly-down
+        :accessor fly-down
+        :initform 0)  
+      (use
+        :accessor use
+        :initform 0)
+      (xbox-y
+        :accessor xbox-y
+        :initform 0)
+      (alt-attack
+        :accessor alt-attack
+        :initform 0)
+      )
       (:documentation "Represents state of a client's controller"))
       
 (defun new-server-controller (client)
@@ -70,5 +92,21 @@
     (defun s-input-view-y (client-id)
       (with-controller client-id #'view-y))
     (defun s-input-jump (client-id)
-      (with-controller client-id #'jump)))
+      (with-controller client-id #'jump))
+    (defun s-input-attack (client-id)
+      (with-controller client-id #'attacking))
+    (defun s-input-camera-mode (client-id)
+      (with-controller client-id #'camera-mode-button))
+    (defun s-input-fly-up (client-id)
+      (with-controller client-id #'fly-up))
+    (defun s-input-fly-down (client-id)
+      (with-controller client-id #'fly-down))
+      
+    (defun s-input-use (client-id)
+      (with-controller client-id #'use))
+    (defun s-input-xbox-y (client-id)
+      (with-controller client-id #'xbox-y))      
+    (defun s-input-alt-attack (client-id)
+      (with-controller client-id #'alt-attack))
+)
       

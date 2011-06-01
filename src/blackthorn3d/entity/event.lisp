@@ -60,6 +60,13 @@
    :single-float ; view-x
    :single-float ; view-y
    :single-float ; jmp
+   :single-float ; left trigger
+   :single-float ; right trigger
+   :single-float ; left bumper
+   :single-float ; right bumper
+   :single-float ; use (xbox x button)
+   :single-float ; xbox y button
+   :single-float ; alt attack (xbox b button)
    ))
 
 (defmessage :event-camera send-camera

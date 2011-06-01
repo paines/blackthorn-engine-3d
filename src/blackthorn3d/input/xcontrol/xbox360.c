@@ -44,3 +44,13 @@ short xbox360_get_ry(int controller) { return controller_state.Gamepad.sThumbRY;
 
 int xbox360_get_ltrig(int controller) { return controller_state.Gamepad.bLeftTrigger; }
 int xbox360_get_rtrig(int controller) { return controller_state.Gamepad.bRightTrigger; }
+
+int xbox360_get_lbump(int controller) {
+    int value = controller_state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+    return (value > 0);
+}
+
+int xbox360_get_rbump(int controller) {
+    int value = controller_state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+    return (value > 0);
+}

@@ -50,6 +50,7 @@
 
   (make-start-sector (get-model :slide-room))
 
+  #+disabled
   (progn
     (add-sector-relative
      :start-sector

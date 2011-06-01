@@ -296,7 +296,7 @@
                                (lifetime 2.0)
                                (size 0.1)
                                (texture *particle-tex*)
-                               (mode '(:loop))
+                               (mode '(:repeat 5))
                                (force-fn #'(lambda (vel dt)
                                              (vec-neg4 +y-axis+))))
   (make-instance 'particle-system

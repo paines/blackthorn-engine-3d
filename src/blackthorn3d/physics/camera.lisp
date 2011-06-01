@@ -47,7 +47,7 @@
    (spring-k
     :accessor spring-k
     :initarg :spring-k
-    :initform 10.0)
+    :initform 20.0)
    (spring-k2
     :accessor spring-k2
     :initarg :spring-k2
@@ -124,11 +124,13 @@
           (:free
            ;; set phi
      ;      #+disabled
-           (setf (elt ideal-coord 0)
-                 (+ (let ((xd (x tc-pos))
-                          (zd (z tc-pos)))
-                      (atan xd zd))
-                    (* +phi-scale+ (x input-vec))))
+           (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
+             (if (zerop (x input-vec))
+                 (setf (elt ideal-coord 0)
+                       rel-phi)
+                 (setf (elt ideal-coord 0)
+                       (+ rel-phi
+                          (* +phi-scale+ (x input-vec))))))
 
            #+disabled
            (setf (elt ideal-coord 0)
@@ -174,14 +176,18 @@
 
            (setf sphere-coord ideal-coord2)))
 
-        ;; mat stuff
-          
+        ;; mat stuff          
         (let* ((translation
                 (make-translate (vec-scale4 +z-axis+ 
                                             (elt sphere-coord 2))))
                (rotation (quat->matrix (spherical->quat sphere-coord)))
                (concat (matrix-multiply-m rotation translation))
-               (ideal-pos (vec4+ look-at
+               (ideal-pos 
+                (vec4+ look-at 
+                       (matrix-multiply-v
+                        inv-basis (spherical->cartesian sphere-coord)))
+                #+disabled
+                (vec4+ look-at
                                  (matrix-multiply-v 
                                   inv-basis
                                   (matrix-multiply-v concat +origin+))))

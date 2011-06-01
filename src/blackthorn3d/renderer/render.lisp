@@ -79,7 +79,8 @@
     (attach-node-to-model (car (mesh-nodes *test-sword*))
                           "Bip001_Head" *test-skele*)
 
-    (apply-transform *test-skele* (make-scale #(0.2 0.2 0.2)))
+    (apply-transform *test-skele* (make-scale #(0.2 0.2 -0.2)))
+;    (apply-transform *test-skele* (make-s))
  ;   (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
     (apply-transform *test-skele*
                      (make-translate #(0.0 -2.0 0.0 0.0))))

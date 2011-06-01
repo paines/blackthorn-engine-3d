@@ -226,9 +226,14 @@
           (finally (return min-hit)))))
 
 
-(defvar +standing-thresh+ 0.1)          ; 10 cm
+(defvar +standing-thresh+ 1e-4)          ; 10 cm
 (defun standing-on-p (ent obj)
   (with-slots (pos up bounding-volume) ent
     (let ((r-d (to-vec4 (vec-neg4 up))))
       (aif (ray-cast (make-ray pos r-d) obj)
-        (< it (+ +standing-thresh+ (rad bounding-volume)))))))
+           (progn
+             (when (and (plusp it)
+                      (< it (+ +standing-thresh+ (rad bounding-volume))))
+                 (format t "Jumping allowed! ~a bv: ~a~%" it 
+                         (rad bounding-volume))
+                 t))))))

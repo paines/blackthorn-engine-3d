@@ -44,6 +44,10 @@
     :initform (quat-identity)
     :documentation "quatenion representing the rotation of the sector
                     Is expected to be in increments of 90 degrees")
+   (gravity
+    :accessor gravity
+    :initarg :gravity
+    :initform (vec-scale4 +y-axis+ -9.8))
    (portals
     :accessor portals
     :initarg :portals

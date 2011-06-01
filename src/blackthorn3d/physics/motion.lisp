@@ -72,7 +72,7 @@
 (defun collide-displace (an-entity vector sector)
   (let ((old-velocity (velocity an-entity))
         (result nil))
-    (add-velocity an-entity vector)
+    (set-velocity an-entity vector)
     (setf result (funcall *hackity-hack__collide-sector* an-entity sector))
     (setf (velocity an-entity) old-velocity)
     result))

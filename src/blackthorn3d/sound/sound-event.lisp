@@ -25,7 +25,7 @@
 
 (in-package :blackthorn3d-sound)
 
-(defmessage :event-sound (:keyword :boolean))
+(defmessage :event-sound send-sound (:keyword :boolean))
 
 (defvar *sounds* (make-hash-table))
 

@@ -29,9 +29,9 @@
 (make-list-serializer :entity-update-list :entity-update)
 (make-list-serializer :entity-remove-list :entity-remove)
 
-(defmessage :event-entity-create (:entity-create-list))
-(defmessage :event-entity-update (:entity-update-list))
-(defmessage :event-entity-remove (:entity-remove-list))
+(defmessage :event-entity-create nil (:entity-create-list))
+(defmessage :event-entity-update nil (:entity-update-list))
+(defmessage :event-entity-remove nil (:entity-remove-list))
 
 (defgeneric make-event (type &key))
 
@@ -54,56 +54,13 @@
   (let ((entities *recently-removed-server-entities*))
     (make-message-list :event-entity-remove entities)))
 
-;; TODO: MOVE ELSEWHERE!!! (E.g. input package, hint hint.)
-(defclass input-event ()
-  ((input-type
-    :accessor input-type
-    :initarg :input-type)
-   (input-amount
-    :accessor input-amount
-    :initarg :input-amount)))
+(defmessage :event-input send-input
+  (:single-float ; move-x
+   :single-float ; move-y 
+   :single-float ; view-x
+   :single-float ; view-y
+   :single-float ; jmp
+   ))
 
-(make-enum-serializer :input-type (:move-x :move-y :view-x :view-y :jmp))
-
-(make-slot-serializer (:input input-event
-                       (make-instance 'input-event))
-                      :input-type input-type
-                      :float32 input-amount)
-
-(make-list-serializer :input-list :input)
-
-(defmessage :event-input (:input-list))
-
-(defmethod make-event ((type (eql :input)) &key move-x move-y view-x view-y jmp)
-  (make-message-list
-   :event-input
-   (list (make-instance 'input-event
-                        :input-type :move-x
-                        :input-amount move-x)
-         (make-instance 'input-event
-                        :input-type :move-y
-                        :input-amount move-y)
-         (make-instance 'input-event
-                        :input-type :view-x
-                        :input-amount view-x)
-         (make-instance 'input-event
-                        :input-type :view-y
-                        :input-amount view-y)
-         (make-instance 'input-event
-                        :input-type :jmp
-                        :input-amount jmp))))
-
-(defclass camera-event ()
-  ((camera
-    :accessor camera-event-camera
-    :initarg :camera)))
-
-(make-slot-serializer (:camera camera-event
-                       (make-instance 'camera-event))
-                      :entity-oid camera)
-
-(defmessage :event-camera (:camera))
-
-(defmethod make-event ((type (eql :camera)) &key camera)
-  (make-message-list :event-camera
-                     (make-instance 'camera-event :camera camera)))
+(defmessage :event-camera send-camera
+  (:entity-oid))

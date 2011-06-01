@@ -37,6 +37,7 @@
    ;; sound-event.lisp
    :make-sound
    :find-sound
+   :send-sound
    :handler-sound
 
    ))

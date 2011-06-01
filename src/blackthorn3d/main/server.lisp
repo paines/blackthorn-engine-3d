@@ -28,9 +28,16 @@
 
 (defmethod update ((p player))
   (with-slots (client pos) p
+    ;; TODO: Testing our various messages, remove at some point.
+    ;; (It's terrible for performance, for one.)
     (when (> (s-input-jump client) 0)
-      (blackthorn3d-network::send-play-explosion-at :broadcast pos))
-  
+      (send-play-explosion
+       :broadcast :some-explosion-name pos)
+      (send-play-laser
+       :broadcast :some-laser-name pos (make-vector3 0.0 0.0 0.0))
+      (send-play-animation
+       :broadcast p :some-animation-name :some-mode))
+
     #+disabled
     (when (> (s-input-jump client) 0)
       (quickhit p)

@@ -63,8 +63,7 @@
                                               ((:file "package")
                                                (:file "serializer")
                                                (:file "socket")
-                                               (:file "message")
-                                               (:file "specifics")) ; <-- move this to game-specific somewhere!
+                                               (:file "message"))
                                               :serial t)
                                      (:module animation
                                               :components

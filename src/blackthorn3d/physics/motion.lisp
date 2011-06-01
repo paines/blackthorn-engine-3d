@@ -79,16 +79,27 @@
 
 ;#+disabled
 (defun standard-physics-step (self)
-  (let ((t-sector 
-         (funcall *hackity-hack__lookup-sector* (current-sector self)))
-        ;; we can keep this
-        (displace-vector (displace-step self 1)))
+  (let* ((t-sector 
+          (funcall *hackity-hack__lookup-sector* (current-sector self)))
+         ;; we can keep this
+         (displace-vector (displace-step self 1)))
     
     (destructuring-bind (move-to new-up)
         (funcall *hackity-hack__collide-sector* 
                  self displace-vector t-sector)
 
       (move-vec self move-to)
+      ;#+disabled
+      (unless (standing-on-p self t-sector)
+        (destructuring-bind (move-to new-up2)
+            (funcall *hackity-hack__collide-sector*
+                     self 
+                     (vec4+ (vec-neg4 displace-vector) 
+                            (vec-scale4 (up self) (- (mag displace-vector))))
+                     t-sector)
+          (move-vec self move-to)
+          (when new-up2 (setf (new-up self) new-up2))))
+
       (destructuring-bind (new-vel new-up2)
           (funcall *hackity-hack__collide-sector*
                    self (velocity self) t-sector 1)

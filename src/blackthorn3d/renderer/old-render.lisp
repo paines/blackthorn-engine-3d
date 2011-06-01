@@ -72,8 +72,8 @@
   (use-light *main-light* :light0)
 
   (gl:active-texture :texture0)
-  (gl:color-material :front :diffuse)
-  (gl:enable :color-material :texture-2d)
+ ; (gl:color-material :front :diffuse)
+  (gl:enable :texture-2d)
 
  
   #+disabled
@@ -95,6 +95,11 @@
   (when *test-skele*
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
+  (draw-object *beast*)
+  #+disabled
+  (when *beast*
+    (gl:with-pushed-matrix
+        (draw-object *beast*)))
 
   ;#+disabled    sssssssssss
   (dolist (e entities)

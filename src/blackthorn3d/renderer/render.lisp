@@ -28,6 +28,7 @@
 
 (defvar *main-viewport* nil)
 (defvar *test-skele* nil)
+(defvar *beast* nil)
 (defvar *test-ps* nil)
 (defvar *test-ui* nil)
 (defvar *test-fbo* nil)
@@ -58,16 +59,23 @@
         ;   #p "res/models/PlayerAnimationTest.dae"
            #p "res/models/KatanaSpiderMaterialAnimated.dae"
          ;  #p "res/models/player-3.dae"
-         ;  #p "res/models/FireBeastAnimated.dae"
            )))
+        (beast-model
+         (blt3d-imp:dae-geometry
+          (blt3d-imp:load-dae
+           #p "res/models/FireBeastAnimated.dae")))
         (epic-sword
          (blt3d-imp:dae-geometry
           (blt3d-imp:load-dae
            #p "res/models/SwordTextured.dae"))))
     
+    (setf *beast* (load-obj->models beast-model))
+    (apply-transform *beast* (make-translate #(0.0 -2.0 -45.0)))
+    (apply-transform *beast* (make-z-rot pi))
     (setf *test-skele* (load-obj->models scientist-model))
     (setf *test-sword* (load-obj->models epic-sword))
    ; (apply-transform *test-sword* +3dsmax-convert+)
+    
     (apply-transform *test-sword* (make-inv-ortho-basis 
                                    (make-vec3 0.0 0.0 1.0)
                                    (make-vec3 1.0 0.0 0.0)
@@ -76,14 +84,16 @@
     (apply-transform *test-sword* (make-translate #(1.0 0.0 0.0 1.0)))
 
    ; #+disabled
+    
     (attach-node-to-model (car (mesh-nodes *test-sword*))
                           "Bip001_Head" *test-skele*)
 
     (apply-transform *test-skele* (make-scale #(0.2 0.2 -0.2)))
 ;    (apply-transform *test-skele* (make-s))
  ;   (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
+    
     (apply-transform *test-skele*
-                     (make-translate #(0.0 -2.0 0.0 0.0))))
+                     (make-translate #(0.0 -2.0 0.0 0.0)))
 
   (setf *main-light* (make-light 'light
                       :position (make-point3 0.0 2.0 0.0)))
@@ -168,7 +178,7 @@
   (format t "laser tex: ~a~%" *laser-tex*)
   #+disabled
   (when (>= *gl-version* 3.0)
-    (init-deferred-renderer)))
+    (init-deferred-renderer))))
 
 
 (defun set-camera (cam)
@@ -239,6 +249,8 @@
   ;#+disabled
   (when *test-skele*
     (update-model *test-skele* time))
+  (when *beast*
+    (update-model *beast* time))
 
   (iter (for e in entities)
         (with-slots (shape) e
@@ -261,8 +273,6 @@
   (gl:cull-face :back)
   
   (use-light *main-light* :light0)
-
-  
   
 ; (set-viewport *main-viewport*)
  ;#+disabled

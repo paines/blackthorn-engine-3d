@@ -98,7 +98,7 @@
       #+disabled
       (aif (ray-cast (make-ray (pos target) (to-vec4 (dir target)))
                      t-sector)
-           (format t "Ray hit something! dist: ~a~%" it))
+           (format t "Ray hit sector!: ~a~%" it))
 
 
 

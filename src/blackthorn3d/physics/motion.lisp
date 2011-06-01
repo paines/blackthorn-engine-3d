@@ -70,7 +70,8 @@
                  self displace-vector t-sector)
 
       (move-vec self move-to)
-      ;#+disabled
+
+      #+disabled
       (unless (standing-on-p self t-sector)
         (destructuring-bind (move-to new-up2)
             (funcall *hackity-hack__collide-sector*
@@ -86,14 +87,12 @@
                    self (velocity self) t-sector 1)
 
         (move-and-set-velocity self new-vel)
+
         ;; We need to interpolate to new-up. I think we should store the
         ;; new up in the entity and use dt to interpolate to it
         (aif (or new-up2 new-up)
              (setf (new-up self) 
-                   it
-                   #+disabled
-                   ;; store the quaternion
-                   (quat-rotate-to-vec (up self) it)))))))
+                   it))))))
 
   
 (defun force-step (an-entity dt)

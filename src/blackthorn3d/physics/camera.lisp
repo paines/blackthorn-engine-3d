@@ -75,8 +75,8 @@
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
 (defvar +theta-limit+ 89)
-(setf +phi-scale+ -0.2)
-(setf +theta-scale+ -0.2)
+(setf +phi-scale+ -0.4)
+(setf +theta-scale+ -0.4)
 
 (defmethod move-camera ((c camera) vec)
   ;#+disabled
@@ -125,7 +125,6 @@
         (ecase minor-mode
           (:free
            ;; set phi
-     ;      #+disabled
            (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
              #+disabled
              (if (zerop (x input-vec))
@@ -146,8 +145,6 @@
 
           (:strafe
            ;; set phi
-           ;; rotate target??
-          ; #+disabled
            (setf (dir target)
                  (quat-rotate-vec
                   (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))

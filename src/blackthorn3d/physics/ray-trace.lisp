@@ -38,6 +38,7 @@
   (car ray))
 (blt3d-math::gen-vec-accessors tri-v0 tri-v1 tri-v2 tri-n tri-c)
 
+;; returns (hit-t location)
 (defun ray-sphere-intersection (ray sphere t-max)
   (let* ((r2 (sq (rad sphere)))
          (L (vec3- (pos sphere) (ray-e ray)))
@@ -179,41 +180,51 @@
         (for res = (ray-cast ray node))
         (unless (null res) (minimizing res))))
 
-(defmethod ray-cast (ray (node node))
-  ;; Transform the ray, then do call on children
-  ;; Not guaranteed that this bounding volume encompasses children
-  ;; so lets be conservative!
-  (with-slots (transform child-nodes) node
-    (let ((inv-xform (rt-inverse transform)))
-      (iter (with x-ray = (make-ray
-                           (matrix-multiply-v inv-xform (ray-e ray))
-                           (matrix-multiply-v inv-xform (ray-d ray))))
-            (for child in child-nodes)
-            (for res = (ray-cast x-ray child))
-            (unless (null res) (minimizing res))))))
-
 (defun min-t (options)
   (iter (for o in (remove-if #'null options))
         (minimizing o)))
 
+(defmethod ray-cast (ray (node node))
+  ;; Transform the ray, then do call on children
+  ;; Not guaranteed that this bounding volume encompasses children
+  ;; so lets be conservative!
+  (with-slots (bounding-volume child-nodes transform bounding-volume) node
+    ;#+disabled
+    (let ((sphere-hit (car
+                       (ray-sphere-intersection 
+                        ray bounding-volume 
+                        most-positive-single-float))))
+      (when sphere-hit
+        (let* ((inv-xform (rt-inverse transform))
+               (x-ray (make-ray
+                       (matrix-multiply-v inv-xform (ray-e ray))
+                       (matrix-multiply-v inv-xform (ray-d ray)))))
+          (min-t
+           (iter (for child in child-nodes)
+                 (collect (ray-cast x-ray child)))))))))
+
 (defmethod ray-cast (ray (node model-node))
-  (with-slots (transform child-nodes mesh) node
-    (let* ((inv-xform (rt-inverse transform))
-           (x-ray (make-ray
-                   (matrix-multiply-v inv-xform (ray-e ray))
-                   (matrix-multiply-v inv-xform (ray-d ray)))))
-      ;; Do test on geometry
-      (min-t
-       (cons (ray-cast x-ray mesh)
-             (iter (for child in child-nodes)
-                   (collect (ray-cast x-ray child))))))))
+  (with-slots (transform child-nodes mesh bounding-volume) node
+    (let ((sphere-hit (car
+                       (ray-sphere-intersection 
+                        ray bounding-volume 
+                        most-positive-single-float))))
+      (when sphere-hit
+        (let* ((inv-xform (rt-inverse transform))
+               (x-ray (make-ray
+                       (matrix-multiply-v inv-xform (ray-e ray))
+                       (matrix-multiply-v inv-xform (ray-d ray)))))
+          (min-t
+           (cons (ray-cast x-ray mesh)
+                 (iter (for child in child-nodes)
+                       (collect (ray-cast x-ray child))))))))))
 
 ;; ignore meshes... who needs em?
 ;; ok, ideally, we'd have it so we return the intersection
 ;; with the sphere higher up...but we're going to do 
 ;; entity-level detection there, so...
 (defmethod ray-cast (ray (mesh blt-mesh))
-  nil)
+  t)
 
 (defmethod ray-cast (ray (r-tree spatial-trees-protocol:spatial-tree))
   (let ((results (search ray r-tree)))

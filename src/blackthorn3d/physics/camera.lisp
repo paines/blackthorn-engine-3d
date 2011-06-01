@@ -39,7 +39,7 @@
    (ideal-coord2
     :accessor ideal-coord2
     :initarg :ideal-coord2
-    :initform (list 0.0 (cos (/ pi 6.0)) 0.5))
+    :initform (list 0.0 (cos (/ pi 6.0)) 2.5))
    (veloc
     :accessor veloc
     :initarg :veloc
@@ -84,7 +84,8 @@
     (with-slots ((t-pos pos) (t-up up)) target
       (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42))))
         (setf (pos c) (vec4+ pos vec)
-              (dir c) (norm4 (vec4- look-at pos)))
+              (dir c) (norm4 (vec4- look-at pos))
+              (up c) t-up)
         #+disabled
         (when (eql minor-mode :strafe)
           (setf (dir target) (norm4 (cross t-up (cross (dir c) t-up)))))))))
@@ -134,16 +135,6 @@
                     (+ rel-phi
                        (* +phi-scale+ (x input-vec)))))
 
-            #+disabled
-           (setf (elt ideal-coord 0)
-                 (aif (/= 0 (x input-vec))
-                      (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
-                      (let ((xd (x tc-pos); (- (x pos) (x t-pos))
-                              )
-                            (zd (z tc-pos); (- (z pos) (z t-pos))
-                              ))
-                        (atan xd zd))))
-
            ;; set theta
            (aif (/= 0 (y input-vec))
                 (setf (elt ideal-coord 1)
@@ -162,12 +153,6 @@
                   (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))
                   (dir target)))
 
-           #+disabled
-           (aif (/= 0 (x input-vec))
-                (setf (elt ideal-coord2 0)
-                      (+ (elt ideal-coord2 0) 
-                         (* +phi-scale+ (x input-vec)))))
-
            ;; set theta
            (aif (/= 0 (y input-vec))
                 (setf (elt ideal-coord2 1)
@@ -185,6 +170,7 @@
                (rotation (quat->matrix (spherical->quat sphere-coord)))
                (concat (matrix-multiply-m rotation translation))
                (ideal-pos 
+               ; #+disabled
                 (vec4+ look-at 
                        (matrix-multiply-v
                         inv-basis (spherical->cartesian sphere-coord)))
@@ -207,6 +193,8 @@
                 #+disabled
                 (vec4- (vec4+ pos veloc)
                        t-pos))
+      ;    (setf (new-up c) t-up)
+         ; (setf (up c) t-up)
          ; #+disabled
           (setf pos t-pos; look-at
                 ))

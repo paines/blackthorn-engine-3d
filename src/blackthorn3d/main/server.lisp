@@ -26,16 +26,22 @@
 (in-package :blackthorn3d-main)
 
 
-(defmethod update :after ((self entity-server))
+(defmethod update :before ((self entity-server))
   ;; Perform quaternion interpolation 
   (with-slots (up dir new-up) self
     (when new-up
      ;; makeh the quat
-      (let ((up-quat (quat-rotate-to-vec up new-up)))
+      (let* ((up-quat (quat-rotate-to-vec up new-up))
+             (rot-quat (quat-slerp +quat-identity+ up-quat 10/120)))
+
         (setf (up self) 
-              (quat-rotate-vec
-               (quat-norm (quat-slerp +quat-identity+ up-quat 5/120))
-               up))))))
+              (norm4 (quat-rotate-vec
+                      rot-quat up))
+              (dir self)
+              (norm4 (cross up (cross dir up)))
+              #+disabled
+              (norm4 (quat-rotate-vec
+                      rot-quat dir)))))))
 
 (defmethod update ((p player))
   (with-slots (client pos) p

@@ -161,7 +161,16 @@
                        (* 0.1 my)
                        (* 0.1 vx)
                        (* 0.1 vy)
-                       jmp))
+                       jmp
+                       (input-camera-mode *input*)
+                       (input-attack *input*)
+                       (input-fly-up *input*)
+                       (input-fly-down *input*)
+                       
+                       (input-use *input*)
+                       (input-xbox-y *input*)
+                       (input-alt-attack *input*)
+                       ))
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)

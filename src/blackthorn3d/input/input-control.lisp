@@ -45,6 +45,16 @@
 (defvar *view-up-key*    :sdl-key-up)
 (defvar *view-down-key*  :sdl-key-down)
 
+(defvar *camera-mode-key* :sdl-key-z)
+(defvar *attack-key* :sdl-key-x)
+
+(defvar *fly-up-key* :sdl-key-e)
+(defvar *fly-down-key* :sdl-key-q)
+
+(defvar *use-key* :sdl-key-j)
+(defvar *xbox-y-key* :sdl-key-k)
+(defvar *alt-attack-key* :sdl-key-l)
+
 (defvar *deadzone-range-lx* 0.1)
 (defvar *deadzone-range-ly* 0.1)
 (defvar *deadzone-range-rx* 0.1)
@@ -133,11 +143,100 @@
       (:xbox 
         (if (eql (xbox360_get_a 0) 1) 1.0 0.0))
       (otherwise 0.0))))
+      
+(defmethod input-camera-mode ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *camera-mode-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_ltrig 0))
+      (otherwise 0.0))))
+      
+(defmethod input-attack ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *attack-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_rtrig 0))
+      (otherwise 0.0))))
+      
+(defmethod input-fly-up ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *fly-up-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_rbump 0))
+      (otherwise 0.0))))
+      
+(defmethod input-fly-down ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *fly-down-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_lbump 0))
+      (otherwise 0.0))))
+      
+(defmethod input-use ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *use-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_x 0) 1) 1.0 0.0))
+      (otherwise 0.0))))      
+      
+(defmethod input-xbox-y ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *xbox-y-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_y 0) 1) 1.0 0.0))
+      (otherwise 0.0))))
+      
+(defmethod input-alt-attack ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *alt-attack-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (if (eql (xbox360_get_b 0) 1) 1.0 0.0))
+      (otherwise 0.0))))
+
             
-(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)
+(defun s-input-update (  src 
+  move-x-amt    move-y-amt 
+  view-x-amt    view-y-amt 
+  jmp-amt 
+  cam-amt      attack-amt 
+  fly-up-amt fly-down-amt 
+  use-amt xbox-y-amt alt-attack-amt)
+  
     (when (getf *client-controllers* src)
               (setf (move-x (getf *client-controllers* src)) move-x-amt)
               (setf (move-y (getf *client-controllers* src)) move-y-amt)
               (setf (view-x (getf *client-controllers* src)) view-x-amt)
               (setf (view-y (getf *client-controllers* src)) view-y-amt)
-              (setf (jump (getf *client-controllers* src)) jmp-amt)))
+              (setf (jump (getf *client-controllers* src)) jmp-amt)
+              
+              (setf (attacking (getf *client-controllers* src)) attack-amt)
+              (setf (camera-mode-button (getf *client-controllers* src)) cam-amt)
+              
+              (setf (fly-up (getf *client-controllers* src)) fly-up-amt)
+              (setf (fly-down (getf *client-controllers* src)) fly-down-amt)
+              
+              (setf (use (getf *client-controllers* src)) use-amt)
+              (setf (xbox-y (getf *client-controllers* src)) xbox-y-amt)
+              (setf (alt-attack (getf *client-controllers* src)) alt-attack-amt)
+              ))

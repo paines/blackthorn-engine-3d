@@ -17,3 +17,6 @@ short xbox360_get_ry(int controller);
 
 int xbox360_get_ltrig(int controller);
 int xbox360_get_rtrig(int controller);
+
+int xbox360_get_lbump(int controller);
+int xbox360_get_rbump(int controller);

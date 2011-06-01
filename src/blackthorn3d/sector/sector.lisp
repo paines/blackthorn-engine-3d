@@ -164,7 +164,7 @@
   (foreach-in-sector (lookup-sector a-sector) func))
     
 (defmethod add-to-sector (an-entity (a-sector sector))
-  (setf (gethash (oid an-entity) (contents a-sector)) an-entity)
+ ; (setf (gethash (oid an-entity) (contents a-sector)) an-entity)
   (setf (current-sector an-entity) (sector-id a-sector)))
   
 (defmethod add-to-sector (an-entity (a-sector symbol))

@@ -64,6 +64,11 @@
       (format t "Alt Attack pressed for player: ~a~%" p))
     
     (when (> (s-input-jump client) 0)
+      (setf (velocity p) (vec-scale4 (up p) .1))
+    )
+    
+    #+disabled
+    (when (> (s-input-jump client) 0)
       (send-play-explosion
        :broadcast :some-explosion-name pos)
       (send-play-laser

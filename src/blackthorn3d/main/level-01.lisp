@@ -41,13 +41,14 @@
   (format t "##### Loading Maps~%")
   (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
   (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
+  (load-model :slide-room :level #p "res/models/WallRoomSlide.dae")
 
 
 ;;;
 ;;; Level layout
 ;;;
 
-  (make-start-sector (get-model :dead-end-room))
+  (make-start-sector (get-model :slide-room))
 
   (progn
     (add-sector-relative

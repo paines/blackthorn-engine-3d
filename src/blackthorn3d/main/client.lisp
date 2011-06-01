@@ -51,9 +51,8 @@
   ;; TODO: Do it.
   )
 
-(defun handle-camera-client (src camera-event)
-  (let ((camera (camera-event-camera camera-event)))
-    (blt3d-rend:set-camera camera)))
+(defun handle-camera-client (src camera)
+  (blt3d-rend:set-camera camera))
 
 (defun handle-message-client (src message)
   (ecase (message-type message)
@@ -141,12 +140,12 @@
                (vx (float (input-view-x *input*)))
                (vy (float (input-view-y *input*)))
                (jmp (float (input-jump *input*))))
-           (message-send :server (make-event :input 
-                                             :move-x (* 0.1 mx) 
-                                             :move-y (* 0.1 my)
-                                             :view-x (* 0.1 vx)
-                                             :view-y (* 0.1 vy)
-                                             :jmp jmp)))
+           (send-input :server
+                       (* 0.1 mx)
+                       (* 0.1 my)
+                       (* 0.1 vx)
+                       (* 0.1 vy)
+                       jmp))
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)

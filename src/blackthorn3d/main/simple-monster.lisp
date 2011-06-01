@@ -100,19 +100,16 @@
   (collide eye p))
       
       
-(defmessage :force-disconnect (
-  :string   ; reason
-  ))
+(defmessage :force-disconnect send-force-disconnect
+  (:string ; reason
+   ))
   
 (defun disconnect-eaten-player (who)
-  (message-send who (make-message-list :force-disconnect
-    "You were eaten by the monster!")))
+  (send-force-disconnect who "You were eaten by the monster!"))
       
 (defmethod collide ((p player) (m simple-monster))
   (format t "Om nom nom nom!~%")
-  (disconnect-eaten-player (player-client p))
-  )
-  
+  (disconnect-eaten-player (player-client p)))
+
 (defmethod collide ((m simple-monster) (p player))
   (collide p m))
-      

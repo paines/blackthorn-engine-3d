@@ -76,6 +76,9 @@
     :accessor velocity
     :initarg :velocity
     :initform blt3d-math:+zero-vec+)
+   (new-up
+    :accessor new-up
+    :initform +y-axis+)
    (displacers
     :accessor displacers
     :initform nil)

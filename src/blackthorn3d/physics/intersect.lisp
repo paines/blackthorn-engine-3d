@@ -333,7 +333,7 @@
 
 (defun slide-sphere (sphere velocity hit)
   "@return{the new position and velocity of the sphere as
-           (new-pos  new-vel)}"
+           (new-pos  new-vel plane-normal)}"
   (let* ((x0 (car hit))
          (hit-pt (second hit))
          (new-bp (pos sphere))
@@ -370,4 +370,4 @@
   ;    (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
       
 
-      (list new-bp new-vel))))
+      (list new-bp new-vel plane-normal))))

@@ -48,9 +48,9 @@
 ;;; Level layout
 ;;;
 
-  (make-start-sector (get-model :slide-room))
+  (make-start-sector (get-model :dead-end-room))
 
-  #+disabled
+  ;#+disabled
   (progn
     (add-sector-relative
      :start-sector

@@ -88,69 +88,73 @@
   (setf *main-light* (make-light 'light
                       :position (make-point3 0.0 2.0 0.0)))
 
-  ;#+disabled
-  (setf *laser-ps*
-        (create-particle-system
-         (make-instance 'point-emitter
-                        :pos +origin+
-                        :dir +x-axis+
-                        :up +y-axis+
-                        :angle 0.1
-                        :speed '(0.5 . 2.5))
-         10
-         300
-         :lifetime '(5.0 . 10.0)
-         :color #(0.0 0.5 2.0 1.0)
-         :force-fn #'(lambda (x y) +zero-vec+)))
-
-  ;#+disabled
+;  #+disabled
   (setf *test-ps* 
-        #+disabled
+        ;#+disabled
         (create-spark-ps
          (make-instance 'point-emitter
-                        :pos (make-point3 0.0 -1.7 0.0)
-                        :dir +y-axis+
+                        :pos (make-point3 7.5 0.0 0.0)
+                        :dir (vec-neg4 +x-axis+)
                         :up +y-axis+
-                        :angle (* 2 pi);(/ pi 6)
-                        :speed 8)
-         100
-         :size #(0.05 0.3)
-         :lifetime 0.2
-         :color +orange+
+                        :angle  pi; (/ pi 6)
+                        :speed 4)
+         50
+         :size #(0.15 0.3)
+         :lifetime 0.4
+         :color +aqua+
          :drag-coeff 8.5)
 
-      ; #+disabled
+       #+disabled
         (create-explosion-ps 
          (make-instance 'point-emitter
                         :pos (make-point3 0.0 -1.7 0.0)
                         :dir +y-axis+
                         :up +y-axis+
-                        :angle (* 2 pi);(/ pi 6)
-                        :speed '(15.0 . 24.0 ))
+                        :angle (* 2 pi)
+                        :speed '(30.0 . 37.0 ))
          300
-         :lifetime '(1.3 . 2.4)
-         :color +orange+
+         :size #(0.1 0.8)
+         :lifetime '(.5 . 1.4)
+         :color #(2.5 1.0 0.3 1.5)
          :gravity +zero-vec+;(vec-neg4 +y-axis+)
          :grav-coeff 0.0
-         :drag-coeff 8.0)
+         :drag-coeff 5.0)
 
         #+disabled
         (create-particle-system 
-                   (make-instance 'point-emitter
-                                  :pos (make-point3 0.0 -1.7 0.0)
-                                  :dir +y-axis+
-                                  :up +y-axis+
-                                  :angle (/ pi 6)
-                                  :speed '(.05 . .13 ))
-                   5
-                   80
-                   :lifetime '(5.0 . 7.0)
-                   :color #(0.0 .3 1.0 2.0)
-                   :force-fn
-                   #'(lambda (vel dt)
-                       +zero-vec+
-                       ;(vec-neg3 (vec3+ vel +y-axis+))
-                       )))
+         (make-instance 'point-emitter
+                        :pos (make-point3 0.0 -1.7 0.0)
+                        :dir +y-axis+
+                        :up +y-axis+
+                        :angle (/ pi 6)
+                        :speed '(.1 . .15))
+         25
+         200
+         :lifetime '(5.0 . 7.0)
+         :color #(0.0 .3 1.0 2.0)
+         :force-fn
+         #'(lambda (vel dt)
+             +zero-vec+
+                                        ;(vec-neg3 (vec3+ vel +y-axis+))
+             )))
+
+ (setf *laser-ps*
+       (create-particle-system
+        (make-instance 'point-emitter
+                       :pos +origin+
+                       :dir +x-axis+
+                       :up +y-axis+
+                       :angle 0
+                       :speed '(0.5 . 2.5))
+        10
+        300
+        :size #(0.5 0.5)
+        :lifetime '(5.0 . 10.0)
+        :color #(0.0 0.5 2.0 1.0)
+        :force-fn #'(lambda (x y) +zero-vec+)))
+
+
+
 
   #+disabled
   (add-ui-element
@@ -181,7 +185,8 @@
           (gl:glsl-major-version) (gl:glsl-minor-version))
   
 
-  
+                                        ; #+disabed
+ 
   (gl:enable :texture-2d)
   (gl:enable :blend)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
@@ -195,9 +200,7 @@
 
   (gl:enable :lighting)
   (gl:enable :light0)
-  (gl:enable :rescale-normal)
-
-  )
+  (gl:enable :rescale-normal))
 
 
 
@@ -223,6 +226,7 @@
   (when *test-ps*
     #+disabled
     (update-ui-element *test-ui* (num-alive *test-ps*))
+
     (update-ps *test-ps* time))
 
   (when *laser-ps*

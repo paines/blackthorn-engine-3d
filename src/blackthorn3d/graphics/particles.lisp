@@ -44,27 +44,25 @@
                         position velocity
                         energy fade-rate
                         color)
-  (setf (col particles index) 
-        (vector energy                  ; 0
-                fade-rate               ; 1
-                (x position)            ; 2
-                (y position)            ; 3
-                (z position)            ; 4
-            ;    (x position)            ; 5
-            ;    (y position)            ; 6
-            ;    (z position)            ; 7
-                (x velocity)            ; 8 -> 5
-                (y velocity)            ; 9 -> 6
-                (z velocity)            ; 10 -> 7
-                (r color)               ; 11 -> 8
-                (g color)               ; 12 -> 9
-                (b color)               ; 13 -> 10
-                (a color)               ; 14 -> 11
-                ;size                   ; 15 -> 12
-                )))                 
+  (macrolet ((single (num) `(coerce ,num 'single-float)))
+    (setf (col particles index) 
+          (vector energy                  ; 0
+                  fade-rate               ; 1
+                  (single (x position))            ; 2
+                  (single (y position))            ; 3
+                  (single (z position))            ; 4
+                  (single (x velocity))            ; 8 -> 5
+                  (single (y velocity))            ; 9 -> 6
+                  (single (z velocity))            ; 10 -> 7
+                  (single (r color))               ; 11 -> 8
+                  (single (g color))               ; 12 -> 9
+                  (single (b color))               ; 13 -> 10
+                  (single (a color))               ; 14 -> 11
+                                        ;size                   ; 15 -> 12
+                  ))))                 
 
 (defun create-particle-array (max-particles)
-  (make-array (list max-particles 12) :element-type 'float))
+  (make-array (list max-particles 12) :element-type 'single-float))
 
 ;; ENERGY
 (defun p-energy (particle)
@@ -203,7 +201,7 @@
    (force-fn
     :initarg :force-fn
     :initform #'(lambda (vel dt) (vec-neg4 +y-axis+)))
-   #+disabled ;; i think we can use the same shader...for everything
+  
    (shader
     :accessor shader
     :initarg :shader
@@ -239,7 +237,9 @@
     :reader  max-particles)
    (num-alive
     :accessor num-alive
-    :initform 0)))
+    :initform 0)
+   (spawn-num
+    :initform 1)))
 
 
 ;;;
@@ -303,7 +303,10 @@
                  :emitter emitter
                  :spawn-rate spawn-rate
                  :lifetime lifetime
-                 :size (if (arrayp size) size (vector size size))
+                 :size (concatenate 
+                        'vector
+                        (if (arrayp size) size (vector size size))
+                        #(0.0e0))
                  :color color
                  :mode mode
                  :max-particles max-particles
@@ -325,7 +328,10 @@
                  :emitter emitter
                  :spawn-rate 0
                  :lifetime lifetime
-                 :size (if (arrayp size) size (vector size size))
+                 :size (concatenate 
+                        'vector
+                        (if (arrayp size) size (vector size size))
+                        #(0.0e0))
                  :color color
                  :texture texture
                  :mode '(:loop 4)
@@ -354,7 +360,10 @@
                  :color color
                  :texture texture
                  :lifetime lifetime
-                 :size (if (arrayp size) size (vector size size))
+                 :size (concatenate 
+                        'vector
+                        (if (arrayp size) size (vector size size))
+                        #(0.0e0))
                  :max-particles max-particles
                  :spawn-rate (ceiling
                               (/ max-particles 
@@ -384,55 +393,54 @@
                        1.0 fade
                        color))))
 
-(let ((spawn-num 1))
-  (defmethod update-ps ((this particle-system) dt)
-    ;; Loop over each particle and update it's position
-   ; (let ((*external-force* (funcall (slot-value this 'force-fn) dt))))
-    (with-slots (particles 
-                 spawn-rate 
-                 max-particles 
-                 num-alive 
-                 lifetime
-                 force-fn
-                 mode type) this
 
-      (unless (eql (car mode) :kill)
-        (incf spawn-num (* dt spawn-rate))
-        (iter (with emitted = 0)
-              (with max-emit = 
-                    (ecase type
-                      (:explosion (if (<= num-alive 0) max-particles 0))
-                      ((:default :sparks) (floor spawn-num))))
-              (with alive-cnt = 0)
-              (for index below max-particles)
-              (for particle = (cons particles index))
-              (while (or (< emitted max-emit)
-                         (< alive-cnt num-alive)))
-              (if (is-alive particle)
-                  (progn 
-                    (update-particle particle force-fn dt)
-                    (incf alive-cnt))
-                  ;; If dead check if we should revive it
-                  (when (and (not (eql (car mode) :stop))
-                             (< emitted max-emit))
-                    (gen-particle this index dt)
-                    (incf emitted)))
+(defmethod update-ps ((this particle-system) dt)
+  ;; Loop over each particle and update it's position
+  (with-slots (particles 
+               spawn-rate 
+               max-particles 
+               num-alive spawn-num
+               lifetime
+               force-fn
+               mode type size) this
+    (setf (aref size 2) dt)
+    (unless (eql (car mode) :kill)
+      (incf spawn-num (* dt spawn-rate))
+      (iter (with emitted = 0)
+            (with max-emit = 
+                  (ecase type
+                    (:explosion (if (<= num-alive 0) max-particles 0))
+                    ((:default :sparks) (floor spawn-num))))
+            (with alive-cnt = 0)
+            (for index below max-particles)
+            (for particle = (cons particles index))
+            (while (or (< emitted max-emit)
+                       (< alive-cnt num-alive)))
+            (if (is-alive particle)
+                (progn 
+                  (update-particle particle force-fn dt)
+                  (incf alive-cnt))
+                ;; If dead check if we should revive it
+                (when (and (not (eql (car mode) :stop))
+                           (< emitted max-emit))
+                  (gen-particle this index dt)
+                  (incf emitted)))
 
-              ;; Finally, update the number of alive particles      
-              (finally
-               (decf spawn-num emitted)
-               (setf num-alive (+ alive-cnt emitted)))))
+            ;; Finally, update the number of alive particles      
+            (finally
+             (decf spawn-num emitted)
+             (setf num-alive (+ alive-cnt emitted)))))
 
-      (case (car mode)
-        (:time (decf (second mode) dt)
-               (when (< (second mode) 0) (setf mode '(:stop))))
-        (:repeat
-         (when (<= num-alive 0)
-           (decf (second mode))
-           (when (<= (second mode) 0) (setf mode '(:stop)))))
-        (:once
-         (when (<= num-alive 0) (setf mode '(:stop))))
-        (:stop (when (<= num-alive 0) (setf mode '(:kill))))))))
+    (case (car mode)
+      (:time (decf (second mode) dt)
+             (when (< (second mode) 0) (setf mode '(:stop))))
+      (:repeat
+       (when (<= num-alive 0)
+         (decf (second mode))
+         (when (<= (second mode) 0) (setf mode '(:stop)))))
+      (:once
+       (when (<= num-alive 0) (setf mode '(:stop))))
+      (:stop (when (<= num-alive 0) (setf mode '(:kill)))))))
 
 (defun render-ps (ps) (draw-object ps))
 (defmethod draw-object ((this particle-system))

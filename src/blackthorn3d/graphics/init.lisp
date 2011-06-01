@@ -60,7 +60,7 @@
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 
   (setf *laser-tex*
-        (image->texture2d (load-image #p "res/images/laser-1.png")))
+        (image->texture2d (load-image #p "res/images/laser-2.png")))
 
 
    ;; Init Skin Shader(s)

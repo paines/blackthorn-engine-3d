@@ -77,8 +77,29 @@
     (setf (velocity an-entity) old-velocity)
     result))
 
-; this will be the real one eventually
 ;#+disabled
+(defun standard-physics-step (self)
+  (let ((t-sector 
+         (funcall *hackity-hack__lookup-sector* (current-sector self)))
+        ;; we can keep this
+        (displace-vector (displace-step self 1)))
+    
+    (destructuring-bind (new-vel new-up)
+        (funcall *hackity-hack__collide-sector* self displace-vector t-sector)
+
+      (move-vec self new-vel)
+      (move-and-set-velocity self 
+                             (car
+                              (funcall *hackity-hack__collide-sector*
+                                       self
+                                       (velocity self) t-sector)))
+      
+      ;; We need to interpolate to new-up. I think we should store the
+      ;; new up in the entity and use dt to interpolate to it
+      (setf (new-up self) new-up))))
+
+; this will be the real one eventually
+#+disabled
 (defun standard-physics-step (self)
   (let* ((t-sector (funcall *hackity-hack__lookup-sector* (current-sector self)))
          (force-vector    (force-step self 1))

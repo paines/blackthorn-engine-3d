@@ -44,10 +44,7 @@
     :initform (quat-identity)
     :documentation "quatenion representing the rotation of the sector
                     Is expected to be in increments of 90 degrees")
-   (gravity
-    :accessor gravity
-    :initarg :gravity
-    :initform (vec-scale4 +y-axis+ -9.8))
+  
    (portals
     :accessor portals
     :initarg :portals
@@ -231,9 +228,9 @@
      (rt-inverse (quat->matrix orientation))
      (make-translate (vec-neg4 origin)))))
 
-(defmethod collide-sector ((obj entity-server) (a-sector sector)
+(defmethod collide-sector ((obj entity-server) velocity (a-sector sector)
                            &optional depth)
-  (with-slots (pos bounding-volume velocity) obj
+  (with-slots (pos bounding-volume) obj
     (with-slots (geometry portals) a-sector
       (let ((test-sphere (move-bounding-volume bounding-volume pos))
             (test-vel (to-vec4 velocity)))
@@ -246,11 +243,12 @@
               (transform-to-sector test-vel a-sector))
 
         ;; test against the geometry (and transform the result back)
-        (transform-to-world
-         (to-vec4
-          (blt3d-phy:collide-with-world
-           test-sphere test-vel geometry depth))
-         a-sector)))))
+        (destructuring-bind (vel norm)
+            (blt3d-phy:collide-with-world
+             test-sphere test-vel geometry depth)
+          (list 
+           (transform-to-world (to-vec4 vel) a-sector)
+           (aif norm (transform-to-world (to-vec4 it) a-sector))))))))
 
 (defvar +p-eps+ 1e-3)
 (defmethod collide-sector-portals ((obj entity-server) (a-sector sector))

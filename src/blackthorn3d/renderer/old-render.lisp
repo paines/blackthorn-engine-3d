@@ -37,7 +37,6 @@
       (old-render-frame entities)))
 
 
-;#+disabled
 (defun old-render-frame (entities)
 
   (gl:enable :depth-test :lighting)
@@ -50,7 +49,7 @@
   ;; (let ((PVS (find-pvs entities level))))
   
   ;; create shadow map
-  ;#+disabled
+  #+disabled
   (when (and *main-cam* (> *gl-version* 3.0))
     (shadow-pass *main-light* 
                  (cons home-sector 
@@ -105,50 +104,15 @@
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
   (gl:depth-mask nil)
-  (when *test-ps*
-    (render-ps *test-ps*))
-  (when *laser-ps*
-    (render-ps *laser-ps*))
+
+  (draw-object *test-ps*)
+  (draw-object *laser-ps*)
 
   ;; test lazor
-  #+disabled
+ ; #+disabled
   (blt3d-gfx::draw-beam +origin+ (make-point3 15.0 0.0 0.0)
                        #(0.0 0.4 1.0 1.0) 
-                       *laser-tex* #(0.1 .5))
-
-  ;; now render the texture
-  #+disabled
-  (when *main-cam*
-    (let ((depth-buffer (get-attachment 
-                          (view-fbo (light-viewport *main-light*))
-                          :depth-attachment-ext)))
-
-
-       (enable-shader *standard-tex*)
-       (gl:uniformi (gl:get-uniform-location (program *standard-tex*) "shadow")
-                    3)
-
-        ;(unbind-framebuffer)
-        (gl:depth-mask t)
-        (gl:blend-func :src-alpha :one-minus-src-alpha)
-        (gl:viewport 0 0 960 720)
-        (gl:clear :color-buffer-bit :depth-buffer-bit)
-        (enable-shader *depth-shader*)
-       ; (disable-shader)
-        (gl:disable :lighting)
-        (gl:matrix-mode :projection)
-        (gl:load-identity)
-        (gl:ortho 0 1 0 1 -10 10)
-        (gl:matrix-mode :modelview)
-        (gl:load-identity)
-        (gl:active-texture :texture3)
-        (gl:enable :texture-2d)
-        (gl:bind-texture :texture-2d *shadow-depth-tex*)
-  ;      (gl:generate-mipmap-ext :texture-2d)
-        (gl:color 1 1 1)
-        (draw-screen-quad)
-        (gl:bind-texture :texture-2d 0)))
-  
+                       *laser-tex* #(0.5 0.5))
 
   ;;(disable-shader)
   ;; Lastly render the ui

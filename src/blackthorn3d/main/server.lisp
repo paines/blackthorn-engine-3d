@@ -85,8 +85,8 @@
       ;; Note: I use t-sector to avoid awkward behavior when the target
       ;; moves around a wall but the camera is in a different sector
       ;; not that this can't cause problems either..
-      (let ((movement-vec (collide-sector 
-                           c t-sector 1)))
+      (let ((movement-vec (car (collide-sector 
+                                c (velocity c) t-sector 1))))
         (blt3d-phy::move-camera c movement-vec))
 
       ;; do sector check for camera

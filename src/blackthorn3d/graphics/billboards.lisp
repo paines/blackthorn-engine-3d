@@ -178,7 +178,7 @@
 
 (defun draw-v-particles (particles count num-alive)
   (let ((vel-place (get-attribute-loc *billboard-vel-shader* "velocity")))
- ;   (gl:disable :rescale-normal)
+    (gl:disable :rescale-normal)
     (gl:with-primitive :quads
       (iter (for i below count)
             (for particle = (cons particles i))
@@ -212,14 +212,14 @@
                 (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
                ; (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
-                ))))))
+                ))))
+    (gl:enable :rescale-normal)))
 
 (defun render-particles (particles count num-alive texture size
                          &optional (align :screen) axis)
   
   (setup-shader align axis size)
   
-  (gl:enable :texture-2d)
   (use-texture texture)
   (gl:with-pushed-attrib (:depth-buffer-bit)   
   ;  (gl:enable-client-state :vertex-array)
@@ -242,7 +242,9 @@
          (tex-len (svref size 1))
          (beam-len (mag line))
          (axis (norm4 line))
-         (step-axis (vec-scale3 axis tex-len)))
+         (step-axis (vec-scale3 axis tex-len))
+         (size (if (/= 3 (length size))
+                   (vector (x size) (y size) 0.0))))
 
     (setup-shader :axis axis size)
     (use-texture texture)    

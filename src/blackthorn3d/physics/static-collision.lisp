@@ -159,7 +159,8 @@
     (setf depth +max-collision-depth+))
 
   (let ((test-sph (copy-sphere sphere))
-        (test-vel velocity))
+        (test-vel velocity)
+        up)
 
     (setf (svref test-vel 3) 0.0)
 
@@ -185,16 +186,17 @@
           (until (null hit))
           (when hit
             ;; get new origin and velocity
-            (destructuring-bind (new-pos new-vel)
+            (destructuring-bind (new-pos new-vel new-up)
                 (slide-sphere test-sph test-vel hit)
               (setf (pos test-sph) new-pos
                     test-vel new-vel
-                    end new-pos)))
+                    end new-pos
+                    up new-up)))
 
           ;; At the end return the displacement from original sphere
           ;; to new one
           (finally (return  
-                     (vec4- end (pos sphere)))))))
+                     (list (vec4- end (pos sphere)) up))))))
 
 ;; x0 stays the same, but the position needs to be moved
 (defun transform-hit (transform hit)

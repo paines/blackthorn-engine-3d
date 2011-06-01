@@ -37,6 +37,7 @@
    :pos
    :dir
    :up
+   :new-up
    :velocity
    :shape-name
    :shape

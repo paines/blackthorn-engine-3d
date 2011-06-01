@@ -75,6 +75,8 @@
 (defun quat-identity ()
   (make-vector4 0.0 0.0 0.0 1.0))
 
+(defvar +quat-identity+ (quat-identity))
+
 (defun quat-conjugate (q)
   (make-quat-from-vw (vec-neg3 (qv q)) (qw q)))
 
@@ -150,15 +152,26 @@
         (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical))  ; qv
                              (/ radical 2.0)))))             ; qw
 
+(defvar +slerp-delta+ 1.0e-3)
 (defun quat-slerp (q1 q2 s)
-  (let* ((phi (iter (for a in-vector q1)
+  (let ((cos-omega (inner-product q1 q2)
+           #+disabled(iter (for a in-vector q1)
                     (for b in-vector q2)
                     (sum (* a b))))
-         (sin-phi (sin phi)))
-    (quat+ (quat-scale q1 (/ (sin (* phi (- 1 s))) 
-                             sin-phi))
-           (quat-scale q2 (/ (sin (* phi s)) 
-                             sin-phi)))))
+        scale1 scale2)
+    (if (< (- 1 cos-omega) +slerp-delta+)
+        ;; We do linear interpolation to avoid divide-by-zero
+        (setf scale1 (- 1.0 s)
+              scale2 s)
+        ;; normal slerp
+        (let* ((omega (acos cos-omega))
+               (sin-omega (sin omega)))
+          (setf scale1 (/ (sin (* omega (- 1.0 s)))
+                           sin-omega)
+                scale2 (/ (sin (* omega s))
+                          sin-omega))))
+    (quat+ (quat-scale q1 scale1)
+           (quat-scale q2 scale2))))
 
 (defun spherical->quat (spherical)
   (let* ((cart-vec (norm4 (spherical->cartesian spherical t)))

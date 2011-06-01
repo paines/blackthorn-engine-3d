@@ -26,6 +26,17 @@
 (in-package :blackthorn3d-main)
 
 
+(defmethod update :after ((self entity-server))
+  ;; Perform quaternion interpolation 
+  (with-slots (up dir new-up) self
+    (when new-up
+     ;; makeh the quat
+      (let ((up-quat (quat-rotate-to-vec up new-up)))
+        (setf (up self) 
+              (quat-rotate-vec
+               (quat-norm (quat-slerp +quat-identity+ up-quat 5/120))
+               up))))))
+
 (defmethod update ((p player))
   (with-slots (client pos) p
     ;; TODO: Testing our various messages, remove at some point.

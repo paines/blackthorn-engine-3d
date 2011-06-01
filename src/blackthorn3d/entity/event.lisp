@@ -62,6 +62,8 @@
    :single-float ; jmp
    :single-float ; left trigger
    :single-float ; right trigger
+   :single-float ; left bumper
+   :single-float ; right bumper
    ))
 
 (defmessage :event-camera send-camera

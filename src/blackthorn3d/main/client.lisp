@@ -164,6 +164,8 @@
                        jmp
                        (input-camera-mode *input*)
                        (input-attack *input*)
+                       (input-fly-up *input*)
+                       (input-fly-down *input*)
                        ))
 
 

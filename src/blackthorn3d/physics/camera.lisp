@@ -75,10 +75,11 @@
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
 (defvar +theta-limit+ 89)
-(setf +phi-scale+ -2.0)
+(setf +phi-scale+ -0.2)
 (setf +theta-scale+ -0.2)
 
 (defmethod move-camera ((c camera) vec)
+  ;#+disabled
   (with-slots (target pos velocity minor-mode) c
     (with-slots ((t-pos pos) (t-up up)) target
       (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42))))
@@ -125,14 +126,15 @@
            ;; set phi
      ;      #+disabled
            (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
+             #+disabled
              (if (zerop (x input-vec))
-                 (setf (elt ideal-coord 0)
-                       rel-phi)
-                 (setf (elt ideal-coord 0)
-                       (+ rel-phi
-                          (* +phi-scale+ (x input-vec))))))
+                  (setf (elt ideal-coord 0)
+                        rel-phi))
+              (setf (elt ideal-coord 0)
+                    (+ rel-phi
+                       (* +phi-scale+ (x input-vec)))))
 
-           #+disabled
+            #+disabled
            (setf (elt ideal-coord 0)
                  (aif (/= 0 (x input-vec))
                       (+ (elt ideal-coord 0) (* +phi-scale+ (x input-vec)))
@@ -191,18 +193,21 @@
                                  (matrix-multiply-v 
                                   inv-basis
                                   (matrix-multiply-v concat +origin+))))
-               (displace-vec (vec4- pos ideal-pos))
+               (displace-vec (vec4- ideal-pos pos))
                (spring-accel (vec4-
-                              (vec-scale4 displace-vec (- ks))
-                              (vec-scale4 veloc (* 2.0 (sqrt ks))))))
+                              (vec-scale4 displace-vec  ks)
+                              (vec-scale4 (velocity c) (* 2.0 (sqrt ks))))))
 
           (setf veloc  (vec-scale4 spring-accel time))
           
+         ; #+disabled
           (setf (velocity c) 
-                ;(vec4- ideal-pos look-at)
-               ; #+disabled
+                ;(vec4+ pos veloc)
+                (vec4- ideal-pos look-at)
+                #+disabled
                 (vec4- (vec4+ pos veloc)
                        t-pos))
+         ; #+disabled
           (setf pos t-pos; look-at
                 ))
 

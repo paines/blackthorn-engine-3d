@@ -146,20 +146,24 @@
          (nt (norm4 destVec))
          (u (cross ns nt))
          (e (dot ns nt))
-         (radical (sqrt (* 2.0 (+ 1.0 e)))))
-    (if (zerop radical) 
-        (quat-identity)
-        (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical))  ; qv
-                             (/ radical 2.0)))))             ; qw
+         (disc (* 2.0 (+ 1.0 e))))
+    (when (minusp disc)
+      (format t "ZOMG COMPLEXITY~% src: ~a dest: ~a~% dot: ~a~%"
+              srcVec destVec e))
+    (let ((radical (sqrt disc)))
+      (if (zerop radical) 
+          (quat-identity)
+          (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical))  ; qv
+                               (/ radical 2.0))))))             ; qw
 
 (defvar +slerp-delta+ 1.0e-3)
 (defun quat-slerp (q1 q2 s)
-  (let ((cos-omega (inner-product q1 q2)
-           #+disabled(iter (for a in-vector q1)
-                    (for b in-vector q2)
-                    (sum (* a b))))
+  (let ((cos-omega (inner-product q1 q2))
         scale1 scale2)
-    (if (< (- 1 cos-omega) +slerp-delta+)
+    (when (minusp cos-omega)
+      (setf cos-omega (- cos-omega))
+      (setf q2 (vec-neg4 q2)))
+    (if (< (- 1.0 cos-omega) +slerp-delta+)
         ;; We do linear interpolation to avoid divide-by-zero
         (setf scale1 (- 1.0 s)
               scale2 s)

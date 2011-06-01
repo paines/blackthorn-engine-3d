@@ -73,6 +73,11 @@
 
       ;#+disabled
       (unless (standing-on-p self t-sector)
+        #+disabled
+        (setf (new-up self) 
+              (norm4 move-to))
+
+       ; #+disabled
         (destructuring-bind (move-to new-up2)
             (funcall *hackity-hack__collide-sector*
                      self 

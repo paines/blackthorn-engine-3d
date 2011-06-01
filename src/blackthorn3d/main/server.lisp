@@ -31,17 +31,16 @@
   (with-slots (up dir new-up) self
     (when new-up
      ;; makeh the quat
+      (when (< (+ 1.0 (dot up new-up) 0.0001))
+            (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
+
       (let* ((up-quat (quat-rotate-to-vec up new-up))
              (rot-quat (quat-slerp +quat-identity+ up-quat 10/120)))
-
         (setf (up self) 
               (norm4 (quat-rotate-vec
                       rot-quat up))
               (dir self)
-              (norm4 (cross up (cross dir up)))
-              #+disabled
-              (norm4 (quat-rotate-vec
-                      rot-quat dir)))))))
+              (norm4 (cross up (cross dir up))))))))
 
 (defmethod update ((p player))
   (with-slots (client pos) p
@@ -65,7 +64,8 @@
     
     (when (> (s-input-jump client) 0)
       (setf (velocity p) (vec-scale4 (up p) .1))
-    )
+      ;(setf (new-up p) (vec-neg4 (up p)))
+      )
     
     #+disabled
     (when (> (s-input-jump client) 0)

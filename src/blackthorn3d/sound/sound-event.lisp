@@ -40,4 +40,5 @@
 
 (defun handler-sound (src key loop)
   (let ((sound (find-sound key)))
+    #+disabled
     (play-sound sound :loop loop)))

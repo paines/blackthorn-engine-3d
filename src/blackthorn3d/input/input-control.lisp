@@ -45,6 +45,9 @@
 (defvar *view-up-key*    :sdl-key-up)
 (defvar *view-down-key*  :sdl-key-down)
 
+(defvar *camera-mode-key* :sdl-key-z)
+(defvar *attack-key* :sdl-key-x)
+
 (defvar *deadzone-range-lx* 0.1)
 (defvar *deadzone-range-ly* 0.1)
 (defvar *deadzone-range-rx* 0.1)
@@ -133,11 +136,35 @@
       (:xbox 
         (if (eql (xbox360_get_a 0) 1) 1.0 0.0))
       (otherwise 0.0))))
+      
+(defmethod input-camera-mode ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *camera-mode-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_ltrig 0))
+      (otherwise 0.0))))
+      
+(defmethod input-attack ((system input-system))
+  (with-slots (kind) system
+    (case kind
+      (:keyboard
+        (if (sdl:get-key-state *attack-key*) 1.0 0.0))
+      #+windows
+      (:xbox 
+        (xbox360_get_rtrig 0))
+      (otherwise 0.0))))
             
-(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt)
+(defun s-input-update (src move-x-amt move-y-amt view-x-amt view-y-amt jmp-amt cam-amt attack-amt )
     (when (getf *client-controllers* src)
               (setf (move-x (getf *client-controllers* src)) move-x-amt)
               (setf (move-y (getf *client-controllers* src)) move-y-amt)
               (setf (view-x (getf *client-controllers* src)) view-x-amt)
               (setf (view-y (getf *client-controllers* src)) view-y-amt)
-              (setf (jump (getf *client-controllers* src)) jmp-amt)))
+              (setf (jump (getf *client-controllers* src)) jmp-amt)
+              
+              (setf (attacking (getf *client-controllers* src)) attack-amt)
+              (setf (camera-mode-button (getf *client-controllers* src)) cam-amt)
+              ))

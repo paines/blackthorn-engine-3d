@@ -39,6 +39,8 @@
    :input-jump
    :set-controller
    :input-kind
+   :input-camera-mode
+   :input-attack
    
    ;; server-control.lisp
    :new-server-controller
@@ -49,6 +51,8 @@
    :s-input-view-x
    :s-input-view-y
    :s-input-jump
+   :s-input-camera-mode
+   :s-input-attack
    
    ;; xbox360.lisp
    :xbox360-vibrate

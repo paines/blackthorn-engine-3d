@@ -47,8 +47,14 @@
         #+disabled
         (use-model-on (shape-name entity) entity)))
         
-(defun handle-play-explosion-at (src x y z)
-  (format t "Explosion goes boom at ~a, ~a, ~a~%" x y z))
+(defun handle-play-explosion (src name pos)
+  (format t "Explosion ~a goes boom at ~a~%" name pos))
+
+(defun handle-play-laser (src name start-pos dir)
+  (format t "Laser ~a goes boom starting at ~a dir ~a~%" name start-pos dir))
+
+(defun handle-play-animation (src entity name mode)
+  (format t "Animation ~a goes boom on ~a with mode ~a~%" name entity mode))
 
 (defun handle-entity-remove-client (src entity)
   ;; TODO: Do it.
@@ -75,10 +81,13 @@
      (apply-message-handler #'handle-camera-client src message))
     (:event-sound
      (apply-message-handler #'blt3d-snd:handler-sound src message))
-    (:play-explosion-at
-     (apply-message-handler #'handle-play-explosion-at src message))
-     
-     ))
+    (:play-explosion
+     (apply-message-handler #'handle-play-explosion src message))
+    (:play-laser
+     (apply-message-handler #'handle-play-laser src message))
+    (:play-animation
+     (apply-message-handler #'handle-play-animation src message))
+    ))
 
 (defun finalize-client ()
   (socket-disconnect-all)

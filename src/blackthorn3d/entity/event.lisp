@@ -64,3 +64,21 @@
 
 (defmessage :event-camera send-camera
   (:entity-oid))
+
+;; TODO: Move to game-specific location.
+(defmessage :play-explosion send-play-explosion
+  (:symbol ; name
+   :vec3   ; pos
+   ))
+
+(defmessage :play-laser send-play-laser
+  (:symbol ; name
+   :vec3   ; start-pos
+   :vec3   ; dir
+   ))
+
+(defmessage :play-animation send-play-animation
+  (:entity-oid ; entity
+   :symbol     ; name
+   :symbol     ; mode
+   ))

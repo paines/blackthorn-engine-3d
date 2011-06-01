@@ -51,6 +51,10 @@
       (format t "Camera mode pressed for player: ~a~%" p))
     (when (> (s-input-attack (player-client p)) 0)
       (format t "Attack pressed for player: ~a~%" p))
+    (when (> (s-input-fly-up (player-client p)) 0)
+      (format t "Fly up pressed for player: ~a~%" p))
+    (when (> (s-input-fly-down (player-client p)) 0)
+      (format t "Fly down pressed for player: ~a~%" p))
     
     (when (> (s-input-jump client) 0)
       (send-play-explosion

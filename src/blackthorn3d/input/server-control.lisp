@@ -52,7 +52,14 @@
         :initform 0)
      (camera-mode-button
         :accessor camera-mode-button
-        :initform 0))
+        :initform 0)
+     (fly-up
+        :accessor fly-up
+        :initform 0)
+      (fly-down
+        :accessor fly-down
+        :initform 0)  
+      )
       (:documentation "Represents state of a client's controller"))
       
 (defun new-server-controller (client)
@@ -81,5 +88,9 @@
       (with-controller client-id #'attacking))
     (defun s-input-camera-mode (client-id)
       (with-controller client-id #'camera-mode-button))
-    )
+    (defun s-input-fly-up (client-id)
+      (with-controller client-id #'fly-up))
+    (defun s-input-fly-down (client-id)
+      (with-controller client-id #'fly-down))
+)
       

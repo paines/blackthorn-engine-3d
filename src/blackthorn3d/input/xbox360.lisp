@@ -111,3 +111,10 @@
   (controller :int))
 
 
+(cffi:defcfun ("xbox360_get_lbump" xbox360_get_lbump) :int
+  "Returns the left shoulder button"
+  (controller :int))
+
+(cffi:defcfun ("xbox360_get_rbump" xbox360_get_rbump) :int
+  "Returns the right shoulder button"
+  (controller :int))

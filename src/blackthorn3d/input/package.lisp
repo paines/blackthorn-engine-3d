@@ -41,6 +41,8 @@
    :input-kind
    :input-camera-mode
    :input-attack
+   :input-fly-up
+   :input-fly-down
    
    ;; server-control.lisp
    :new-server-controller
@@ -53,6 +55,8 @@
    :s-input-jump
    :s-input-camera-mode
    :s-input-attack
+   :s-input-fly-up
+   :s-input-fly-down
    
    ;; xbox360.lisp
    :xbox360-vibrate

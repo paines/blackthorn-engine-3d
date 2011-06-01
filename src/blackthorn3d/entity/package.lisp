@@ -58,5 +58,8 @@
    :make-event
    :send-input
    :send-camera
+   :send-play-explosion
+   :send-play-laser
+   :send-play-animation
 
    ))

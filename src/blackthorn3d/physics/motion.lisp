@@ -84,19 +84,24 @@
         ;; we can keep this
         (displace-vector (displace-step self 1)))
     
-    (destructuring-bind (new-vel new-up)
-        (funcall *hackity-hack__collide-sector* self displace-vector t-sector)
+    (destructuring-bind (move-to new-up)
+        (funcall *hackity-hack__collide-sector* 
+                 self displace-vector t-sector)
 
-      (move-vec self new-vel)
-      (move-and-set-velocity self 
-                             (car
-                              (funcall *hackity-hack__collide-sector*
-                                       self
-                                       (velocity self) t-sector)))
-      
-      ;; We need to interpolate to new-up. I think we should store the
-      ;; new up in the entity and use dt to interpolate to it
-      (setf (new-up self) new-up))))
+      (move-vec self move-to)
+      (destructuring-bind (new-vel new-up2)
+          (funcall *hackity-hack__collide-sector*
+                   self (velocity self) t-sector 1)
+
+        (move-and-set-velocity self new-vel)
+        ;; We need to interpolate to new-up. I think we should store the
+        ;; new up in the entity and use dt to interpolate to it
+        (aif (or new-up2 new-up)
+             (setf (new-up self) 
+                   it
+                   #+disabled
+                   ;; store the quarternion
+                   (quat-rotate-to-vec (up self) it)))))))
 
 ; this will be the real one eventually
 #+disabled

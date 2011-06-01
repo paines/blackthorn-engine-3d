@@ -121,7 +121,9 @@
    :quat-rotate-vec
    :quat->matrix
    :quat-rotate-to-vec
+   :quat-slerp
    :spherical->quat
+   :+quat-identity+
 
    ;; utils.lisp
    :deg->rad

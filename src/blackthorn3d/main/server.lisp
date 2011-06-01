@@ -27,7 +27,10 @@
 
 
 (defmethod update ((p player))
-  (with-slots (client) p
+  (with-slots (client pos) p
+    (when (> (s-input-jump client) 0)
+      (blackthorn3d-network::send-play-explosion-at :broadcast (x pos) (y pos) (z pos)))
+  
     #+disabled
     (when (> (s-input-jump client) 0)
       (quickhit p)

@@ -28,7 +28,7 @@
 (defpackage :blackthorn3d-main
   (:nicknames :blt3d-main)
   (:use :cl :alexandria :iter :blt3d-utils :blt3d-math :blt3d-res
-        :blt3d-input :blt3d-ent :blt3d-net :blt3d-phy :blt3d-sec)
+        :blt3d-input :blt3d-ent :blt3d-net :blt3d-phy :blt3d-sec :blt3d-gfx)
   #+allegro (:import-from :cl-user :exit)
   (:export
 

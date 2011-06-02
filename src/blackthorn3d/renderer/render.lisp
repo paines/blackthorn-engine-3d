@@ -237,10 +237,10 @@
     #+disabled
     (update-ui-element *test-ui* (num-alive *test-ps*))
 
-    (update-ps *test-ps* time))
+    (client-update *test-ps* time))
 
   (when *laser-ps*
-    (update-ps *laser-ps* time))
+    (client-update *laser-ps* time))
   
   #+disabled
   (when animated

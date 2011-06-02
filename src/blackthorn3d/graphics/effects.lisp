@@ -40,6 +40,9 @@
 (defun add-to-effect (obj effect)
   (push obj (objects effect)))
 
+(defvar *effects-list* nil)
+
+(defun add-effect (effect))
 
 ;;
 ;; to define effects...
@@ -64,7 +67,13 @@
    (texture
     :initarg :texture)
    (size
-    :initarg :size)))
+    :initarg :size)
+   (lifetime
+    :initarg :lifetime)))
+
+;; todo:- make better!
+(defmethod client-update ((this laser) dt))
+
 
 (defun make-human-laser (start beam)
   (make-instance 'laser 
@@ -81,3 +90,6 @@
                  :color +purple+
                  :texture *robot-laser-tex*
                  :size *robot-laser-size*))
+
+(defun make-an-explosion ()
+    ())

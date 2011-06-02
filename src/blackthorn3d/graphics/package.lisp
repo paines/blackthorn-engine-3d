@@ -136,7 +136,7 @@
    :particle-system
    :num-alive
    :max-particles
-   :update-ps
+   :client-update
    :render-ps
    :create-particle-system
    :create-explosion-ps

@@ -34,6 +34,7 @@
    ; render.lisp
    :init
    :prepare-scene
+   :set-viewport-size
    :*main-cam*
    :set-camera
    :*main-cam-quat*

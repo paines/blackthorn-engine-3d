@@ -110,13 +110,36 @@
 (defvar *windowed-width* 960)
 (defvar *windowed-height* 720)
 (defvar *window-fullscreen-p* nil)
+
+(defun window-flags (&key fullscreen)
+  (logior sdl:sdl-opengl (if fullscreen sdl:sdl-fullscreen 0)))
+
 (defun set-window (width height &key fullscreen reset-viewport)
   (sdl:window width height :bpp 32
-              :flags (logior sdl:sdl-opengl
-                             (if fullscreen sdl:sdl-fullscreen 0))
+              :flags (window-flags :fullscreen fullscreen)
               :title-caption "Test" :icon-caption "Test")
   (when reset-viewport
+    (blt3d-rend:init)
     (blt3d-rend:set-viewport-size width height)))
+
+(defun largest-video-dimensions (&key fullscreen)
+  (let ((modes (sdl:list-modes (window-flags :fullscreen fullscreen))))
+    (if (eql modes t)
+        (sdl:video-dimensions)
+        (first modes))))
+
+(defun toggle-fullscreen ()
+  (setf *window-fullscreen-p* (not *window-fullscreen-p*))
+  (let* ((fullscreen-size (largest-video-dimensions :fullscreen t))
+         (width (if *window-fullscreen-p*
+                    (sdl:x fullscreen-size)
+                    *windowed-width*))
+         (height (if *window-fullscreen-p*
+                     (sdl:y fullscreen-size)
+                     *windowed-height*)))
+    (set-window width height
+                :fullscreen *window-fullscreen-p*
+                :reset-viewport t)))
 
 (defun client-main (host port)
   (setup-paths)
@@ -157,10 +180,7 @@
                 (set-controller *input* :keyboard)))
 
           (when (sdl:key= k :sdl-key-f11)
-            (setf *window-fullscreen-p* (not *window-fullscreen-p*))
-            (set-window *windowed-width* *windowed-height*
-                        :fullscreen *window-fullscreen-p*
-                        :reset-viewport t))
+            (toggle-fullscreen))
 
           (when (sdl:key= k :sdl-key-escape)
             (return-from client-main)))

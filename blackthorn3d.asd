@@ -124,6 +124,7 @@
                                                (:file "vao")
                                                (:file "billboards")
                                                (:file "particles")
+                                               (:file "effects")
                                                (:file "frustum")
                                                (:file "ui")
                                                (:file "init"))

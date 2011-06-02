@@ -174,6 +174,11 @@
     :initarg :size
     :documentation "3-tuple specifiying box size")))
 
+(defclass line-emitter (point-emitter)
+  ((beam
+    :initarg :beam
+    :documentation "the 'line' of the emitter")))
+
 (defclass particle-system ()
   ((emitter
     :accessor emitter
@@ -255,6 +260,19 @@
 (defmethod gen-initial-pos ((this point-emitter) time)
   (slot-value this 'pos))
 
+(defmethod gen-initial-pos ((this cube-emitter) time)
+  (with-slots (size pos) this
+    (setf p-size (vec4+ 
+                  pos
+                  (iter (for s in size)
+                        (for s/2 = (/ s 2))
+                        (collect (+ (- s/2) (random s/2)) 
+                                 result-type 'vector))))))
+
+(defmethod gen-initial-pos  ((this line-emitter) time)
+  (with-slots (pos beam) this
+    (vec4+ pos (vec-scale4 beam (random 1.0)))))
+
 (defmethod gen-initial-vel ((this point-emitter) time)
   (with-slots (dir angle speed) this
     ;; Generate random coordinates
@@ -274,15 +292,6 @@
                                 (vec-scale3 v y))
                          (vec-scale3 w x))
                   speed))))
-
-
-(defmethod gen-initial-pos :after ((this cube-emitter) time)
-  (with-slots (size) this
-    (setf (slot-value this 'pos)
-          (iter (for s in size)
-                (for s/2 = (/ s 2))
-                (collect (+ (- s/2) (random s/2)) 
-                         result-type 'vector)))))
 
 ;;;
 ;;; Particle-System Methods and Functions

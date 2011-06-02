@@ -147,6 +147,14 @@
    :update-billboarder
    :draw-billboard-quad
 
+   ;; effects.lisp
+   :effect
+   :add-effect
+   :add-human-laser
+   :add-ghost-laser
+   :update-effects
+   :render-effects
+
    ;; ui.lisp
    :ui-element
    :ui-gauge

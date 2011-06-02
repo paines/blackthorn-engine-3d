@@ -52,7 +52,9 @@
 
 (defun handle-play-laser (src name start-pos dir)
   (format t "Laser ~a goes boom starting at ~a dir ~a~%" name start-pos dir)
-  (make-laser))
+  (case name
+    (:human (add-human-laser start-pos dir))
+    (:ghost (add-ghost-laser start-pos dir))))
 
 (defun handle-play-animation (src entity name mode)
   (format t "Animation ~a goes boom on ~a with mode ~a~%" name entity mode))

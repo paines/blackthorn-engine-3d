@@ -242,15 +242,13 @@
   (when *laser-ps*
     (client-update *laser-ps* time))
   
-  #+disabled
-  (when animated
-    (update-model animated time))
-
-  ;#+disabled
+                                        
   (when *test-skele*
     (update-model *test-skele* time))
   (when *beast*
     (update-model *beast* time))
+
+  (update-effects time)
 
   (iter (for e in entities)
         (with-slots (shape) e

@@ -137,7 +137,7 @@
 
 (defun draw-billboard-quad (pos size-x size-y texture color
                             &optional (align :screen) axis)
-  (setup-shader align axis (vector size-x size-y))
+  (setup-shader align axis (vector size-x size-y 0.0))
   (use-texture texture)    
   (gl:color (r color) (g color) (b color) (a color))
   (gl:with-primitives :quads

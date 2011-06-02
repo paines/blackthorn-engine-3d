@@ -33,12 +33,14 @@
   (multiple-value-bind (value exists) (gethash key *sounds*)
     (if exists
         value
-        (setf (gethash key *sounds*) (load-sound type src)))))
+        (let ((sound (load-sound type src)))
+          (when sound
+            (setf (gethash key *sounds*) sound))))))
 
 (defun find-sound (key)
   (gethash key *sounds*))
 
 (defun handler-sound (src key loop)
   (let ((sound (find-sound key)))
-    #+disabled
-    (play-sound sound :loop loop)))
+    (when sound
+      (play-sound sound :loop loop))))

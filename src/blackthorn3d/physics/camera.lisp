@@ -74,7 +74,7 @@
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
-(defvar +theta-limit+ 89)
+(defvar +theta-limit+ (* 89 (/ pi 180)))
 (setf +phi-scale+ -0.4)
 (setf +theta-scale+ -0.4)
 
@@ -128,8 +128,8 @@
            (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
              #+disabled
              (if (zerop (x input-vec))
-                  (setf (elt ideal-coord 0)
-                        rel-phi))
+                 (setf (elt ideal-coord 0)
+                       rel-phi))
               (setf (elt ideal-coord 0)
                     (+ rel-phi
                        (* +phi-scale+ (x input-vec)))))
@@ -139,10 +139,12 @@
                 (setf (elt ideal-coord 1)
                       (clamp (+ (elt ideal-coord 1) 
                                 (* +theta-scale+ (y input-vec)))
-                             (- (/ (* +theta-limit+ pi) 180))
-                             (/ (* +theta-limit+ pi) 180) )))
+                             (- +theta-limit+)
+                             +theta-limit+)))
            (setf sphere-coord ideal-coord))
 
+
+          ;; strafe
           (:strafe
            ;; set phi
            (setf (dir target)
@@ -151,12 +153,21 @@
                   (dir target)))
 
            ;; set theta
-           (aif (/= 0 (y input-vec))
-                (setf (elt ideal-coord2 1)
-                      (clamp (+ (elt ideal-coord2 1) 
-                                (* +theta-scale+ (y input-vec)))
-                             (- (/ (* 89 pi) 180))
-                             (/ (* 89 pi) 180) )))
+           (let ((rel-theta (acos (/ (z tc-pos) (mag tc-pos)))))
+             (setf (elt ideal-coord2 1)
+                   (clamp
+                    (+ (if (is-jumping target) rel-theta 0.0)
+                       (* +theta-scale+ (y input-vec)))
+                    (- +theta-limit+)
+                     +theta-limit+))
+
+             #+disabled
+             (aif (/= 0 (y input-vec))
+                  (setf (elt ideal-coord2 1)
+                        (clamp (+ (elt ideal-coord2 1) 
+                                  (* +theta-scale+ (y input-vec)))
+                               (- (/ (* 89 pi) 180))
+                               (/ (* 89 pi) 180) ))))
 
            (setf sphere-coord ideal-coord2)))
 

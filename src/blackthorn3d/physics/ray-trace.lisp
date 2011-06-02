@@ -178,6 +178,11 @@
 (defmethod ray-cast (ray (ent blt3d-ent:entity-server))
   (with-slots (pos bounding-volume shape) ent
     (let ((test-sphere (move-bounding-volume bounding-volume pos)))
+      (when shape
+        (ray-sphere-intersection 
+         ray test-sphere 
+         most-positive-single-float))
+      #+disabled
       (aif (and shape (ray-sphere-intersection 
                        ray test-sphere 
                        most-positive-single-float))

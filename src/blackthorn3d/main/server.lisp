@@ -51,8 +51,8 @@
     (when (and (> (s-input-jump client) 0)
                (not (is-jumping p)))
       (setf (is-jumping p) t)
-      (setf (velocity p) (vec-scale4 (up p) .1))
-      (setf (new-up p) (vec-neg4 (velocity p)))
+      (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1))
+      ;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       
     (when (and (> last-laser laser-delay)
@@ -222,6 +222,8 @@
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
              (camera (new-camera the-new-player)))
+        
+        (setf (attached-cam the-new-player) camera)
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)

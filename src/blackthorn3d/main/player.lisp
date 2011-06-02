@@ -34,6 +34,10 @@
         :accessor health
         :initform 1.0
         :documentation "Health in range [0.0, 1.0]")
+   (camera
+        :accessor attached-cam
+        :initform nil
+        :documentation "The camera that's associated with this player for motion")
    ))
         
 (defmethod on-die ((self player))

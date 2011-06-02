@@ -45,6 +45,7 @@
   (with-slots (objects) this
     (setf objects (iter (for obj in objects)
                         (appending (client-update obj dt))))
+    (format t "num objs: ~a~%" (length objects))
     (when objects
       (list this))))
 
@@ -60,8 +61,9 @@
   (setf *effects-list* (delete effect *effects-list*)))
 
 (defun update-effects (dt)
-  (iter (for effect in *effects-list*)
-        (client-update effect dt)))
+  (setf *effects-list*
+        (iter (for effect in *effects-list*)
+              (appending (client-update effect dt)))))
 
 (defun render-effects ()
   (iter (for effect in *effects-list*)
@@ -125,8 +127,9 @@
 
 (defmethod client-update :before ((this flare) dt)
   (with-slots (size growth) this
-    (incf (x size) (* dt (x growth)))
-    (incf (y size) (* dt (y growth)))))
+  ;  (format t "This flare: ~a~%" this)
+    (setf (svref size 0) (+ (x size) (* dt (x growth))))
+    (setf (svref size 1) (+ (y size) (* dt (y growth))))))
 
 (defmethod draw-object ((this flare))
   (with-slots (pos texture color size) this
@@ -142,8 +145,8 @@
   (make-instance 'flare
                  :pos pos
                  :color color
-                 :start-size #(0.05 0.05)
-                 :growth #(1.0 4.0)
+                 :start-size #(0.001 0.001)
+                 :growth #(0.4 0.4)
                  :life 0.35))
 
 (defun make-laser-spark-emitter (pos dir)
@@ -193,16 +196,15 @@
 ;; Create teh effect instance for a human laser
 ;; and add it to the effects list
 (defun make-laser (start dir color texture)
-  (let ((norm-dir (norm4 dir)))
-    (new-composite-effect
-     ;; the laser beam!
-     (make-laser-beam start dir color texture)
-     ;; particle end sparks
-     (make-laser-sparks (vec4+ start dir) (vec-neg4 norm-dir) color)
-     ;; particle beam pulse
-     (make-laser-pulse pos norm-dir color)
-     ;; flare
-     (make-laser-flare start color))))
+  (new-composite-effect
+   ;; the laser beam!
+   (make-laser-beam start dir color texture)
+   ;; particle end sparks
+  ; (make-laser-sparks (vec4+ start dir) (vec-neg4 dir) color)
+   ;; particle beam pulse
+  ; (make-laser-pulse pos dir color)
+   ;; flare
+   (make-laser-flare start color)))
 
 (defun add-human-laser (start dir)
   (let ((beam-texture *human-beam-tex*)
@@ -216,6 +218,43 @@
 
 
 
-#+disabled
-(defun make-an-explosion ()
-  ())
+(defun make-radial-emitter (pos speed)
+  (make-instance 'point-emitter
+                 :pos pos
+                 :dir +y-axis+
+                 :up +z-axis+
+                 :angle (* 2 pi)
+                 :speed speed))
+
+(defun make-explosion-sparks (pos)
+  (create-explosion-ps
+   (make-radial-emitter pos '(10.0 . 14.0))
+   25
+   :size #(0.08 1.5)
+   :lifetime '(0.3 . 0.4)
+   :color +orange+
+   :drag-coeff 7.0))
+
+(defun make-explosion-smoke (pos)
+  (create-explosion-ps
+   (make-radial-emitter pos '(3.0 . 3.3))
+   12
+   :size #(0.6 1.2)
+   :lifetime '(1.0 . 1.2)
+   :color +white+
+   :drag-coeff 2.5))
+
+(defun make-explosion-flare (pos)
+  (make-instance 'flare
+                 :pos pos
+                 :color +white+
+                 :start-size #(0.0 0.0)
+                 :growth #(4.0 4.0)
+                 :life 0.3))
+
+(defun make-an-explosion (pos)
+  (add-effect
+   (new-composite-effect
+    (make-explosion-sparks pos)
+    (make-explosion-smoke pos)
+    (make-explosion-flare pos))))

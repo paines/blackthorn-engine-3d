@@ -85,6 +85,10 @@
    (forces
     :accessor forces
     :initform nil)
+   (is-jumping
+        :accessor is-jumping
+        :initform nil
+        :documentation "Jumping flag is t when you are jumping")
    (bounding-volume
     :accessor bounding-volume
     :initform nil

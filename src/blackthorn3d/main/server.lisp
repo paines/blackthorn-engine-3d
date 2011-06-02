@@ -134,6 +134,7 @@
 
 (defun next-frame ()
   ;; (sleep) call moved to with-timer-loop
+  (socket-flush-all)
   )
 
 (defvar *client-count* 0)

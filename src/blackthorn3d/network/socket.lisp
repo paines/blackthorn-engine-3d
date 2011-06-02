@@ -226,8 +226,12 @@
     (with-buffer buffer
       (let ((size (buffer-length)))
         (socket-send-buffer-size connection size)
-        (write-sequence buffer (usocket:socket-stream connection))
-        (force-output (usocket:socket-stream connection))))))
+        (write-sequence buffer (usocket:socket-stream connection))))))
+
+(defun socket-flush-all ()
+  (when *socket-connections*
+    (iter (for connection in *socket-connections*)
+          (force-output (usocket:socket-stream connection)))))
 
 (defun socket-receive-buffer-all (connections buffer callback timeout)
   (let ((ready (with-handle-socket-multiple-disconnect connections

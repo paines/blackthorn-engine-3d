@@ -229,7 +229,7 @@
         (write-sequence buffer (usocket:socket-stream connection))))))
 
 (defun socket-flush-all ()
-  (when *socket-connections*
+  (with-handle-socket-multiple-disconnect *socket-connections*
     (iter (for connection in *socket-connections*)
           (force-output (usocket:socket-stream connection)))))
 

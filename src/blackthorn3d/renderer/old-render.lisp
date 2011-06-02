@@ -112,13 +112,7 @@
   (gl:depth-mask nil)
 
   (draw-object *test-ps*)
-  (draw-object *laser-ps*)
-
-  ;; test lazor
- ; #+disabled
-  (blt3d-gfx::draw-beam +origin+ (make-point3 15.0 0.0 0.0)
-                       #(0.0 0.4 1.0 1.0) 
-                       *laser-tex* #(0.5 0.5))
+  (render-effects)
 
   ;;(disable-shader)
   ;; Lastly render the ui

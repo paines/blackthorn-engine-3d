@@ -35,7 +35,7 @@
             (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
 
       (let* ((up-quat (quat-rotate-to-vec up new-up))
-             (rot-quat (quat-slerp +quat-identity+ up-quat 10/120)))
+             (rot-quat (quat-slerp +quat-identity+ up-quat (if (is-jumping self) 5/120 10/120))))
         (setf (up self) 
               (norm4 (quat-rotate-vec
                       rot-quat up))
@@ -48,12 +48,15 @@
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos) p
-    (when (> (s-input-jump client) 0)
-      (send-play-explosion :broadcast :none pos)
-      (setf (velocity p) (vec-scale4 (up p) .1)))
+    (when (and (> (s-input-jump client) 0)
+               (not (is-jumping p)))
+      (setf (is-jumping p) t)
+      (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1))
+      ;(setf (new-up p) (vec-neg4 (velocity p)))
+      )
       
     (when (and (> last-laser laser-delay)
-               (> (s-input-alt-attack client) 0))
+               (> (s-input-attack client) 0))
       (setf last-laser 0.0)
       (send-play-laser
        :broadcast :human pos (vec4- +origin+ pos))
@@ -131,6 +134,7 @@
 
 (defun next-frame ()
   ;; (sleep) call moved to with-timer-loop
+  (socket-flush-all)
   )
 
 (defvar *client-count* 0)
@@ -219,6 +223,8 @@
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
              (camera (new-camera the-new-player)))
+        
+        (setf (attached-cam the-new-player) camera)
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)

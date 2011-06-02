@@ -43,6 +43,7 @@
    :socket-disconnect-all
    :socket-receive-all
    :socket-send
+   :socket-flush-all
 
    ;; message.lisp
    :defmessage

@@ -62,6 +62,11 @@
   (setf *laser-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))
 
+  (setf *human-laser-tex*
+        (image->texture2d (load-image #p "res/images/laser-2.png")))
+  (setf *robot-laser-tex*
+        (image->texture2d (load-image #p "res/images/laser-2.png")))
+
 
    ;; Init Skin Shader(s)
   (format t "Loading skin shader:~%")

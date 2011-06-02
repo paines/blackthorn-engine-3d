@@ -37,6 +37,7 @@
 (defvar +blue+ #(0.0 0.0 1.0 1.0))
 (defvar +orange+ #(1.0 0.7 0.0 1.0))
 (defvar +aqua+ #(0.0 0.7 1.0 1.0))
+(defvar +purple+ #(0.8 0.0 1.0 1.0))
 
 
 (defun gen-texture ()

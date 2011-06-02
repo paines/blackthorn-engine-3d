@@ -51,7 +51,8 @@
   (format t "Explosion ~a goes boom at ~a~%" name pos))
 
 (defun handle-play-laser (src name start-pos dir)
-  (format t "Laser ~a goes boom starting at ~a dir ~a~%" name start-pos dir))
+  (format t "Laser ~a goes boom starting at ~a dir ~a~%" name start-pos dir)
+  (make-laser))
 
 (defun handle-play-animation (src entity name mode)
   (format t "Animation ~a goes boom on ~a with mode ~a~%" name entity mode))
@@ -129,6 +130,9 @@
 
       (blt3d-rend:prepare-scene)
 
+      (format t "####################~%")
+
+       (format t "snd:init-p returned ~a~%" (blt3d-snd::init-p))
       (blt3d-snd:make-sound :soundtrack :music #p"res/sound/game_music_1.mp3")
 
       (setf (sdl:frame-rate) 60)

@@ -40,3 +40,44 @@
 (defun add-to-effect (obj effect)
   (push obj (objects effect)))
 
+
+;;
+;; to define effects...
+;; we need a mapping of ids to effects and how to play/or create them
+;; so they need a 'handle' function that takes &rest args and does stuff
+;; For now lets consider creating new effects every time.
+
+;; 
+
+(defvar *robot-laser-tex* nil)
+(defvar *robot-laser-size* '(0.1 . 0.4))
+(defvar *human-laser-tex* nil)
+(defvar *human-laser-size* '(0.1 . 0.4))
+
+(defclass laser ()
+  ((start
+    :initarg :start)
+   (beam
+    :initarg :beam)
+   (color
+    :initarg :color)
+   (texture
+    :initarg :texture)
+   (size
+    :initarg :size)))
+
+(defun make-human-laser (start beam)
+  (make-instance 'laser 
+                 :start start
+                 :beam beam
+                 :color +aqua+
+                 :texture *human-laser-tex*
+                 :size *human-laser-size*))
+
+(defun make-robot-laser (start beam)
+  (make-instance 'laser
+                 :start start
+                 :beam beam
+                 :color +purple+
+                 :texture *robot-laser-tex*
+                 :size *robot-laser-size*))

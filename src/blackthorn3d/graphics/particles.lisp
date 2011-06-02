@@ -153,21 +153,26 @@
  ;;; Classes
  ;;;
 
- (defclass point-emitter ()
-   ((pos
-     :initarg :pos)
-    (dir
-     :initarg :dir)
-    (up
-     :initarg :up)
-    (speed
-     :initarg :speed)
-    (angle
-     :initarg :angle
-     :documentation "The angle phi around the direction that particles 
+(defclass point-emitter ()
+  ((pos
+    :initarg :pos)
+   (dir
+    :initarg :dir)
+   (up
+    :initarg :up)
+   (speed
+    :initarg :speed)
+   (angle
+    :initarg :angle
+    :documentation "The angle phi around the direction that particles 
                     can be emitted in. a value of pi is a hemisphere
                     2*pi would be a sphere")))
 
+
+(defclass cube-emitter (point-emitter)
+  ((size
+    :initarg :size
+    :documentation "3-tuple specifiying box size")))
 
 (defclass particle-system ()
   ((emitter
@@ -177,8 +182,8 @@
     :accessor spawn-rate
     :initarg :spawn-rate
     :documentation "The rate at which particles are to be emitted.
-                    If set to 0, system will max-particles once and then
-                    finish")
+                    If set to 0, system will create max-particles once 
+                    and then finish")
    (lifetime
     :accessor lifetime
     :initarg :lifetime
@@ -270,6 +275,14 @@
                          (vec-scale3 w x))
                   speed))))
 
+
+(defmethod gen-initial-pos :after ((this cube-emitter) time)
+  (with-slots (size) this
+    (setf (slot-value this 'pos)
+          (iter (for s in size)
+                (for s/2 = (/ s 2))
+                (collect (+ (- s/2) (random s/2)) 
+                         result-type 'vector)))))
 
 ;;;
 ;;; Particle-System Methods and Functions

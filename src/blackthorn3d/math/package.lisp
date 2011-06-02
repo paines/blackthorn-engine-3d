@@ -74,6 +74,7 @@
    :get-direction
    :max-axis
    :opposite-dir
+   :vec-eql
    
    ;; matrix.lisp
    :+3dsmax-convert+

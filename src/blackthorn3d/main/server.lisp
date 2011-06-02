@@ -35,7 +35,7 @@
             (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
 
       (let* ((up-quat (quat-rotate-to-vec up new-up))
-             (rot-quat (quat-slerp +quat-identity+ up-quat 10/120)))
+             (rot-quat (quat-slerp +quat-identity+ up-quat (if (is-jumping self) 5/120 10/120))))
         (setf (up self) 
               (norm4 (quat-rotate-vec
                       rot-quat up))
@@ -48,9 +48,12 @@
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos) p
-    (when (> (s-input-jump client) 0)
-      (send-play-explosion :broadcast :none pos)
-      (setf (velocity p) (vec-scale4 (up p) .1)))
+    (when (and (> (s-input-jump client) 0)
+               (not (is-jumping p)))
+      (setf (is-jumping p) t)
+      (setf (velocity p) (vec-scale4 (up p) .1))
+      (setf (new-up p) (vec-neg4 (velocity p)))
+      )
       
     (when (and (> last-laser laser-delay)
                (> (s-input-alt-attack client) 0))

@@ -180,6 +180,10 @@
   (when (>= *gl-version* 3.0)
     (init-deferred-renderer))))
 
+(defun set-viewport-size (width height)
+  (setf *screen-width* width
+        *screen-height* height
+        (blt3d-gfx::view-size *main-viewport*) (list width height)))
 
 (defun set-camera (cam)
   (setf *main-cam* cam))

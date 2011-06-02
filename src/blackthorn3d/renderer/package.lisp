@@ -35,6 +35,7 @@
    :init
    :make-main-viewport
    :prepare-scene
+   :set-viewport-size
    :*main-cam*
    :set-camera
    :*main-cam-quat*

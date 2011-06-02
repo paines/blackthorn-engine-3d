@@ -107,7 +107,16 @@
 
 (defvar *music* nil)
 
-
+(defvar *windowed-width* 960)
+(defvar *windowed-height* 720)
+(defvar *window-fullscreen-p* nil)
+(defun set-window (width height &key fullscreen reset-viewport)
+  (sdl:window width height :bpp 32
+              :flags (logior sdl:sdl-opengl
+                             (if fullscreen sdl:sdl-fullscreen 0))
+              :title-caption "Test" :icon-caption "Test")
+  (when reset-viewport
+    (blt3d-rend:set-viewport-size width height)))
 
 (defun client-main (host port)
   (setup-paths)
@@ -125,10 +134,10 @@
 
   (with-finalize-client ()
     (sdl:with-init ()
-      (sdl:window 960 720 :bpp 32 :flags sdl:sdl-opengl
-                  :title-caption "Test" :icon-caption "Test")
+      (set-window *windowed-width* *windowed-height*
+                  :fullscreen *window-fullscreen-p*)
       (blt3d-snd:init)
-      (blt3d-rend:init)       
+      (blt3d-rend:init)
 
       (blt3d-rend:prepare-scene)
 
@@ -146,6 +155,12 @@
             (if (eql (input-kind *input*) :keyboard)
                 (set-controller *input* :xbox)
                 (set-controller *input* :keyboard)))
+
+          (when (sdl:key= k :sdl-key-f11)
+            (setf *window-fullscreen-p* (not *window-fullscreen-p*))
+            (set-window *windowed-width* *windowed-height*
+                        :fullscreen *window-fullscreen-p*
+                        :reset-viewport t))
 
           (when (sdl:key= k :sdl-key-escape)
             (return-from client-main)))

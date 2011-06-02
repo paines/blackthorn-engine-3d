@@ -49,7 +49,8 @@
   (format t "Initializing Rendering Subsystem~%")
   (init-gfx)
 
-  (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
+  (setf *main-viewport* (create-viewport (list *screen-width* *screen-height*)
+                                         0.2 200))
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
   ;#+disabled
@@ -180,6 +181,10 @@
   (when (>= *gl-version* 3.0)
     (init-deferred-renderer))))
 
+(defun set-viewport-size (width height)
+  (setf *screen-width* width
+        *screen-height* height
+        (blt3d-gfx::view-size *main-viewport*) (list width height)))
 
 (defun set-camera (cam)
   (setf *main-cam* cam))

@@ -59,6 +59,8 @@
     (setf (velocity an-entity) old-velocity)
     result))
 
+
+    
 (defun standard-physics-step (self)
   (let* ((t-sector 
           (funcall *hackity-hack__lookup-sector* (current-sector self)))
@@ -90,7 +92,10 @@
       (destructuring-bind (new-vel new-up2)
           (funcall *hackity-hack__collide-sector*
                    self (velocity self) t-sector 1)
-
+        
+        (when (vec-eql new-vel +zero-vec+)
+          (setf (is-jumping self) nil))
+                   
         (move-and-set-velocity self new-vel)
 
         ;; We need to interpolate to new-up. I think we should store the
@@ -117,7 +122,10 @@
     (let* ((input-vec (vector (s-input-move-x client) 
                              (s-input-move-y client)))
           (move-vec (vec-scale4 (move-player camera input-vec) (* 0.4 dt))))
-      move-vec)))
+      
+      (if (is-jumping an-entity)
+        +zero-vec+
+        move-vec))))
     
 (defun make-stupid-jump-mover (client)
   (lambda (an-entity dt)
@@ -136,6 +144,8 @@
   (lambda (an-entity dt)
     (if (and (> (s-input-jump client) 0)
              (standing-on-jumpable-p an-entity))
-      (vec-scale4 (vec-neg4 (up an-entity)) (* -25.0 dt *gravity-accel*))
+      (progn 
+        (setf (is-jumping an-entity) t)
+        (vec-scale4 (vec-neg4 (up an-entity)) (* -25.0 dt *gravity-accel*)))
       +zero-vec+
       )))

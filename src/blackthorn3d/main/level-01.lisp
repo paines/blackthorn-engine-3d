@@ -42,6 +42,9 @@
   (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
   (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
   (load-model :slide-room :level #p "res/models/WallRoomSlide.dae")
+  (load-model :cylinder-room :level #p "res/models/CylinderRoom1.dae")
+  (load-model :hallway-five :level #p "res/models/HallwayFiveway.dae")
+
 
 
 ;;;
@@ -50,20 +53,27 @@
 
   (make-start-sector (get-model :dead-end-room))
 
-  ;#+disabled
+ ; #+disabled
   (progn
     (add-sector-relative
      :start-sector
      :north
-     (make-sector :hall-01 (get-model :hallway-straight)))
+     (make-sector :hall-five (get-model :hallway-five)))
     
     (add-sector-relative
-     :hall-01
+     :hall-five
      :north
+     (make-sector :tube (get-model :cylinder-room)
+                  (axis-rad->quat +x-axis+ (/ pi 2.0))))
+    
+    (add-sector-relative
+     :hall-five
+     :up
      (make-sector :end-room (get-model :dead-end-room)
-                  (axis-rad->quat +y-axis+ pi)))
+                  (axis-rad->quat +x-axis+ (/ pi -2.0))))
 
     ;; Now link them all
-    (link-sectors :start-sector :hall-01)
-    (link-sectors :hall-01 :end-room)
+    (link-sectors :start-sector :hall-five)
+    (link-sectors :hall-five :tube)
+    (link-sectors :hall-five :end-room)
     ))

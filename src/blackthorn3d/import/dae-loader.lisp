@@ -90,9 +90,10 @@
                         nil) result-type 'vector))))
 
 (defun geometry-type (id)
-  (if (char= #\_ (char id 0))
-      :portal
-      :mesh))
+  (cond 
+    ((string-equal "_portal" (subseq id 0 (min (length id) 7)))
+     :portal)
+    (t :mesh)))
 
 (defun compile-portal (data)
   (destructuring-bind (name geom-id) data
@@ -217,9 +218,7 @@
                   (let* ((pos (matrix-multiply-v
                                +3dsmax-convert+
                                (matrix-multiply-v xform +origin+)))
-                         (dir (matrix-multiply-v
-                               +3dsmax-convert+
-                               (to-vec4 (norm4 pos)))))
+                         (dir (to-vec4 (norm4 pos))))
                     (format t "adding portal ~a~%" name)
                     (push (list name pos dir 
                                 (transform-bounding-volume

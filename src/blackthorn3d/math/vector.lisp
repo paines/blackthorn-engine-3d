@@ -305,8 +305,10 @@
   (iter (with max-axis = 0)
         (with max = most-negative-single-float)
         (for i below 3)
-        (when (> (svref vector i) max)
-          (setf max-axis i))
+        (for abs-val = (abs (svref vector i)))
+        (when (> abs-val max)
+          (setf max-axis i
+                max abs-val))
         (finally (return max-axis))))
 
 

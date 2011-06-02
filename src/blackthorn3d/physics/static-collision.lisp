@@ -39,7 +39,6 @@
 
 (defun build-r-tree (triangles)
   "take a vector of triangles and return an r-tree around them"
-  (format t "BUILD-R-TREE: num tri: ~a~%" (length triangles))
   (let ((r-tree 
          (spatial-trees:make-spatial-tree :r 
                                           :rectfun #'make-rect)))

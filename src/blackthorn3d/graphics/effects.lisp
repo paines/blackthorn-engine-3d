@@ -243,7 +243,7 @@
 (defun make-explosion-smoke (pos)
   (create-explosion-ps
    (make-radial-emitter pos '(3.0 . 3.3))
-   12
+   8
    :size #(0.6 1.2)
    :lifetime '(1.0 . 1.2)
    :color +orange+
@@ -254,7 +254,7 @@
   (make-instance 'flare
                  :pos pos
                  :color +white+
-                 :start-size #(0.0 0.0)
+                 :start-size (vector 0.0 0.0)
                  :growth #(4.0 4.0)
                  :life 0.3))
 

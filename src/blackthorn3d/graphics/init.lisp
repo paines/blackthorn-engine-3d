@@ -54,7 +54,7 @@
   (setf *glsl-version* (gl:minor-version))
 
   (setf *particle-tex*
-        (image->texture2d (load-image #p "res/images/round-particle1.png")))
+        (image->texture2d (load-image #p "res/images/round-particle2.png")))
 
   (setf *default-texture*
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))

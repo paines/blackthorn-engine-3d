@@ -37,6 +37,8 @@
               (iter (for portal in (blt3d-imp:dae-portals level))
                     (collect 
                      (destructuring-bind (name pos dir bv) portal
+                       (format t "Portal ~a position: ~a~%~5Tdirection ~a~%" 
+                               name pos dir)
                        (transform-portal
                         (make-portal name pos dir bv)
                         (make-translate #(0.0 -15.0 0.0 1.0))))))

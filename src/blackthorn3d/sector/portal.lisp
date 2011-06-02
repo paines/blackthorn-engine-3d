@@ -69,13 +69,13 @@
         (links-to-sector p2) s1))
 
 (defmethod transform-portal ((this portal) xform)
+  (get-direction (dir this))
   (with-slots (pos dir direction) this
     (setf (pos this) (matrix-multiply-v xform pos)
           (dir this) (norm4 pos)
           direction (get-direction dir)
           (dir this) (getf +directions+ direction))
     this))
-
 
 ;;;
 ;;; Portal Collision
@@ -114,18 +114,19 @@
         (crosses-portal-p moved-sphere p)))))
 
 (defmethod ray-cast (ray (portal portal))
-  (with-slots (pos dir bounding-volume) portal
-    (when (plusp (dot (ray-d ray) dir))
-      (let* ((rot-quat (quat-rotate-to-vec
-                        dir (vec-neg4 +z-axis+)))
-             (x-ray (make-ray
-                     (quat-rotate-vec 
-                      rot-quat 
-                      (vec4- (ray-e ray) pos))
-                     (quat-rotate-vec
-                      rot-quat
-                      (ray-d ray))))
-             (res (ray-aabb-intersection x-ray 
-                                         bounding-volume
-                                         most-positive-single-float)))
-        res))))
+  (when (links-to-sector portal)
+    (with-slots (pos dir bounding-volume) portal
+      (when (plusp (dot (ray-d ray) dir))
+        (let* ((rot-quat (quat-rotate-to-vec
+                          dir (vec-neg4 +z-axis+)))
+               (x-ray (make-ray
+                       (quat-rotate-vec 
+                        rot-quat 
+                        (vec4- (ray-e ray) pos))
+                       (quat-rotate-vec
+                        rot-quat
+                        (ray-d ray))))
+               (res (ray-aabb-intersection x-ray 
+                                           bounding-volume
+                                           most-positive-single-float)))
+          res)))))

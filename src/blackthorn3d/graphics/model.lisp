@@ -1,3 +1,4 @@
+
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
 ;;;; Copyright (c) 2011, Robert Gross <r.gross.3@gmail.com>
@@ -71,13 +72,13 @@
 (defmethod draw-object ((this model-node))
   (gl:with-pushed-matrix
       (aif (transform this) (gl:mult-matrix it))
-
    
     (let ((*material-array* (material-array this)))
       (draw-object (mesh this))
       (iter (for node in (child-nodes this))
             (draw-object node))))
-   (draw-bounding-sphere (node-bounding-volume this)))
+  ; (draw-bounding-sphere (node-bounding-volume this))
+  )
 
 (defparameter +mesh-components+ '(:vertex :normal :tex-coord))
 (defparameter mesh-format '((:vertex 3) (:normal 3) (:texcoord 2)))

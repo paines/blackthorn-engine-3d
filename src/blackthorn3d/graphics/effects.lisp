@@ -193,15 +193,16 @@
 ;; Create teh effect instance for a human laser
 ;; and add it to the effects list
 (defun make-laser (start dir color texture)
-  (new-composite-effect
-   ;; the laser beam!
-   (make-laser-beam start dir color texture)
-   ;; particle end sparks
-   (make-laser-sparks (vec4+ start dir) (vec-neg4 dir) color)
-   ;; particle beam pulse
-   (make-laser-pulse pos dir color)
-   ;; flare
-   (make-laser-flare start color)))
+  (let ((norm-dir (norm4 dir)))
+    (new-composite-effect
+     ;; the laser beam!
+     (make-laser-beam start dir color texture)
+     ;; particle end sparks
+     (make-laser-sparks (vec4+ start dir) (vec-neg4 norm-dir) color)
+     ;; particle beam pulse
+     (make-laser-pulse pos norm-dir color)
+     ;; flare
+     (make-laser-flare start color))))
 
 (defun add-human-laser (start dir)
   (let ((beam-texture *human-beam-tex*)

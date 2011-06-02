@@ -45,9 +45,11 @@
 (defmethod update ((p player))
   (with-slots (client pos) p
     (when (> (s-input-jump client) 0)
-      (setf (velocity p) (vec-scale4 (up p) .1))
+      (setf (velocity p) (vec-scale4 (up p) .1)))
+      
+    (when (> (s-input-alt-attack client) 0)
       (send-play-laser
-       :broadcast :human pos (make-vector3 0.0 0.0 0.0))
+       :broadcast :human pos (vec4- +origin+ pos))
       )
 
     #+disabled

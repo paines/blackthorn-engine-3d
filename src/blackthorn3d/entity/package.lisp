@@ -53,6 +53,7 @@
    :current-sector
    :forces
    :displacers
+   :is-jumping
    :transform-entity
 
    ;; event.lisp

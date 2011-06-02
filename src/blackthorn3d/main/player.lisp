@@ -33,7 +33,8 @@
    (health
         :accessor health
         :initform 1.0
-        :documentation "Health in range [0.0, 1.0]")))
+        :documentation "Health in range [0.0, 1.0]")
+   ))
         
 (defmethod on-die ((self player))
   (setf (pos self) (make-vec3 0.0 2.0 0.0))

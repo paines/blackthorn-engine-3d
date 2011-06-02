@@ -56,7 +56,7 @@
       )
       
     (when (and (> last-laser laser-delay)
-               (> (s-input-alt-attack client) 0))
+               (> (s-input-attack client) 0))
       (setf last-laser 0.0)
       (send-play-laser
        :broadcast :human pos (vec4- +origin+ pos))

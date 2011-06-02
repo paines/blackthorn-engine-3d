@@ -62,9 +62,9 @@
   (setf *laser-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))
 
-  (setf *human-laser-tex*
+  (setf *human-beam-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))
-  (setf *robot-laser-tex*
+  (setf *robot-beam-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))
 
 

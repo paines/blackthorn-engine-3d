@@ -38,7 +38,7 @@
     :initform ())))
 
 (defun new-composite-effect (&rest gfx-list)
-  (make-instance 'effect
+  (make-instance 'composite-effect
                  :objects gfx-list))
 
 (defmethod client-update ((this composite-effect) dt)
@@ -78,10 +78,8 @@
 (defvar *ghost-effect-color* +purple+)
 (defvar *human-effect-color* +aqua+)
 (defvar *ghost-beam-tex* nil)
-(defvar *ghost-beam-size* '(0.1 . 0.4))
+(defvar *laser-beam-size* #(0.1 0.4))
 (defvar *human-beam-tex* nil)
-(defvar *human-beam-size* '(0.1 . 0.4))
-
 
 
 (defclass gfx ()
@@ -89,7 +87,7 @@
     :initarg :state
     :initform :alive)
    (life
-    :initarg :lifetime)))
+    :initarg :life)))
 
 (defclass flare (gfx)
   ((pos
@@ -121,7 +119,7 @@
 (defmethod client-update ((this gfx) dt)
   (with-slots (life state) this
     (decf life dt)
-    (if (< lifetime 0)
+    (if (< life 0)
         (progn (setf state :dead) nil)
         (list this))))
 
@@ -145,13 +143,14 @@
                  :pos pos
                  :color color
                  :start-size #(0.05 0.05)
-                 :growth #(1.0 4.0)))
+                 :growth #(1.0 4.0)
+                 :life 0.35))
 
 (defun make-laser-spark-emitter (pos dir)
   (make-instance 'point-emitter
                  :pos pos
                  :dir dir
-                 :up (make-perp dir)
+                 :up (get-perpendicular dir)
                  :angle pi
                  :speed 4))
 
@@ -159,7 +158,7 @@
   (make-instance 'line-emitter
                  :pos pos
                  :dir dir
-                 :up (make-perp dir)
+                 :up (get-perpendicular dir)
                  :angle 0.01
                  :speed '(0.3 . 1.2)
                  :beam beam))
@@ -182,21 +181,14 @@
    :color color
    :drag-coeff 1.0))
 
-(defun make-human-beam (start beam)
+(defun make-laser-beam (start beam color texture)
   (make-instance 'beam 
                  :start start
                  :beam beam
-                 :color *ghost-effect-color*
-                 :texture *human-beam-tex*
-                 :size *human-beam-size*))
-
-(defun make-ghost-beam (start beam)
-  (make-instance 'beam
-                 :start start
-                 :beam beam
-                 :color *ghost-effect-color*
-                 :texture *ghost-beam-tex*
-                 :size *ghost-beam-size*))
+                 :life 0.5
+                 :color color
+                 :texture texture
+                 :size *laser-beam-size*))
 
 ;; Create teh effect instance for a human laser
 ;; and add it to the effects list

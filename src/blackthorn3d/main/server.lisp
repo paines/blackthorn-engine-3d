@@ -44,37 +44,11 @@
 
 (defmethod update ((p player))
   (with-slots (client pos) p
-    ;; TODO: Testing our various messages, remove at some point.
-    ;; (It's terrible for performance, for one.)
-    (when (> (s-input-camera-mode (player-client p)) 0)
-      (format t "Camera mode pressed for player: ~a~%" p))
-    (when (> (s-input-attack (player-client p)) 0)
-      (format t "Attack pressed for player: ~a~%" p))
-    (when (> (s-input-fly-up (player-client p)) 0)
-      (format t "Fly up pressed for player: ~a~%" p))
-    (when (> (s-input-fly-down (player-client p)) 0)
-      (format t "Fly down pressed for player: ~a~%" p))
-      
-    (when (> (s-input-use (player-client p)) 0)
-      (format t "Use pressed for player: ~a~%" p))
-    (when (> (s-input-xbox-y (player-client p)) 0)
-      (format t "Y pressed for player: ~a~%" p))
-    (when (> (s-input-alt-attack (player-client p)) 0)
-      (format t "Alt Attack pressed for player: ~a~%" p))
-    
     (when (> (s-input-jump client) 0)
       (setf (velocity p) (vec-scale4 (up p) .1))
-      ;(setf (new-up p) (vec-neg4 (up p)))
-      )
-    
-    #+disabled
-    (when (> (s-input-jump client) 0)
-      (send-play-explosion
-       :broadcast :some-explosion-name pos)
       (send-play-laser
-       :broadcast :some-laser-name pos (make-vector3 0.0 0.0 0.0))
-      (send-play-animation
-       :broadcast p :some-animation-name :some-mode))
+       :broadcast :human pos (make-vector3 0.0 0.0 0.0))
+      )
 
     #+disabled
     (when (> (s-input-jump client) 0)

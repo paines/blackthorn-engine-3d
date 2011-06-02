@@ -33,6 +33,7 @@
 
    ; render.lisp
    :init
+   :make-main-viewport
    :prepare-scene
    :*main-cam*
    :set-camera

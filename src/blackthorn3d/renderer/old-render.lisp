@@ -110,8 +110,6 @@
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
   (gl:depth-mask nil)
-
-  (draw-object *test-ps*)
   (render-effects)
 
   ;;(disable-shader)

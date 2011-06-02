@@ -61,7 +61,6 @@
    :viewport
    :create-viewport
    :set-viewport
-   :view-frustum
    :frustum
    :frstm-near
    :frstm-far
@@ -72,6 +71,9 @@
    :view-fbo
    :view-fov
    :view-ratio
+   :view-size
+   :view-frustum
+
 
 
    ;; texture.lisp
@@ -152,6 +154,7 @@
    :add-effect
    :add-human-laser
    :add-ghost-laser
+   :add-an-explosion
    :update-effects
    :render-effects
 

@@ -49,7 +49,7 @@
   (format t "Initializing Rendering Subsystem~%")
   (init-gfx)
 
-  (setf *main-viewport* (create-viewport '(960 720) 0.2 200))
+  (make-main-viewport (list *screen-width* *screen-height*))  
 
   (format t "### LOADING CONTROLLER MODEL ###~%")
   ;#+disabled
@@ -147,7 +147,7 @@
              +zero-vec+
                                         ;(vec-neg3 (vec3+ vel +y-axis+))
              )))
-
+  #+disabled
  (setf *laser-ps*
        (create-particle-system
         (make-instance 'point-emitter
@@ -212,7 +212,8 @@
   (gl:enable :light0)
   (gl:enable :rescale-normal))
 
-
+(defun make-main-viewport (size)
+  (setf *main-viewport* (create-viewport size 0.2 200)))
 
 ;;;
 ;;; Render updates

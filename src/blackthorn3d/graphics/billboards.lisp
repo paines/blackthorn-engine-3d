@@ -76,27 +76,7 @@
                       (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-shader.frag"))
                      :uniforms '("size")
-                     :attributes '("velocity")))
-
-  
-  #+disabled
-  (progn
-    (setf *size1-loc*
-        (gl:get-uniform-location
-         *billboard-shader*
-         "size"))
-    (setf *right-loc*
-          (gl:get-uniform-location
-           *billboard-world-shader*
-           "right"))
-    (setf *up-loc*
-          (gl:get-uniform-location
-           *billboard-world-shader*
-           "up"))
-    (setf *size2-loc*
-          (gl:get-uniform-location
-           *billboard-world-shader*
-           "size"))))
+                     :attributes '("velocity"))))
 
 (defun update-billboarder (eye-pos eye-dir eye-up world-up)
   (setf *bill-eye-pos* eye-pos

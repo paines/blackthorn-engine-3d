@@ -48,10 +48,10 @@
         (use-model-on (shape-name entity) entity)))
         
 (defun handle-play-explosion (src name pos)
-  (format t "Explosion ~a goes boom at ~a~%" name pos))
+  (format t "Explosion ~a goes boom at ~a~%" name pos)
+  (add-an-explosion pos))
 
 (defun handle-play-laser (src name start-pos dir)
-  (format t "Laser ~a goes boom starting at ~a dir ~a~%" name start-pos dir)
   (case name
     (:human (add-human-laser start-pos dir))
     (:ghost (add-ghost-laser start-pos dir))))
@@ -162,6 +162,7 @@
                (vx (float (input-view-x *input*)))
                (vy (float (input-view-y *input*)))
                (jmp (float (input-jump *input*))))
+
            (send-input :server
                        (* 0.1 mx)
                        (* 0.1 my)

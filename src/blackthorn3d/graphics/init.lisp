@@ -66,6 +66,8 @@
         (image->texture2d (load-image #p "res/images/laser-2.png")))
   (setf *robot-beam-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))
+  (setf *explosion-smoke-tex*
+        (image->texture2d (load-image #p "res/images/cloud-1.png")))
 
 
    ;; Init Skin Shader(s)

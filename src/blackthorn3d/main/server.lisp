@@ -42,12 +42,19 @@
               (dir self)
               (norm4 (cross up (cross dir up))))))))
 
+
+(defvar last-laser 0.0)
+(defvar laser-delay 1.0)
 (defmethod update ((p player))
+  (incf last-laser 1/120)
   (with-slots (client pos) p
     (when (> (s-input-jump client) 0)
+      (send-play-explosion :broadcast :none pos)
       (setf (velocity p) (vec-scale4 (up p) .1)))
       
-    (when (> (s-input-alt-attack client) 0)
+    (when (and (> last-laser laser-delay)
+               (> (s-input-alt-attack client) 0))
+      (setf last-laser 0.0)
       (send-play-laser
        :broadcast :human pos (vec4- +origin+ pos))
       )

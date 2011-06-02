@@ -356,7 +356,7 @@
                         #(0.0e0))
                  :color color
                  :texture texture
-                 :mode '(:loop 4)
+                 :mode '(:once)
                  :max-particles max-particles
                  :particles (create-particle-array max-particles)
                  :force-fn
@@ -373,9 +373,12 @@
                         (texture *particle-tex*)
                         (lifetime 0.1)
                         (size 0.1)
+                        (mode '(:loop))
                         (gravity +zero-vec+)
                         (grav-coeff 1.0)
                         drag-coeff)
+  (when (= (length mode) 2)
+    (format t "duration: ~a~%" (cadr mode)))
   (make-instance 'particle-system
                  :type :sparks
                  :emitter emitter
@@ -393,7 +396,7 @@
                                      (car lifetime)
                                      lifetime)))
                  :particles (create-particle-array max-particles)
-                 :mode '(:loop)
+                 :mode mode
                  :force-fn
                  (make-force-fn gravity grav-coeff 
                                 (if drag-coeff
@@ -426,32 +429,35 @@
                force-fn
                mode type size) this
     (setf (aref size 2) dt)
-    (unless (eql (car mode) :kill)
-      (incf spawn-num (* dt spawn-rate))
-      (iter (with emitted = 0)
-            (with max-emit = 
-                  (ecase type
-                    (:explosion (if (<= num-alive 0) max-particles 0))
-                    ((:default :sparks) (floor spawn-num))))
-            (with alive-cnt = 0)
-            (for index below max-particles)
-            (for particle = (cons particles index))
-            (while (or (< emitted max-emit)
-                       (< alive-cnt num-alive)))
-            (if (is-alive particle)
-                (progn 
-                  (update-particle particle force-fn dt)
-                  (incf alive-cnt))
-                ;; If dead check if we should revive it
-                (when (and (not (eql (car mode) :stop))
-                           (< emitted max-emit))
-                  (gen-particle this index dt)
-                  (incf emitted)))
+    (let ((mode-name (car mode)))
+      (unless (eql mode-name :kill)
+        (incf spawn-num (* dt spawn-rate))
+        (iter (with emitted = 0)
+              (with max-emit = 
+                    (if (eql mode-name :stop)
+                        0.0
+                        (ecase type
+                          (:explosion (if (<= num-alive 0) max-particles 0))
+                          ((:default :sparks) (floor spawn-num)))))
+              (with alive-cnt = 0)
+              (for index below max-particles)
+              (for particle = (cons particles index))
+              (while (or (< emitted max-emit)
+                         (< alive-cnt num-alive)))
+              (if (is-alive particle)
+                  (progn
+                    (update-particle particle force-fn dt)
+                    (incf alive-cnt))
+                  ;; If dead check if we should revive it
+                  (unless (or (eql mode-name :stop)
+                              (>= emitted max-emit))
+                    (gen-particle this index dt)
+                    (incf emitted)))
 
-            ;; Finally, update the number of alive particles      
-            (finally
-             (decf spawn-num emitted)
-             (setf num-alive (+ alive-cnt emitted)))))
+              ;; Finally, update the number of alive particles      
+              (finally
+               (decf spawn-num emitted)
+               (setf num-alive (+ alive-cnt emitted))))))
 
     (case (car mode)
       (:time (decf (second mode) dt)
@@ -462,7 +468,10 @@
          (when (<= (second mode) 0) (setf mode '(:stop)))))
       (:once
        (when (<= num-alive 0) (setf mode '(:stop))))
-      (:stop (when (<= num-alive 0) (setf mode '(:kill)))))))
+      (:stop (when (<= num-alive 0) (setf mode '(:kill)))))
+    (if (eql (car mode) :kill)
+        nil
+        (list this))))
 
 (defun render-ps (ps) (draw-object ps))
 (defmethod draw-object ((this particle-system))
@@ -472,7 +481,6 @@
                       (case type
                         ((:explosion :sparks) :velocity)
                         (otherwise :screen)))))
-
 
 (defvar *system-list* nil)
 

@@ -59,11 +59,7 @@
     (setf (velocity an-entity) old-velocity)
     result))
 
-(defun vec-eql (v1 v2)
-  (let ((epsilon 0.001))
-    (and (< (+ (abs (x v1)) (abs (x v2))) epsilon)
-         (< (+ (abs (y v1)) (abs (y v2))) epsilon)
-         (< (+ (abs (z v1)) (abs (z v2))) epsilon))))
+
     
 (defun standard-physics-step (self)
   (let* ((t-sector 

@@ -407,7 +407,7 @@
                        color))))
 
 
-(defmethod update-ps ((this particle-system) dt)
+(defmethod client-update ((this particle-system) dt)
   ;; Loop over each particle and update it's position
   (with-slots (particles 
                spawn-rate 
@@ -476,7 +476,7 @@
 (defun update-particle-systems (dt)
   (format t "should not be seen~%")
   (iter (for system in *system-list*)
-        (update-ps system dt)
+        (client-update system dt)
         (when (eql (car (mode system)) :kill)
           (collect system into remove-lst))
         (finally

@@ -175,6 +175,14 @@
       (%search ray root))))
 
 
+(defmethod ray-cast (ray (ent blt3d-ent:entity-server))
+  (with-slots (pos bounding-volume shape) ent
+    (let ((test-sphere (move-bounding-volume bounding-volume pos)))
+      (aif (and shape (ray-sphere-intersection 
+                       ray test-sphere 
+                       most-positive-single-float))
+           (ray-cast ray shape)))))
+
 (defmethod ray-cast (ray (model blt-model))
   (iter (for node in (mesh-nodes model))
         (for res = (ray-cast ray node))

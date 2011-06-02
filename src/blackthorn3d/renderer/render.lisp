@@ -178,12 +178,18 @@
   (format t "laser tex: ~a~%" *laser-tex*)
   #+disabled
   (when (>= *gl-version* 3.0)
-    (init-deferred-renderer))))
+    (init-deferred-renderer))
+
+  (gl:enable :blend :rescale-normal)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
+  (gl:clear-color 0 0 0 0)
+  (gl:enable :depth-test :cull-face)
+  (gl:depth-func :lequal)))
 
 (defun set-viewport-size (width height)
   (setf *screen-width* width
-        *screen-height* height
-        (blt3d-gfx::view-size *main-viewport*) (list width height)))
+        *screen-height* height)
+  (make-main-viewport (list width height)))
 
 (defun set-camera (cam)
   (setf *main-cam* cam))
@@ -202,12 +208,7 @@
                                         ; #+disabed
  
   (gl:enable :texture-2d)
-  (gl:enable :blend)
-  (gl:blend-func :src-alpha :one-minus-src-alpha)
-  (gl:clear-color 0 0 0 0)
-  (gl:enable :depth-test :cull-face)
-  (gl:depth-func :lequal)
- 
+  
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)
   (gl:load-identity)

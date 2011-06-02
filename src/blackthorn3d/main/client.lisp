@@ -222,10 +222,11 @@
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))
+         (socket-flush-all)
 
          (when *should-quit*
             (return-from client-main))
-            
+
          #+disabled
          (send-string
           :server

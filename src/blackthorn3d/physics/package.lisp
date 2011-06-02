@@ -133,6 +133,7 @@
    :standard-physics-step
    :gravity-mover
    :make-camera-relative-player-mover
+   :standing-on-jumpable-p
    
    ;; skeleton.lisp
    :joint

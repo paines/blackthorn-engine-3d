@@ -57,7 +57,21 @@
 
 (defmethod update-model((this blt-model) time)
   (aif (animations this)
-       (update-anim-controller it time)))
+       (update-anim-controller it time))
+  #+disabled
+  (iter (for node in (mesh-nodes this))
+        (update-node node time nil)))
+
+#+disabled
+(defmethod update-node ((this node) time xform)
+  (iter (with new-xform = (matrix-multiply-m xform (transform this)))
+        (for node in (child-nodes this))
+        (update-node node time new-xform)))
+
+#+disabled
+(defmethod update-node :before ((this effect-node) time xform)
+  (let ((new-xform (matrix-multiply-m xform (transform this))))
+    (update-effect-pos )))
 
 (defmethod draw-object ((this blt-model))
   (with-slots (mesh-nodes) this

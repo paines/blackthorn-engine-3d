@@ -68,7 +68,7 @@
 
 (defun render-effects ()
   (iter (for effect in *effects-list*)
-        (draw-object effect)))
+        (render-effect effect)))
 
 ;;
 ;; to define effects...
@@ -88,7 +88,10 @@
 
 
 (defclass gfx ()
-  ((state
+  ((xform
+    :initarg :xform
+    :initform (make-matrix-identity))
+   (state
     :initarg :state
     :initform :alive)
    (life
@@ -106,7 +109,7 @@
     :initarg :start-size)
    (growth
     :initarg :growth
-    :initform #(1.0 1.0))))
+    :initform (vector 1.0 1.0))))
 
 (defclass beam (gfx)
   ((start
@@ -133,14 +136,22 @@
     (setf (svref size 0) (+ (x size) (* dt (x growth))))
     (setf (svref size 1) (+ (y size) (* dt (y growth))))))
 
-(defmethod draw-object ((this flare))
+(defmethod render-effect ((this flare))
   (with-slots (pos texture color size) this
     (draw-billboard-quad pos (x size) (y size) 
                          texture color)))
 
-(defmethod draw-object ((this beam))
-  (with-slots (start beam color texture size state) this
+;; these are ugly 
+(defmethod move-effect ((this gfx) xform)
+  (setf (xform this) xform))
+
+
+
+(defmethod render-effect ((this beam))
+  (with-slots (xform start beam color texture size state) this
     (when (eql state :alive)
+      (let ((new-start (matrix-multiply-m xform start))
+            (new-beam (matrix-multiply-m ))))
       (draw-beam start (vec4+ start beam) color texture size))))
 
 (defun make-laser-flare (pos color)

@@ -137,7 +137,7 @@
 
 (defmethod play-model-animation ((self blt-model) clip-name 
                                  &optional (mode :play))
-  (play-clip (animations self) clip-name modeh))
+  (play-clip (animations self) clip-name mode))
 
 
 (defclass vertex-stream ()

@@ -38,6 +38,7 @@
 ;;;
   
   ;; monsters & stuff like that
+  #+disabled
   (load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
   
   ;; maps

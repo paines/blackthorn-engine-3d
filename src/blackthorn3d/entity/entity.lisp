@@ -58,7 +58,7 @@
     :initarg :die-now)
    (shape-name
     :accessor shape-name
-    :initform :cylinder
+    :initform :none
     :initarg  :shape-name)
    (current-sector
     :accessor current-sector

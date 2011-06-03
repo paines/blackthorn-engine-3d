@@ -47,10 +47,15 @@
            ((equal "texture" (tag-name value))
             ;; We'll just load it to texture here, I think.
             ;; save me some trouble
-            (let ((filename (get-filename
-                             (gethash 
-                              (get-attribute "texture" (attributes value))
-                              *param-table*))))
+            (merge-pathnames 
+             (pathname (get-filename
+                        (gethash 
+                         (get-attribute "texture" (attributes value))
+                         *param-table*)))
+             +image-path+)
+            
+            #+disabled
+            (let ((filename ))
               (setf *epic-texture*
                     (image->texture2d
                      (load-image (merge-pathnames 

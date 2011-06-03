@@ -96,8 +96,11 @@
 
                                         ;#+disabled
     (when (> (s-input-xbox-y client) 0)
-      (quickhit p)
-      (try-die p))))
+      (quickhit p))
+    
+    (try-die p)
+    
+    ))
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))

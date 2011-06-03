@@ -249,8 +249,8 @@
         (let ((,delta (time-left-in-frame ,fps ,last)))
           (sleep ,delta))))))
 
-(defvar *team1-count* 0)
-(defvar *team2-count* 0)
+(defvar *team1-count* 0)   ; humans
+(defvar *team2-count* 0)   ; ghosts
 
 (defmethod assign-team ((self player))
   (if (<= *team1-count* *team2-count*)

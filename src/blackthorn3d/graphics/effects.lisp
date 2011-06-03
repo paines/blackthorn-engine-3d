@@ -175,7 +175,7 @@
                  :dir dir
                  :up (get-perpendicular dir)
                  :angle 0.01
-                 :speed '(0.3 . 1.2)
+                 :speed '(0.3 . 2.2)
                  :beam beam))
 
 (defun make-laser-sparks (pos dir color)
@@ -190,7 +190,7 @@
 
 (defun make-laser-pulse (pos dir color)
   (create-explosion-ps
-   (make-laser-pulse-emitter pos dir (vec4+ pos dir))
+   (make-laser-pulse-emitter pos (norm4 dir) (vec4+ pos dir))
    100
    :size #(0.1 0.1)
    :lifetime '(1.0 . 1.5)
@@ -216,9 +216,9 @@
      ;; particle end sparks
      (make-laser-sparks (vec4+ start dir) (vec-neg4 norm-dir) color)
      ;; particle beam pulse
-    ;; (make-laser-pulse pos norm-dir color)
+     (make-laser-pulse start dir color)
      ;; flare
-      (make-laser-flare start color)
+     (make-laser-flare start color)
      )))
 
 (defun add-human-laser (start dir)

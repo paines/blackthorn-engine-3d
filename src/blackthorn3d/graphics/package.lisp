@@ -44,6 +44,7 @@
    :*screen-width*
    :*disable-shading*
    :*laser-tex*
+   :*crosshair-tex*
 
    ;; draw.lisp
    :draw-triangle
@@ -84,6 +85,7 @@
    :+green+
    :+blue+
    :+orange+
+   :+purple+
    :+aqua+ 
    :load-image
    :image->texture2d
@@ -161,6 +163,7 @@
    ;; ui.lisp
    :ui-element
    :ui-gauge
+   :ui-bitmap
    :update-ui-element
    :draw-ui-element
    :render-ui

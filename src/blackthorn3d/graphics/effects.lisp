@@ -216,7 +216,7 @@
      ;; particle end sparks
      (make-laser-sparks (vec4+ start dir) (vec-neg4 norm-dir) color)
      ;; particle beam pulse
-     (make-laser-pulse start dir color)
+    ;; (make-laser-pulse start dir color)
      ;; flare
      (make-laser-flare start color)
      )))
@@ -254,11 +254,11 @@
   (create-explosion-ps
    (make-radial-emitter pos '(3.0 . 3.3))
    8
-   :size #(0.6 1.2)
+   :size #(0.6 1.0)
    :lifetime '(1.0 . 1.2)
    :color +orange+
    :texture *explosion-smoke-tex*
-   :drag-coeff 2.5))
+   :drag-coeff 3.5))
 
 (defun make-explosion-flare (pos)
   (make-instance 'flare

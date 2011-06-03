@@ -34,6 +34,7 @@
 (defvar *cam-view-matrix* (make-identity-matrix))
 (defvar *cam-inv-view-matrix* (make-identity-matrix))
 (defvar *default-texture* nil)
+(defvar *crosshair-tex* nil)
 (defvar *tex-loc* nil)
 
 (defvar *disable-shading* nil)
@@ -55,7 +56,10 @@
 
   (setf *particle-tex*
         (image->texture2d (load-image #p "res/images/round-particle2.png")))
-
+ 
+  (setf *crosshair-tex*
+        (image->texture2d (load-image #p "res/images/crosshair.png")))
+ 
   (setf *default-texture*
         (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
 

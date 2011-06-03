@@ -119,6 +119,7 @@
               :title-caption "Test" :icon-caption "Test")
   (when reset-viewport
     (blt3d-rend:init)
+	(load-models-n-stuff)
     (blt3d-rend:set-viewport-size width height)))
 
 (defun largest-video-dimensions (&key fullscreen)

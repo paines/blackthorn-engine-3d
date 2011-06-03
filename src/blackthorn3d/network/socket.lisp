@@ -25,6 +25,17 @@
 
 (in-package :blackthorn3d-network)
 
+(defvar *connection-side* nil)
+
+(defun set-connection-side (side)
+  (setf *connection-side* side))
+
+(defun on-server-p ()
+  (eql *connection-side* :server))
+  
+(defun on-client-p ()
+  (eql *connection-side* :client))
+
 ;;;
 ;;; Node ID Mappings
 ;;;

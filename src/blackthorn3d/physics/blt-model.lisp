@@ -50,12 +50,21 @@
                                      (collect (copy-node node)))
                    :animations (copy-anim-controller animations))))
 
+(defun get-model-instance (key)
+  (make-instance (get-model key)))
 
 ;; We will need the capability to add/remove nodes
 (defmethod find-node (obj (model blt-model))
   (iter (for node in (mesh-nodes model))
         (aif (find-node obj node)
           (return-from find-node it))))
+
+
+(defmethod attach-obj-to-model (obj (node-id string) transform 
+                                (model blt-model))
+  (let ((node (make-model-node "FIXME" transform nil obj nil)))
+    (attach-node-to-model node node-id model)))
+
 
 (defmethod attach-node-to-model ((new-node node) 
                                  (node-id string) 

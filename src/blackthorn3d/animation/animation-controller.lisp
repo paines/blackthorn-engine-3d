@@ -86,7 +86,7 @@
   (with-slots (channel-bindings clips state elapsed current-clip next-clip)
       controller
     (make-instance 'animation-controller
-                   :channel-bindings channel-bindings
+                   :channel-bindings (copy-list channel-bindings)
                    :clips clips
                    :state state
                    :current-clip current-clip

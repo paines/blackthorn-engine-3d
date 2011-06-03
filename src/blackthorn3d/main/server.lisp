@@ -359,6 +359,7 @@
       
 (defun server-main (host port)
   (declare (ignore host))
+  (set-connection-side :server)
   
   (init-server)
 

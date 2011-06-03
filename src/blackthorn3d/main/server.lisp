@@ -89,11 +89,15 @@
       (let* ((here (lookup-sector (current-sector p)))
 	     (my-camera (attached-cam p))
 	     (camera-dir (to-vec4 (dir my-camera)))
+             (start-pos (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir))
+             (ray (norm4 camera-dir))
              ;(distance (run-into-something p (vec4+ pos up) dir here)))
-	     (distance (run-into-something p (vec4+ pos up) camera-dir here)))
+	     (distance (run-into-something p start-pos ray here)))
 	     ;(distance 5.0))
         (send-play-laser
-         :broadcast :human (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir) (vec-scale4 camera-dir distance))
+         :broadcast :human
+         start-pos
+         (vec-scale4 ray distance))
         (blt3d-snd:send-sound :broadcast :laser nil 128)
         )
       )

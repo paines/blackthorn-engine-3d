@@ -253,7 +253,7 @@
 (defun make-explosion-smoke (pos)
   (create-explosion-ps
    (make-radial-emitter pos '(3.0 . 3.3))
-   8
+   20
    :size #(0.6 1.0)
    :lifetime '(1.0 . 1.2)
    :color +orange+

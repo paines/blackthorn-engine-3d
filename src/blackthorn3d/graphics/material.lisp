@@ -80,14 +80,15 @@
       (gl:material :front :ambient ambient))
     (when diffuse 
       (unless *disable-shading*
-        (if (arrayp diffuse)
-            (progn
-              (use-texture *default-texture*)
-              (gl:material :front :diffuse +white+))
-            (progn
-              (gl:material :front :diffuse +white+)
-              (use-texture diffuse)
-              ))))
+        (if diffuse
+            (if (arrayp diffuse)
+                (progn
+                  (use-texture *default-texture*)
+                  (gl:material :front :diffuse +white+))
+                (progn
+                  (gl:material :front :diffuse +white+)
+                  (use-texture diffuse)))
+            (use-texture *default-texture*))))
     (when specular
       (gl:material :front :specular specular)
       (gl:material :front :shininess shininess))))

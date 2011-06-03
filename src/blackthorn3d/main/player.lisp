@@ -59,7 +59,7 @@
   )))
   
 (defmethod quickhit ((self player))
-  (setf (health self) (- (health self) 0.01))
+  (setf (health self) (- (health self) 0.1))
   (format t "Player health now: ~a~%" (health self)))
 
 (defmethod try-die ((self player))

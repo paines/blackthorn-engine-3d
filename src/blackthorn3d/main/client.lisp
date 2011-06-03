@@ -161,10 +161,11 @@
       (set-window *windowed-width* *windowed-height*
                   :fullscreen *window-fullscreen-p*)
       
-      (init-client)
+      
       (blt3d-snd:init)
       (blt3d-rend:init)
-     
+      (init-client)
+      
       (blt3d-rend:prepare-scene)
 
       (format t "####################~%")

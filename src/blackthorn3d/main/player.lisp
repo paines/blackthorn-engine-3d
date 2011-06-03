@@ -133,7 +133,6 @@
 ))
 
 (defmethod update ((self ghost-player))
-  (format t "I am a ghost. Rawr.~%")
   (with-slots (client pos up dir) self
   (let ((p self))
   
@@ -166,7 +165,7 @@
               :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
                                   :pos (make-point3 0.0 0.0 0.0)
                                   :rad 1.0)
-              :shape-name :wedge
+              :shape-name :ghost
               :velocity (vec-neg4 +y-axis+)
               )))
               

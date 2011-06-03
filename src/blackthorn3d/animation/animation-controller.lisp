@@ -146,7 +146,7 @@
       ((:run :loop)  
        (if current-clip
            (update-channels channel-bindings elapsed)
-           (play-clip this (car clips))))
+           (play-clip this (car clips) state)))
       (:stop  (setf elapsed 0.0))
       (:pause nil)
       (:reset (setf state :stop)))))

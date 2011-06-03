@@ -48,7 +48,8 @@
                               (make-point3 0.0 0.0 1.0)
                               (make-point3 0.0 1.0 0.0)
                               (make-point3 -1.0 0.0 0.0)))
-  (load-level))
+  (load-level)
+  (blt3d-phy:apply-transform (get-model :ghost) (make-scale #(0.15 0.15 0.15))))
 
 
 (defun init-client ()
@@ -83,5 +84,6 @@
                               (make-point3 0.0 0.0 1.0)
                               (make-point3 0.0 1.0 0.0)
                               (make-point3 -1.0 0.0 0.0)))
-  (load-level))
+  (load-level)
+  (blt3d-phy:apply-transform (get-model :ghost) (make-scale #(0.15 0.15 0.15))))
 

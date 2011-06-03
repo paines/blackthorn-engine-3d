@@ -27,7 +27,8 @@
 
 (defpackage :blackthorn3d-test
   (:nicknames :blt3d-test)
-  (:use :cl :fiveam :blt3d-utils :blt3d-gfx :blt3d-math :blt3d-phy :blt3d-ent)
+  (:use :iter :cl :fiveam 
+	:blt3d-utils :blt3d-gfx :blt3d-math :blt3d-phy :blt3d-ent)
   (:export
 
    ;; package.lisp

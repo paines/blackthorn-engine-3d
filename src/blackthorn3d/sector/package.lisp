@@ -51,6 +51,9 @@
    :link-sectors
 
    :get-transform-to-world
+
+   :add-test-sectors
+   :collect-sectors
    
    ;; portal.lisp
    :portal

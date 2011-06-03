@@ -284,12 +284,39 @@
     ;; Update the sector of the entity
     (setf (current-sector obj) (sector-id (links-to-sector p)))))
       
+
+(defvar *octree*)
+
+(defun construct-octree ()
+  (let* ((min-max (blt3d-sec::find-min-max-sector))
+	 (center (vec-scale4 (vec4+ (aref min-max 0) (aref min-max 1)) 0.5))
+	 (width (/ (- (aref (aref min-max 1) 0) 
+				   (aref (aref min-max 0) 0)) 0.5))
+	 (depth 5)) ; depth 8 broke it
+    (make-octree center width depth)))
+
+(defun make-hash-key (e1 e2)
+  (if (< (oid e1) (oid e2))
+    (return-from make-hash-key (list e1 e2))
+    (return-from make-hash-key (list e2 e1))))
+
+(defun check-collisions-octree ()
+  (setf *octree* (construct-octree))
+  (iter (for e1 in list-entities)
+    (octree-insert *octree* e1))
+  (setf collision-hash (make-hash-table))
+  (iter (for each-entity in list-entities)
+    (let ((potential (append (octree-query *octree* each-entity) nil)))
+      (iter (for (e1 e2) in (combinations (potential)))
+        (when (not (gethash (make-hash-key e1 e2) collision-hash))
+	  ; test for collision, otherwise already done
+	  (collide e1 e2))))))
+
+;#+disabled ;old check
 (defun check-collisions ()
   (iter (for (e1 e2) in (combinations (list-entities)))
         (when (blackthorn3d-physics:collide-p e1 e2)
           (collide e1 e2))))
-
-
 
 
 

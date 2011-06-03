@@ -324,3 +324,8 @@
 	  (is (= (length (octree-query my-octree object3)) 2))
 	  (octree-delete my-octree object)
 	  (is (= (length (octree-query my-octree object3)) 1)))))
+
+(test collect-sectors
+  (blt3d-sec::add-test-sectors)
+  (blt3d-sec::find-min-max-sector)
+  (blt3d-main::construct-octree))

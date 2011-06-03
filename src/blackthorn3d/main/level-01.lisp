@@ -37,6 +37,9 @@
 ;;; Load models here
 ;;;
   
+  ;; monsters & stuff like that
+  (load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
+  
   ;; maps
   (format t "##### Loading Maps~%")
   (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")

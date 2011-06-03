@@ -116,7 +116,7 @@
              (inv-basis (transpose basis))
              ;; camera point in object space
 ;             (tt-pos (matrix-multiply-v basis t-pos))
-             (tc-pos  (matrix-multiply-v basis (vec4- pos t-pos)))
+             (tc-pos  (matrix-multiply-v basis (vec4- pos look-at)))
              (sphere-coord nil)
              (ks (ecase minor-mode
                    (:free spring-k)
@@ -153,7 +153,7 @@
                   (dir target)))
 
            ;; set theta
-           (let ((rel-theta (acos (/ (z tc-pos) (mag tc-pos)))))
+           (let ((rel-theta (asin (/ (y tc-pos) (mag tc-pos)))))
              (setf (elt ideal-coord2 1)
                    (clamp
                     (+ (if (is-jumping target) rel-theta 0.0)

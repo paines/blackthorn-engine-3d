@@ -40,10 +40,12 @@
   ;; maps
   (format t "##### Loading Maps~%")
   (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
-  (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
-  (load-model :slide-room :level #p "res/models/WallRoomSlide.dae")
-  (load-model :cylinder-room :level #p "res/models/CylinderRoom1.dae")
+ ; (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
+ ; (load-model :slide-room :level #p "res/models/WallRoomSlide.dae")
+ ; (load-model :cylinder-room :level #p "res/models/CylinderRoom1.dae")
+  (load-model :maze-room :level #p "res/models/MazeRoom.dae")
   (load-model :hallway-five :level #p "res/models/HallwayFiveway.dae")
+  (load-model :battle-room :level #p "res/models/BattleRoom1.dae")
 
 
 
@@ -58,22 +60,50 @@
     (add-sector-relative
      :start-sector
      :north
-     (make-sector :hall-five (get-model :hallway-five)))
+     (make-sector :hall-01 (get-model :hallway-five)))
     
     (add-sector-relative
-     :hall-five
+     :hall-01
      :north
-     (make-sector :tube (get-model :cylinder-room)
-                  (axis-rad->quat +x-axis+ (/ pi 2.0))))
+     (make-sector :maze-room (get-model :maze-room)
+                  (axis-rad->quat +y-axis+ pi)
+                  ))
     
     (add-sector-relative
-     :hall-five
+     :hall-01
+     :up
+     (make-sector :battle-room (get-model :battle-room)
+                  (axis-rad->quat +x-axis+ (/ pi -2.0))))
+
+    #+disabled
+    (add-sector-relative
+     :hall-01
      :up
      (make-sector :end-room (get-model :dead-end-room)
                   (axis-rad->quat +x-axis+ (/ pi -2.0))))
 
+    #+disabled
+    (add-sector-relative
+     :hall-01
+     :east
+     (make-sector :end-room2 (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ (/ pi 2.0))))
+    
+    #+disabled
+    (add-sector-relative
+     :hall-01
+     :west
+     (make-sector :end-room3 (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ (/ pi -2.0))))
+
     ;; Now link them all
-    (link-sectors :start-sector :hall-five)
-    (link-sectors :hall-five :tube)
-    (link-sectors :hall-five :end-room)
+    (link-sectors :start-sector :hall-01)
+    (link-sectors :hall-01 :maze-room)
+    (link-sectors :hall-01 :battle-room)
+
+    #+disabled
+    (progn
+      (link-sectors :hall-01 :end-room)
+      (link-sectors :hall-01 :end-room2)
+      (link-sectors :hall-01 :end-room3))
     ))

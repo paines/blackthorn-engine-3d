@@ -89,7 +89,7 @@
               :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
                                   :pos (make-point3 0.0 0.0 0.0)
                                   :rad 1.0)
-              :shape-name :wedge
+              :shape-name :human-gun
               :velocity (vec-neg4 +y-axis+)
               )))
       ;(push #'blackthorn3d-physics:gravity-mover (forces p))

@@ -39,14 +39,17 @@
   
   ;; monsters & stuff like that
   ;#+disabled
-  ;(load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
-  ;(load-model :ghost :dae #p "res/models/FireBeastAnimated.dae")
+ ; (load-model :fire-beast :dae #p "res/models/characters/FireBeastFinal.dae")
+  (load-model :spider :dae #p "res/models/characters/KatanaLegSpiderFinal.dae")
+  (blt3d-phy:apply-transform (get-model :spider) 
+                             (make-scale #(0.35 0.35 0.35)))
+
   (load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
   (blt3d-phy:apply-transform (get-model :ghost) 
                              (make-scale #(0.15 0.15 0.15)))
  
   (load-model :human-gun :dae #p "res/models/characters/ShooterFinal.dae")
-  (load-model :gun :dae #p "res/models/props/GunFinal.dae")
+  (load-model :gun :dae #p "res/models/props/GunFinal.dae") 
   (blt3d-phy:apply-transform (get-model :human-gun) 
                              (make-scale #(0.01 0.01 0.01)))
   (blt3d-phy:apply-transform (get-model :gun)
@@ -60,19 +63,27 @@
                               (make-point3 0.0 1.0 0.0)))
   (blt3d-phy:attach-node-to-model (car (blt3d-phy:mesh-nodes (get-model :gun)))
                                   "Bip001_R_Hand" (get-model :human-gun))
+
+
+  (load-model :human-sword :dae #p "res/models/characters/SwordsmanFinal.dae")
+  (load-model :sword :dae #p "res/models/props/SwordFinal.dae")
+  (blt3d-phy:apply-transform (get-model :human-sword) 
+                             (make-scale #(0.01 0.01 0.01)))
+  (blt3d-phy:apply-transform (get-model :sword)
+                             (make-inv-ortho-basis
+                              (make-point3 -1.0 0.0 0.0)
+                              (make-point3 0.0 -1.0 0.0)
+                              (make-point3 0.0 0.0 1.0)))
   
+  (blt3d-phy:attach-node-to-model (car (blt3d-phy:mesh-nodes 
+                                        (get-model :sword)))
+                                  "Bip001_R_Hand" (get-model :human-sword))
+
   ;; maps
   (format t "##### Loading Maps~%")
-  (load-model :dead-end-room :level #p "res/models/DeadEndRoom.dae")
- ; (load-model :hallway-straight :level #p "res/models/Hallway1a.dae")
- ; (load-model :slide-room :level #p "res/models/WallRoomSlide.dae")
- ; (load-model :cylinder-room :level #p "res/models/CylinderRoom1.dae")
-  (load-model :maze-room :level #p "res/models/MazeRoom.dae")
-  (load-model :hallway-five :level #p "res/models/HallwayFiveway.dae")
-  (load-model :battle-room :level #p "res/models/BattleRoom1.dae")
-  (load-model :rotating-ring-room :level
-              #p "res/models/maps/RotatingRingRoom.dae")
-
+  (load-model :dead-end-room :level #p "res/models/maps/DeadEndRoom.dae")
+  (load-model :hallway :level #p "res/models/maps/HallwayFiveWay.dae")
+  (load-model :victory :level #p "res/models/maps/VictoryRoom.dae")
 
 
 ;;;
@@ -86,21 +97,52 @@
     (add-sector-relative
      :start-sector
      :south
-     (make-sector :ring-01 (get-model :rotating-ring-room)))
+     (make-sector :s1 (get-model :hallway)
+                  ;(axis-rad->quat +y-axis+ pi)
+                  ))
+
+    (add-sector-relative
+     :s1
+     :south
+     (make-sector :d1 (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ pi)))
+
+    (add-sector-relative
+     :s1
+     :up 
+     (make-sector :d2 (get-model :victory)
+                  (axis-rad->quat +x-axis+ (/ pi 2.0))))
+
+    (add-sector-relative
+     :s1
+     :west
+     (make-sector :d3 (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ (/ pi 2.0))))
     
     (add-sector-relative
-     :ring-01
-     :south
-     (make-sector :maze-room (get-model :maze-room)))
-    
+     :s1
+     :east
+     (make-sector :d4 (get-model :dead-end-room)
+                  (axis-rad->quat +y-axis+ (/ pi -2.0))))
+
+       
     ;; Now link them all
-    (link-sectors :start-sector :ring-01)
-    (link-sectors :ring-01 :maze-room)
-   ; (link-sectors :hall-01 :battle-room)
+    
+    (link-sectors :start-sector :s1)
+    (link-sectors :s1 :d1)
+    (link-sectors :s1 :d2)
+    (link-sectors :s1 :d3)
+    (link-sectors :s1 :d4)
+
+;    (link-sectors :l1 :m1)
+;    (link-sectors :m1 :d1)
+;    (link-sectors :m1 :d2)
+  ;  (link-sectors :s1 :s2)
+  ;  (link-sectors :s2 :end)
+    
 
     #+disabled
     (progn
       (link-sectors :hall-01 :end-room)
       (link-sectors :hall-01 :end-room2)
-      (link-sectors :hall-01 :end-room3))
-    ))
+      (link-sectors :hall-01 :end-room3))))

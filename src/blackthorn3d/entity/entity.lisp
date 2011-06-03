@@ -72,7 +72,8 @@
 
 (defclass entity-server (entity)
   ((oid
-    :initform (make-server-oid))
+    :initform (make-server-oid)
+    :initarg :oid)
    (velocity
     :accessor velocity
     :initarg :velocity

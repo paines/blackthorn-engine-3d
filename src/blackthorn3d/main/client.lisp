@@ -145,8 +145,6 @@
   (setup-paths)
   (load-dlls)
 
-  (init-client)
-
   (setf *random-state* (make-random-state t))
 
   (unless (socket-client-connect host port :timeout 1.0)
@@ -159,8 +157,10 @@
     (sdl:with-init ()
       (set-window *windowed-width* *windowed-height*
                   :fullscreen *window-fullscreen-p*)
+      
       (blt3d-snd:init)
       (blt3d-rend:init)
+      (init-client)
 
       (blt3d-rend:prepare-scene)
 

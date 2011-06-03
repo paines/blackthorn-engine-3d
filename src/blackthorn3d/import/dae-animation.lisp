@@ -84,6 +84,8 @@
                                        (incf default-count)))))
               (dae-debug "anim-id: ~a~%" anim-id)
               (setf (gethash anim-id animation-table)
+                    channel-list
+                    #+disabled
                     (make-instance 'animation-clip
                                    :id anim-id
                                    :channel-lst channel-list

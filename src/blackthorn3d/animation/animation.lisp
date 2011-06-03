@@ -51,8 +51,9 @@
     :accessor end-time
     :initarg :t-end)))
 
-(defun make-animation-clip (start end)
+(defun make-animation-clip (id start end)
   (make-instance 'animation-clip
+                 :id id
                  :t-start start
                  :t-end end))
 

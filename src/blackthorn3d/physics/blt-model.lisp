@@ -124,6 +124,13 @@
     this))
 
 
+
+
+(defmethod play-model-animation ((self blt-model) clip-name)
+  (play-clip (animations self) clip-name))
+
+
+
 (defclass vertex-stream ()
   ((semantic
     :accessor vs-semantic

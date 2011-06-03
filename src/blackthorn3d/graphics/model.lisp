@@ -54,6 +54,7 @@
 
 (defvar *material-array* nil)
 
+
 (defmethod update-model((this blt-model) time)
   (aif (animations this)
        (update-anim-controller it time)))

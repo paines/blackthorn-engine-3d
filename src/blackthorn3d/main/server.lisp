@@ -248,11 +248,23 @@
         (let ((,delta (time-left-in-frame ,fps ,last)))
           (sleep ,delta))))))
 
-(let ((counter 0))
-  (defmethod assign-team ((self player))
-    (if (oddp (incf counter))
-      :team1
+(defvar *team1-count* 0)
+(defvar *team2-count* 0)
+
+(defmethod assign-team ((self player))
+  (if (<= *team1-count* *team2-count*)
+    (progn
+      (incf *team1-count*)
+      :team1)
+    (progn
+      (incf *team2-count*)
       :team2)))
+          
+;(let ((counter 0))
+;  (defmethod assign-team ((self player))
+;    (if (oddp (incf counter))
+;      :team1
+;      :team2)))
       
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
@@ -261,10 +273,12 @@
       (new-server-controller new-client)
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
-             (camera (new-camera the-new-player)))
+             (camera (new-camera the-new-player))
+             (on-team (assign-team the-new-player)))
         
         (setf (attached-cam the-new-player) camera)
-        (format t "The new player's team is: ~a~%" (assign-team the-new-player))
+        (format t "The new player's team is: ~a~%" on-team)
+        (setf (team the-new-player) on-team)
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
@@ -349,6 +363,10 @@
 (defun remove-disconnected-clients ()
   (iter (for client in *delay-disconnected-clients*)
     (format t "Removing client: ~a~%" client)
+    (let ((p (lookup-player-by-client client)))
+       (case (team p)
+          (:team1 (decf *team1-count*))
+          (:team2 (decf *team2-count*))))
     (remove-player client))
   (setf *delay-disconnected-clients* nil))
 

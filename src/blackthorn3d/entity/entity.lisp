@@ -94,7 +94,11 @@
    (bounding-volume
     :accessor bounding-volume
     :initform nil
-    :initarg :bv)))
+    :initarg :bv)
+   (team
+    :accessor team
+    :initform nil
+    :initarg :team)))
     
 
 (defclass entity-client (entity)

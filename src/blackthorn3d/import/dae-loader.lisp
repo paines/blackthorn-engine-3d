@@ -35,6 +35,7 @@
 (defvar *animation-table* nil)
 (defvar *controller-table* nil)
 (defvar *portal-list* nil)
+(defvar *platform-list* nil)
 
 ;;;
 ;;; Collada load functions
@@ -212,6 +213,20 @@
                                          material-table))))
            (new-node
              (case type
+               (:platform
+                (destructuring-bind (mesh materials) 
+                    (compile-geometry extra)
+                  (push (list 
+                         id (make-model-node :id id
+                                             :transform 
+                                             (matrix-multiply-m 
+                                              +3dsmax-convert+ 
+                                              xform)
+                                             :material-array materials
+                                             :mesh mesh
+                                             :child-nodes node-children))
+                        *platform-list*)
+                  nil))
                (:portal
                 (destructuring-bind (name bounding-volume)
                     (compile-portal extra)
@@ -361,4 +376,6 @@
                                         :animations *animation-table*)
                       +3dsmax-convert+)
                      :portals
-                     *portal-list*))))
+                     *portal-list*
+                     :platforms
+                     *platform-list*))))

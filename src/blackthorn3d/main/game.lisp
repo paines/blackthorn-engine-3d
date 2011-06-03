@@ -54,6 +54,12 @@
 
 
 (defun init-client ()
+  (register-model-loader :platform
+                         #'(lambda (platform)
+                             (blt3d-gfx:load-obj->models
+                              (make-instance 'blt3d-phy:blt-model
+                                             :mesh-nodes platform))))
+
   (register-model-loader 
    :dae
    #'(lambda (path) 

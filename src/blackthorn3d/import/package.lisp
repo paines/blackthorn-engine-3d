@@ -38,4 +38,5 @@
    :loaded-dae
    :dae-geometry
    :dae-portals
+   :dae-platforms
    ))

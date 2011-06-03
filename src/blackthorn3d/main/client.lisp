@@ -57,7 +57,8 @@
     (:ghost (add-ghost-laser start-pos dir))))
 
 (defun handle-play-animation (src entity name mode)
-  (format t "Animation ~a goes boom on ~a with mode ~a~%" name entity mode))
+  (format t "Animation ~a goes boom on ~a with mode ~a~%" name entity mode)
+  (play-model-animation (shape entity) name mode))
 
 (defun handle-entity-remove-client (src entity)
   ;; TODO: Do it.

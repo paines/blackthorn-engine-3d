@@ -26,7 +26,6 @@
 (in-package :blackthorn3d-animation)
 
 
-
 ;; every animated model should have one of these...
 (defclass anim-controller ()
   ((current-clip
@@ -117,10 +116,10 @@
         (setf next-clip clip)
         (setf current-clip clip))))
 
-(defmethod play-clip ((this anim-controller) clip)
+(defmethod play-clip ((this anim-controller) clip mode)
   (let ((new-clip (getf (clips this) clip)))
     (set-next-clip this new-clip)
-    (setf (state this) :loop)))
+    (setf (state this) mode)))
 
 
 (defun next-clip (controller)

@@ -31,6 +31,30 @@
                     &optional 
                     (orientation (quat-identity)))
   (format t "portals from importer ~a~%" (blt3d-imp:dae-portals level))
+  (iter (for platform in (blt3d-imp:dae-platforms level))
+        (format t "loading platform ~a~%" (id platform))
+        (with-slots (transform) platform
+          (let ((pos (quat-rotate-vec orientation
+                                      (matrix-multiply-v 
+                                       transform
+                                       +origin+)))
+                (dir (quat-rotate-vec orientation
+                                      (matrix-multiply-v 
+                                       transform
+                                       (vec-neg4 +z-axis+))))
+                (up (quat-rotate-vec orientation
+                                     (matrix-multiply-v 
+                                      transform
+                                      +y-axis+))))
+            (load-model )
+            (make-server-entity 'entity-server 
+                                :pos pos
+                                :dir dir
+                                :up up
+                                :shape-name (intern (id platform) "KEYWORD")
+                                :shape (make-instance 'blt3d-phy:blt-model
+                                                      :mesh-nodes
+                                                      (list platform))))))
   (new-sector name
               (blt3d-imp:dae-geometry level)
               :portals 

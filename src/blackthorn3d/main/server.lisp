@@ -124,7 +124,7 @@
       (return-from update))
     
     (setf (minor-mode c)
-      (if (> (s-input-camera-mode client) 0)
+      (if (and (not (is-jumping player)) (> (s-input-camera-mode client) 0))
         :strafe
         :free))
     

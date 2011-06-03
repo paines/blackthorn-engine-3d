@@ -221,7 +221,6 @@
 
          (blt3d-rend:update-graphics (list-entities) 1/60)
          
-         (format t "rendering-frame~%'")
          (blt3d-rend:render-frame (list-entities))
 
 

@@ -40,8 +40,26 @@
   ;; monsters & stuff like that
   ;#+disabled
   ;(load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
-  (load-model :ghost :dae #p "res/models/FireBeastAnimated.dae")
-  ;(load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
+  ;(load-model :ghost :dae #p "res/models/FireBeastAnimated.dae")
+  (load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
+  (blt3d-phy:apply-transform (get-model :ghost) 
+                             (make-scale #(0.15 0.15 0.15)))
+ 
+  (load-model :human-gun :dae #p "res/models/characters/ShooterFinal.dae")
+  (load-model :gun :dae #p "res/models/props/GunFinal.dae")
+  (blt3d-phy:apply-transform (get-model :human-gun) 
+                             (make-scale #(0.01 0.01 0.01)))
+  (blt3d-phy:apply-transform (get-model :gun)
+                             (make-translate (make-point3 -4.0 -10.0 20.0)))
+  (blt3d-phy:apply-transform (get-model :gun)
+                             (make-x-rot (- (/ pi 6))))
+  (blt3d-phy:apply-transform (get-model :gun)
+                             (make-inv-ortho-basis
+                              (make-point3 -1.0 0.0 0.0)
+                              (make-point3 0.0 0.0 -1.0)
+                              (make-point3 0.0 1.0 0.0)))
+  (blt3d-phy:attach-node-to-model (car (blt3d-phy:mesh-nodes (get-model :gun)))
+                                  "Bip001_R_Hand" (get-model :human-gun))
   
   ;; maps
   (format t "##### Loading Maps~%")
@@ -52,7 +70,7 @@
   (load-model :maze-room :level #p "res/models/MazeRoom.dae")
   (load-model :hallway-five :level #p "res/models/HallwayFiveway.dae")
   (load-model :battle-room :level #p "res/models/BattleRoom1.dae")
-  (load-model :rotating-ring-room :level 
+  (load-model :rotating-ring-room :level
               #p "res/models/maps/RotatingRingRoom.dae")
 
 
@@ -67,15 +85,22 @@
   (progn
     (add-sector-relative
      :start-sector
-     :north
-     (make-sector :ring-01 (get-model :hallway-five)))
+     :south
+     (make-sector :ring-01 (get-model :rotating-ring-room)))
     
     (add-sector-relative
      :ring-01
-     :north
-     (make-sector :maze-room (get-model :maze-room)
-                  (axis-rad->quat +y-axis+ pi)))
-   
+     :south
+     (make-sector :maze-room (get-model :maze-room)))
+    
     ;; Now link them all
     (link-sectors :start-sector :ring-01)
-    (link-sectors :ring-01 :maze-room)))
+    (link-sectors :ring-01 :maze-room)
+   ; (link-sectors :hall-01 :battle-room)
+
+    #+disabled
+    (progn
+      (link-sectors :hall-01 :end-room)
+      (link-sectors :hall-01 :end-room2)
+      (link-sectors :hall-01 :end-room3))
+    ))

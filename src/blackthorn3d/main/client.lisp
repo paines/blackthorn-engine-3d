@@ -143,6 +143,8 @@
                 :reset-viewport t)))
 
 (defun client-main (host port)
+  (set-connection-side :client)
+  
   (setup-paths)
   (load-dlls)
 

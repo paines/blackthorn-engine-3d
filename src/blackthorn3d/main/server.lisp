@@ -70,7 +70,6 @@
          it
          0.0)))
 
-
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos up dir) p
@@ -97,8 +96,11 @@
 
                                         ;#+disabled
     (when (> (s-input-xbox-y client) 0)
-      (quickhit p)
-      (try-die p))))
+      (quickhit p))
+    
+    (try-die p)
+    
+    ))
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
@@ -247,6 +249,12 @@
         (let ((,delta (time-left-in-frame ,fps ,last)))
           (sleep ,delta))))))
 
+(let ((counter 0))
+  (defmethod assign-team ((self player))
+    (if (oddp (incf counter))
+      :team1
+      :team2)))
+      
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
   (let ((new-client (check-for-clients)))
@@ -257,6 +265,7 @@
              (camera (new-camera the-new-player)))
         
         (setf (attached-cam the-new-player) camera)
+        (format t "The new player's team is: ~a~%" (assign-team the-new-player))
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
@@ -351,6 +360,7 @@
       
 (defun server-main (host port)
   (declare (ignore host))
+  (set-connection-side :server)
   
   (init-server)
 

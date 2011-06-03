@@ -44,6 +44,9 @@
    :socket-receive-all
    :socket-send
    :socket-flush-all
+   :on-server-p
+   :on-client-p
+   :set-connection-side
 
    ;; message.lisp
    :defmessage

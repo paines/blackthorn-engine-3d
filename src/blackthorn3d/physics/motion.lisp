@@ -49,7 +49,7 @@
       (setf (pos self) (vec4+ (pos self) (vec-scale4 direction speed)))))
     
 (defvar *hackity-hack__lookup-sector* nil)
-(defvar *hackity-hack__collide-sector* (lambda (&rest whatever) (declare (ignore whatever)) nil))
+(defvar *hackity-hack__collide-sector* nil)
 
 (defun collide-displace (an-entity vector sector)
   (let ((old-velocity (velocity an-entity))
@@ -62,6 +62,10 @@
 
     
 (defun standard-physics-step (self)
+  (when (or (null *hackity-hack__lookup-sector*)
+            (null *hackity-hack__collide-sector*))
+    (return-from standard-physics-step))
+    
   (let* ((t-sector 
           (funcall *hackity-hack__lookup-sector* (current-sector self)))
          ;; we can keep this
@@ -70,7 +74,7 @@
     (destructuring-bind (move-to new-up)
         (funcall *hackity-hack__collide-sector* 
                  self displace-vector t-sector)
-
+  
       (move-vec self move-to)
 
       ;#+disabled
@@ -78,7 +82,7 @@
         #+disabled
         (setf (new-up self) 
               (norm4 move-to))
-
+              
        ; #+disabled
         (destructuring-bind (move-to new-up2)
             (funcall *hackity-hack__collide-sector*
@@ -86,6 +90,7 @@
                      (vec4+ (vec-neg4 displace-vector) 
                             (vec-scale4 (up self) (- (mag displace-vector))))
                      t-sector)
+                     
           (move-vec self move-to)
           (when new-up2 (setf (new-up self) new-up2))))
 
@@ -149,3 +154,17 @@
         (vec-scale4 (vec-neg4 (up an-entity)) (* -25.0 dt *gravity-accel*)))
       +zero-vec+
       )))
+      
+(defun make-ghost-mover  (client)
+  (lambda (self dt)
+    (with-slots (up) self
+      (let ((val +zero-vec+))
+        (when (> (s-input-fly-up client) 0)
+            (setf val (vec4+ val (vec-scale4 up (* dt 1.0)))))
+          
+        (when (> (s-input-fly-down client) 0)
+          (setf val (vec4+ val (vec-neg4 (vec-scale4 up (* dt 1.0))))))
+          
+        val))))
+      
+(defun do-nothing-mover (self dt) +zero-vec+)

@@ -78,8 +78,8 @@
         )
       )
 
-    #+disabled
-    (when (> (s-input-jump client) 0)
+    ;#+disabled
+    (when (> (s-input-xbox-y client) 0)
       (quickhit p)
       (try-die p))))
 

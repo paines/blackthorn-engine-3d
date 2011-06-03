@@ -41,9 +41,22 @@
    ))
         
 (defmethod on-die ((self player))
-  (setf (pos self) (make-vec3 0.0 2.0 0.0))
-  (setf (velocity self) (make-vec3 0.0 0.0 0.0))
-  (setf (health self) 1.0))
+  (send-play-explosion :broadcast :none (pos self))
+  
+  (let ((the-cam (attached-cam self)))
+    (with-slots (pos velocity health up dir) self
+      (setf health 1.0)
+      
+      (setf pos (make-point3 0.0 0.1 0.0))
+      (setf dir (make-vec3 1.0 0.0 0.0))
+      (setf up  (make-vec3 0.0 1.0 0.0))
+      (setf velocity (vec-neg4 +y-axis+))
+      (reinitialize-instance the-cam
+        :pos (make-point3 0.0 0.0 0.0)
+        :dir (make-vec3 1.0 0.0 0.0)
+        :up  (make-vec3 0.0 1.0 0.0)
+        :ideal-coord (list 0.0 (/ pi 6) 4.0))
+  )))
   
 (defmethod quickhit ((self player))
   (setf (health self) (- (health self) 0.01))

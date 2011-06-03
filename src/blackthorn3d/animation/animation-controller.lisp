@@ -86,7 +86,7 @@
   (with-slots (channel-bindings clips state elapsed current-clip next-clip)
       controller
     (make-instance 'animation-controller
-                   :channel-bindings channel-bindings
+                   :channel-bindings (copy-list channel-bindings)
                    :clips clips
                    :state state
                    :current-clip current-clip
@@ -146,7 +146,7 @@
       ((:run :loop)  
        (if current-clip
            (update-channels channel-bindings elapsed)
-           (play-clip this (car clips))))
+           (play-clip this (car clips) state)))
       (:stop  (setf elapsed 0.0))
       (:pause nil)
       (:reset (setf state :stop)))))

@@ -75,10 +75,13 @@
    :expand-bounding-spheres
    :apply-transform
    :find-node
+   :attach-obj-to-model
    :attach-node-to-model
    :detach-node-from-model
    :play-model-animation
    :add-model-clip
+   :make-instance
+   :get-model-instance
 
    :blt-material
    :make-blt-material

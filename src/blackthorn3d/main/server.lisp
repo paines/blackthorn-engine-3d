@@ -91,6 +91,7 @@
              (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
          :broadcast :human (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir) (vec-scale4 dir distance))
+        (blt3d-snd:send-sound :broadcast :laser nil 128)
         )
       )
 

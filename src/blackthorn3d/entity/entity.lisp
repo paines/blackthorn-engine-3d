@@ -65,7 +65,8 @@
     :initform nil)
    (shape
     :accessor shape
-    :initarg :shape)))
+    :initarg :shape
+    :initform nil)))
 
 (track-modifed-slots entity pos dir up shape-name die-now)
 

@@ -122,6 +122,7 @@
    :plane-dist
    :point-normal->plane
    :standing-on-p
+   :min-t
 
    ;; collision.lisp
    :collide-p

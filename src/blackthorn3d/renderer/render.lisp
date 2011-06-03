@@ -244,7 +244,6 @@
   (when *test-ps*
     #+disabled
     (update-ui-element *test-ui* (num-alive *test-ps*))
-
     (client-update *test-ps* time))
 
   (when *laser-ps*

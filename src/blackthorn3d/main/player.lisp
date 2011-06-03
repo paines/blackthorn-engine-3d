@@ -79,7 +79,7 @@
 (defun lookup-player-by-client (client)
   (getf *client->player* client))
     
-(defun new-player (client-id)
+(defun new-human-player (client-id)
     (let ((p (make-server-entity
               'player
               :client client-id
@@ -114,8 +114,76 @@
               (blt3d-phy::pos (bounding-volume p))
               (blt3d-phy::rad (bounding-volume p)))
     
+      #+disabled
       (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
              (action () (format t "Client ~a started moving.~%" client-id)))
         (make-pos-reactor #'test #'action))
     
-      (register-player p client-id)))
+      p))
+      
+      
+      
+(defclass ghost-player (player) (
+  (ghost-target
+    :accessor ghost-target
+    :initform nil)
+  (update-client-message-state
+    :accessor update-client-message-state
+    :initform :do-nothing)
+))
+
+(defmethod update ((self ghost-player))
+  (format t "I am a ghost. Rawr.~%")
+  (with-slots (client pos up dir) self
+  (let ((p self))
+  
+  ; jump
+  (when (and (> (s-input-jump client) 0)
+               (not (is-jumping p)))
+      (setf (is-jumping p) t)
+      
+      (if (eql (minor-mode (attached-cam p)) :free)
+          (setf (velocity p) (vec-scale4 up .1))
+          (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
+      (setf (new-up p) (vec-neg4 (norm4 (velocity p))))
+      ;;(setf (new-up p) (vec-neg4 (velocity p)))
+      )
+  
+  ;; just in case they get stuck
+  (when (> (s-input-xbox-y client) 0)
+      (quickhit p))
+    
+    (try-die p)
+)))
+
+(defun new-ghost-player (client-id)
+  (let ((p (make-server-entity
+              'ghost-player
+              :client client-id
+              :pos (make-point3 0.0 0.1 0.0)
+              :dir (make-vec3 1.0 0.0 0.0)
+              :up  (make-vec3 0.0 1.0 0.0)
+              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
+                                  :pos (make-point3 0.0 0.0 0.0)
+                                  :rad 1.0)
+              :shape-name :wedge
+              :velocity (vec-neg4 +y-axis+)
+              )))
+              
+    (setf (bounding-volume p) (expand-bounding-spheres 
+                    (blt3d-res:get-model (shape-name p))))
+      (format t "bounding volume: ~a ~a~%" 
+              (blt3d-phy::pos (bounding-volume p))
+              (blt3d-phy::rad (bounding-volume p)))
+              
+    p)
+)
+
+(defun new-player (client-id which-team)
+  (let ((p (if (eql which-team :team1)     ; FIXME generalize? ("week 11" type fix)
+                  (new-human-player client-id)
+                  (new-ghost-player client-id))))
+    (register-player p client-id)))
+    
+    
+  

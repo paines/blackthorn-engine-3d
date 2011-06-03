@@ -51,8 +51,6 @@
   (load-level))
 
 
-
-
 (defun init-client ()
   (register-model-loader :platform
                          #'(lambda (platform)

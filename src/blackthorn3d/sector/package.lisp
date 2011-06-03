@@ -46,6 +46,7 @@
    :collide-sector-portals
    :kill-entity
    :update-sectors
+   :place-entity-in-sector
 
    :add-sector-relative
    :link-sectors

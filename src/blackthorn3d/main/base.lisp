@@ -45,16 +45,22 @@
                 (up (quat-rotate-vec orientation
                                      (matrix-multiply-v 
                                       transform
-                                      +y-axis+))))
-            (load-model )
-            (make-server-entity 'entity-server 
-                                :pos pos
-                                :dir dir
-                                :up up
-                                :shape-name (intern (id platform) "KEYWORD")
-                                :shape (make-instance 'blt3d-phy:blt-model
-                                                      :mesh-nodes
-                                                      (list platform))))))
+                                      +y-axis+)))
+                (id (intern (id platform) "KEYWORD")))
+            (setf (transform platform) (make-identity))
+            (when (on-server-p)
+              (make-server-entity 
+               'entity-server 
+               :pos pos
+               :dir dir
+               :up up
+               :shape-name id
+               :shape (make-instance 'blt3d-phy:blt-model
+                                     :mesh-nodes
+                                     (list platform))))
+            (when (on-client-p)
+              (load-model id :platform platform)))))
+  
   (new-sector name
               (blt3d-imp:dae-geometry level)
               :portals 

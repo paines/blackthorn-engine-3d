@@ -43,6 +43,7 @@
     :initarg :state
     :initform :stop)
    (clips
+    :accessor clips
     :initarg :clips)
    (channel-bindings
     :initarg :channel-bindings
@@ -52,6 +53,7 @@
                     (channel target-fn last-frame) where last-frame
                     is an optimization for channel")))
 
+#+disabled
 (defun make-anim-controller (clips)
   (make-instance
    'anim-controller
@@ -59,11 +61,27 @@
    :state :loop
    :clips clips))
 
-#+disabled
+;#+disabled
 (defun make-anim-controller (channel-bindings &optional clips)
   (make-instance 'anim-controller
                  :channel-bindings channel-bindings
-                 :clips (make-anim)))
+                 :state :loop
+                 :clips 
+                 (if clips
+                     clips
+                     (list 
+                      :default 
+                      (cons 
+                       (get-start (mapcar #'first channel-bindings))
+                       (get-end (mapcar #'first channel-bindings)))))))
+
+(defun get-start (channels)
+  (iter (for ch in channels)
+        (minimizing (time-step (frames ch) 0))))
+
+(defun get-end (channels)
+  (iter (for ch in channels)
+        (maximizing (slot-value ch 't-max))))
 
 (defun copy-anim-controller (controller)
   (with-slots (channel-bindings clips state elapsed current-clip next-clip)
@@ -76,7 +94,17 @@
                    :next-clip next-clip
                    :elapsed elapsed)))
 
+(defmethod add-clip ((this anim-controller) name start end)
+  (setf (getf (slot-value this 'clips) :name)
+        (cons start end)))
 
+(defmacro start-time (clip)
+  `(car ,clip))
+
+(defmacro end-time (clip)
+  `(cdr ,clip))
+
+#+disabled
 (defmethod apply-transform ((this anim-controller) xform)
   (with-slots (clips) this
     (iter (for clip in clips)
@@ -84,17 +112,16 @@
                 (apply-transformation channel xform)))))
 
 (defun set-next-clip (controller clip)
-  (with-slots (current-clip next-clip state) controller
+  (with-slots (current-clip next-clip state clips) controller
     (if current-clip
         (setf next-clip clip)
         (setf current-clip clip))))
 
 (defmethod play-clip ((this anim-controller) clip)
-  (set-next-clip this clip)
-  (setf (state this) :run))
+  (let ((new-clip (getf (clips this) clip)))
+    (set-next-clip this new-clip)
+    (setf (state this) :loop)))
 
-#+disabled
-(defmethod play-clip ((this anim-controller)))
 
 (defun next-clip (controller)
   (with-slots (current-clip next-clip state) controller
@@ -108,20 +135,23 @@
 ;;          then will run next-clip if there is one
 ;;   :stop - does nothing
 (defmethod update-anim-controller ((this anim-controller) dt)
-  (with-slots (current-clip next-clip elapsed t-start state clips) this
+  (with-slots (current-clip next-clip elapsed t-start state 
+                            channel-bindings clips) this
     (incf elapsed dt)
-    (when (> elapsed (end-time current-clip))
-      (if (eql state :loop) 
-          (setf elapsed 0.0)
-          (next-clip this)))
+    (when current-clip
+      (when (> elapsed (end-time current-clip))
+        (if (eql state :loop) 
+            (setf elapsed 0.0)
+            (next-clip this))))
     (case state
-      ((:run :loop)    (if current-clip
-                           (update-clip current-clip elapsed)
-                           (play-clip this (car clips))
-                           #+disabled
-                           (setf state :stop)))
-      (:stop   (setf elapsed 0.0))
-      (:pause  nil)
-      (:reset  (if current-clip
-                   (update-clip current-clip 0.0))
-               (setf state :stop)))))
+      ((:run :loop)  
+       (if current-clip
+           (update-channels channel-bindings elapsed)
+           (play-clip this (car clips))))
+      (:stop  (setf elapsed 0.0))
+      (:pause nil)
+      (:reset (setf state :stop)))))
+
+(defun update-channels (channel-bindings time)
+  (iter (for binding in channel-bindings)
+        (update-binding binding time)))

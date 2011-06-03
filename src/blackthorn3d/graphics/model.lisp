@@ -173,3 +173,4 @@
    :array-format 'blt-vntiw-mesh
    :bind-skeleton (bind-skeleton skin)
    :bind-shape-matrix (bind-shape-matrix skin)))
+

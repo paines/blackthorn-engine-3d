@@ -35,6 +35,7 @@
    :ch-target
    :frames
    :t-max
+   :make-binding
 
    ;; animation.lisp
    :anim-controller
@@ -44,6 +45,7 @@
    :play-clip
    :state
   
+   :add-clip
    :update-clip
    :animation-clip
    :t-start

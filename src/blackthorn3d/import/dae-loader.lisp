@@ -282,15 +282,29 @@
                  (collect (compile-node node geometry materials)))))
          (anims     
           ;; Need to update the animation clips with the proper target fn
-          (when animations
-            (iter (for (anim-id clip) in-hashtable animations)
-                  (format t "~5Tclip: ~a~%" anim-id)
-                  (iter (for ch in (channel-lst clip))
-                        (setf (slot-value ch 'ch-target) 
-                              (get-location-fn (slot-value ch 'ch-target) 
-                                               *xform-mappings*)))
-                  (collect clip)))))
+          
+          (if animations
+              (progn
+                ;; create the animation channel-bindings
+                (iter (for (anim-id channel-list) in-hashtable animations)
+                      (collect
+                       (iter (for channel in channel-list)
+                             (collect (make-binding 
+                                       channel 
+                                       (get-location-fn (ch-target channel)
+                                                        *xform-mappings*))))))
+
+                #+disabled
+                (iter (for (anim-id clip) in-hashtable animations)
+                      (format t "~5Tclip: ~a~%" anim-id)
+                      (iter (for ch in (channel-lst clip))
+                            (setf (slot-value ch 'ch-target) 
+                                  (get-location-fn (slot-value ch 'ch-target) 
+                                                   *xform-mappings*)))
+                      (collect clip)))
+              (format t "NO ANIMATIONS~%"))))
     
+
     (iter (for node in meshes)
           (format t "Node ~a:  transform: ~a  bv: ~a~%"
                   (id node) (transform node) (node-bounding-volume node)))
@@ -301,15 +315,12 @@
     (iter (for (key value) in-hashtable *xform-mappings*)
           (format t "key: ~a~%" key))
 
-    (when anims
-      (format t "~%~%ANIMATIONS:~%")
-      (iter (for clip in anims)
-            (format t "clip: ~a~%" clip)))
-
+   
     (make-instance 
      'blt-model
      :nodes meshes
-     :animations (when anims (make-anim-controller anims)))))
+     :animations (when anims 
+                   (make-anim-controller (car anims))))))
 
 
 

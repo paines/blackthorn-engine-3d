@@ -29,7 +29,7 @@
   (:nicknames :blt3d-phy)
   (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
         :blt3d-input :rectangles :spatial-trees-protocol)
-  (:import-from :blt3d-ani :apply-transform)
+  (:import-from :blt3d-ani :apply-transform :play-clip)
   (:shadow :search :delete :intersection)
   (:export
 
@@ -77,6 +77,8 @@
    :find-node
    :attach-node-to-model
    :detach-node-from-model
+   :play-model-animation
+   :add-model-clip
 
    :blt-material
    :make-blt-material

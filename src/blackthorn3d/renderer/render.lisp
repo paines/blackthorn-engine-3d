@@ -61,16 +61,18 @@
          ;  #p "res/models/player-3.dae"
            #p "res/models/PlayerTestSword.dae"
            )))
-        (beast-model
-         (blt3d-imp:dae-geometry
-          (blt3d-imp:load-dae
-           #p "res/models/FireBeastAnimated.dae")))
         (epic-sword
          (blt3d-imp:dae-geometry
           (blt3d-imp:load-dae
-           #p "res/models/SwordTextured.dae"))))
+           #p "res/models/SwordTextured.dae")))
+        (beast-model
+         (blt3d-imp:dae-geometry
+          (blt3d-imp:load-dae
+           #p "res/models/FireBeastAnimated.dae"))))
     
     (setf *beast* (load-obj->models beast-model))
+    (play-model-animation *beast* :default)
+
     (apply-transform *beast* (make-translate #(0.0 -4.0 -55.0)))
     (apply-transform *beast* (make-z-rot pi))
     (setf *test-skele* (load-obj->models scientist-model))
@@ -252,6 +254,7 @@
   (when *test-skele*
     (update-model *test-skele* time))
   (when *beast*
+  ;  (format t "beasts' animations ~a~%" (animations *beast*))
     (update-model *beast* time))
 
   (update-effects time)

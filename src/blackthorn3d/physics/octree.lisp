@@ -102,11 +102,13 @@
            (good-node (find-appropiate-node node object-pos object-rad))
            (good-objects (objects good-node)))
       ;insert into children
-      ;(format t "~%~% insert ~a" object)
       (vector-push-extend object good-objects)
       ;(format t "~%~%~% POS ~a" (center good-node))
       ;(format t "~% WIDTH ~a" (width good-node))
 )))
+
+(defmethod octree-insert ((node octree-node) not-important)
+) ;catch nil at end of list
 
 (defmethod octree-delete ((node octree-node) (object blt3d-ent:entity-server))
   (with-slots (width center octree-children) node
@@ -130,6 +132,7 @@
 (defmethod octree-query ((node octree-node) (object bounding-shape))
   (let ((good-node (find-appropiate-node node (pos object) 
 					      (rad object))))
+    ;(format t "~%~%HERE ~a" good-node)
     ;(format t "~%~% query ~a" (center good-node))
     ;(format t "~%~% query ~a" (width good-node))
     ;(format t "~%~% query ~a" (pos object))
@@ -138,6 +141,7 @@
 
 (defmethod gather-objects ((node octree-node))
   (let ((object-list (make-array 0 :fill-pointer 0 :adjustable t)))
+    ;(format t "~%~% HERE ~a" node)
     ;(format t "~%~% descending ~a" (center node))
     (iter (for object in-vector (objects node))
       ;(format t "~%~% gather1 ~a" object)
@@ -177,7 +181,8 @@
    
 (defmethod find-appropiate-node ((node octree-node) obj-center obj-width)
   (with-slots (width center octree-children) node
-    (if (< obj-width (/ width 2))
+    ;(format t "~%~%~%~%~% HERE ~a" octree-children)
+    (if (and (< obj-width (/ width 2)) octree-children)
       ;decide which child to descend into
       (iter (for child in-vector octree-children)
 	(let* ((child-width (width child))
@@ -193,13 +198,17 @@
 	      (setf inside-child nil)))
 	  (when inside-child
 	      ;descend
-	      ;(format t "~%~% obj-width ~a" obj-width)
-	      ;(format t "~%~% child-pos ~a" child-center)
+	    ;(format t "~%~%~%~% obj ~a" obj-center)
+	    ;(format t "~%~% obj ~a" obj-width)
+	    ;(format t "~%~% node ~a" (center node))
+	    ;(format t "~%~% node ~a~%" (width node))
 	      (return-from find-appropiate-node 
 			   (find-appropiate-node child obj-center obj-width)))))
     (when (< obj-width width)
+    ;(progn
       ;this node is good
-      ;(format t "~%~%~%~% obj ~a" obj-center)
+      ;(format t "~%~%~% good")
+      ;(format t "~%~% obj ~a" obj-center)
       ;(format t "~%~% obj ~a" obj-width)
       ;(format t "~%~% good-node ~a" (center node))
       ;(format t "~%~% good-node ~a~%" (width node))

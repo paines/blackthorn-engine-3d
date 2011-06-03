@@ -329,3 +329,17 @@
   (blt3d-sec::add-test-sectors)
   (blt3d-sec::find-min-max-sector)
   (blt3d-main::construct-octree))
+
+(test check-collisions-octree
+  (let ((e1 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid) 
+					  :pos (make-point3 3.0 3.0 3.0) 
+		       :bv (make-instance 'bounding-sphere :rad 2
+					  :pos (make-point3 0.0 0.0 0.0))))
+	(e2 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid) 
+			                  :pos (make-point3 4.5 4.5 4.5) 
+		       :bv (make-instance 'bounding-sphere :rad 3
+					  :pos (make-point3 0.0 0.0 0.0)))))
+    (setf (gethash 0 blt3d-ent::*global-oid-table*) e1)
+    (setf (gethash 1 blt3d-ent::*global-oid-table*) e2)
+    (blt3d-main::check-collisions-octree)))
+  

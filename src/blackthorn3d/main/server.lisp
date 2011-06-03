@@ -320,15 +320,17 @@
 
 (defun check-collisions-octree ()
   (setf *octree* (construct-octree))
-  (iter (for e1 in list-entities)
-    (octree-insert *octree* e1))
+  (iter (for e1 in (list-entities))
+    (when (bounding-volume e1)
+      (octree-insert *octree* e1)))
   (setf collision-hash (make-hash-table))
-  (iter (for each-entity in list-entities)
-    (let ((potential (append (octree-query *octree* each-entity) nil)))
-      (iter (for (e1 e2) in (combinations (potential)))
-        (when (not (gethash (make-hash-key e1 e2) collision-hash))
-	  ; test for collision, otherwise already done
-	  (collide e1 e2))))))
+  (iter (for each-entity in (list-entities))
+    (when (bounding-volume each-entity)
+      (let ((potential (coerce (octree-query *octree* each-entity) 'list)))
+	(iter (for (e1 e2) in (combinations potential))
+	  (when (not (gethash (make-hash-key e1 e2) collision-hash))
+	    ; test for collision, otherwise already done
+	    (collide e1 e2)))))))
 
 ;#+disabled ;old check
 (defun check-collisions ()
@@ -374,5 +376,6 @@
       (check-for-new-clients)
       (remove-disconnected-clients)
       (update-entities)
+      ;(check-collisions-octree)
       (check-collisions)
       (synchronize-clients))))

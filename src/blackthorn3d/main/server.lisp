@@ -65,7 +65,6 @@
          (distances (mapcar #'(lambda (e) (ray-cast ray e)) (list-entities))))
     (aif (hit-thing-with-laser ray (list me))
          (quickhit it))
-    
     (aif (min-t (cons sector-distance distances))
          it
          0.0)))
@@ -88,9 +87,13 @@
                (> (s-input-attack client) 0))
       (setf last-laser 0.0)
       (let* ((here (lookup-sector (current-sector p)))
-             (distance (run-into-something p (vec4+ pos up) dir here)))
+	     (my-camera (attached-cam p))
+	     (camera-dir (to-vec4 (dir my-camera)))
+             ;(distance (run-into-something p (vec4+ pos up) dir here)))
+	     (distance (run-into-something p (vec4+ pos up) camera-dir here)))
+	     ;(distance 5.0))
         (send-play-laser
-         :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
+         :broadcast :human (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir) (vec-scale4 camera-dir distance))
         (blt3d-snd:send-sound :broadcast :laser nil 128)
         )
       )

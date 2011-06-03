@@ -44,16 +44,34 @@
 
 
 (defvar last-laser 0.0)
-(defvar laser-delay 1.0)
+(defvar laser-delay 0.3)
 
-(defun run-into-something (pos dir sector)
+(defun hit-thing-with-laser (ray excluding)
+  (let ((min-dist MOST-POSITIVE-SINGLE-FLOAT)
+        (thing nil)
+        (stuff-to-check (set-difference (list-entities) excluding))
+       )
+    (iter (for entity in stuff-to-check)
+      (let ((this-dist (ray-cast ray entity)))
+        (when (and this-dist (< this-dist min-dist))
+          (setf min-dist this-dist)
+          (setf thing entity))))
+    thing))
+
+(defun run-into-something (me pos dir sector)
   (let* ((ray (make-ray pos dir))
          (sector-distance (ray-cast ray sector))
          (distances (mapcar #'(lambda (e) (ray-cast ray e)) (list-entities))))
+    (aif (hit-thing-with-laser ray (list me))
+      (quickhit it))  
+    
     (aif (min-t (cons sector-distance distances))
       it
       0.0))
 )
+
+
+  
 
 (defmethod update ((p player))
   (incf last-laser 1/120)
@@ -72,7 +90,7 @@
                (> (s-input-attack client) 0))
       (setf last-laser 0.0)
       (let* ((here (lookup-sector (current-sector p)))
-             (distance (run-into-something (vec4+ pos up) dir here)))
+             (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
           :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
         )

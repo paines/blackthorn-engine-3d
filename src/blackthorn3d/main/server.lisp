@@ -248,6 +248,12 @@
         (let ((,delta (time-left-in-frame ,fps ,last)))
           (sleep ,delta))))))
 
+(let ((counter 0))
+  (defmethod assign-team ((self player))
+    (if (oddp (incf counter))
+      :team1
+      :team2)))
+      
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
   (let ((new-client (check-for-clients)))
@@ -258,6 +264,7 @@
              (camera (new-camera the-new-player)))
         
         (setf (attached-cam the-new-player) camera)
+        (format t "The new player's team is: ~a~%" (assign-team the-new-player))
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)

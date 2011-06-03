@@ -91,6 +91,7 @@
              (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
          :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
+        (blt3d-snd:send-sound :broadcast :laser nil 128)
         )
       )
 
@@ -201,11 +202,44 @@
      (apply-message-handler #'s-input-update src message))))
 
 (defvar *delay-disconnected-clients* nil)
-       
+
+;; FIXME: Massive hack
+(defvar *client-sound-state* (make-hash-table))
+(defvar *client-sound-score*
+  '((0.1 :boot nil 128)
+    (18 :music-intro nil 30)
+    (207 :intro nil 128)
+    (213 :music-exploration t 60)))
+(defun sound-add-client (client)
+  (setf (gethash client *client-sound-state*) (list (get-real-time) 0)))
+(defun sound-rem-client (client)
+  (remhash client *client-sound-state*))
+(defun sound-update-client (client start-and-old-time)
+  (let* ((start-time (first start-and-old-time))
+         (old-time (second start-and-old-time))
+         (new-time (get-real-time))
+         (old-delta (- old-time start-time))
+         (new-delta (- new-time start-time))
+         (sound-args
+          (iter (for (trigger-time sound loop volume) in *client-sound-score*)
+                (finding (list sound loop volume)
+                         such-that (and (< old-delta trigger-time)
+                                        (< trigger-time new-delta))))))
+    (when sound-args
+      (apply #'blt3d-snd:send-sound client sound-args))
+    (list start-time new-time)))
+(defun sound-update-all-clients ()
+  (iter (for (client value) in
+             (iter (for (client old-time) in-hashtable *client-sound-state*)
+                   (collect
+                    (list client (sound-update-client client old-time)))))
+        (setf (gethash client *client-sound-state*) value)))
+
 (defun handle-disconnect (client)
   (remove-server-controller client)
   (push client *delay-disconnected-clients*)
   (decf *client-count*)
+  (sound-rem-client client)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
   
 (defun new-camera (player-entity)
@@ -267,8 +301,7 @@
         
         (message-send :broadcast (make-event :entity-create))
         (send-camera new-client camera)
-        #+disabled
-        (blt3d-snd:send-sound new-client :soundtrack t))))
+        (sound-add-client new-client))))
   (forget-server-entity-changes))
 
 (defun synchronize-clients ()
@@ -376,6 +409,7 @@
       (check-for-new-clients)
       (remove-disconnected-clients)
       (update-entities)
+      (sound-update-all-clients)
       ;(check-collisions-octree)
       (check-collisions)
       (synchronize-clients))))

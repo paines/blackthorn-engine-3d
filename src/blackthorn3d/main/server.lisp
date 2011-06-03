@@ -70,7 +70,6 @@
          it
          0.0)))
 
-
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos up dir) p

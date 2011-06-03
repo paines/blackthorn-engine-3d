@@ -64,6 +64,7 @@
    :norm3
    :magnitude
    :spherical->cartesian
+   :cartesian->spherical
    :tri-centroid
    :set-length3
    :set-length4

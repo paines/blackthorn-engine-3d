@@ -27,5 +27,8 @@
    (portals
     :accessor dae-portals
     :initarg :portals
-    :documentation "a list of portals (id pos dir aabb)")))
+    :documentation "a list of portals (id pos dir aabb)")
+   (platforms
+    :accessor dae-platforms
+    :initarg :platforms)))
 

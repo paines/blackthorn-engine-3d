@@ -272,6 +272,17 @@
                   (* r (cos phi) sin-theta)
                   (if vec-p 0.0 1.0))))
 
+(defun safe-asin (val)
+  (if (< (abs (- val 1.0)) 0.0001)
+      (/ pi 2.0)
+      (asin val)))
+
+(defun cartesian->spherical (vec)
+  (let* ((phi (atan (x vec) (z vec)))
+         (radius (mag vec))
+         (theta (safe-asin (/ (y vec) radius))))
+    (list phi theta radius)))
+
 (defun get-perpendicular (vec)
   (if (or (not (zerop (x vec)))
           (not (zerop (y vec))))

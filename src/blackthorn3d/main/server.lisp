@@ -80,6 +80,7 @@
       (if (eql (minor-mode (attached-cam p)) :free)
           (setf (velocity p) (vec-scale4 up .1))
           (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
+      (setf (new-up p) (vec-neg4 (norm4 (velocity p))))
       ;;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       

@@ -95,9 +95,17 @@
     (string-equal "_portal" 
                   (subseq name
                           0 (min (length name) 7)))))
+(defun platformp (node)
+  (let ((name (get-attribute "name" (attributes node))))
+    (string-equal "_platform"
+                  (subseq name
+                          0 (min (length name) 9)))))
+
+
 (defun classify-node (node)
   (cond
     ((portalp node) :portal)
+    ((platformp node) :platform)
     ((jointp node) :joint)
     ((find-tag-in-children +instance-geometry+ node) :geometry)
     ((find-tag-in-children +instance-controller+ node) :controller)
@@ -119,6 +127,21 @@
                      (aif (process-node node)
                           (collect it))))))
 
+(defun process-platform-node (node-tag)
+  (let* ((node-id (get-attribute "id" (attributes node-tag)))
+         (geometry-tag (find-tag-in-children +instance-geometry+ node-tag))
+         (geom-id (get-url geometry-tag))
+         (material-map
+          (map-materials (find-tag-in-children +bind-material+ 
+                                               geometry-tag))))
+
+    (dae-debug "loading geometry node: ~a with mesh ~a~%" 
+               node-id geom-id)
+
+    (make-node node-id :platform *transform* (list geom-id material-map)
+               (iter (for node in (children-with-tag "node" node-tag))
+                     (aif (process-node node)
+                          (collect it))))))
 (defun process-portal-node (node-tag)
   (let* ((node-id (get-attribute "id" (attributes node-tag)))
          (portal-name (portal-name (get-attribute "name" (attributes node-tag))))

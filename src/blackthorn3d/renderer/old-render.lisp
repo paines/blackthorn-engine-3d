@@ -38,7 +38,7 @@
 
 
 (defun old-render-frame (entities)
-
+  (format t "start frame~%")
   (gl:enable :depth-test :lighting)
   (gl:depth-mask t)
   (gl:depth-func :lequal)
@@ -87,7 +87,8 @@
     (gl:bind-texture :texture-2d *shadow-depth-tex*)
     (gl:active-texture :texture0))
 
-  ;#+disabled    
+  ;#+disabled  
+  (format t "Drawing sectors~%")
   (when home-sector
     (gl:with-pushed-matrix
         (draw-object home-sector)))
@@ -96,17 +97,19 @@
   (when *test-skele*
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
-  (draw-object *beast*)
-  #+disabled
-  (when *beast*
-    (gl:with-pushed-matrix
-        (draw-object *beast*)))
 
-  ;#+disabled    sssssssssss
+  (format t "drawing beast~%")
+  (draw-object *beast*)
+
+  ;#+disabled
+  (format t "drawing entities~%")
+  (format t "num entities: ~a~%" (length entities))
   (dolist (e entities)
+    
     (when (and (shape e) (not (eql e *main-cam*)))
       (draw-object e)))
 
+  (format t "drawing effects~%")
   ;; DO PARTICLES YEAH!
   (gl:blend-func :src-alpha :one)  
   (gl:depth-mask nil)

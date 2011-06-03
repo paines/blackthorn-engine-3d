@@ -61,7 +61,10 @@
     (when (and (> (s-input-jump client) 0)
                (not (is-jumping p)))
       (setf (is-jumping p) t)
-      (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1))
+      
+      (if (eql (minor-mode (attached-cam p)) :free)
+        (setf (velocity p) (vec-scale4 up .1))
+        (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
       ;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       

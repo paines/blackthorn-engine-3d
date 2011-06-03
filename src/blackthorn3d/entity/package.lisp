@@ -55,6 +55,7 @@
    :displacers
    :is-jumping
    :transform-entity
+   :team
 
    ;; event.lisp
    :make-event

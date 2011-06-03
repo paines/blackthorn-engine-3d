@@ -55,14 +55,14 @@
 (defvar *xbox-y-key* :sdl-key-k)
 (defvar *alt-attack-key* :sdl-key-l)
 
-(defvar *deadzone-range-lx* 0.1)
-(defvar *deadzone-range-ly* 0.1)
-(defvar *deadzone-range-rx* 0.1)
-(defvar *deadzone-range-ry* 0.1)
+(defvar *deadzone-range-lx* 0.2)
+(defvar *deadzone-range-ly* 0.2)
+(defvar *deadzone-range-rx* 0.2)
+(defvar *deadzone-range-ry* 0.2)
         
 (defun xbox-thumb (fn controller deadzone)
   (let* ((query  (funcall fn controller))
-         (scaled (/ query 65535)))
+         (scaled (/ query 32770)))
     (if (< (abs scaled) deadzone)
       0.0
       scaled)))

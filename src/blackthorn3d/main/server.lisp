@@ -70,6 +70,7 @@
          it
          0.0)))
 
+
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos up dir) p
@@ -80,7 +81,6 @@
       (if (eql (minor-mode (attached-cam p)) :free)
           (setf (velocity p) (vec-scale4 up .1))
           (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
-    ;  (setf (new-up p) (vec-neg4 (norm4 (velocity p))))
       ;;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       
@@ -90,8 +90,7 @@
       (let* ((here (lookup-sector (current-sector p)))
              (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
-         :broadcast :human (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir) (vec-scale4 dir distance))
-        (blt3d-snd:send-sound :broadcast :laser nil 128)
+         :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
         )
       )
 
@@ -202,44 +201,11 @@
      (apply-message-handler #'s-input-update src message))))
 
 (defvar *delay-disconnected-clients* nil)
-
-;; FIXME: Massive hack
-(defvar *client-sound-state* (make-hash-table))
-(defvar *client-sound-score*
-  '((0.1 :boot nil 128)
-    (18 :music-intro nil 30)
-    (207 :intro nil 128)
-    (213 :music-exploration t 60)))
-(defun sound-add-client (client)
-  (setf (gethash client *client-sound-state*) (list (get-real-time) 0)))
-(defun sound-rem-client (client)
-  (remhash client *client-sound-state*))
-(defun sound-update-client (client start-and-old-time)
-  (let* ((start-time (first start-and-old-time))
-         (old-time (second start-and-old-time))
-         (new-time (get-real-time))
-         (old-delta (- old-time start-time))
-         (new-delta (- new-time start-time))
-         (sound-args
-          (iter (for (trigger-time sound loop volume) in *client-sound-score*)
-                (finding (list sound loop volume)
-                         such-that (and (< old-delta trigger-time)
-                                        (< trigger-time new-delta))))))
-    (when sound-args
-      (apply #'blt3d-snd:send-sound client sound-args))
-    (list start-time new-time)))
-(defun sound-update-all-clients ()
-  (iter (for (client value) in
-             (iter (for (client old-time) in-hashtable *client-sound-state*)
-                   (collect
-                    (list client (sound-update-client client old-time)))))
-        (setf (gethash client *client-sound-state*) value)))
-
+       
 (defun handle-disconnect (client)
   (remove-server-controller client)
   (push client *delay-disconnected-clients*)
   (decf *client-count*)
-  (sound-rem-client client)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
   
 (defun new-camera (player-entity)
@@ -283,38 +249,16 @@
         (let ((,delta (time-left-in-frame ,fps ,last)))
           (sleep ,delta))))))
 
-(defvar *team1-count* 0)   ; humans
-(defvar *team2-count* 0)   ; ghosts
-
-(defmethod assign-team ()
-  (if (<= *team1-count* *team2-count*)
-    (progn
-      (incf *team1-count*)
-      :team1)
-    (progn
-      (incf *team2-count*)
-      :team2)))
-          
-;(let ((counter 0))
-;  (defmethod assign-team ((self player))
-;    (if (oddp (incf counter))
-;      :team1
-;      :team2)))
-      
 (defun check-for-new-clients ()
   (forget-server-entity-changes)
   (let ((new-client (check-for-clients)))
     (when new-client
       (new-server-controller new-client)
       (send-all-entities new-client)
-      (let* ((on-team (assign-team))
-             (the-new-player (new-player new-client on-team))
-             (camera (new-camera the-new-player))
-             )
+      (let* ((the-new-player (new-player new-client))
+             (camera (new-camera the-new-player)))
         
         (setf (attached-cam the-new-player) camera)
-        (format t "The new player's team is: ~a~%" on-team)
-        (setf (team the-new-player) on-team)
         
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
@@ -323,7 +267,8 @@
         
         (message-send :broadcast (make-event :entity-create))
         (send-camera new-client camera)
-        (sound-add-client new-client))))
+        #+disabled
+        (blt3d-snd:send-sound new-client :soundtrack t))))
   (forget-server-entity-changes))
 
 (defun synchronize-clients ()
@@ -398,10 +343,6 @@
 (defun remove-disconnected-clients ()
   (iter (for client in *delay-disconnected-clients*)
     (format t "Removing client: ~a~%" client)
-    (let ((p (lookup-player-by-client client)))
-       (case (team p)
-          (:team1 (decf *team1-count*))
-          (:team2 (decf *team2-count*))))
     (remove-player client))
   (setf *delay-disconnected-clients* nil))
 
@@ -412,7 +353,6 @@
       
 (defun server-main (host port)
   (declare (ignore host))
-  (set-connection-side :server)
   
   (init-server)
 
@@ -436,7 +376,6 @@
       (check-for-new-clients)
       (remove-disconnected-clients)
       (update-entities)
-      (sound-update-all-clients)
       ;(check-collisions-octree)
       (check-collisions)
       (synchronize-clients))))

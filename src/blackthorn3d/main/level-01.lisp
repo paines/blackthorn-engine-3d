@@ -71,7 +71,7 @@
      (make-sector :maze-room (get-model :maze-room)
                   (axis-rad->quat +y-axis+ pi)
                   ))
-    
+    #+disabled
     (add-sector-relative
      :hall-01
      :up
@@ -102,7 +102,7 @@
     ;; Now link them all
     (link-sectors :start-sector :hall-01)
     (link-sectors :hall-01 :maze-room)
-    (link-sectors :hall-01 :battle-room)
+   ; (link-sectors :hall-01 :battle-room)
 
     #+disabled
     (progn

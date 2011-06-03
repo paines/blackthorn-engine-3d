@@ -59,6 +59,12 @@
    :state :loop
    :clips clips))
 
+#+disabled
+(defun make-anim-controller (channel-bindings &optional clips)
+  (make-instance 'anim-controller
+                 :channel-bindings channel-bindings
+                 :clips (make-anim)))
+
 (defun copy-anim-controller (controller)
   (with-slots (channel-bindings clips state elapsed current-clip next-clip)
       controller

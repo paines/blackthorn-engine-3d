@@ -122,90 +122,96 @@
                    (:free spring-k)
                    (:strafe spring-k2))))
         
-        (ecase minor-mode
-          (:free
-           ;; set phi
-           (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
-             #+disabled
-             (if (zerop (x input-vec))
-                 (setf (elt ideal-coord 0)
-                       rel-phi))
-              (setf (elt ideal-coord 0)
-                    (+ rel-phi
-                       (* +phi-scale+ (x input-vec)))))
-
-           ;; set theta
-           (aif (/= 0 (y input-vec))
-                (setf (elt ideal-coord 1)
-                      (clamp (+ (elt ideal-coord 1) 
-                                (* +theta-scale+ (y input-vec)))
-                             (- +theta-limit+)
-                             +theta-limit+)))
-           (setf sphere-coord ideal-coord))
 
 
-          ;; strafe
-          (:strafe
-           ;; set phi
-           (setf (dir target)
-                 (quat-rotate-vec
-                  (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))
-                  (dir target)))
+        (progn
+          (ecase minor-mode
+            (:free
+             ;; set phi
+             (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
+               #+disabled
+               (if (zerop (x input-vec))
+                   (setf (elt ideal-coord 0)
+                         rel-phi))
+               (setf (elt ideal-coord 0)
+                     (+ rel-phi
+                        (* +phi-scale+ (x input-vec)))))
 
-           ;; set theta
-           (let ((rel-theta (asin (/ (y tc-pos) (mag tc-pos)))))
-             (setf (elt ideal-coord2 1)
-                   (clamp
-                    (+ (if (is-jumping target) rel-theta 0.0)
-                       (* +theta-scale+ (y input-vec)))
-                    (- +theta-limit+)
-                     +theta-limit+))
-
-             #+disabled
+             ;; set theta
              (aif (/= 0 (y input-vec))
-                  (setf (elt ideal-coord2 1)
-                        (clamp (+ (elt ideal-coord2 1) 
+                  (setf (elt ideal-coord 1)
+                        (clamp (+ (elt ideal-coord 1) 
                                   (* +theta-scale+ (y input-vec)))
-                               (- (/ (* 89 pi) 180))
-                               (/ (* 89 pi) 180) ))))
+                               (- +theta-limit+)
+                               +theta-limit+)))
+             (setf sphere-coord ideal-coord))
 
-           (setf sphere-coord ideal-coord2)))
 
-        ;; mat stuff          
-        (let* ((translation
-                (make-translate (vec-scale4 +z-axis+ 
-                                            (elt sphere-coord 2))))
-               (rotation (quat->matrix (spherical->quat sphere-coord)))
-               (concat (matrix-multiply-m rotation translation))
-               (ideal-pos 
-               ; #+disabled
-                (vec4+ look-at 
-                       (matrix-multiply-v
-                        inv-basis (spherical->cartesian sphere-coord)))
-                #+disabled
-                (vec4+ look-at
-                                 (matrix-multiply-v 
-                                  inv-basis
-                                  (matrix-multiply-v concat +origin+))))
-               (displace-vec (vec4- ideal-pos pos))
-               (spring-accel (vec4-
-                              (vec-scale4 displace-vec  ks)
-                              (vec-scale4 (velocity c) (* 2.0 (sqrt ks))))))
+  
+            (:strafe
 
-          (setf veloc  (vec-scale4 spring-accel time))
-          
-         ; #+disabled
-          (setf (velocity c) 
-                ;(vec4+ pos veloc)
-                (vec4- ideal-pos look-at)
-                #+disabled
-                (vec4- (vec4+ pos veloc)
-                       t-pos))
-      ;    (setf (new-up c) t-up)
-         ; (setf (up c) t-up)
-         ; #+disabled
-          (setf pos t-pos; look-at
-                ))
+             ;; set phi
+             (setf (dir target)
+                   (quat-rotate-vec
+                    (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))
+                    (dir target)))
+
+             ;; set theta
+             (if (not (is-jumping target))
+                 (aif (/= 0 (y input-vec))
+                      (setf (elt ideal-coord2 1)
+                            (clamp (+ (elt ideal-coord2 1) 
+                                      (* +theta-scale+ (y input-vec)))
+                                   (- +theta-limit+)
+                                   +theta-limit+)))
+
+                 (let ((rel-theta (asin (/ (y tc-pos) (mag tc-pos)))))
+                   (setf (elt ideal-coord2 1)
+                         (clamp
+                          (+ rel-theta
+                             (* +theta-scale+ (y input-vec)))
+                          (- +theta-limit+)
+                          +theta-limit+))))
+
+             
+             (setf sphere-coord ideal-coord2)))
+
+          ;; mat stuff          
+          (let* ((translation
+                  (make-translate (vec-scale4 +z-axis+ 
+                                              (elt sphere-coord 2))))
+                 (rotation (quat->matrix (spherical->quat sphere-coord)))
+                 (concat (matrix-multiply-m rotation translation))
+                 (ideal-pos
+                  (vec4+ (vec4+ (velocity target) look-at) 
+                          (matrix-multiply-v
+                           inv-basis (spherical->cartesian sphere-coord)))
+
+                   #+disabled
+                   (vec4+ look-at
+                          (matrix-multiply-v 
+                           inv-basis
+                           (matrix-multiply-v concat +origin+))))
+                 (displace-vec (vec4- ideal-pos pos))
+                 (spring-accel (vec4-
+                                (vec-scale4 displace-vec  ks)
+                                (vec-scale4 (velocity c) (* 2.0 (sqrt ks))))))
+
+            (setf veloc  (vec-scale4 spring-accel time))
+            
+                                        ; #+disabled
+            (setf (velocity c) 
+                                        ;(vec4+ pos veloc)
+                  (vec4- ideal-pos look-at
+)
+                  #+disabled
+                  (vec4- (vec4+ pos veloc)
+                         t-pos))
+                                        ;    (setf (new-up c) t-up)
+                                        ; (setf (up c) t-up)
+                                        ; #+disabled
+            (setf pos t-pos; look-at
+                  )))
 
         #+disabled
         ;; quat stuff

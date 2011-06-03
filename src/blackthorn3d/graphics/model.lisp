@@ -113,7 +113,7 @@
   (labels ((load-node (node)
              
              (when (slot-exists-p node 'mesh)
-               (with-slots (mesh transform) node
+               (with-slots (mesh transform material-array) node
                  (multiple-value-bind (interleaved accessor)
                      (interleave
                       (vertex-streams mesh)
@@ -124,7 +124,7 @@
                    (format t "MESH FORMAT: ~a~%"
                            (get-mesh-format mesh))
                    (setf *accessor* accessor)
-                   
+                   (setf material-array (convert-mats material-array))
                    (setf mesh (convert-to-ogl mesh
                                               interleaved
                                               (elements mesh))))))
@@ -140,6 +140,17 @@
       (iter (for node in mesh-nodes)
             (load-node node))))
   this)
+
+(defun convert-mats (mat-array)
+  (iter (for mat in-vector mat-array)
+        (collect
+         (with-slots (diffuse) mat
+           (setf diffuse (if (pathnamep diffuse)
+                             (image->texture2d
+                              (load-image diffuse))
+                             diffuse))
+           mat)
+         result-type 'vector)))
 
 (defmethod convert-to-ogl ((mesh blt-mesh) interleaved elements)
   (make-instance

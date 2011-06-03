@@ -68,50 +68,14 @@
     (add-sector-relative
      :start-sector
      :north
-     (make-sector :ring-01 (get-model :rotating-ring-room)))
+     (make-sector :ring-01 (get-model :hallway-five)))
     
     (add-sector-relative
      :ring-01
      :north
      (make-sector :maze-room (get-model :maze-room)
-                  (axis-rad->quat +y-axis+ pi)
-                  ))
-    #+disabled
-    (add-sector-relative
-     :hall-01
-     :up
-     (make-sector :battle-room (get-model :battle-room)
-                  (axis-rad->quat +x-axis+ (/ pi -2.0))))
-
-    #+disabled
-    (add-sector-relative
-     :hall-01
-     :up
-     (make-sector :end-room (get-model :dead-end-room)
-                  (axis-rad->quat +x-axis+ (/ pi -2.0))))
-
-    #+disabled
-    (add-sector-relative
-     :hall-01
-     :east
-     (make-sector :end-room2 (get-model :dead-end-room)
-                  (axis-rad->quat +y-axis+ (/ pi 2.0))))
-    
-    #+disabled
-    (add-sector-relative
-     :hall-01
-     :west
-     (make-sector :end-room3 (get-model :dead-end-room)
-                  (axis-rad->quat +y-axis+ (/ pi -2.0))))
-
+                  (axis-rad->quat +y-axis+ pi)))
+   
     ;; Now link them all
     (link-sectors :start-sector :ring-01)
-    (link-sectors :ring-01 :maze-room)
-   ; (link-sectors :hall-01 :battle-room)
-
-    #+disabled
-    (progn
-      (link-sectors :hall-01 :end-room)
-      (link-sectors :hall-01 :end-room2)
-      (link-sectors :hall-01 :end-room3))
-    ))
+    (link-sectors :ring-01 :maze-room)))

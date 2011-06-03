@@ -75,6 +75,7 @@
     :initarg :interpolation
     :initform :none)
    (ch-target
+    :accessor ch-target
     :initarg :ch-target)
    (eval-fn)))
 
@@ -137,12 +138,13 @@
                   (finding i #+disabled(value frames i) 
                            such-that (>= (time-step frames i) m-time)))))
       (case interpolation
-        (:linear (linear-interpolate 
-                  frames i 
-                  (case extrapolation
-                    (:loop (mod (1+ i) n-frames))
-                    (otherwise (clamp (1+ i) 0 (1- n-frames))))
-                  m-time))
+        (:linear (values (linear-interpolate 
+                          frames i 
+                          (case extrapolation
+                            (:loop (mod (1+ i) n-frames))
+                            (otherwise (clamp (1+ i) 0 (1- n-frames))))
+                          m-time)
+                         i))
         (otherwise (value frames i))))))
 
 (defun linear-interpolate (frames i0 i1 t0)

@@ -44,6 +44,15 @@
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:cull-face :back)
 
+
+
+  (gl:enable :fog)
+  (gl:fog :fog-mode :exp)
+  (gl:fog :fog-color +purple+)
+  (gl:fog :fog-density 1.35)
+  (gl:fog :fog-start 2.0)
+  (gl:fog :fog-end 60.)
+
   ;; Create PVS from entities and level
   ;; (let ((PVS (find-pvs entities level))))
   
@@ -96,7 +105,6 @@
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
 
-  (draw-object *beast*)
 
   ;#+disabled
   (dolist (e entities)
@@ -111,7 +119,7 @@
 
   ;;(disable-shader)
   ;; Lastly render the ui
-  ;; (render-ui)
+   (render-ui)
 
   (gl:flush)
   (sdl:update-display))

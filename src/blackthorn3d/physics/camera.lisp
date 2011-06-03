@@ -84,7 +84,7 @@
   ;#+disabled
   (with-slots (target pos velocity minor-mode) c
     (with-slots ((t-pos pos) (t-up up)) target
-      (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42))))
+      (let ((look-at (vec4+ t-pos (vec-scale4 t-up 1.0))))
        ; #+disabled
         (setf (pos c) (vec4+ pos vec)
               (dir c) (norm4 (vec4- look-at pos))
@@ -111,7 +111,7 @@
  
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
-      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42)))
+      (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 1.0)))
              (t-right (cross t-dir t-up))
              (c-right (norm4 (cross dir up)))
              (up-quat (quat-rotate-to-vec +y-axis+ t-up))

@@ -51,123 +51,10 @@
 
   (make-main-viewport (list *screen-width* *screen-height*))  
 
-  (format t "### LOADING CONTROLLER MODEL ###~%")
-  ;#+disabled
-  (let ((scientist-model 
-         (blt3d-imp:dae-geometry 
-          (blt3d-imp:load-dae 
-        ;   #p "res/models/PlayerAnimationTest.dae"
-        ;   #p "res/models/KatanaSpiderMaterialAnimated.dae"
-         ;  #p "res/models/player-3.dae"
-           #p "res/models/PlayerTestSword.dae"
-           )))
-        (epic-sword
-         (blt3d-imp:dae-geometry
-          (blt3d-imp:load-dae
-           #p "res/models/SwordTextured.dae")))
-        (beast-model
-         (blt3d-imp:dae-geometry
-          (blt3d-imp:load-dae
-           #p "res/models/FireBeastAnimated.dae"))))
-    
-    (setf *beast* (load-obj->models beast-model))
-    (play-model-animation *beast* :default)
-
-    (apply-transform *beast* (make-translate #(0.0 -4.0 -55.0)))
-    (apply-transform *beast* (make-z-rot pi))
-    (setf *test-skele* (load-obj->models scientist-model))
-    (setf *test-sword* (load-obj->models epic-sword))
-   ; (apply-transform *test-sword* +3dsmax-convert+)
-    
-    (apply-transform *test-sword* (make-inv-ortho-basis 
-                                   (make-vec3 0.0 0.0 1.0)
-                                   (make-vec3 1.0 0.0 0.0)
-                                   (make-vec3 0.0 1.0 0.0)))
-    (apply-transform *test-sword* (make-scale #(0.02 0.02 0.02)))
-    (apply-transform *test-sword* (make-translate #(1.0 0.0 0.0 1.0)))
-
-   ; #+disabled
-    
-    (attach-node-to-model (car (mesh-nodes *test-sword*))
-                          "Bip001_Head" *test-skele*)
-
- ;   (apply-transform *test-skele* (make-scale #(0.2 0.2 -0.2)))
-    (apply-transform *test-skele* (make-scale #(0.008 0.008 0.008)))
-    
-    (apply-transform *test-skele*
-                     (make-translate #(0.0 -2.0 0.0 0.0)))
 
   (setf *main-light* (make-light 'light
-                      :position (make-point3 0.0 2.0 0.0)))
-
-;  #+disabled
-  (setf *test-ps* 
-        ;#+disabled
-        (create-spark-ps
-         (make-instance 'point-emitter
-                        :pos (make-point3 7.5 0.0 0.0)
-                        :dir (vec-neg4 +x-axis+)
-                        :up +y-axis+
-                        :angle  pi; (/ pi 6)
-                        :speed 4)
-         50
-         :size #(0.15 0.3)
-         :lifetime 0.4
-         :color +aqua+
-         :drag-coeff 8.5)
-
-       #+disabled
-        (create-explosion-ps 
-         (make-instance 'point-emitter
-                        :pos (make-point3 0.0 -1.7 0.0)
-                        :dir +y-axis+
-                        :up +y-axis+
-                        :angle (* 2 pi)
-                        :speed '(30.0 . 37.0 ))
-         300
-         :size #(0.1 0.8)
-         :lifetime '(.5 . 1.4)
-         :color #(2.5 1.0 0.3 1.5)
-         :gravity +zero-vec+;(vec-neg4 +y-axis+)
-         :grav-coeff 0.0
-         :drag-coeff 5.0)
-
-        #+disabled
-        (create-particle-system 
-         (make-instance 'point-emitter
-                        :pos (make-point3 0.0 -1.7 0.0)
-                        :dir +y-axis+
-                        :up +y-axis+
-                        :angle (/ pi 6)
-                        :speed '(.1 . .15))
-         25
-         200
-         :lifetime '(5.0 . 7.0)
-         :color #(0.0 .3 1.0 2.0)
-         :force-fn
-         #'(lambda (vel dt)
-             +zero-vec+
-                                        ;(vec-neg3 (vec3+ vel +y-axis+))
-             )))
-  #+disabled
- (setf *laser-ps*
-       (create-particle-system
-        (make-instance 'point-emitter
-                       :pos +origin+
-                       :dir +x-axis+
-                       :up +y-axis+
-                       :angle 0
-                       :speed '(0.5 . 2.5))
-        10
-        300
-        :size #(0.5 0.5)
-        :lifetime '(5.0 . 10.0)
-        :color #(0.0 0.5 2.0 1.0)
-        :force-fn #'(lambda (x y) +zero-vec+)))
-
-
-
-
+                                 :position (make-point3 0.0 2.0 0.0)))
+  
   #+disabled
   (add-ui-element
    (setf *test-ui* (make-instance 'ui-gauge
@@ -177,16 +64,22 @@
                                   :max-value (max-particles *test-ps*)
                                   :current-value 0)))
 
-  (format t "laser tex: ~a~%" *laser-tex*)
+  (add-ui-element
+   (make-instance 'ui-bitmap
+                  :texture *crosshair-tex*
+                  :offset '(0.5 0.5)
+                  :size '(0.025 0.025)))
+
   #+disabled
   (when (>= *gl-version* 3.0)
     (init-deferred-renderer))
+  
 
   (gl:enable :blend :rescale-normal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:clear-color 0 0 0 0)
   (gl:enable :depth-test :cull-face)
-  (gl:depth-func :lequal)))
+  (gl:depth-func :lequal))
 
 (defun set-viewport-size (width height)
   (setf *screen-width* width

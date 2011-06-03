@@ -83,6 +83,12 @@
                       ui-element - an element to specify relative to")))
 
 
+(defclass ui-bitmap (ui-element)
+  ((texture
+    :accessor ui-texture
+    :initarg :texture)))
+
+
 (defclass ui-gauge (ui-element)
   ((orientation
     :accessor gauge-orientation
@@ -137,6 +143,12 @@
 
 (defmethod update-ui-element ((gauge ui-gauge) update)
   (setf (gauge-current-value gauge) update))
+
+(defmethod draw-ui-element ((bitmap ui-bitmap))
+  (with-slots (offset size texture) bitmap
+    (use-texture texture)
+    (draw-rect offset size +white+)
+    (use-texture 0)))
 
 (defmethod draw-ui-element ((gauge ui-gauge))
   ;; the gauge is drawn thusly:

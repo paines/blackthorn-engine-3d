@@ -252,7 +252,7 @@
 (defvar *team1-count* 0)   ; humans
 (defvar *team2-count* 0)   ; ghosts
 
-(defmethod assign-team ((self player))
+(defmethod assign-team ()
   (if (<= *team1-count* *team2-count*)
     (progn
       (incf *team1-count*)
@@ -273,9 +273,10 @@
     (when new-client
       (new-server-controller new-client)
       (send-all-entities new-client)
-      (let* ((the-new-player (new-player new-client))
+      (let* ((on-team (assign-team))
+             (the-new-player (new-player new-client on-team))
              (camera (new-camera the-new-player))
-             (on-team (assign-team the-new-player)))
+             )
         
         (setf (attached-cam the-new-player) camera)
         (format t "The new player's team is: ~a~%" on-team)

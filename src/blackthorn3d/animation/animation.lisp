@@ -51,6 +51,10 @@
     :accessor end-time
     :initarg :t-end)))
 
+(defun make-animation-clip (start end)
+  (make-instance 'animation-clip
+                 :t-start start
+                 :t-end end))
 
 ;; called to update the fields this clip controls.
 ;; time should be game-time

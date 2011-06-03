@@ -222,6 +222,9 @@
      (make-translate origin)
      (quat->matrix orientation))))
 
+(defmethod place-entity-in-sector ((self entity-server) (this sector) location)
+  (setf (pos self) (vec4+ (origin this) location)))
+
 (defmethod get-transform-to-sector ((this sector))
   (with-slots (origin orientation) this
     (matrix-multiply-m

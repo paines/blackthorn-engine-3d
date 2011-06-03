@@ -33,13 +33,13 @@
   ((ideal-coord
     :accessor ideal-coord
     :initarg :ideal-coord
-    :initform (list 0.0 (cos (/ pi 6.0)) 5.0 )
+    :initform (list 0.0 (cos (/ pi 6.0)) 1.0 )
     :documentation "The ideal spherical coordinates of the camera relative to 
                     the target.  tuple is (phi theta dist)")
    (ideal-coord2
     :accessor ideal-coord2
     :initarg :ideal-coord2
-    :initform (list 0.0 (cos (/ pi 6.0)) 2.5))
+    :initform (list 0.0 (cos (/ pi 6.0)) 1.0))
    (veloc
     :accessor veloc
     :initarg :veloc
@@ -74,6 +74,7 @@
 (defvar +phi-scale+ nil)
 (defvar +theta-scale nil)
 (defvar +thresh+ 0.0001)
+(defvar +theta-limit+ (* 89 (/ pi 180)))
 (defvar +pos-theta-limit+ (* 50 (/ pi 180)))
 (defvar +neg-theta-limit+ (* -30 (/ pi 180)))
 (setf +phi-scale+ -0.2)
@@ -84,7 +85,7 @@
   (with-slots (target pos velocity minor-mode) c
     (with-slots ((t-pos pos) (t-up up)) target
       (let ((look-at (vec4+ t-pos (vec-scale4 t-up 0.42))))
-        #+disabled
+       ; #+disabled
         (setf (pos c) (vec4+ pos vec)
               (dir c) (norm4 (vec4- look-at pos))
               (up c) t-up)
@@ -122,14 +123,15 @@
              (tc-pos (matrix-multiply-v basis wc-pos))
 
             (sphere-coord (cartesian->spherical tc-pos))
-        ;     ideal-pos c-look
+             ideal-pos c-look
 
              (ks (ecase minor-mode
                    (:free spring-k)
                    (:strafe spring-k2))))
 
-        ;#+disabled
+       #+disabled
         (progn
+          (setf (new-up c) nil)
           (setf (elt sphere-coord 2) (elt ideal-coord 2))
           
           #+disabled
@@ -137,7 +139,7 @@
                 (* +phi-scale+ (x input-vec)))
           (setf (elt sphere-coord 0) 0.0)
           (setf (elt sphere-coord 1) 
-                (clamp (+ (elt sphere-coord 1)
+                (clamp (- (elt sphere-coord 1)
                           (* +theta-scale+ (y input-vec)))
                        +neg-theta-limit+
                        +pos-theta-limit+))
@@ -148,20 +150,26 @@
                                 inv-basis
                                 (spherical->cartesian sphere-coord))))
 
-          ;; Step2: find the look at point
+          ;; Step2: find the look at point/direction
+          (format t "old-dir: ~a~%" dir)
           (setf c-look 
-                (quat-rotate-vec
-                 (axis-rad->quat c-right (* +theta-scale+ (y input-vec)))
-                 dir))
+                (if (< (dot dir t-up) 1.0)
+                    (quat-rotate-vec
+                     (axis-rad->quat c-right 
+                                        ;(+ (elt sphere-coord 1)) 
+                                     (* +theta-scale+ (y input-vec)))
+                     dir)
+                    dir))
+
+          (format t "c-look: ~a~%" c-look)
 
           ;; Step3: find the up vector
-                                        ;#+disabled
           (setf (up c) (norm4 (cross c-right c-look)))
           
-                                        ;#+disabled
           (setf (dir c) c-look)
           (setf (pos c) ideal-pos)
 
+          #+disabled
           (setf (dir target) (quat-rotate-vec 
                               (axis-rad->quat 
                                t-up 
@@ -170,40 +178,94 @@
 
 
 
+        (progn
+          (ecase minor-mode
+            (:free
+             ;; set phi
+             (let ((rel-phi (atan (x tc-pos) (z tc-pos))))
+               #+disabled
+               (if (zerop (x input-vec))
+                   (setf (elt ideal-coord 0)
+                         rel-phi))
+               (setf (elt ideal-coord 0)
+                     (+ rel-phi
+                        (* +phi-scale+ (x input-vec)))))
 
-        ;; hackity hacketter hack
-        #+disabled
-        (let ((theta-quat (axis-rad->quat 
-                           c-right (* +theta-scale+ (y input-vec))))
-              (phi-quat (axis-rad->quat
-                         t-up (* +phi-scale+ (x input-vec)))))
+             ;; set theta
+             (aif (/= 0 (y input-vec))
+                  (setf (elt ideal-coord 1)
+                        (clamp (+ (elt ideal-coord 1) 
+                                  (* +theta-scale+ (y input-vec)))
+                               (- +theta-limit+)
+                               +theta-limit+)))
+             (setf sphere-coord ideal-coord))
 
-          (unless (is-jumping target)
-            (setf (new-up c) (norm4 (cross (cross dir t-up) dir))))
 
-          (setf (up c) (quat-rotate-vec theta-quat up))
-          (setf (dir target)
-                (quat-rotate-vec phi-quat t-dir))
-          (setf (dir c) (norm4 (cross  (cross t-dir up))))
+  
+            (:strafe
 
-          ;#+disabled
-          (setf (pos c) (vec4+ look-at (vec-scale4 
-                                        dir 
-                                        (- (elt ideal-coord 2)))))
+             ;; set phi
+             (setf (dir target)
+                   (quat-rotate-vec
+                    (axis-rad->quat t-up (* +phi-scale+ (x input-vec)))
+                    (dir target)))
 
-       
-         
-          #+disabled
-          (setf (velocity c) (vec-scale4 
-                              (norm4 (cross (up c) (cross t-dir (up c))))
-                              (- (elt ideal-coord 2))))
-          #+disabled
-          (setf (pos c) look-at)
- 
-          ;(setf (dir c) (quat-rotate-vec dir))
-          #+disabled
-          (setf (pos c) (vec4+ look-at 
-                               (vec-scale4 dir (- (elt ideal-coord 2))))))
+             ;; set theta
+             (if (not (is-jumping target))
+                 (aif (/= 0 (y input-vec))
+                      (setf (elt ideal-coord2 1)
+                            (clamp (+ (elt ideal-coord2 1) 
+                                      (* +theta-scale+ (y input-vec)))
+                                   (- +theta-limit+)
+                                   +theta-limit+)))
+
+                 (let ((rel-theta (asin (/ (y tc-pos) (mag tc-pos)))))
+                   (setf (elt ideal-coord2 1)
+                         (clamp
+                          (+ rel-theta
+                             (* +theta-scale+ (y input-vec)))
+                          (- +theta-limit+)
+                          +theta-limit+))))
+
+             
+             (setf sphere-coord ideal-coord2)))
+
+          ;; mat stuff          
+          (let* ((translation
+                  (make-translate (vec-scale4 +z-axis+ 
+                                              (elt sphere-coord 2))))
+                 (rotation (quat->matrix (spherical->quat sphere-coord)))
+                 (concat (matrix-multiply-m rotation translation))
+                 (ideal-pos
+                  (vec4+ (vec4+ (velocity target) look-at) 
+                          (matrix-multiply-v
+                           inv-basis (spherical->cartesian sphere-coord)))
+
+                   #+disabled
+                   (vec4+ look-at
+                          (matrix-multiply-v 
+                           inv-basis
+                           (matrix-multiply-v concat +origin+))))
+                 (displace-vec (vec4- ideal-pos pos))
+                 (spring-accel (vec4-
+                                (vec-scale4 displace-vec  ks)
+                                (vec-scale4 (velocity c) (* 2.0 (sqrt ks))))))
+
+            (setf veloc  (vec-scale4 spring-accel time))
+            
+                                        ; #+disabled
+            (setf (velocity c) 
+                                        ;(vec4+ pos veloc)
+                  (vec4- ideal-pos look-at)
+                  #+disabled
+                  (vec4- (vec4+ pos veloc)
+                         t-pos))
+                                        ;    (setf (new-up c) t-up)
+                                        ; (setf (up c) t-up)
+                                        ; #+disabled
+            (setf pos t-pos; look-at
+                  )))
+
         
         #+disabled
          (setf (dir target)

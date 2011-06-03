@@ -90,7 +90,7 @@
       (let* ((here (lookup-sector (current-sector p)))
              (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
-         :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
+         :broadcast :human (vec4+ (vec4+ pos (vec-scale4 up 0.01)) dir) (vec-scale4 dir distance))
         )
       )
 

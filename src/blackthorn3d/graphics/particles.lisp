@@ -473,8 +473,8 @@
         nil
         (list this))))
 
-(defun render-ps (ps) (draw-object ps))
-(defmethod draw-object ((this particle-system))
+(defun render-ps (ps) (render-effect ps))
+(defmethod render-effect ((this particle-system))
   (with-slots (particles max-particles num-alive texture size type) this
     (render-particles particles max-particles
                       num-alive texture size
@@ -502,7 +502,7 @@
 
 (defun render-particle-systems (dt)
   (iter (for system in *system-list*)
-        (draw-object system)))
+        (render-effect system)))
 
 (defun particles-init ())
 

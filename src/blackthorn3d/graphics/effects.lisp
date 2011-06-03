@@ -50,9 +50,9 @@
       (list this)
       nil)))
 
-(defmethod draw-object ((this composite-effect))
+(defmethod render-effect ((this composite-effect))
   (iter (for obj in (objects this))
-        (draw-object obj)))
+        (render-effect obj)))
 
 (defvar *effects-list* ())
 (defun add-effect (effect)
@@ -90,7 +90,7 @@
 (defclass gfx ()
   ((xform
     :initarg :xform
-    :initform (make-matrix-identity))
+    :initform (make-identity-matrix))
    (state
     :initarg :state
     :initform :alive)
@@ -142,6 +142,7 @@
                          texture color)))
 
 ;; these are ugly 
+#+disabled
 (defmethod move-effect ((this gfx) xform)
   (setf (xform this) xform))
 
@@ -150,8 +151,6 @@
 (defmethod render-effect ((this beam))
   (with-slots (xform start beam color texture size state) this
     (when (eql state :alive)
-      (let ((new-start (matrix-multiply-m xform start))
-            (new-beam (matrix-multiply-m ))))
       (draw-beam start (vec4+ start beam) color texture size))))
 
 (defun make-laser-flare (pos color)

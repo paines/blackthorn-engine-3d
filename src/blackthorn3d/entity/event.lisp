@@ -81,7 +81,7 @@
 (defmessage :play-laser send-play-laser
   (:symbol ; name
    :vec4   ; start-pos
-   :vec4   ; dir
+   :vec4   ; vector to draw laser on
    ))
 
 (defmessage :play-animation send-play-animation

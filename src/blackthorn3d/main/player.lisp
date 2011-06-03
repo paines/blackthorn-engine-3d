@@ -89,11 +89,22 @@
               :shape-name :wedge
               :velocity (vec-neg4 +y-axis+)
               )))
-      ;(push #'blackthorn3d-physics:gravity-mover (movers p))
+      ;(push #'blackthorn3d-physics:gravity-mover (forces p))
+      
+      (push #'blackthorn3d-physics::do-nothing-mover (forces p))
+      
+      #+disabled
       (push (blackthorn3d-physics::make-gravity-mover)
             (forces p))
+      
+      #+disabled
       (push (blackthorn3d-physics::make-smarter-jump-mover client-id)
             (forces p))
+      
+      #+disabled
+      (push (blackthorn3d-physics::make-ghost-mover client-id) 
+            (displacers p))
+            
       (setf (bounding-volume p) (expand-bounding-spheres 
                     (blt3d-res:get-model (shape-name p))))
       (format t "bounding volume: ~a ~a~%" 

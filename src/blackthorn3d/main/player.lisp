@@ -76,6 +76,9 @@
         (kill-entity player)))
     (remf *client->player* client))
     
+(defun lookup-player-by-client (client)
+  (getf *client->player* client))
+    
 (defun new-player (client-id)
     (let ((p (make-server-entity
               'player

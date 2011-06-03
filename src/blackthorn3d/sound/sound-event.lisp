@@ -25,7 +25,7 @@
 
 (in-package :blackthorn3d-sound)
 
-(defmessage :event-sound send-sound (:keyword :boolean))
+(defmessage :event-sound send-sound (:keyword :boolean :uint8))
 
 (defvar *sounds* (make-hash-table))
 
@@ -40,7 +40,7 @@
 (defun find-sound (key)
   (gethash key *sounds*))
 
-(defun handler-sound (src key loop)
+(defun handler-sound (src key loop volume)
   (let ((sound (find-sound key)))
     (when sound
-      (play-sound sound :loop loop))))
+      (play-sound sound :loop loop :volume volume))))

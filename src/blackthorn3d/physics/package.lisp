@@ -118,11 +118,11 @@
    :ray-sphere-intersection   
    :ray-aabb-intersection
    :ray-cast
-   :min-t
    :make-plane
    :plane-dist
    :point-normal->plane
    :standing-on-p
+   :min-t
 
    ;; collision.lisp
    :collide-p

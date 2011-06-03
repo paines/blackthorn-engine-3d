@@ -45,21 +45,37 @@
 
 (defvar last-laser 0.0)
 (defvar laser-delay 1.0)
+
+(defun run-into-something (pos dir sector)
+  (let* ((ray (make-ray pos dir))
+         (sector-distance (ray-cast ray sector))
+         (distances (mapcar #'(lambda (e) (ray-cast ray e)) (list-entities))))
+    (aif (min-t (cons sector-distance distances))
+      it
+      0.0))
+)
+
 (defmethod update ((p player))
   (incf last-laser 1/120)
-  (with-slots (client pos) p
+  (with-slots (client pos up dir) p
     (when (and (> (s-input-jump client) 0)
                (not (is-jumping p)))
       (setf (is-jumping p) t)
-      (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1))
+      
+      (if (eql (minor-mode (attached-cam p)) :free)
+        (setf (velocity p) (vec-scale4 up .1))
+        (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
       ;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       
     (when (and (> last-laser laser-delay)
                (> (s-input-attack client) 0))
       (setf last-laser 0.0)
-      (send-play-laser
-       :broadcast :human pos (vec4- +origin+ pos))
+      (let* ((here (lookup-sector (current-sector p)))
+             (distance (run-into-something (vec4+ pos up) dir here)))
+        (send-play-laser
+          :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
+        )
       )
 
     #+disabled

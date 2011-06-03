@@ -220,9 +220,10 @@
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)
-
+         
+         (format t "rendering-frame~%'")
          (blt3d-rend:render-frame (list-entities))
-;         (blt3d-rend::render-2d)
+
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))

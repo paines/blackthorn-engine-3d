@@ -38,9 +38,10 @@
 ;;;
   
   ;; monsters & stuff like that
-  #+disabled
-  (load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
-  (load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
+  ;#+disabled
+  ;(load-model :fire-beast :dae #p "res/models/FireBeastAnimated.dae")
+  (load-model :ghost :dae #p "res/models/FireBeastAnimated.dae")
+  ;(load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
   
   ;; maps
   (format t "##### Loading Maps~%")

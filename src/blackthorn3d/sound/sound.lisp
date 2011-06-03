@@ -61,15 +61,21 @@
 
 (defgeneric play-sound (sound &key))
 
-(defmethod play-sound ((music music) &key loop fade (position 0))
+(defmethod play-sound ((music music) &key loop fade (position 0)
+                       (volume sdl-mixer:+max-volume+))
   (when (init-p)
     (sdl-mixer:play-music (sound music)
-                          :loop loop :fade fade :position position)))
+                          :loop loop :fade fade :position position)
+    (setf (sdl-mixer:music-volume) volume)))
 
-(defmethod play-sound ((sample sample) &key loop fade (ticks t))
+(defmethod play-sound ((sample sample) &key loop fade (ticks t)
+                       (volume sdl-mixer:+max-volume+))
   (when (init-p)
-    (sdl-mixer:play-sample (sound sample)
-                           :loop loop :fade fade :ticks ticks)))
+    (let ((channel (sdl-mixer:play-sample
+                    (sound sample)
+                    :loop loop :fade fade :ticks ticks)))
+      (when channel
+        (setf (sdl-mixer:channel-volume channel) volume)))))
 
 (defgeneric stop-sound (type &key))
 

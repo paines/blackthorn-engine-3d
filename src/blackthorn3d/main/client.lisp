@@ -170,7 +170,7 @@
       (format t "####################~%")
 
        (format t "snd:init-p returned ~a~%" (blt3d-snd::init-p))
-      (blt3d-snd:make-sound :soundtrack :music #p"res/sound/game_music_1.mp3")
+      (blt3d-snd:make-sound :soundtrack :music #p"res/sound/game_music_menu.mp3")
 
       (setf (sdl:frame-rate) 60)
 

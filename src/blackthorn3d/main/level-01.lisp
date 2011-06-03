@@ -52,6 +52,8 @@
   (load-model :maze-room :level #p "res/models/MazeRoom.dae")
   (load-model :hallway-five :level #p "res/models/HallwayFiveway.dae")
   (load-model :battle-room :level #p "res/models/BattleRoom1.dae")
+  (load-model :rotating-ring-room :level 
+              #p "res/models/maps/RotatingRingRoom.dae")
 
 
 
@@ -66,10 +68,10 @@
     (add-sector-relative
      :start-sector
      :north
-     (make-sector :hall-01 (get-model :hallway-five)))
+     (make-sector :ring-01 (get-model :rotating-ring-room)))
     
     (add-sector-relative
-     :hall-01
+     :ring-01
      :north
      (make-sector :maze-room (get-model :maze-room)
                   (axis-rad->quat +y-axis+ pi)
@@ -103,8 +105,8 @@
                   (axis-rad->quat +y-axis+ (/ pi -2.0))))
 
     ;; Now link them all
-    (link-sectors :start-sector :hall-01)
-    (link-sectors :hall-01 :maze-room)
+    (link-sectors :start-sector :ring-01)
+    (link-sectors :ring-01 :maze-room)
    ; (link-sectors :hall-01 :battle-room)
 
     #+disabled

@@ -52,7 +52,7 @@
         (return-from ray-sphere-intersection nil))
       (let* ((q (sqrt (- r2 m2)))
              (t0 (if (> l2 r2) (- s q) (+ s q))))
-        (list t0 (vec4+ (ray-e ray) (vec-scale4 (ray-d ray) t0)))))))
+        t0))))
 
 (defun ray-triangle-intersection (ray tri tmax)
   "Detect whether a ray (e-vec . d-vec) intersects a triangle
@@ -176,17 +176,19 @@
 
 
 (defmethod ray-cast (ray (ent blt3d-ent:entity-server))
-  (with-slots (pos bounding-volume shape) ent
-    (let ((test-sphere (move-bounding-volume bounding-volume pos)))
-      (when shape
-        (ray-sphere-intersection 
-         ray test-sphere 
-         most-positive-single-float))
-      #+disabled
-      (aif (and shape (ray-sphere-intersection 
+  (with-slots (pos bounding-volume shape-name) ent
+    (unless (eql shape-name :none)
+      (let ((test-sphere (move-bounding-volume bounding-volume pos)))
+        (let ((result (ray-sphere-intersection 
                        ray test-sphere 
-                       most-positive-single-float))
-           (ray-cast ray shape)))))
+                       most-positive-single-float)))
+          result)))
+
+    #+disabled
+    (aif (and shape (ray-sphere-intersection 
+                     ray test-sphere 
+                     most-positive-single-float))
+         (ray-cast ray shape))))
 
 (defmethod ray-cast (ray (model blt-model))
   (iter (for node in (mesh-nodes model))
@@ -203,10 +205,9 @@
   ;; so lets be conservative!
   (with-slots (bounding-volume child-nodes transform bounding-volume) node
     ;#+disabled
-    (let ((sphere-hit (car
-                       (ray-sphere-intersection 
-                        ray bounding-volume 
-                        most-positive-single-float))))
+    (let ((sphere-hit (ray-sphere-intersection 
+                       ray bounding-volume 
+                       most-positive-single-float)))
       (when sphere-hit
         (let* ((inv-xform (rt-inverse transform))
                (x-ray (make-ray
@@ -218,10 +219,9 @@
 
 (defmethod ray-cast (ray (node model-node))
   (with-slots (transform child-nodes mesh bounding-volume) node
-    (let ((sphere-hit (car
-                       (ray-sphere-intersection 
-                        ray bounding-volume 
-                        most-positive-single-float))))
+    (let ((sphere-hit (ray-sphere-intersection 
+                       ray bounding-volume 
+                       most-positive-single-float)))
       (when sphere-hit
         (let* ((inv-xform (rt-inverse transform))
                (x-ray (make-ray

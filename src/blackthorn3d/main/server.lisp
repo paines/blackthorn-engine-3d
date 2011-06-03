@@ -35,7 +35,8 @@
             (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
 
       (let* ((up-quat (quat-rotate-to-vec up new-up))
-             (rot-quat (quat-slerp +quat-identity+ up-quat (if (is-jumping self) 5/120 10/120))))
+             (rot-quat (quat-slerp +quat-identity+ up-quat 
+                                   (if (is-jumping self) 5/120 10/120))))
         (setf (up self) 
               (norm4 (quat-rotate-vec
                       rot-quat up))
@@ -49,13 +50,13 @@
 (defun hit-thing-with-laser (ray excluding)
   (let ((min-dist MOST-POSITIVE-SINGLE-FLOAT)
         (thing nil)
-        (stuff-to-check (set-difference (list-entities) excluding))
-       )
+        (stuff-to-check (set-difference (list-entities) excluding)))
     (iter (for entity in stuff-to-check)
-      (let ((this-dist (ray-cast ray entity)))
-        (when (and this-dist (< this-dist min-dist))
-          (setf min-dist this-dist)
-          (setf thing entity))))
+          (let ((this-dist (ray-cast ray entity)))
+            (format t "entity result ~a~%" this-dist)
+            (when (and this-dist (< this-dist min-dist))
+              (setf min-dist this-dist)
+              (setf thing entity))))
     thing))
 
 (defun run-into-something (me pos dir sector)
@@ -63,15 +64,12 @@
          (sector-distance (ray-cast ray sector))
          (distances (mapcar #'(lambda (e) (ray-cast ray e)) (list-entities))))
     (aif (hit-thing-with-laser ray (list me))
-      (quickhit it))  
+         (quickhit it))
     
     (aif (min-t (cons sector-distance distances))
-      it
-      0.0))
-)
+         it
+         0.0)))
 
-
-  
 
 (defmethod update ((p player))
   (incf last-laser 1/120)
@@ -81,9 +79,9 @@
       (setf (is-jumping p) t)
       
       (if (eql (minor-mode (attached-cam p)) :free)
-        (setf (velocity p) (vec-scale4 up .1))
-        (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
-      ;(setf (new-up p) (vec-neg4 (velocity p)))
+          (setf (velocity p) (vec-scale4 up .1))
+          (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
+      ;;(setf (new-up p) (vec-neg4 (velocity p)))
       )
       
     (when (and (> last-laser laser-delay)
@@ -92,11 +90,11 @@
       (let* ((here (lookup-sector (current-sector p)))
              (distance (run-into-something p (vec4+ pos up) dir here)))
         (send-play-laser
-          :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
+         :broadcast :human (vec4+ pos up) (vec-scale4 dir distance))
         )
       )
 
-    ;#+disabled
+                                        ;#+disabled
     (when (> (s-input-xbox-y client) 0)
       (quickhit p)
       (try-die p))))
@@ -215,7 +213,6 @@
         :up  (make-vec3 0.0 1.0 0.0)
         :ideal-coord (list 0.0 (/ pi 6) 4.0)
         :target player-entity
-        :shape-name :cylinder
         :bv (make-instance 'bounding-sphere
                                         :rad 0.07
                                         :pos +origin+)

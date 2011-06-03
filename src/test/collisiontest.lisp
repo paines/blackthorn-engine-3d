@@ -196,9 +196,10 @@
 (test ray-sphere-intersection
       (let* ((ray (make-ray +origin+ +x-axis+))
              (sphere (make-instance 'bounding-sphere
-                                    :pos (make-point3 2.0 1.0 0.0)
-                                    :rad 1.0))
-             (result (ray-sphere-intersection ray sphere 100)))
+                                    :pos (make-point3 4.0 1.5 0.3)
+                                    :rad 2.0))
+             (result (ray-sphere-intersection ray sphere 
+                                              most-positive-single-float)))
         (format t "~%ray-sphere result: ~a~%" result)
         (is (not (null result)))))
 

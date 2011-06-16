@@ -22,6 +22,7 @@ syntax: glob
 *.fasl
 *.?x32fsl
 *.?x64fsl
+*.exe
 
 # build files
 bin

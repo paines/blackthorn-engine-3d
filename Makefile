@@ -30,7 +30,7 @@ ifeq (${cl},)
 endif
 
 # Which ASDF system to load:
-system := blank
+system := lkcas
 
 # Stardard drivers:
 quicklisp-setup := build/scripts/quicklisp-setup.lisp
@@ -49,11 +49,7 @@ driver := ${load}
 args :=
 
 # Specify the run command for the installer.
-ifeq (${cl}, allegro)
-	command := \\\"\\x24INSTDIR\\\\main.exe\\\"
-else
-	command := \\\"\\x24INSTDIR\\\\chp\\\\chp.exe\\\" \\\"\\x24INSTDIR\\\\main.exe\\\"
-endif
+command := \\\"\\x24INSTDIR\\\\main.exe\\\"
 
 # A temporary file for passing values around.
 tempfile := .tmp
@@ -200,8 +196,9 @@ prof:
 
 .PHONY: distnoclean
 distnoclean:
-	mkdir -p bin
-	cp -r $(wildcard lib/*) disp sound bin
+	mkdir -p bin/res
+	cp -r $(wildcard lib/*) bin
+	cp -r $(wildcard res/*) bin/res
 	$(MAKE) driver="${dist}" new
 
 .PHONY: dist
@@ -222,14 +219,14 @@ install-w32:
 	-$(call get-properties)
 	$(MAKE) distclean
 	mkdir -p bin
-	if test -e windows/${name}.ico; then cp windows/${name}.ico bin/app.ico; else cp windows/bt.ico bin/app.ico; fi
+	if test -e build/native/windows/${name}.ico; then cp build/native/windows/${name}.ico bin/app.ico; else cp build/native/windows/bt.ico bin/app.ico; fi
 	$(MAKE) distnoclean postinstall-w32
 
 .PHONY: postinstall-w32
 postinstall-w32:
 	-$(call get-properties)
-	cp -r windows/chp windows/is_user_admin.nsh COPYRIGHT bin
-	awk "{gsub(/@NAME@/, \"${name}\");print}" windows/install.nsi | awk "{gsub(/@LONGNAME@/, \"${longname}\");print}" | awk "{gsub(/@VERSION@/, \"${version}\");print}" | awk "{gsub(/@DESCRIPTION@/, \"${description}\");print}" | awk "{gsub(/@URL@/, \"${url}\");print}" | awk "{gsub(/@COMMAND@/, \"${command}\");print}" > bin/install.nsi
+	cp -r build/native/windows/is_user_admin.nsh COPYRIGHT bin
+	awk "{gsub(/@NAME@/, \"${name}\");print}" build/native/windows/install.nsi | awk "{gsub(/@LONGNAME@/, \"${longname}\");print}" | awk "{gsub(/@VERSION@/, \"${version}\");print}" | awk "{gsub(/@DESCRIPTION@/, \"${description}\");print}" | awk "{gsub(/@URL@/, \"${url}\");print}" | awk "{gsub(/@COMMAND@/, \"${command}\");print}" > bin/install.nsi
 	makensis bin/install.nsi
 	mv bin/*-install.exe .
 
@@ -237,7 +234,7 @@ postinstall-w32:
 install-unix:
 	-$(call get-properties)
 	$(MAKE) dist
-	cp unix/run.sh bin
+	cp build/native/unix/run.sh bin
 	mv bin ${name}
 	tar cfz ${name}-${version}-linux.tar.gz ${name}
 	mv ${name} bin
@@ -250,10 +247,10 @@ install-mac:
 	mkdir "${longname}.app" "${longname}.app/Contents" "${longname}.app/Contents/MacOS" "${longname}.app/Contents/Frameworks" "${longname}.app/Contents/Resources"
 	awk "{gsub(/@NAME@/, \"${name}\");print}" macosx/Info.plist | awk "{gsub(/@LONGNAME@/, \"${longname}\");print}" | awk "{gsub(/@VERSION@/, \"${version}\");print}" | awk "{gsub(/@DESCRIPTION@/, \"${description}\");print}" | awk "{gsub(/@URL@/, \"${url}\");print}" > "${longname}.app/Contents/Info.plist"
 	cp -r $(wildcard lib/*.framework) "${longname}.app/Contents/Frameworks"
-	cp -r disp sound "${longname}.app/Contents/Resources"
+	cp -r res "${longname}.app/Contents/Resources"
 	cp bin/main "${longname}.app/Contents/MacOS"
-	cp macosx/PkgInfo COPYRIGHT "${longname}.app/Contents"
-	if test -e "macosx/${name}.icns"; then cp "macosx/${name}.icns" "${longname}.app/Contents/Resources/app.icns"; else cp macosx/bt.icns "${longname}.app/Contents/Resources/app.icns"; fi
+	cp build/native/macosx/PkgInfo COPYRIGHT "${longname}.app/Contents"
+	if test -e "build/native/macosx/${name}.icns"; then cp "build/native/macosx/${name}.icns" "${longname}.app/Contents/Resources/app.icns"; else cp build/native/macosx/bt.icns "${longname}.app/Contents/Resources/app.icns"; fi
 	tar cfz "${name}-${version}-macos.tar.gz" "${longname}.app"
 	$(MAKE) -f dmg_utils.make NAME="${longname}" VERSION="${version}" SOURCE_DIR=. SOURCE_FILES="${longname}.app COPYRIGHT"
 

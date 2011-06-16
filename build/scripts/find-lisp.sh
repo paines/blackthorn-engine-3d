@@ -52,6 +52,10 @@ test-for clisp clisp
 test-for ecl ecl
 test-for ccl clozure
 
+# Aparently the user doesn't have Lisp installed, so we'll try to
+# install it for them...
+"$(dirname $BASH_SOURCE)/get-lisp.sh"
+
 if [[ $(uname) == CYGWIN* ]]; then
     echo sbcl-builtin
     echo sbcl-builtin > "$cached_result_file"

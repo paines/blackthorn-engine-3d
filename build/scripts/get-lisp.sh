@@ -57,7 +57,7 @@ function get-lisp-for-windows () {
             echo "Done downloading Clozure CL."
         fi
     fi
-    which foo >& /dev/null
+    which sbcl >& /dev/null
     if [ ! "$(echo $?)" -eq 0 ]; then
         echo "Downloading SBCL..."
         pushd "$build_dir" >& /dev/null
@@ -66,7 +66,7 @@ function get-lisp-for-windows () {
             echo "Failed to download SBCL."
         else
             echo "Running SBCL installer..."
-            ./sbcl-1.0.49-x86-windows-binary.msi
+            msiexec /i sbcl-1.0.49-x86-windows-binary.msi
             popd >& /dev/null
             echo "Please close and reopen the terminal."
         fi

@@ -30,10 +30,13 @@ build_dir="$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")")")"
 # download <url>
 function download () {
     url="$1"
-    if [ ! "$(which wget >& /dev/null; echo $?)" -eq 0 ]; then
+    if [ "$(which wget >& /dev/null; echo $?)" -eq 0 ]; then
         wget "$url"
-    elif [ ! "$(which curl >& /dev/null; echo $?)" -eq 0 ]; then
+    elif [ "$(which curl >& /dev/null; echo $?)" -eq 0 ]; then
         curl -O "$url"
+    else
+        echo "No downloader available. Please install either wget or curl."
+        return 1
     fi
 }
 
@@ -46,6 +49,7 @@ function get-lisp-for-windows () {
             echo "http://sourceforge.net/projects/win32svn/files/1.6.16/Setup-Subversion-1.6.16.msi/download"
             echo "Then log out and log back in and try again."
             echo "Failed to download Clozure CL."
+            return 1
         else
             pushd "$build_dir" >& /dev/null
             svn co http://svn.clozure.com/publicsvn/openmcl/trunk/windows/ccl
@@ -53,15 +57,20 @@ function get-lisp-for-windows () {
             echo "Done downloading Clozure CL."
         fi
     fi
-    if [ ! "$(which foo >& /dev/null; echo $?)" -eq 0 ]; then
+    which foo >& /dev/null
+    if [ ! "$(echo $?)" -eq 0 ]; then
         echo "Downloading SBCL..."
         pushd "$build_dir" >& /dev/null
         download "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
-        echo "Running SBCL installer..."
-        ./sbcl-1.0.49-x86-windows-binary.msi
-        popd >& /dev/null
-        echo "Please close and reopen the terminal."
-        exit 1
+        if [ ! "$(echo $?)" -eq 0 ]; then
+            echo "Failed to download SBCL."
+        else
+            echo "Running SBCL installer..."
+            ./sbcl-1.0.49-x86-windows-binary.msi
+            popd >& /dev/null
+            echo "Please close and reopen the terminal."
+        fi
+        return 1
     fi
 }
 

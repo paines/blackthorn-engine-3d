@@ -67,7 +67,7 @@
 
 (setq slime-lisp-implementations
       '((clozure ("@BLACKTHORN_DIR@/build/ccl/wx86cl" "--load" "@BLACKTHORN_DIR@/build/scripts/quicklisp-setup.lisp"))
-        (sbcl ("@BLACKTHORN_DIR@/build/sbcl/sbcl" "--core" "@BLACKTHORN_DIR@/build/sbcl/sbcl.core" "--load" "@BLACKTHORN_DIR@/build/scripts/quicklisp-setup.lisp"))))
+        (sbcl ("sbcl" "--load" "@BLACKTHORN_DIR@/build/scripts/quicklisp-setup.lisp"))))
 
 (eval-after-load "slime"
   '(progn

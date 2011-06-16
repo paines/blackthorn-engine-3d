@@ -26,5 +26,7 @@ syntax: glob
 
 # build files
 bin
+build/ccl
+build/sbcl
 build/quicklisp
 doc

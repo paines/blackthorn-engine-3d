@@ -61,7 +61,7 @@
         (image->texture2d (load-image #p "res/images/crosshair.png")))
  
   (setf *default-texture*
-        (image->texture2d (load-image #p "res/images/MetalAircraft2.jpg")))
+        (image->texture2d (load-image #p "res/images/BrushedMetal.jpg")))
 
   (setf *laser-tex*
         (image->texture2d (load-image #p "res/images/laser-2.png")))

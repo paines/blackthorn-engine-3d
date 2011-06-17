@@ -35,7 +35,7 @@ function download () {
     elif [ "$(which curl >& /dev/null; echo $?)" -eq 0 ]; then
         curl -O "$url"
     else
-        echo "No downloader available. Please install either wget or curl."
+        echo "No downloader (i.e. wget or curl) available."
         return 1
     fi
 }
@@ -64,6 +64,9 @@ function get-lisp-for-windows () {
         download "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
         if [ ! "$(echo $?)" -eq 0 ]; then
             echo "Failed to download SBCL."
+            echo
+            echo "Please go to the following URL and install it manually:"
+            echo "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
         else
             echo "Running SBCL installer..."
             msiexec /i sbcl-1.0.49-x86-windows-binary.msi

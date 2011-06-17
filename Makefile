@@ -55,33 +55,7 @@ command := \\\"\\x24INSTDIR\\\\main.exe\\\"
 tempfile := .tmp
 
 # A command which can be used to get an ASDF system property.
-ifeq (${cl}, allegro)
-	get-property = $(shell alisp +B +s ${prop} -e "(defparameter *driver-system* :${system})" -e "(defparameter *output-file* \"${tempfile}\")" -e "(defparameter *output-expression* '$(1))" -L "${quicklisp-setup}")
-else
-ifeq (${cl}, sbcl)
-	get-property = $(shell sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
-else
-ifeq (${cl}, sbcl-builtin)
-	get-property = $(shell SBCL_HOME="$(shell build/scripts/pwd.sh)/build/sbcl/" build/sbcl/sbcl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
-else
-ifeq (${cl}, clisp)
-	get-property = $(shell clisp -x "(load \"${quicklisp-setup}\")" -x "(defparameter *driver-system* \"${system}\")" -x "(defparameter *output-file* \"${tempfile}\")" -x "(defparameter *output-expression* '$(1))" -x "(load \"${prop}\")")
-else
-ifeq (${cl}, ecl)
-	get-property = $(shell ecl -load ${quicklisp-setup} -eval "(defparameter *driver-system* \"${system}\")" -eval "(defparameter *output-file* \"${tempfile}\")" -eval "(defparameter *output-expression* '$(1))" -load ${prop})
-else
-ifeq (${cl}, clozure)
-	get-property = $(shell ccl --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
-else
-ifeq (${cl}, clozure-builtin)
-	get-property = $(shell build/ccl/wx86cl.exe --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
-endif
-endif
-endif
-endif
-endif
-endif
-endif
+get-property = $(shell PATH=$PATH:$(shell pwd)/build/ccl build/scripts/run-lisp.pl ${cl} --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 
 # Get ASDF system properties for the specified system.
 define get-properties
@@ -97,6 +71,9 @@ define get-properties
 	$(eval url := $$(shell cat $${tempfile}))
 endef
 
+# Add builtin CCL directory to path so we can see it later.
+PATH := ${PATH}:$(shell pwd)/build/ccl
+
 export cl, db, system, driver, name, longname, version, description, url, command
 
 .PHONY: new
@@ -106,35 +83,7 @@ new:
 
 .PHONY: load
 load:
-	$(MAKE) load-${cl}
-
-.PHONY: load-allegro
-load-allegro:
-	alisp +B +s ${driver} -e "(defparameter *driver-system* :${system})" -L "${quicklisp-setup}" -- ${args}
-
-.PHONY: load-sbcl
-load-sbcl:
-	sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
-
-.PHONY: load-sbcl-builtin
-load-sbcl-builtin:
-	SBCL_HOME="$(shell build/scripts/pwd.sh)/build/sbcl/" build/sbcl/sbcl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
-
-.PHONY: load-clisp
-load-clisp:
-	clisp -x "(defparameter *driver-system* \"${system}\")" -x "(load \"${quicklisp-setup}\")" -x "(load \"${driver}\")" -- ${args}
-
-.PHONY: load-ecl
-load-ecl:
-	ecl -eval "(defparameter *driver-system* \"${system}\")" -load ${quicklisp-setup} -load ${driver} -- ${args}
-
-.PHONY: load-clozure
-load-clozure:
-	ccl --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
-
-.PHONY: load-clozure-builtin
-load-clozure-builtin:
-	build/ccl/wx86cl.exe --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
+	build/scripts/run-lisp.pl ${cl} --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: shell
 shell:

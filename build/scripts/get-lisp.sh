@@ -27,19 +27,6 @@
 # FIXME: Mac OS X readlink doesn't recognize the -f parameter.
 build_dir="$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")")")"
 
-# download <url>
-function download () {
-    url="$1"
-    if [ "$(which wget >& /dev/null; echo $?)" -eq 0 ]; then
-        wget "$url"
-    elif [ "$(which curl >& /dev/null; echo $?)" -eq 0 ]; then
-        curl -O "$url"
-    else
-        echo "No downloader (i.e. wget or curl) available."
-        return 1
-    fi
-}
-
 # get-lisp-for-windows
 function get-lisp-for-windows () {
     if [[ ! -d $build_dir/ccl ]]; then
@@ -61,7 +48,7 @@ function get-lisp-for-windows () {
     if [ ! "$(echo $?)" -eq 0 ]; then
         echo "Downloading SBCL..."
         pushd "$build_dir" >& /dev/null
-        download "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
+        "$build_dir/scripts/download.sh" "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
         if [ ! "$(echo $?)" -eq 0 ]; then
             echo "Failed to download SBCL."
             echo

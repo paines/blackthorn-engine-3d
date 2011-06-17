@@ -28,7 +28,7 @@ def download(ui, repo, url, **opts):
         ui.warn("Don't know how to name the output file.\n")
         return
     filename = match.group(1)    
-    local_file = open(filename, 'w')
+    local_file = open(filename, 'wb')
     local_file.write(remote_file.read())
     local_file.close()
     remote_file.close()

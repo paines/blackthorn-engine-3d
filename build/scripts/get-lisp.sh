@@ -56,7 +56,7 @@ function get-lisp-for-windows () {
             echo "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
         else
             echo "Running SBCL installer..."
-            msiexec /i sbcl-1.0.49-x86-windows-binary.msi
+            cmd "/C cd scripts && install.bat .. sbcl-1.0.49-x86-windows-binary.msi "
             popd >& /dev/null
             echo "Please close and reopen the terminal."
         fi

@@ -23,6 +23,7 @@ syntax: glob
 *.?x32fsl
 *.?x64fsl
 *.exe
+*.pyc
 
 # build files
 bin

@@ -105,7 +105,11 @@ if ($len < 1) {
 
 my @in_args = @ARGV;
 my $impl_name = shift(@in_args);
-my $impl_cmd = $impls{$impl_name}->{'cmd'}();
+my $impl_cmd;
+if (!exists($impls{$impl_name}->{'cmd'})) {
+    die("Unknown Lisp implementation \"$impl_name\".");
+}
+$impl_cmd = $impls{$impl_name}->{'cmd'}();
 my @out_args;
 while (my $in_arg = shift(@in_args)) {
     my $param;

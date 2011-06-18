@@ -8,8 +8,7 @@ if [ "$(which wget >& /dev/null; echo $?)" -eq 0 ]; then
 elif [ "$(which curl >& /dev/null; echo $?)" -eq 0 ]; then
     curl -O "$url"
 elif [ "$(which hg >& /dev/null; echo $?)" -eq 0 ]; then   
-    # FIXME: Mac OS X readlink doesn't recognize the -f parameter.
-    repo_dir="$(dirname "$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")")")")"
+    repo_dir="$(dirname "$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")")"
     hgrc_file="$repo_dir/.hg/hgrc"
     echo "You don't appear to have wget or curl installed."
     echo "Attempting Mercurial downloader extension..."

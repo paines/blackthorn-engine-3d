@@ -33,9 +33,6 @@ sbcl_url="http://prdownloads.sourceforge.net/sbcl/$sbcl_file"
 
 # get-lisp-for-windows
 function get-lisp-for-windows () {
-    echo "Attempting to install Lisp..."
-    echo
-
     if [[ ! -d $build_dir/ccl ]]; then
         echo "Downloading Clozure CL..."
         if [ ! "$(which svn >& /dev/null; echo $?)" -eq 0 ]; then
@@ -66,6 +63,9 @@ function get-lisp-for-windows () {
         else
             echo "Running SBCL installer..."
             cmd "/C cd scripts && install.bat .. $sbcl_file "
+            echo "Please log out and log back in."
+            popd >& /dev/null
+            exit 1
         fi
         popd >& /dev/null
     fi

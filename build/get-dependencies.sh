@@ -31,6 +31,11 @@ build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/scripts/readlink-dirname.sh" 
 "$build_dir/scripts/get-lisp.sh"
 
 lisp="$("$build_dir/scripts/find-lisp.sh")"
-if [[ -z $("$build_dir/scripts/run-lisp.pl" "$lisp" --load "$build_dir/scripts/quicklisp-existsp.lisp" | grep 'Quicklisp exists? yes') ]]; then
+if [[ -z "$lisp" ]]; then
+    echo "Unable to find which Lisp to run for installing Quicklisp."
+    exit 1
+fi
+
+if [[ -z $("$build_dir/scripts/run-lisp.pl" "$lisp" --load "$build_dir/scripts/quicklisp-existsp.lisp" 2>&1 | grep 'Quicklisp exists? yes') ]]; then
     "$build_dir/scripts/get-quicklisp.sh" "$lisp"
 fi

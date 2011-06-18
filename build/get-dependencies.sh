@@ -24,33 +24,13 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")"
-cached_result_file="$build_dir/.find-lisp"
+set -e
 
-if [[ -e $cached_result_file ]]; then
-  result=$(<"$cached_result_file")
-  if [[ -n $result ]]; then
-    echo "$result"
-    exit 0
-  fi
+build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/scripts/readlink-dirname.sh" "$BASH_SOURCE")")"
+
+"$build_dir/scripts/get-lisp.sh"
+
+lisp="$("$build_dir/scripts/find-lisp.sh")"
+if [[ -z $("$build_dir/scripts/run-lisp.pl" "$lisp" --load "$build_dir/scripts/quicklisp-existsp.lisp" | grep 'Quicklisp exists? yes') ]]; then
+    "$build_dir/scripts/get-quicklisp.sh" "$lisp"
 fi
-
-# test-for <program> <result>
-function test-for () {
-  program="$1"
-  result="$2"
-  ignore=$(which "$program" 2>&1)
-  if [[ $? -eq 0 ]]; then
-    echo "$result"
-    echo "$result" > "$cached_result_file"
-    exit 0
-  fi
-}
-
-test-for sbcl sbcl
-test-for alisp allegro
-test-for clisp clisp
-test-for ecl ecl
-test-for ccl clozure
-
-exit 1

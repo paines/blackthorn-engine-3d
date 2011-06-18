@@ -28,16 +28,19 @@ build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_S
 
 lisp="$1"
 
+quicklisp_file="quicklisp.lisp"
+quicklisp_url="http://beta.quicklisp.org/$quicklisp_file"
+
 echo "Attempting to install Quicklisp..."
 
 pushd "$build_dir" >& /dev/null
-"$build_dir/scripts/download.sh" "http://beta.quicklisp.org/quicklisp.lisp"
+"$build_dir/scripts/download.sh" "$quicklisp_url"
 if [ ! "$(echo $?)" -eq 0 ]; then
     echo "Failed to download Quicklisp."
     echo
     echo "Please go to the following URL and install it manually:"
-    echo "http://beta.quicklisp.org/quicklisp.lisp"
+    echo "$quicklisp_url"
 else
-    "$build_dir/scripts/run-lisp.pl" "$lisp" --load quicklisp.lisp --eval '(quicklisp-quickstart:install)' --eval '(ql:add-to-init-file)' --eval '#-allegro (quit) #+allegro (exit)'
+    "$build_dir/scripts/run-lisp.pl" "$lisp" --load "$quicklisp_file" --eval '(quicklisp-quickstart:install)' --eval '(ql:add-to-init-file)' --eval '#-allegro (quit) #+allegro (exit)'
 fi
 popd >& /dev/null

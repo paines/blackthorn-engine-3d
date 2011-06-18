@@ -77,4 +77,5 @@ elif [[ $(uname) == MINGW* ]]; then
     get-lisp-for-windows
 else
     echo "Unable to download Lisp for your OS."
+    exit 1
 fi

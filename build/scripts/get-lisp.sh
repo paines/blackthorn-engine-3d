@@ -26,6 +26,11 @@
 
 build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")"
 
+svn_url="http://sourceforge.net/projects/win32svn/files/1.6.16/Setup-Subversion-1.6.16.msi/download"
+clozure_url="http://svn.clozure.com/publicsvn/openmcl/trunk/windows/ccl"
+sbcl_file="sbcl-1.0.49-x86-windows-binary.msi"
+sbcl_url="http://prdownloads.sourceforge.net/sbcl/$sbcl_file"
+
 # get-lisp-for-windows
 function get-lisp-for-windows () {
     echo "Attempting to install Lisp..."
@@ -36,13 +41,13 @@ function get-lisp-for-windows () {
         if [ ! "$(which svn >& /dev/null; echo $?)" -eq 0 ]; then
             echo "If you want to install Clozure CL you'll need SVN."
             echo "You can install SVN from the following URL:"
-            echo "http://sourceforge.net/projects/win32svn/files/1.6.16/Setup-Subversion-1.6.16.msi/download"
+            echo "$svn_url"
             echo "Install the file, then log out and log back in and try again."
             echo "Failed to download Clozure CL."
             echo
         else
             pushd "$build_dir" >& /dev/null
-            svn co http://svn.clozure.com/publicsvn/openmcl/trunk/windows/ccl
+            svn co "$clozure_url"
             popd >& /dev/null
             echo "Done downloading Clozure CL."
             echo
@@ -52,16 +57,15 @@ function get-lisp-for-windows () {
     if [ ! "$(which sbcl >& /dev/null; echo $?)" -eq 0 ]; then
         echo "Downloading SBCL..."
         pushd "$build_dir" >& /dev/null
-        "$build_dir/scripts/download.sh" "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
+        "$build_dir/scripts/download.sh" "$sbcl_url"
         if [ ! "$(echo $?)" -eq 0 ]; then
             echo "Failed to download SBCL."
             echo
             echo "Please go to the following URL and install it manually:"
-            echo "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
+            echo "$sbcl_url"
         else
             echo "Running SBCL installer..."
-            cmd "/C cd scripts && install.bat .. sbcl-1.0.49-x86-windows-binary.msi "
-            echo "Please log out and log back in to finish the installation."
+            cmd "/C cd scripts && install.bat .. $sbcl_file "
         fi
         popd >& /dev/null
     fi

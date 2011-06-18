@@ -29,5 +29,5 @@ syntax: glob
 bin
 build/ccl
 build/sbcl*
-build/quicklisp
+build/quicklisp*
 doc

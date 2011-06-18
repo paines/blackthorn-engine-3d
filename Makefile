@@ -55,7 +55,7 @@ command := \\\"\\x24INSTDIR\\\\main.exe\\\"
 tempfile := .tmp
 
 # A command which can be used to get an ASDF system property.
-get-property = $(shell PATH=$PATH:$(shell pwd)/build/ccl build/scripts/run-lisp.pl ${cl} --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
+get-property = $(shell build/scripts/run-lisp.sh ${cl} --load ${quicklisp-setup} --eval "(defparameter *driver-system* \"${system}\")" --eval "(defparameter *output-file* \"${tempfile}\")" --eval "(defparameter *output-expression* '$(1))" --load ${prop})
 
 # Get ASDF system properties for the specified system.
 define get-properties
@@ -71,9 +71,6 @@ define get-properties
 	$(eval url := $$(shell cat $${tempfile}))
 endef
 
-# Add builtin CCL directory to path so we can see it later.
-PATH := ${PATH}:$(shell pwd)/build/ccl
-
 export cl, db, system, driver, name, longname, version, description, url, command
 
 .PHONY: new
@@ -83,7 +80,7 @@ new:
 
 .PHONY: load
 load:
-	build/scripts/run-lisp.pl ${cl} --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
+	build/scripts/run-lisp.sh ${cl} --eval "(defparameter *driver-system* \"${system}\")" --load ${quicklisp-setup} --load ${driver} -- ${args}
 
 .PHONY: shell
 shell:

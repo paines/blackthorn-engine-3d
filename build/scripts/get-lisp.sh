@@ -24,28 +24,32 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-# FIXME: Mac OS X readlink doesn't recognize the -f parameter.
-build_dir="$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")")")"
+build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")"
 
 # get-lisp-for-windows
 function get-lisp-for-windows () {
+    echo "Attempting to install Lisp..."
+    echo
+
     if [[ ! -d $build_dir/ccl ]]; then
         echo "Downloading Clozure CL..."
         if [ ! "$(which svn >& /dev/null; echo $?)" -eq 0 ]; then
-            echo "Please install SVN from the following URL:"
+            echo "If you want to install Clozure CL you'll need SVN."
+            echo "You can install SVN from the following URL:"
             echo "http://sourceforge.net/projects/win32svn/files/1.6.16/Setup-Subversion-1.6.16.msi/download"
-            echo "Then log out and log back in and try again."
+            echo "Install the file, then log out and log back in and try again."
             echo "Failed to download Clozure CL."
-            return 1
+            echo
         else
             pushd "$build_dir" >& /dev/null
             svn co http://svn.clozure.com/publicsvn/openmcl/trunk/windows/ccl
             popd >& /dev/null
             echo "Done downloading Clozure CL."
+            echo
         fi
     fi
-    which sbcl >& /dev/null
-    if [ ! "$(echo $?)" -eq 0 ]; then
+
+    if [ ! "$(which sbcl >& /dev/null; echo $?)" -eq 0 ]; then
         echo "Downloading SBCL..."
         pushd "$build_dir" >& /dev/null
         "$build_dir/scripts/download.sh" "http://prdownloads.sourceforge.net/sbcl/sbcl-1.0.49-x86-windows-binary.msi"
@@ -57,10 +61,9 @@ function get-lisp-for-windows () {
         else
             echo "Running SBCL installer..."
             cmd "/C cd scripts && install.bat .. sbcl-1.0.49-x86-windows-binary.msi "
-            popd >& /dev/null
-            echo "Please close and reopen the terminal."
+            echo "Please log out and log back in to finish the installation."
         fi
-        return 1
+        popd >& /dev/null
     fi
 }
 

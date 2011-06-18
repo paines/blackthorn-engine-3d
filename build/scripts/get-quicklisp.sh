@@ -41,6 +41,6 @@ if [ ! "$(echo $?)" -eq 0 ]; then
     echo "Please go to the following URL and install it manually:"
     echo "$quicklisp_url"
 else
-    "$build_dir/scripts/run-lisp.pl" "$lisp" --load "$quicklisp_file" --eval '(quicklisp-quickstart:install)' --eval '(ql:add-to-init-file)' --eval '#-allegro (quit) #+allegro (exit)'
+    "$build_dir/scripts/run-lisp.pl" "$lisp" --load "$quicklisp_file" --eval "(quicklisp-quickstart:install :path \"$build_dir/quicklisp/\")" --eval '#-allegro (quit) #+allegro (exit)'
 fi
 popd >& /dev/null

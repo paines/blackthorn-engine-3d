@@ -118,8 +118,15 @@ while (my $in_arg = shift(@in_args)) {
         $param = shift(@in_args);
         @result = $impls{$impl_name}->{'transform_arg'}($in_arg, $param);
         push(@out_args, @result);
+    } else {
+        push(@out_args, $in_arg);
+    }
+
+    if ($in_arg eq '--') {
+        last;
     }
 }
 @out_args = $impls{$impl_name}->{'reorder_args'}(@out_args);
+push(@out_args, @in_args);
 
 exec $impl_cmd, @out_args;

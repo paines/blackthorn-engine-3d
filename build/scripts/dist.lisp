@@ -143,12 +143,12 @@
  :discard-local-name-info (not *debug*)
  :discard-source-file-info (not *debug*)
  :discard-xref-info (not *debug*)
- 
+
  ;; for debugging:
  :verbose nil
  :build-input "build.in"
  :build-output "build.out"
- 
+
  :runtime :standard
  )
 

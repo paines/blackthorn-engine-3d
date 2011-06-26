@@ -28,7 +28,7 @@
 (defvar *model-loader-table* (make-hash-table))
 (defvar *graphical-thingies* (make-hash-table))
 
-(defun register-model-loader (type f) 
+(defun register-model-loader (type f)
   (setf (gethash type *model-loader-table*) f))
 
 (defun load-model (key type path)

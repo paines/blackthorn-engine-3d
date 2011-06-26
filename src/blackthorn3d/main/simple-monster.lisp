@@ -35,12 +35,12 @@
     :accessor eyesight
     :initform nil)
   ))
-  
+
 (defclass eyesight (entity-server)
   ((follow
     :accessor follow
     :initarg  :follow)))
-    
+
 (defmethod update ((monster simple-monster))
   (if (chase-who monster)
     (monster-chase-who monster (chase-who monster))
@@ -53,10 +53,10 @@
       :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
       :follow the-monster
       :shape-name :none
-      :bv (make-instance 'blackthorn3d-physics:bounding-sphere 
+      :bv (make-instance 'blackthorn3d-physics:bounding-sphere
                     :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
                     :rad *eyesight-radius*)))
-    
+
 (defun make-monster (in-room pos)
   (let ((the-monster (make-server-entity 'simple-monster
           :pos pos
@@ -70,14 +70,14 @@
     (add-to-room the-monster in-room)
     (setf (eyesight the-monster) (make-eye the-monster))
     the-monster))
-                    
+
 (defmethod update ((eye eyesight))
   (if (not (is-alive-p (follow eye)))
     (remove-entity eye)
     (setf (pos eye) (pos (follow eye)))))
-    
-    
-    
+
+
+
 (defun monster-chase-who (self who)
   (format t "Chase ~a~%" who)
   (if (or (not (is-alive-p who))
@@ -86,27 +86,27 @@
     (setf (chase-who self) nil)
     ;; else
     (blt3d-phy:chase self who 0.08)))
-      
+
 (defun monster-wander (self)
   (declare (ignore self)))
-  
+
 (defmethod collide ((eye eyesight) (p player))
   (let ((monster (follow eye)))
     (when (eq nil (chase-who monster))
       (format t "Monster says: I SEE YOU, ~a! YOU LOOK TASTY!~%" p)
       (setf (chase-who monster) p))))
-      
+
 (defmethod collide ((p player) (eye eyesight))
   (collide eye p))
-      
-      
+
+
 (defmessage :force-disconnect send-force-disconnect
   (:string ; reason
    ))
-  
+
 (defun disconnect-eaten-player (who)
   (send-force-disconnect who "You were eaten by the monster!"))
-      
+
 (defmethod collide ((p player) (m simple-monster))
   (format t "Om nom nom nom!~%")
   (disconnect-eaten-player (player-client p)))

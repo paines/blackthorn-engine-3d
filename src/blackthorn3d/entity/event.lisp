@@ -56,7 +56,7 @@
 
 (defmessage :event-input send-input
   (:single-float ; move-x
-   :single-float ; move-y 
+   :single-float ; move-y
    :single-float ; view-x
    :single-float ; view-y
    :single-float ; jmp

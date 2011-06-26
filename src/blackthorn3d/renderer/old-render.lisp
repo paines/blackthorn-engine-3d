@@ -30,7 +30,7 @@
 (defun render-frame (entities)
   (gl:color-material :front :diffuse)
   (gl:enable :color-material)
-  
+
   (if (>= *gl-version* 3.0)
       (old-render-frame entities)
 ;      (dr-render-frame entities)
@@ -55,18 +55,18 @@
 
   ;; Create PVS from entities and level
   ;; (let ((PVS (find-pvs entities level))))
-  
+
   ;; create shadow map
   #+disabled
   (when (and *main-cam* (> *gl-version* 3.0))
-    (shadow-pass *main-light* 
-                 (cons home-sector 
+    (shadow-pass *main-light*
+                 (cons home-sector
                    ;(cons *test-skele*)
                        (remove-if-not
                         #'(lambda (e)
-                            (and (shape e) 
-                                 (not (eql e *main-cam*)))) 
-                        entities))))   
+                            (and (shape e)
+                                 (not (eql e *main-cam*))))
+                        entities))))
 
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (set-viewport *main-viewport*)
@@ -84,7 +84,7 @@
   (gl:enable :texture-2d)
   (gl:color 1 1 1 1)
 
- 
+
   #+disabled
   (when *shadow-depth-tex*
     (enable-shader *standard-tex*)
@@ -95,12 +95,12 @@
     (gl:bind-texture :texture-2d *shadow-depth-tex*)
     (gl:active-texture :texture0))
 
-  ;#+disabled  
+  ;#+disabled
   (when home-sector
     (gl:with-pushed-matrix
         (draw-object home-sector)))
 
-  ;#+disabled    
+  ;#+disabled
   (when *test-skele*
     (gl:with-pushed-matrix
         (draw-object *test-skele*)))
@@ -108,12 +108,12 @@
 
   ;#+disabled
   (dolist (e entities)
-    
+
     (when (and (shape e) (not (eql e *main-cam*)))
       (draw-object e)))
 
   ;; DO PARTICLES YEAH!
-  (gl:blend-func :src-alpha :one)  
+  (gl:blend-func :src-alpha :one)
   (gl:depth-mask nil)
   (render-effects)
 

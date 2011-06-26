@@ -27,30 +27,30 @@
 (in-package :blackthorn3d-main)
 
 
-(defun make-sector (name level 
-                    &optional 
+(defun make-sector (name level
+                    &optional
                     (orientation (quat-identity)))
   (format t "portals from importer ~a~%" (blt3d-imp:dae-portals level))
   (iter (for platform in (blt3d-imp:dae-platforms level))
         (format t "loading platform ~a~%" (id platform))
         (with-slots (transform) platform
           (let ((pos (quat-rotate-vec orientation
-                                      (matrix-multiply-v 
+                                      (matrix-multiply-v
                                        transform
                                        +origin+)))
                 (dir (quat-rotate-vec orientation
-                                      (matrix-multiply-v 
+                                      (matrix-multiply-v
                                        transform
                                        (vec-neg4 +z-axis+))))
                 (up (quat-rotate-vec orientation
-                                     (matrix-multiply-v 
+                                     (matrix-multiply-v
                                       transform
                                       +y-axis+)))
                 (id (intern (id platform) "KEYWORD")))
             (setf (transform platform) (make-identity))
             (when (on-server-p)
-              (make-server-entity 
-               'entity-server 
+              (make-server-entity
+               'entity-server
                :pos pos
                :dir dir
                :up up
@@ -60,21 +60,21 @@
                                      (list platform))))
             (when (on-client-p)
               (load-model id :platform platform)))))
-  
+
   (new-sector name
               (blt3d-imp:dae-geometry level)
-              :portals 
+              :portals
               (iter (for portal in (blt3d-imp:dae-portals level))
-                    (collect 
+                    (collect
                      (destructuring-bind (name pos dir bv) portal
-                       (format t "Portal ~a position: ~a~%~5Tdirection ~a~%" 
+                       (format t "Portal ~a position: ~a~%~5Tdirection ~a~%"
                                name pos dir)
                        (transform-portal
                         (make-portal name pos dir bv)
                         (make-translate #(0.0 -15.0 0.0 1.0))))))
               :orientation orientation))
 
- 
+
 ;; the room players land in when they first connect
 (defun make-start-sector (loaded-dae)
   (make-sector :start-sector loaded-dae))

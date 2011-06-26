@@ -73,12 +73,12 @@
     :accessor ui-alignment
     :initarg :alignment
     :initform '(:none :none nil)
-    :documentation "The alignment of an element tells the renderer where to 
+    :documentation "The alignment of an element tells the renderer where to
                     offset the element from. :none means the offset is in
-                    screen-coords.  :bottom, :top, :right :left mean the 
+                    screen-coords.  :bottom, :top, :right :left mean the
                     offset is from the bottom, top, right or left of the anchor
                     the second element in the alignment is the anchor.
-                    It can be: 
+                    It can be:
                       nil - the screen
                       ui-element - an element to specify relative to")))
 
@@ -153,10 +153,10 @@
 (defmethod draw-ui-element ((gauge ui-gauge))
   ;; the gauge is drawn thusly:
   ;; draw the base texture as a quad the size of the element
-  ;; then draw the gauge as a quad of size relative to 
+  ;; then draw the gauge as a quad of size relative to
   ;; the value
   (with-slots (offset size base-texture gauge-texture
-                      orientation max-value current-value) 
+                      orientation max-value current-value)
       gauge
     (let ((g-offset
            (case orientation
@@ -192,7 +192,7 @@
   (setf ui-elements (delete ui-element ui-elements)))
 
 (defun render-ui ()
-  (gl:with-pushed-attrib (:color-buffer-bit 
+  (gl:with-pushed-attrib (:color-buffer-bit
                           :depth-buffer-bit
                           :transform-bit)
 
@@ -203,10 +203,10 @@
     (use-texture 0)
 
     (gl:matrix-mode :projection)
-    (gl:with-pushed-matrix 
+    (gl:with-pushed-matrix
       (gl:load-identity)
       (gl:ortho 0 1 0 1 -10 10)
-        
+
       (gl:matrix-mode :modelview)
       (gl:load-identity)
 

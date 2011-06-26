@@ -25,7 +25,7 @@
 
 (in-package :blackthorn3d-physics)
 
-;; This is our intermediate representation, basically just a 
+;; This is our intermediate representation, basically just a
 ;; representation/organization of all the data we loaded from
 ;; the dae file
 ;;
@@ -42,7 +42,7 @@
 (defun instance-model (model)
   "Creates an instance of MODEL. the instance will link to all the same
    mesh data as the original, but have separate nodes, allowing the application
-   to specify different transforms, animation states, and materials.  
+   to specify different transforms, animation states, and materials.
    Will also register the instance in the table"
   (with-slots (mesh-nodes animations) model
     (make-instance 'blt-model
@@ -60,14 +60,14 @@
           (return-from find-node it))))
 
 
-(defmethod attach-obj-to-model (obj (node-id string) transform 
+(defmethod attach-obj-to-model (obj (node-id string) transform
                                 (model blt-model))
   (let ((node (make-model-node "FIXME" transform nil obj nil)))
     (attach-node-to-model node node-id model)))
 
 
-(defmethod attach-node-to-model ((new-node node) 
-                                 (node-id string) 
+(defmethod attach-node-to-model ((new-node node)
+                                 (node-id string)
                                  (model blt-model))
   (format t "~%ATTACHING node to model at node ~a~%" node-id)
   (aif (find-node node-id model)
@@ -77,7 +77,7 @@
   (labels ((detach-helper (id node)
              (iter (for child in (child-nodes node))
                    (if (equal id (id child))
-                       (progn 
+                       (progn
                          (setf (child-nodes node)
                                (delete child (child-nodes node)))
                          (return-from detach-helper child))
@@ -94,11 +94,11 @@
    sphere with all its children's bounding spheres"
   (labels ((recurse-nodes (node)
              (let ((children-bounding-spheres
-                    (iter (for c in (child-nodes node)) 
+                    (iter (for c in (child-nodes node))
                           (collect (recurse-nodes (child-nodes node))))))
                (setf (node-bounding-volume node)
-                     (combine-bounding-spheres 
-                      (remove-if #'null 
+                     (combine-bounding-spheres
+                      (remove-if #'null
                                  (cons (node-bounding-volume node)
                                        children-bounding-spheres)))))))
     (node-bounding-volume (car (mesh-nodes this)))
@@ -112,17 +112,17 @@
   (labels ((apply-helper (node)
              (with-slots (transform bounding-volume) node
                ;; set transform
-               (setf transform 
+               (setf transform
                      (matrix-multiply-m xform transform))
                ;; and transformed bv
-               (setf bounding-volume 
+               (setf bounding-volume
                      (transform-bounding-volume bounding-volume xform))
                ;; do the children
                #+disabled
                (iter (for child in (child-nodes node))
                      (apply-helper child))
                bounding-volume)))
-    
+
     (when (animations this)
       (format t "transforming!!~%")
     ;  (apply-transform (animations this) xform)
@@ -135,7 +135,7 @@
 
 
 
-(defmethod play-model-animation ((self blt-model) clip-name 
+(defmethod play-model-animation ((self blt-model) clip-name
                                  &optional (mode :play))
   (play-clip (animations self) clip-name mode))
 
@@ -175,7 +175,7 @@
    (material
     :accessor element-material
     :initarg :material)
-   (unifiedp 
+   (unifiedp
     :initarg :unifiedp
     :initform nil)))
 
@@ -216,7 +216,7 @@
 ;;;
 
 
-;; Note that this assumes that all the semantics in order exist in 
+;; Note that this assumes that all the semantics in order exist in
 ;; vertex-streams. The behavior is currently incorrect if this isn't true
 ;; It is fine to have extra semantics in vertex-streams, they will
 ;; be dropped
@@ -227,7 +227,7 @@
         (for o in order)
         (format t "order semantic: ~a   VS semantic: ~a~%" o (vs-semantic vs)))
   (iter (for o in order)
-        (collect (find o vertex-streams 
+        (collect (find o vertex-streams
                        :key #'(lambda (vs) (vs-semantic vs))))))
 
 (defun get-vs-fns (vertex-streams format)
@@ -237,13 +237,13 @@
               (let ((len n-elts))
                 #'(lambda (index)
                     ;;(format t "original vector: ~a~%" (vs-ref it index))
-                    (concatenate 
-                     'vector 
-                     (subseq (vs-ref it index) 
-                             0 (min len (vs-stride it))) 
+                    (concatenate
+                     'vector
+                     (subseq (vs-ref it index)
+                             0 (min len (vs-stride it)))
                      (iter (for i below (- len (vs-stride it)))
                            (collect 0.0 result-type 'vector)))))
-              (let ((zero-vec (iter (for i below n-elts) 
+              (let ((zero-vec (iter (for i below n-elts)
                                     (collect 0.0 result-type 'vector))))
                 #'(lambda (index) zero-vec))))))
 
@@ -262,7 +262,7 @@
                     (minimizing (length (vs-stream vs)))))
         (depth (iter (for f in format)
                      (sum (second f)))))
-    
+
     (let ((interleaved (make-array (list size depth)))
           (index 0))
       ;(format t "size: ~a depth: ~a~%" size depth)
@@ -273,11 +273,11 @@
                         (setf (row-major-aref interleaved index)
                               (float elt))
                         (incf index))))
-     
+
       (values
        interleaved
-       #'(lambda (index) 
-           (iter (for (semantic n-elts) in format) 
+       #'(lambda (index)
+           (iter (for (semantic n-elts) in format)
                  (for fn in vs-fns)
                  (collect (list semantic (funcall fn index)))))))))
 
@@ -298,7 +298,7 @@
 
 ;; Returns the triangle at index from the blt-mesh
 ;; If the mesh has multiple elements, the indexes are treated
-;; as incrementing accross elements. The first element has 
+;; as incrementing accross elements. The first element has
 ;; indices [0 elem1.count) the next one has [elem1.count elem2.count)
 ;; etc.
 
@@ -330,10 +330,10 @@
           (triangles (make-array (iter (for elt in elements)
                                        (sum (slot-value elt 'count)))))
           (index 0))
-     
+
       (iter (for element in elements)
             (iter (for i below (slot-value element 'count))
-                  (setf (svref triangles index) 
+                  (setf (svref triangles index)
                         (tri-in-elt element vertices i))
                   (incf index)))
       triangles)))
@@ -355,7 +355,7 @@
 ;;;
 #+disabled
 (defmethod calc-bounding-volume ((this blt-model))
-  (combine-bounding-volume 
+  (combine-bounding-volume
    (iter (for node in (mesh-nodes this))
          (collect (bounding-volume
                    (mesh node))))))

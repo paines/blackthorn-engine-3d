@@ -84,17 +84,17 @@
          (t-min (aref times 0))
          (t-max (aref times(1- (length times))))
          (t-d (- t-max 0.0))
-         (frames 
+         (frames
           (make-array `(,len 2)
                       :initial-contents
                       (iter (for i below len)
-                            (collect 
+                            (collect
                                 (list
-                                 (if normalize 
+                                 (if normalize
                                      (- (/ (aref times i) t-d) t-min)
                                      (aref times i))
                                  (aref values i)))))))
-    (make-instance 
+    (make-instance
      'channel
      :frames frames
      :t-max t-d
@@ -123,7 +123,7 @@
   (iter (for i below (array-dimension (frames this) 0))
         (for v = (value (frames this) i))
       ;  (format t "~%Old value: ~a~%" v)
-        (setf (value (frames this) i) 
+        (setf (value (frames this) i)
               (matrix-multiply-m xform v))
        ; (format t "New value: ~a~%" (value (frames this) i))
         ))
@@ -135,11 +135,11 @@
            (m-time (map-time t0 t-max extrapolation))
            (i
             (iter (for i from (or *prev-frame* 0) below n-frames)
-                  (finding i #+disabled(value frames i) 
+                  (finding i #+disabled(value frames i)
                            such-that (>= (time-step frames i) m-time)))))
       (case interpolation
-        (:linear (values (linear-interpolate 
-                          frames i 
+        (:linear (values (linear-interpolate
+                          frames i
                           (case extrapolation
                             (:loop (mod (1+ i) n-frames))
                             (otherwise (clamp (1+ i) 0 (1- n-frames))))
@@ -152,7 +152,7 @@
          (v2 (value frames i1))
          (denom (- (time-step frames i1) (time-step frames i0)))
          (s (if (= 0.0 denom)
-                0.0 
+                0.0
                 (/ (- t0 (time-step frames i0))
                    denom))))
    ; (format t "v1:  ~a~%v2:   ~a~%" v1 v2)
@@ -208,7 +208,7 @@
 
 ;; array of keyframes -> array of spans
 #+disable
-(defun bake-keyframes (key-arr &key 
+(defun bake-keyframes (key-arr &key
                        (tmin-extrap :const)
                        (tmax-extrap :const))
   (let ((n-keys (length key-arr))
@@ -226,8 +226,8 @@
   ;; eventually we will want to cache most recent
   ;; span in the animating object
   (let ((span (iter (for span in-vector (channel-data c))
-                    (finding span 
-                             such-that (< time (+ (span-t0 span) 
+                    (finding span
+                             such-that (< time (+ (span-t0 span)
                                                   (span-t1-t0 span)))))))
     ;; TODO- Handle two cases where time is outside the range of the
     ;; spans (ie, extrapolation cases

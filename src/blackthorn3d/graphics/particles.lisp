@@ -35,7 +35,7 @@
 ;;;
 
 
-;; define a particle as: 
+;; define a particle as:
 ;;        #(energy fade-rate pos.x pos.y pos.z old.x old.y old.z
 ;;          vel.x vel.y vel.z color.r color.g color.b color.a size)
 ;; total length: 12 floats
@@ -45,7 +45,7 @@
                         energy fade-rate
                         color)
   (macrolet ((single (num) `(coerce ,num 'single-float)))
-    (setf (col particles index) 
+    (setf (col particles index)
           (vector energy                  ; 0
                   fade-rate               ; 1
                   (single (x position))            ; 2
@@ -59,7 +59,7 @@
                   (single (b color))               ; 13 -> 10
                   (single (a color))               ; 14 -> 11
                                         ;size                   ; 15 -> 12
-                  ))))                 
+                  ))))
 
 (defun create-particle-array (max-particles)
   (make-array (list max-particles 12) :element-type 'single-float))
@@ -77,7 +77,7 @@
   (setf (aref (car particle) (cdr particle) 1) new-fade))
 
 ;; POSITION
-(defun p-pos (particle) 
+(defun p-pos (particle)
   (make-point3 (aref (car particle) (cdr particle) 2)
                (aref (car particle) (cdr particle) 3)
                (aref (car particle) (cdr particle) 4)))
@@ -136,16 +136,16 @@
    (> (p-energy particle) 0.0))
 
  (defun update-particle (particle force-fn dt)
-   (setf (p-energy particle) 
+   (setf (p-energy particle)
          (- (p-energy particle) (* (p-fade particle) dt)))
    (when (is-alive particle)
-     (setf (p-pos particle) 
+     (setf (p-pos particle)
            (vec3+ (p-pos particle)
                   (vec-scale3 (p-vel particle) dt))
-           (p-vel particle) 
-           (vec3+ (p-vel particle) 
-                  (vec-scale3 
-                   (funcall force-fn (p-vel particle) dt) 
+           (p-vel particle)
+           (vec3+ (p-vel particle)
+                  (vec-scale3
+                   (funcall force-fn (p-vel particle) dt)
                    dt)))))
 
 
@@ -164,7 +164,7 @@
     :initarg :speed)
    (angle
     :initarg :angle
-    :documentation "The angle phi around the direction that particles 
+    :documentation "The angle phi around the direction that particles
                     can be emitted in. a value of pi is a hemisphere
                     2*pi would be a sphere")))
 
@@ -187,7 +187,7 @@
     :accessor spawn-rate
     :initarg :spawn-rate
     :documentation "The rate at which particles are to be emitted.
-                    If set to 0, system will create max-particles once 
+                    If set to 0, system will create max-particles once
                     and then finish")
    (lifetime
     :accessor lifetime
@@ -195,7 +195,7 @@
     :initform 1.0
     :documentation "The time in seconds that the particles live
                     If given as a pair (start . end) a random value
-                    is generated between start and end") 
+                    is generated between start and end")
    (size
     :initarg :size
     :initform #(0.1 0.1)
@@ -206,12 +206,12 @@
     :initform +white+
     :documentation "color of each particle. Would like to expand the
                     functionality to allow more interesting possibilities
-                    but for now if you wanna change it do it at the 
+                    but for now if you wanna change it do it at the
                     particle system level")
    (force-fn
     :initarg :force-fn
     :initform #'(lambda (vel dt) (vec-neg4 +y-axis+)))
-  
+
    (shader
     :accessor shader
     :initarg :shader
@@ -262,11 +262,11 @@
 
 (defmethod gen-initial-pos ((this cube-emitter) time)
   (with-slots (size pos) this
-    (setf p-size (vec4+ 
+    (setf p-size (vec4+
                   pos
                   (iter (for s in size)
                         (for s/2 = (/ s 2))
-                        (collect (+ (- s/2) (random s/2)) 
+                        (collect (+ (- s/2) (random s/2))
                                  result-type 'vector))))))
 
 (defmethod gen-initial-pos  ((this line-emitter) time)
@@ -285,7 +285,7 @@
            (z (cos theta))
            (x (* (sin theta) (cos phi)))
            (y (* (sin theta) (sin phi)))
-           (speed (if (consp speed) 
+           (speed (if (consp speed)
                       (+ (car speed) (random (- (cdr speed) (car speed))))
                       speed)))
       (vec-scale3 (vec3+ (vec3+ (vec-scale3 u z)
@@ -302,7 +302,7 @@
   (with-gensysm (total-static)))
 
 ;; what is this i don't even
-(defmacro make-force-fn (gravity gravity-coeff drag-coeff 
+(defmacro make-force-fn (gravity gravity-coeff drag-coeff
                          &rest others)
   (with-gensyms (total)
     (let ((grav-term `(vec-scale3 ,gravity ,gravity-coeff))
@@ -313,7 +313,7 @@
              (vec3+ ,total ,drag-term))))))
 
 (defun create-particle-system (emitter spawn-rate max-particles
-                               &key 
+                               &key
                                (color +white+)
                                (lifetime 2.0)
                                (size 0.1)
@@ -325,7 +325,7 @@
                  :emitter emitter
                  :spawn-rate spawn-rate
                  :lifetime lifetime
-                 :size (concatenate 
+                 :size (concatenate
                         'vector
                         (if (arrayp size) size (vector size size))
                         #(0.0e0))
@@ -350,7 +350,7 @@
                  :emitter emitter
                  :spawn-rate 0
                  :lifetime lifetime
-                 :size (concatenate 
+                 :size (concatenate
                         'vector
                         (if (arrayp size) size (vector size size))
                         #(0.0e0))
@@ -360,7 +360,7 @@
                  :max-particles max-particles
                  :particles (create-particle-array max-particles)
                  :force-fn
-                 (make-force-fn gravity grav-coeff 
+                 (make-force-fn gravity grav-coeff
                                 (if drag-coeff
                                   drag-coeff
                                   (/ 1 (if (consp lifetime)
@@ -368,7 +368,7 @@
                                              lifetime))))))
 
 (defun create-spark-ps (emitter max-particles
-                        &key 
+                        &key
                         (color +white+)
                         (texture *particle-tex*)
                         (lifetime 0.1)
@@ -385,20 +385,20 @@
                  :color color
                  :texture texture
                  :lifetime lifetime
-                 :size (concatenate 
+                 :size (concatenate
                         'vector
                         (if (arrayp size) size (vector size size))
                         #(0.0e0))
                  :max-particles max-particles
                  :spawn-rate (ceiling
-                              (/ max-particles 
+                              (/ max-particles
                                  (if (consp lifetime)
                                      (car lifetime)
                                      lifetime)))
                  :particles (create-particle-array max-particles)
                  :mode mode
                  :force-fn
-                 (make-force-fn gravity grav-coeff 
+                 (make-force-fn gravity grav-coeff
                                 (if drag-coeff
                                   drag-coeff
                                   (/ 1 (if (consp lifetime)
@@ -410,7 +410,7 @@
     (let ((pos (gen-initial-pos emitter dt))
           (vel (gen-initial-vel emitter dt))
           (fade (/ 1.0 (if (consp lifetime)
-                           (+ (car lifetime) 
+                           (+ (car lifetime)
                               (random (- (cdr lifetime) (car lifetime))))
                            lifetime))))
       (create-particle particles index
@@ -421,9 +421,9 @@
 
 (defmethod client-update ((this particle-system) dt)
   ;; Loop over each particle and update it's position
-  (with-slots (particles 
-               spawn-rate 
-               max-particles 
+  (with-slots (particles
+               spawn-rate
+               max-particles
                num-alive spawn-num
                lifetime
                force-fn
@@ -433,7 +433,7 @@
       (unless (eql mode-name :kill)
         (incf spawn-num (* dt spawn-rate))
         (iter (with emitted = 0)
-              (with max-emit = 
+              (with max-emit =
                     (if (eql mode-name :stop)
                         0.0
                         (ecase type
@@ -454,7 +454,7 @@
                     (gen-particle this index dt)
                     (incf emitted)))
 
-              ;; Finally, update the number of alive particles      
+              ;; Finally, update the number of alive particles
               (finally
                (decf spawn-num emitted)
                (setf num-alive (+ alive-cnt emitted))))))
@@ -497,7 +497,7 @@
         (when (eql (car (mode system)) :kill)
           (collect system into remove-lst))
         (finally
-         (setf *system-list* 
+         (setf *system-list*
                (remove-systems remove-lst *systems-list*)))))
 
 (defun render-particle-systems (dt)

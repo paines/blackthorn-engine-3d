@@ -27,7 +27,7 @@
 
 
 (defmethod update :before ((self entity-server))
-  ;; Perform quaternion interpolation 
+  ;; Perform quaternion interpolation
   (with-slots (up dir new-up) self
     (when new-up
      ;; makeh the quat
@@ -35,9 +35,9 @@
             (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
 
       (let* ((up-quat (quat-rotate-to-vec up new-up))
-             (rot-quat (quat-slerp +quat-identity+ up-quat 
+             (rot-quat (quat-slerp +quat-identity+ up-quat
                                    (if (is-jumping self) 5/120 10/120))))
-        (setf (up self) 
+        (setf (up self)
               (norm4 (quat-rotate-vec
                       rot-quat up))
               (dir self)
@@ -76,13 +76,13 @@
     (when (and (> (s-input-jump client) 0)
                (not (is-jumping p)))
       (setf (is-jumping p) t)
-      
+
       (if (eql (minor-mode (attached-cam p)) :free)
           (setf (velocity p) (vec-scale4 up .1))
           (setf (velocity p) (vec-scale4 (dir (attached-cam p)) .1)))
       ;;(setf (new-up p) (vec-neg4 (velocity p)))
       )
-      
+
     (when (and (> last-laser laser-delay)
                (> (s-input-attack client) 0))
       (setf last-laser 0.0)
@@ -105,9 +105,9 @@
                                         ;#+disabled
     (when (> (s-input-xbox-y client) 0)
       (quickhit p))
-    
+
     (try-die p)
-    
+
     ))
 
 (defun is-alive-p (thing)
@@ -122,12 +122,12 @@
     (when (not (is-alive-p player))
       (kill-entity c)
       (return-from update))
-    
+
     (setf (minor-mode c)
       (if (and (not (is-jumping player)) (> (s-input-camera-mode client) 0))
         :strafe
         :free))
-    
+
 
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (vec-scale4 (move-player c input-vec) 0.4))
@@ -165,13 +165,13 @@
       ;; Note: I use t-sector to avoid awkward behavior when the target
       ;; moves around a wall but the camera is in a different sector
       ;; not that this can't cause problems either..
-      (let ((movement-vec (car (collide-sector 
+      (let ((movement-vec (car (collide-sector
                                 c (velocity c) t-sector 1))))
         (blt3d-phy::move-camera c movement-vec))
 
       ;; do sector check for camera
       (collide-sector-portals c c-sector))))
-      
+
 
 
 
@@ -248,7 +248,7 @@
   (decf *client-count*)
   (sound-rem-client client)
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
-  
+
 (defun new-camera (player-entity)
     (make-server-entity
         'camera
@@ -298,14 +298,14 @@
       (send-all-entities new-client)
       (let* ((the-new-player (new-player new-client))
              (camera (new-camera the-new-player)))
-        
+
         (setf (attached-cam the-new-player) camera)
-        
+
         (add-to-sector the-new-player :start-sector)
         (add-to-sector camera :start-sector)
-        (push (make-camera-relative-player-mover new-client camera) 
+        (push (make-camera-relative-player-mover new-client camera)
               (displacers the-new-player))
-        
+
         (message-send :broadcast (make-event :entity-create))
         (send-camera new-client camera)
         (sound-add-client new-client))))
@@ -314,20 +314,20 @@
 (defun synchronize-clients ()
   (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-server src message))
-               
+
  (message-send :broadcast (make-event :entity-create))
  (message-send :broadcast (make-event :entity-update))
  (message-send :broadcast (make-event :entity-remove)))
-     
+
 (defun update-entities ()
   (iter (for thing in (list-entities))
-        (update thing)))       
-       
+        (update thing)))
+
 (defun combinations (input-list)
-  (iter outer (for x on input-list) 
-    (iter (for y in (rest x)) 
+  (iter outer (for x on input-list)
+    (iter (for y in (rest x))
       (in outer (collect (list (first x) y))))))
-      
+
 
 ;;;
 ;;; COLLISION STEP
@@ -341,14 +341,14 @@
   (when (crosses-portal-p obj p)
     ;; Update the sector of the entity
     (setf (current-sector obj) (sector-id (links-to-sector p)))))
-      
+
 
 (defvar *octree*)
 
 (defun construct-octree ()
   (let* ((min-max (blt3d-sec::find-min-max-sector))
 	 (center (vec-scale4 (vec4+ (aref min-max 0) (aref min-max 1)) 0.5))
-	 (width (/ (- (aref (aref min-max 1) 0) 
+	 (width (/ (- (aref (aref min-max 1) 0)
 				   (aref (aref min-max 0) 0)) 0.5))
 	 (depth 5)) ; depth 8 broke it
     (make-octree center width depth)))
@@ -390,10 +390,10 @@
 (defvar *level* nil)
 
 (defvar *server-frame-rate*)
-      
+
 (defun server-main (host port)
   (declare (ignore host))
-  
+
   (init-server)
 
   ;; Start the server, or print a message and quit if we can't use desired port
@@ -403,13 +403,13 @@
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
 
-  
-  
+
+
 ;  (setf *level* (load-level))
   ;(make-monster :start-sector (make-point3 20.0 0.0 0.0))
 
   (setf *server-frame-rate* 120)
-  
+
   (with-finalize-server ()
     (with-timer-loop (*server-frame-rate*)
       (next-frame)

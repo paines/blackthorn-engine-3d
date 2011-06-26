@@ -49,12 +49,12 @@
   (format t "Initializing Rendering Subsystem~%")
   (init-gfx)
 
-  (make-main-viewport (list *screen-width* *screen-height*))  
+  (make-main-viewport (list *screen-width* *screen-height*))
 
 
   (setf *main-light* (make-light 'light
                                  :position (make-point3 0.0 2.0 0.0)))
-  
+
   #+disabled
   (add-ui-element
    (setf *test-ui* (make-instance 'ui-gauge
@@ -73,7 +73,7 @@
   #+disabled
   (when (>= *gl-version* 3.0)
     (init-deferred-renderer))
-  
+
 
   (gl:enable :blend :rescale-normal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
@@ -98,12 +98,12 @@
   (format t "GL Version: ~a.~a~%GLSL Version: ~a.~a~%"
           (gl:major-version) (gl:minor-version)
           (gl:glsl-major-version) (gl:glsl-minor-version))
-  
+
 
                                         ; #+disabed
- 
+
   (gl:enable :texture-2d)
-  
+
   (set-viewport *main-viewport*)
   (gl:matrix-mode :modelview)
   (gl:load-identity)
@@ -121,7 +121,7 @@
 
 (defun update-graphics (entities time)
   (when *main-cam*
-    (setf home-sector (lookup-sector (current-sector *main-cam*)))  
+    (setf home-sector (lookup-sector (current-sector *main-cam*)))
     (setf *cam-view-matrix* (look-dir-matrix (pos *main-cam*)
                                              (dir *main-cam*)
                                              (up  *main-cam*)))
@@ -130,7 +130,7 @@
                         (dir *main-cam*)
                         (up *main-cam*)
                         +y-axis+))
-  
+
   (update-planes (view-frustum *main-viewport*)
                  *cam-view-matrix*)
 
@@ -141,8 +141,8 @@
 
   (when *laser-ps*
     (client-update *laser-ps* time))
-  
-                                        
+
+
   (when *test-skele*
     (update-model *test-skele* time))
   (when *beast*
@@ -170,13 +170,13 @@
   (gl:depth-func :lequal)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:cull-face :back)
-  
+
   (use-light *main-light* :light0)
-  
+
 ; (set-viewport *main-viewport*)
  ;#+disabled
   (when *main-cam*
-    (let ((depth-buffer (get-attachment 
+    (let ((depth-buffer (get-attachment
                           (view-fbo (light-viewport *main-light*))
                           :depth-attachment-ext)))
 

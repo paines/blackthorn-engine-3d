@@ -34,7 +34,7 @@
   (iter (for entity in entities)
         (format t "entity's sector: ~a~%" (current-sector entity))
         (use-model-on (shape-name entity) entity)
-        #+disabled (setf (blt3d-ani:state 
+        #+disabled (setf (blt3d-ani:state
                           (blt3d-rend:controller (shape entity))) :loop)))
 
 (defun handle-entity-update-client (src entities)
@@ -46,7 +46,7 @@
         ;(setf (current-sector entity) (lookup-sector (current-sector entity)))
         #+disabled
         (use-model-on (shape-name entity) entity)))
-        
+
 (defun handle-play-explosion (src name pos)
   (format t "Explosion ~a goes boom at ~a~%" name pos)
   (add-an-explosion pos))
@@ -160,7 +160,7 @@
 
 (defun client-main (host port)
   (set-connection-side :client)
-  
+
   (setup-paths)
   (load-dlls)
 
@@ -176,12 +176,12 @@
     (sdl:with-init ()
       (set-window *windowed-width* *windowed-height*
                   :fullscreen *window-fullscreen-p*)
-      
-      
+
+
       (blt3d-snd:init)
       (blt3d-rend:init)
       (init-client)
-      
+
       (blt3d-rend:prepare-scene)
 
       (format t "####################~%")
@@ -227,7 +227,7 @@
                        (input-attack *input*)
                        (input-fly-up *input*)
                        (input-fly-down *input*)
-                       
+
                        (input-use *input*)
                        (input-xbox-y *input*)
                        (input-alt-attack *input*)
@@ -235,7 +235,7 @@
 
 
          (blt3d-rend:update-graphics (list-entities) 1/60)
-         
+
          (blt3d-rend:render-frame (list-entities))
 
 

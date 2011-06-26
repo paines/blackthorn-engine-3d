@@ -16,9 +16,9 @@
 
 (in-package :blackthorn3d-physics)
 
-;; This is going to be our generic mesh object. It's what we load 
+;; This is going to be our generic mesh object. It's what we load
 ;; other formats into, and is converted by the graphics subsystem into
-;; appropriate objects for rendering.  
+;; appropriate objects for rendering.
 ;; It will need to have vertex and index information, as well as skinning,and
 ;; whatever else
 ;; I think I want to store the vertexes unified, if not interleaved.
@@ -98,15 +98,15 @@
               (for j-w in-vector j-weights)
               (collect
                (iter (for i below 4)
-                     (for pos initially +origin+ 
-                          then (vec4+ 
+                     (for pos initially +origin+
+                          then (vec4+
                                 pos
                                 (vec-scale4
                                  (matrix-multiply-v
                                   (aref joint-mats (aref j-i i))
                                   (vec3->point vertex))
                                  (aref j-w i))))
-                     (finally 
+                     (finally
                       (return pos))) result-type 'vector))))))
 
 
@@ -198,7 +198,7 @@
                    :bounding-volume bv)))
 
 (defmethod copy-node ((node model-node))
-  (with-slots (id transform material-array mesh child-nodes bounding-volume) 
+  (with-slots (id transform material-array mesh child-nodes bounding-volume)
       node
     (make-instance 'model-node
      :id id

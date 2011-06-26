@@ -78,7 +78,7 @@
 
 
    ;; texture.lisp
-   
+
    :+white+
    :+black+
    :+red+
@@ -86,7 +86,7 @@
    :+blue+
    :+orange+
    :+purple+
-   :+aqua+ 
+   :+aqua+
    :load-image
    :image->texture2d
    :create-texture
@@ -108,7 +108,7 @@
    ;; mesh.lisp
    :mesh
    :mesh-elements
-   
+
    ;; model.lisp
    :model-shape
    :load-obj->models
@@ -145,8 +145,8 @@
    :create-particle-system
    :create-explosion-ps
    :create-spark-ps
-   :point-emitter  
-   
+   :point-emitter
+
    ;; billboards.lisp
    :update-billboarder
    :draw-billboard-quad
@@ -169,6 +169,6 @@
    :render-ui
    :add-ui-element
    ))
-        
-        
-        
+
+
+

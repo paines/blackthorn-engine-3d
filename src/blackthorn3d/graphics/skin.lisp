@@ -36,21 +36,21 @@
 (defvar joint-mats-loc nil)
 
 ;; The formats meshes can use:
-;; Note that I would like to sometime write a macro that 
+;; Note that I would like to sometime write a macro that
 ;; will create component information, and maybe even
-;; accessors to make things nice and easy 
+;; accessors to make things nice and easy
 (gl:define-gl-array-format blt-vntiw-skin
   (gl:vertex :type :float :components (px py pz))
   (gl:normal :type :float :components (nx ny nz))
   (gl:tex-coord :type :float :components (u v))
-  (gl:vertex-attrib :type :float 
+  (gl:vertex-attrib :type :float
                     :index (get-attribute-loc skin-shader "jointIndices")
                     :components (i0 i1 i2 i3))
-  (gl:vertex-attrib :type :float 
+  (gl:vertex-attrib :type :float
                     :index (get-attribute-loc skin-shader "jointWeights")
                     :components (w0 w1 w2 w3)))
-(defparameter *blt-skin-components* '(px py pz 
-                                      nx ny nz 
+(defparameter *blt-skin-components* '(px py pz
+                                      nx ny nz
                                       u v
                                       i0 i1 i2 i3
                                       w0 w1 w2 w3))
@@ -122,25 +122,25 @@
       (gl:enable-client-state :vertex-array)
       (gl:enable-client-state :normal-array)
       (gl:enable-client-state :texture-coord-array)
-      (gl::enable-vertex-attrib-array 
+      (gl::enable-vertex-attrib-array
        (get-attribute-loc skin-shader "jointIndices"))
       (gl::enable-vertex-attrib-array
        (get-attribute-loc skin-shader "jointWeights")))
- 
+
 
     ;#+disabled
     (progn
-      (gl:with-pushed-matrix 
+      (gl:with-pushed-matrix
       ;    (gl:mult-matrix bind-shape-matrix)
-        (gl:uniform-matrix 
+        (gl:uniform-matrix
          (get-uniform-loc skin-shader "jointMats") 4
          (get-joint-matrices bind-skeleton) nil)
 
         (gl:bind-gl-vertex-array vert-data)
         (iter (for elt in elements)
-              (when (and (element-material elt) *material-array*) 
-                (use-material (aref *material-array* 
+              (when (and (element-material elt) *material-array*)
+                (use-material (aref *material-array*
                                     (car (element-material elt)))))
               (gl:draw-elements :triangles (element-indices elt)))
-          
+
         (disable-attributes skin-shader)))))

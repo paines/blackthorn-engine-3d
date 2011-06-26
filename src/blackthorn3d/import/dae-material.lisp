@@ -39,7 +39,7 @@
 (defun mat-prop-finder (attrib e)
   (aif (find-tag attrib (children e))
        (let ((value (first-child it)))
-         (cond 
+         (cond
            ((equal "color" (tag-name value))
             (string->sv (third value)))
            ((equal "float" (tag-name value))
@@ -47,25 +47,25 @@
            ((equal "texture" (tag-name value))
             ;; We'll just load it to texture here, I think.
             ;; save me some trouble
-            (merge-pathnames 
+            (merge-pathnames
              (pathname (get-filename
-                        (gethash 
+                        (gethash
                          (get-attribute "texture" (attributes value))
                          *param-table*)))
              +image-path+)
-            
+
             #+disabled
             (let ((filename ))
               (setf *epic-texture*
                     (image->texture2d
-                     (load-image (merge-pathnames 
+                     (load-image (merge-pathnames
                                   (pathname filename)
                                   +image-path+))))))
            (t nil)))))
 
 (defun load-param (param)
   (let ((child (first-child param)))
-    (cond 
+    (cond
       ((equal "surface" (tag-name child))
        ;; Texture, return the image name
        (format t "param val ~a~%" (third (first-child child)))
@@ -78,7 +78,7 @@
 (defun process-effect (effect-tag effect-table)
   ;; Find 'newparam's that contain texture data (this is annoyingly
   ;; similar to the way sources/inputs work)
-  
+
   (let ((profile-elem (find-tag-in-children "profile_COMMON" effect-tag))
         (*param-table* (make-id-table)))
 
@@ -98,8 +98,8 @@
            :textures
            (aif (find-tag "texture" (children effect-tag))
                 #+disabled(load-image (gethash
-                                       (get-attribute "texture" 
-                                                      (attributes it)) 
+                                       (get-attribute "texture"
+                                                      (attributes it))
                                        images-ht))
                 nil)))))
 
@@ -120,7 +120,7 @@
     (iter (for effect in (children effect-library))
           (when (consp effect)
             (process-effect effect effects-ht)))
-    
+
     ;; Finally the materials
     (iter (for material in (children mat-library))
           (when (consp material)

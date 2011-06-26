@@ -26,10 +26,10 @@
 (in-package :blackthorn3d-graphics)
 
 
-;; what is a viewport? 
+;; what is a viewport?
 ;;  - the size of the render target (/ screen)
 ;;  - the projection matrix / frustum (not sure which...)
-;;  - 
+;;  -
 (defclass viewport ()
   ((size
     :accessor view-size
@@ -111,13 +111,13 @@
                    :far far
                    :top-left (vector height (- width))
                    :bottom-right (vector (- height) width)
-                   :proj-matrix 
+                   :proj-matrix
                    (case type
-                     (:projection 
+                     (:projection
                       (make-projection (- width) width
                                        height (- height)
                                        near far))
-                     (:orthographic 
+                     (:orthographic
                       (make-orthographic (- width) width
                                          height (- height)
                                          near far))))))
@@ -128,7 +128,7 @@
 
 
 (defun calc-width (near fov)
-  (* near 
+  (* near
      (tan (/ fov 2))))
 
 (defmethod load-frstm ((this frustum))
@@ -157,7 +157,7 @@
 ;; Planes face 'outward'
 (defun get-plane (pmat plane)
   (labels ((plane-maker (row sign)
-             (make-plane (vec3+ (row pmat 3) 
+             (make-plane (vec3+ (row pmat 3)
                                 (vec-scale3 (row pmat row) sign))
                          (+ (aref pmat 3 3) (* sign (aref pmat 3 row))))))
     (case plane
@@ -186,7 +186,7 @@
 ;; we're missing the translation info from entity =(
 ;; but lets go with that...we can work out details at a higher leve
 ;; it makes more sense than anything else i can think of
-;; 
+;;
 ;; Really I need some sort of real scene-management heirarchy
 ;;   entity
 ;;    -> blt-model
@@ -218,7 +218,7 @@
 (defun cull-frustum (frstm view-matrix objects)
   (with-slots ((P proj-matrix)) frstm
     (let* ((M (matrix-multiply-m P view-matrix))
-           (planes (iter (for i in +planes+) 
+           (planes (iter (for i in +planes+)
                          (collect (get-plane M i)))))
       )))
 
@@ -229,7 +229,7 @@
           (when (> dist rad)
             (return-from frustum-planes-intersect-test :outside))
           (maximizing dist into max-dist)
-          (finally 
-           (if (< max-dist (- rad)) 
+          (finally
+           (if (< max-dist (- rad))
                (return :inside)
                (return :intersect))))))

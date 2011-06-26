@@ -23,13 +23,13 @@
   "@return{true if val is [lower upper)}"
   (and (< val upper)
        (>= val lower)))
-       
+
 (defun deg->rad (x)
   (* x (/ pi 180)))
 
 (defun quadratic (a b c max)
-  (when (zerop a) 
-    (if (zerop b) 
+  (when (zerop a)
+    (if (zerop b)
         (return-from quadratic nil)
         (let ((res (/ (- c) b)))
           (return-from quadratic

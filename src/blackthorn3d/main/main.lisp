@@ -77,7 +77,7 @@
 
 (defun main (&key (exit-when-done t))
   "Main entry point for the game. Deals with initialization, finalization, and the main game loop."
-  
+
   ;; switch to server mode, or else continue based on command line args
   (let ((modes (cli-get-mode)))
     (when (eql (first modes) :server)
@@ -108,13 +108,13 @@
     ;; Main loop:
     (let ((input-queue (make-instance 'containers:basic-queue))
           (box-entity (make-server-entity
-                       'entity-server 
+                       'entity-server
                        :pos (make-point3 0.0 0.0 0.0)
-                       :dir (make-vec3 1.0 0.0 0.0) 
+                       :dir (make-vec3 1.0 0.0 0.0)
                        :up  (make-vec3 0.0 1.0 0.0)
-                       :shape 
+                       :shape
                        (blt3d-imp:dae-geometry
-                        (blt3d-imp:load-dae 
+                        (blt3d-imp:load-dae
                          #p"res/models/orange-box2.dae")))))
 
       ;;(camera-orbit! cam 0.0 -0.2 5.0)
@@ -141,8 +141,8 @@
                    (axis-rad->quat (make-vec3 0.0 1.0 0.0)
                                    (deg->rad (* 2.7 rot-amt)))
                    (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)))
-            (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
-                  (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*) 
+            (setf (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*)
+                  (vec4+ (blt3d-gfx:cam-pos blt3d-gfx:*main-cam*)
                          (vec-scale4
                           (blt3d-gfx:cam-dir blt3d-gfx:*main-cam*)
                           step-amt))))
@@ -157,7 +157,7 @@
 
           #+disabled
           (let ((x (* 2 (abs (xbox360_get_lx 0))))
-                (y (* 2 (abs (xbox360_get_ly 0))))) 
+                (y (* 2 (abs (xbox360_get_ly 0)))))
             (xbox360-vibrate 0 x y))
 
           ;; Rotate the camera around the target each frame

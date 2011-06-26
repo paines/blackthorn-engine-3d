@@ -28,7 +28,7 @@
 (defvar *default-count* 0)
 
 (defclass portal (entity-server)
-  ((id 
+  ((id
     :accessor portal-id
     :initarg :id)
    (direction
@@ -47,7 +47,7 @@
     :accessor links-to-portal
     :initform nil
     :initarg  :links-to-portal)))
-        
+
 ;(defun make-portal (level-name portal-name portal-model-name)
 ;    (let ((portal-model (find-portal-model level-name portal-model-name)))
 ;        (make-entity-server 'portal
@@ -81,14 +81,14 @@
 ;;; Portal Collision
 ;;;
 
-;; Returns true if an entity (assumed to have already intersected 
+;; Returns true if an entity (assumed to have already intersected
 ;; the bv) has crossed the portal
 (defmethod crosses-portal-p ((sph bounding-sphere) (p portal))
   (let ((p-plane (point-normal->plane (pos p) (dir p))))
     (plusp (plane-dist p-plane (pos sph)))))
 
 (defmethod crosses-portal-p ((obj entity-server) (p portal))
-  (crosses-portal-p 
+  (crosses-portal-p
    (move-bounding-volume (bounding-volume obj) (pos obj))
    p))
 
@@ -102,8 +102,8 @@
     (let ((moved-sphere (move-bounding-volume
                          sphere
                          (quat-rotate-vec
-                          (quat-rotate-to-vec 
-                           dir 
+                          (quat-rotate-to-vec
+                           dir
                            (vec-neg4 +z-axis+))
                           (vec-neg4 pos)))))
 
@@ -120,13 +120,13 @@
         (let* ((rot-quat (quat-rotate-to-vec
                           dir (vec-neg4 +z-axis+)))
                (x-ray (make-ray
-                       (quat-rotate-vec 
-                        rot-quat 
+                       (quat-rotate-vec
+                        rot-quat
                         (vec4- (ray-e ray) pos))
                        (quat-rotate-vec
                         rot-quat
                         (ray-d ray))))
-               (res (ray-aabb-intersection x-ray 
+               (res (ray-aabb-intersection x-ray
                                            bounding-volume
                                            most-positive-single-float)))
           res)))))

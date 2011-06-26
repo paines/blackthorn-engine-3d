@@ -46,18 +46,18 @@
 (defmethod update ((a alarm))
   (let* ((now (get-real-time))
          (elapsed (- now (then a))))
-   
+
     (when (> elapsed 0)
       (setf (then a) now)
-      (setf (time-left a) 
+      (setf (time-left a)
             (- (time-left a) elapsed)))
-              
+
     (when (< (time-left a) 0)
       (if (not (eq (callback a) nil))
           (funcall (callback a)))
       (setf (callback a) nil)
       (remove-entity a))))
-       
+
 (defclass cyclic-alarm (entity-server)
   ((alarm
     :accessor alarm

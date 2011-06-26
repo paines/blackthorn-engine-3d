@@ -48,17 +48,17 @@
 ;;;
 
 (defclass source ()
-  ((id 
+  ((id
     :accessor src-id
     :initarg :id)
-   (array 
+   (array
     :accessor src-array
     :initarg :array)
-   (stride 
+   (stride
     :accessor src-stride
     :initarg :stride
     :initform 1)
-   (components 
+   (components
     :accessor src-components
     :initarg :components)))
 
@@ -103,13 +103,13 @@
 (defun make-accessor (accessor-lst array)
   "Returns a function that takes an index and returns a vector containing
    the data for that index"
-  (let ((stride (parse-integer 
+  (let ((stride (parse-integer
                  (get-attribute "stride" (attributes accessor-lst)))))
     #'(lambda (index)
         (subseq array (* index stride) (+ (* index stride) stride)))))
 
 (defun make-components (accessor-lst)
-  (mapcar #'(lambda (child) 
+  (mapcar #'(lambda (child)
               (get-attribute "name" (attributes child)))
           (children-with-tag "param" accessor-lst)))
 
@@ -121,7 +121,7 @@
 (defun make-source (src-lst)
   (let ((accessor-lst (find-tag +accessor+ (children src-lst)))
         (array (string->sv (car (children (first-child src-lst))))))
-    (make-instance 'source 
+    (make-instance 'source
                    :id (get-attribute "id" (attributes src-lst))
                    :array array
                    :stride (get-stride accessor-lst)
@@ -136,7 +136,7 @@
             (setf (gethash (src-id src) src-table) src)))
     src-table))
 
-;; Input related 
+;; Input related
 ;; (can be used for primitive blocks or any other block
 ;;  that uses the input-source model)
 
@@ -147,7 +147,7 @@
   (iter (for input in (children-with-tag "input" prim-lst))
         (let ((attribs (attributes input)))
           (collect (list (intern (get-attribute "semantic" attribs) "KEYWORD")
-                         (input->source (uri-indirect 
+                         (input->source (uri-indirect
                                          (get-attribute "source" attribs))
                                         sources)
                          (aif (get-attribute "offset" attribs)
@@ -172,10 +172,10 @@
 
 ;; Returns a list of (fn . array) where calling fn with an index modifies array
 ;; fn is designed to take in index to a source and add the corresponding value
-;; to array. 
+;; to array.
 (defun get-source-functions (sources)
   (iter (for src in sources)
-        (collect 
+        (collect
          (let* ((source (second src))
                 (attrib-len (/ (length (src-array source))
                                (length (src-components source))))
@@ -190,7 +190,7 @@
 
 
 (defun duplicate-indices (elements index times)
-  "updates the indices in elements to have index # index 
+  "updates the indices in elements to have index # index
    repeated times number of times at the end of the index list"
   (iter (for elt in elements)
         (let* ((indices (element-indices elt))
@@ -208,14 +208,14 @@
           (print (subseq new-indices 0 100))
           (setf (element-indices elt) new-indices)
           #+disabled
-          (setf 
+          (setf
            (element-indices elt)
-           (apply 
+           (apply
             #'vector
-            (apply 
+            (apply
              #'append
              (iter (for i below (length indices) by stride)
-                   (collect 
+                   (collect
                        (let ((base (iter (for k from i below (+ i stride))
                                          (collect (svref indices k)))))
                          (append base
@@ -233,16 +233,16 @@
         (src-fns (get-source-functions inputs))
         (vertex-ht (make-hash-table :test #'equalp)))
     (format t "lenght of ")
-    (list 
+    (list
      ;; ELEMENTS
-     (iter 
+     (iter
       (with curr-index = 0)
       (for elt in elements)
       (let* ((indices (element-indices elt))
              (n-verts (/ (length indices) stride))
              (new-indices (make-array n-verts :fill-pointer 0)))
-        
-        ;; for each index in this element, build the array of unified 
+
+        ;; for each index in this element, build the array of unified
         ;; vertex streams
         (iter (for i below (length indices) by stride)
               (let ((vertex (subseq indices i (+ i stride))))
@@ -265,7 +265,7 @@
      ;; VERTEX-STREAMS
      (iter (for (semantic source) in inputs)
            (for fn in src-fns)
-           (collect 
+           (collect
             (make-instance 'vertex-stream
                            :semantic semantic
                            :stream (second fn)

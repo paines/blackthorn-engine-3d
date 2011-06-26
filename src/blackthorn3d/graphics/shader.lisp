@@ -44,14 +44,14 @@
     :reader attributes
     :initarg :attributes)))
 
-(defun make-shader (vert frag &key uniforms attributes) 
+(defun make-shader (vert frag &key uniforms attributes)
   "@arg[vert]{string of vert shader}
    @arg[frag]{string of frag shader}
    @return{the shader program}"
   (let ((vs (gl:create-shader :vertex-shader))
         (fs (gl:create-shader :fragment-shader))
         (shader (gl:create-program)))
-                         
+
     (gl:shader-source vs vert)
     (gl:compile-shader vs)
     (gl:shader-source fs frag)
@@ -66,13 +66,13 @@
 
     (make-instance 'shader
                    :program shader
-                   :uniforms 
+                   :uniforms
                    (iter (for u in uniforms)
-                         (collect 
+                         (collect
                           (cons u
                                 (gl:get-uniform-location
                                  shader u))))
-                   :attributes 
+                   :attributes
                    (iter (for a in attributes)
                          (collect
                           (cons a
@@ -101,10 +101,10 @@
 (defun get-uniform-loc (shader uniform)
   (cdr (assoc uniform (uniforms shader) :test #'equal)))
 
-(defun enable-shader (shader) 
+(defun enable-shader (shader)
   (setf *shader* shader)
   (gl:use-program (program shader)))
 
-(defun disable-shader () 
+(defun disable-shader ()
   (setf *shader* nil)
   (gl:use-program 0))

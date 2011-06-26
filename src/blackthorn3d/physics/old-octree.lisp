@@ -28,7 +28,7 @@
 
 
 ;;; @Michael: this can all be rewritten, i was mostly playing around
-;;; with it, but it was headed for a strict octree. 
+;;; with it, but it was headed for a strict octree.
 
 ;;;
 ;;; Spatial trees.
@@ -68,8 +68,8 @@
          (min-pt ())
          (max-pt ())
          (min-pt-classification (classify-pt min-pt)))
-    ;; Test if the object spans multiple boxes. 
-    ;;  in this case we return 0 
+    ;; Test if the object spans multiple boxes.
+    ;;  in this case we return 0
     ;;  otherwise return the cell it was in
     (if (= min-pt-classification (classify-pt max-pt))
          min-pt-classification
@@ -77,7 +77,7 @@
 
 (defmacro grid-center-offset (id bounds)
   (with-gensyms (center radius)
-    (let ((arr 
+    (let ((arr
            #(#(-0.5 -0.5 -0.5)
              #( 0.5 -0.5 -0.5)
              #(-0.5  0.5 -0.5)
@@ -92,7 +92,7 @@
 ;; structure of an octree node is:
 ;; (objs bounds children)
 ;; where children is: #(c0 c1 c2 c3 c4 c5 c6 c7)
-(defun build-octree (objs bounds current-depth 
+(defun build-octree (objs bounds current-depth
                      threshold maximum-depth growth-k)
   (labels ((select-by-child (obj-lst child-no)
              (iter (for obj in obj-lst)
@@ -102,17 +102,17 @@
 
       ;; Test if we should end recursion here. If so, then make a leaf
       ;; Otherwise we split the objects up into 9 sequences
-      (if (or (<= n-objs threshold) 
+      (if (or (<= n-objs threshold)
               (>= current-depth maximum-depth))
           (make-octree-leaf objs)
 
-          (progn          
-            (let ((classified-objs 
+          (progn
+            (let ((classified-objs
                    (iter (for object in objs)
-                         (collect 
-                             (cons (classify-obj object (car bounds)) 
+                         (collect
+                             (cons (classify-obj object (car bounds))
                                    object)))))
-              (list 
+              (list
                ;; Gather the objects (if any) that belong in this cell
                (select-by-child classified-objs +current-cell+)
 

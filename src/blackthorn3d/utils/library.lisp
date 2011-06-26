@@ -82,7 +82,7 @@
     (cffi:define-foreign-library xbox360
       (:windows "xbox360.dll"))
 	(cffi:use-foreign-library xbox360))
-  
+
 (defun load-dlls ()
   "Loads dlls needed to run SDL, SDL_image, and SDL_gfx."
   (load-sdl-dlls)

@@ -119,7 +119,7 @@
 	(minimizing (x i) into min-x)
 	(minimizing (y i) into min-y)
 	(minimizing (z i) into min-z)
-	(finally (return (vector (make-point3 min-x min-y min-z) 
+	(finally (return (vector (make-point3 min-x min-y min-z)
 				 (make-point3 max-x max-y max-z))))))
 
 ;; for triangles only!!! even though it allows all simple vectors
@@ -135,12 +135,12 @@
 
 (defun find-min-max-points (vec-array)
   (let ((mins (iter (for i below 3)
-                    (collect 
+                    (collect
                      (make-point3 most-positive-single-float
                                   most-positive-single-float
                                   most-positive-single-float))))
         (maxes (iter (for i below 3)
-                     (collect 
+                     (collect
                       (make-point3 most-negative-single-float
                                    most-negative-single-float
                                    most-negative-single-float)))))
@@ -158,7 +158,7 @@
   ;; tighter spheres this way, but not super good...
   ;; now maybe even better
   (when vect-array
-    (let 
+    (let
         ((bv1
           (let* ((pairs (find-min-max-points vect-array))
                  (axis (iter (with max-dist = 0.0)
@@ -171,7 +171,7 @@
                  (pair (elt pairs axis))
                  (pos (mid-point (car pair) (cdr pair)))
                  (radius (* 0.5 (pt-dist (car pair) (cdr pair)))))
-             
+
             ;; Now iterate over ever vertices and check if it's outside
             ;; the sphere.  If it is, expand the sphere
             (labels ((sphere-contains (c r2 pt)
@@ -182,9 +182,9 @@
                     (unless (sphere-contains pos radius v)
                       (let ((dist (pt-dist v pos))
                             (dir (norm3 (vec3- v pos))))
-                        (setf pos 
-                              (vec3+ 
-                               pos 
+                        (setf pos
+                              (vec3+
+                               pos
                                (vec-scale3 dir (* 0.5 (- dist radius)))))
                         (setf radius
                               (* 0.5 (+ dist radius))))))
@@ -195,14 +195,14 @@
                        (sum (x v) into sumx)
                        (sum (y v) into sumy)
                        (sum (z v) into sumz)
-                       (finally 
-                        (return (vec-scale4 (make-point3 sumx sumy sumz) 
+                       (finally
+                        (return (vec-scale4 (make-point3 sumx sumy sumz)
                                             (/ 1 (length vect-array))))))))
             (iter (for v in-vector vect-array)
-                  (for sq-radius 
+                  (for sq-radius
                        initially 0.0
                        then (max sq-radius (sq-mag (vec3- v mean-point))))
-                  (finally 
+                  (finally
                    (return (list (sqrt sq-radius) mean-point)))))))
 
       ;; return the one with the smallest radius -> smallest surface area
@@ -237,8 +237,8 @@
              (r (/ (+ (mag t-vec) r1 r2)
                    2.0)))
         (make-instance 'bounding-sphere
-                       :pos (vec4+ (pos sph1) 
-                                   (vec-scale4 t-vec (/ (rad sph2) 
+                       :pos (vec4+ (pos sph1)
+                                   (vec-scale4 t-vec (/ (rad sph2)
                                                         (rad sph1))))
                        :rad r)))))
 
@@ -248,16 +248,16 @@
   (when list-bv
     (let ((mid-point (iter (for bv in list-bv)
                            (with-slots (pos) bv
-                             (reducing pos by #'vec4+ into sum-vec 
+                             (reducing pos by #'vec4+ into sum-vec
                                        initial-value +origin+))
-                           (finally 
-                            (return (vec-scale4 sum-vec 
+                           (finally
+                            (return (vec-scale4 sum-vec
                                                 (/ 1 (length list-bv))))))))
       (iter (for bv in list-bv)
             (with-slots (pos rad) bv
-              (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad)) 
+              (maximizing (+ (sq-mag (vec4- pos mid-point)) (* rad rad))
                           into radius))
-            (finally (return (make-instance 
+            (finally (return (make-instance
                               'bounding-sphere
                               :pos mid-point
                               :rad radius)))))))
@@ -266,8 +266,8 @@
   (with-slots (rad pos) this
     (make-instance 'bounding-sphere
                    :pos (matrix-multiply-v xform pos)
-                   :rad 
-                   (mag (matrix-multiply-v 
+                   :rad
+                   (mag (matrix-multiply-v
                          xform
                          (make-vec3 rad 0.0 0.0))))))
 

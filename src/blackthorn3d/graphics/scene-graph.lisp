@@ -29,7 +29,7 @@
 ;;; Scene graph/tree
 ;;;
 ;;;  a simple implementation of a list-based tree with some utility
-;;;  functions. 
+;;;  functions.
 ;;; Structure of a node:
 ;;;  (WORLD-MATRIX OBJECT LEFT-CHILD RIGHT-CHILD)
 ;;;  WORLD-MATRIX - the matrix used to transform local coordinates
@@ -54,10 +54,10 @@
 (defun scene-dfs (node fn &key (order :pre))
   (when node
     (case order
-      (:pre 
-       (funcall fn node) 
+      (:pre
+       (funcall fn node)
        (iter (for c in (node-children node)) (scene-dfs c fn :order order)))
-      (:post 
+      (:post
        (iter (for c in (node-children node)) (scene-dfs c fn :order order))
        (funcall fn node)))))
 #+disabled

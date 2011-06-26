@@ -67,8 +67,8 @@
    ; (format t "~%SPLIT_LOC: ~A~%" (split-loc loc 0))
     (aif (gethash (car (split-loc loc 0)) nodes)
          it
-         (progn 
-           (format t "WARNING: found no mapping for ~a~%" 
+         (progn
+           (format t "WARNING: found no mapping for ~a~%"
                    (car (split-loc loc 0)))
            #'(lambda (val))))
    ; (format t "~2Tlocation: ~a~%" loc)
@@ -77,7 +77,7 @@
       (let ((node (node-finder node-id nodes)))
         (format t "~4TBinding ~a~%" node-id )
         ;; Set up the function, and stuff
-        #'(lambda (val) (setf (slot-value node 'transform) 
+        #'(lambda (val) (setf (slot-value node 'transform)
                               (transpose (reshape val '(4 4)))))))))
 
 (defun build-material-array (elements materials)
@@ -85,13 +85,13 @@
    matching blt-material objects to the index of the element"
   (iter (for elt in elements)
         (let ((mat-id (element-material elt)))
-          (collect (aif (find (cdr mat-id) 
+          (collect (aif (find (cdr mat-id)
                               materials :test #'equal :key #'car)
                         (gethash (second it) *material-table*)
                         nil) result-type 'vector))))
 
 (defun geometry-type (id)
-  (cond 
+  (cond
     ((string-equal "_portal" (subseq id 0 (min (length id) 7)))
      :portal)
     (t :mesh)))
@@ -99,7 +99,7 @@
 (defun compile-portal (data)
   (destructuring-bind (name geom-id) data
     (let* ((mesh-lst (gethash geom-id *geometry-table*))
-           (vertex-source (input-by-semantic 
+           (vertex-source (input-by-semantic
                            :vertex
                            (third mesh-lst)))
            (vertices
@@ -112,7 +112,7 @@
 (defun compile-geometry (data)
   (destructuring-bind (mesh-id materials) data
     ;; Check on mesh-id.  portals need to be separated out
-    
+
     (let* ((mesh (mesh-list->blt-mesh (gethash mesh-id *geometry-table*)))
            (mat-array (build-material-array (elements mesh) materials)))
       (list mesh mat-array))))
@@ -127,7 +127,7 @@
                     (joint-obj (find joint-id
                                      joint-arr
                                      :key #'joint-id)))
-       
+
                ;; set initial local matrix
                (setf (joint-matrix joint-obj) (node-xform root-node))
                (setf (id joint-obj) joint-name)
@@ -148,7 +148,7 @@
 
 (defun compile-controller (data)
   (dae-debug "compiling a controller~%")
-  (labels ((find-root-node (nodes sid) 
+  (labels ((find-root-node (nodes sid)
              (when nodes
                (iter (for n in nodes)
                      (with-slots (id children) n
@@ -175,9 +175,9 @@
             (format t "Weights: ~a~%" (iter (for i below 60)
                                             (collect (src-accessor weights i)))))
           (format t "looking for node: ~a~%" root-node)
-          (let* ((mesh (mesh-list->blt-mesh 
+          (let* ((mesh (mesh-list->blt-mesh
                         #+disabled(list geom-id elements inputs)
-                        (list geom-id 
+                        (list geom-id
                               elements
                            ;   (duplicate-indices elements 0 2)
                               (append inputs skin-inputs))))
@@ -191,7 +191,7 @@
               (dae-debug "Vertices:~%")
               (iter (for elt in-vector (subseq (get-stream :vertex mesh) 0 10))
                     (dae-debug "~a  ~%" elt))
-              
+
               (apply-transform mesh bind-pose)
 
               (list
@@ -206,7 +206,7 @@
   ;; Convert mesh-lst into a blt-mesh
   (with-slots (id type xform extra children) node
     ;; recurse on children
-    (let* ((node-children 
+    (let* ((node-children
             (iter (for child-node in children)
                   (collect (compile-node child-node
                                          geometry-table
@@ -214,13 +214,13 @@
            (new-node
              (case type
                (:platform
-                (destructuring-bind (mesh materials) 
+                (destructuring-bind (mesh materials)
                     (compile-geometry extra)
-                  (push (list 
+                  (push (list
                          id (make-model-node :id id
-                                             :transform 
-                                             (matrix-multiply-m 
-                                              +3dsmax-convert+ 
+                                             :transform
+                                             (matrix-multiply-m
+                                              +3dsmax-convert+
                                               xform)
                                              :material-array materials
                                              :mesh mesh
@@ -235,33 +235,33 @@
                                (matrix-multiply-v xform +origin+)))
                          (dir (to-vec4 (norm4 pos))))
                     (format t "adding portal ~a~%" name)
-                    (push (list name pos dir 
+                    (push (list name pos dir
                                 (transform-bounding-volume
                                  bounding-volume
-                                 +3dsmax-convert+)) 
+                                 +3dsmax-convert+))
                           *portal-list*)
                     ;; don't make a node for the portal??
                     nil)))
-               (:geometry 
-                (destructuring-bind (mesh materials) 
+               (:geometry
+                (destructuring-bind (mesh materials)
                     (compile-geometry extra)
                   (make-model-node :id id
                                    :transform xform
                                    :material-array materials
                                    :mesh mesh
                                    :child-nodes node-children)))
-               (:controller 
-                (destructuring-bind (skin materials) 
+               (:controller
+                (destructuring-bind (skin materials)
                     (compile-controller extra)
                   (make-model-node :id id
                                    :transform xform
                                    :material-array materials
                                    :mesh skin
-                                   :child-nodes 
-                                   ;; add the skeleton root node 
+                                   :child-nodes
+                                   ;; add the skeleton root node
                                    ;; so we can do things with the joints
                                    ;; later (in the application)
-                                   (cons (root-joint (bind-skeleton skin)) 
+                                   (cons (root-joint (bind-skeleton skin))
                                          node-children))))
                (:parent
                 (if (find-if-not #'null node-children)
@@ -290,22 +290,22 @@
 ;; and compiling it to a dae-object
 (defun compile-dae-data (&key geometry scenes materials animations)
   (let* ((*xform-mappings* (make-id-table))
-         (meshes 
-          (remove-if 
-           #'null 
+         (meshes
+          (remove-if
+           #'null
            (iter (for node in scenes)
                  (collect (compile-node node geometry materials)))))
-         (anims     
+         (anims
           ;; Need to update the animation clips with the proper target fn
-          
+
           (if animations
               (progn
                 ;; create the animation channel-bindings
                 (iter (for (anim-id channel-list) in-hashtable animations)
                       (collect
                        (iter (for channel in channel-list)
-                             (collect (make-binding 
-                                       channel 
+                             (collect (make-binding
+                                       channel
                                        (get-location-fn (ch-target channel)
                                                         *xform-mappings*))))))
 
@@ -313,28 +313,28 @@
                 (iter (for (anim-id clip) in-hashtable animations)
                       (format t "~5Tclip: ~a~%" anim-id)
                       (iter (for ch in (channel-lst clip))
-                            (setf (slot-value ch 'ch-target) 
-                                  (get-location-fn (slot-value ch 'ch-target) 
+                            (setf (slot-value ch 'ch-target)
+                                  (get-location-fn (slot-value ch 'ch-target)
                                                    *xform-mappings*)))
                       (collect clip)))
               (format t "NO ANIMATIONS~%"))))
-    
+
 
     (iter (for node in meshes)
           (format t "Node ~a:  transform: ~a  bv: ~a~%"
                   (id node) (transform node) (node-bounding-volume node)))
- 
+
     (format t "Nodes: ~a~%" meshes)
 
     (format t "~%~%ANIM-MAPPINGS:~%")
     (iter (for (key value) in-hashtable *xform-mappings*)
           (format t "key: ~a~%" key))
 
-   
-    (make-instance 
+
+    (make-instance
      'blt-model
      :nodes meshes
-     :animations (when anims 
+     :animations (when anims
                    (make-anim-controller (car anims))))))
 
 
@@ -344,23 +344,23 @@
   "Loads the objects from a dae file"
   (dae-debug "~%LOADING DAE FILE ~a~%" filename)
   (let ((dae-file (cxml:parse-file filename
-                   #+disabled(blt3d-res:resolve-resource filename) 
+                   #+disabled(blt3d-res:resolve-resource filename)
                                    (cxml-xmls:make-xmls-builder))))
-    
+
     (let ((*portal-list* ())
-          (*material-table* 
+          (*material-table*
            (process-materials
             (find-tag-in-children +material-library+ dae-file)
             (find-tag-in-children +image-library+ dae-file)
             (find-tag-in-children +effect-library+ dae-file)))
-          (*geometry-table* 
-           (process-geometry 
+          (*geometry-table*
+           (process-geometry
             (find-tag-in-children +geometry-library+ dae-file)))
           (*controller-table*
            (process-controllers
             (find-tag-in-children +controller-library+ dae-file)))
-          (*scene-table*    
-           (process-scene 
+          (*scene-table*
+           (process-scene
             (find-tag-in-children +scene-library+ dae-file)))
           (*animation-table*
            (process-animations

@@ -48,8 +48,8 @@
       (let ((depth (first (gl:gen-renderbuffers-ext 1))))
         (bind-framebuffer fb)
         (gl:bind-renderbuffer-ext :renderbuffer-ext depth)
-        (gl:renderbuffer-storage-ext 
-         :renderbuffer-ext :depth-component32 
+        (gl:renderbuffer-storage-ext
+         :renderbuffer-ext :depth-component32
          960 720)
 
         (gl:framebuffer-renderbuffer-ext :framebuffer-ext
@@ -74,7 +74,7 @@
 (defun attach-texture (fbo attach-point texture)
   (with-framebuffer fbo
     (gl:framebuffer-texture-2d-ext
-     :framebuffer-ext attach-point 
+     :framebuffer-ext attach-point
      :texture-2d texture 0))
   (case attach-point
     (:depth-attachment-ext
@@ -90,8 +90,8 @@
      (second (find attach-point (attachments fbo) :key #'car)))))
 
 (defun check-framebuffer-status ()
-  (gl::enum= 
-   (gl:check-framebuffer-status-ext :framebuffer-ext) 
+  (gl::enum=
+   (gl:check-framebuffer-status-ext :framebuffer-ext)
    :framebuffer-complete-ext))
 
 (defun create-shadow-framebuffer (width height)
@@ -105,7 +105,7 @@
 
     (gl:active-texture :texture3)
     (gl:enable :texture-2d )
-    (let ((depth-texture 
+    (let ((depth-texture
            (create-texture width height :depth-component
                            :min-filter :nearest
                            :mag-filter :nearest
@@ -116,8 +116,8 @@
       (gl:tex-parameter :texture-2d
                         :depth-texture-mode
                         :intensity)
-      (gl:tex-parameter :texture-2d 
-                        :texture-compare-mode 
+      (gl:tex-parameter :texture-2d
+                        :texture-compare-mode
                         :compare-r-to-texture)
       (gl:tex-parameter :texture-2d
                         :texture-compare-func
@@ -128,6 +128,6 @@
 
       (attach-texture framebuffer :depth-attachment-ext depth-texture)
       (attach-texture framebuffer :color-attachment0-ext color-texture)
-      
+
       (gl:bind-framebuffer-ext :framebuffer-ext 0)
       framebuffer)))

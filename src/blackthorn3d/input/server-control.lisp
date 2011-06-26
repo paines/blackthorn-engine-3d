@@ -58,7 +58,7 @@
         :initform 0)
       (fly-down
         :accessor fly-down
-        :initform 0)  
+        :initform 0)
       (use
         :accessor use
         :initform 0)
@@ -70,19 +70,19 @@
         :initform 0)
       )
       (:documentation "Represents state of a client's controller"))
-      
+
 (defun new-server-controller (client)
     (let ((sc (make-instance 'server-controller)))
         (setf (getf *client-controllers* client) sc)))
-        
+
 (defun remove-server-controller (client)
     (remf *client-controllers* client))
-        
+
 (flet ((with-controller (client-id f)
     (let ((controller (getf *client-controllers* client-id)))
       (if (eq controller nil) 0
           (funcall f controller)))))
-    
+
     (defun s-input-move-x (client-id)
       (with-controller client-id #'move-x))
     (defun s-input-move-y (client-id)
@@ -101,12 +101,12 @@
       (with-controller client-id #'fly-up))
     (defun s-input-fly-down (client-id)
       (with-controller client-id #'fly-down))
-      
+
     (defun s-input-use (client-id)
       (with-controller client-id #'use))
     (defun s-input-xbox-y (client-id)
-      (with-controller client-id #'xbox-y))      
+      (with-controller client-id #'xbox-y))
     (defun s-input-alt-attack (client-id)
       (with-controller client-id #'alt-attack))
 )
-      
+

@@ -27,8 +27,8 @@
 (in-package :blackthorn3d-main)
 
 (defun init-server ()
-  (register-model-loader :dae 
-                         #'(lambda (path) 
+  (register-model-loader :dae
+                         #'(lambda (path)
                              (blt3d-imp:dae-geometry
                               (blt3d-imp:load-dae path))))
   (register-model-loader :level
@@ -43,8 +43,8 @@
                                level)))
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
-  (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis 
+  (blt3d-phy:apply-transform (get-model :wedge)
+                             (make-inv-ortho-basis
                               (make-point3 0.0 0.0 1.0)
                               (make-point3 0.0 1.0 0.0)
                               (make-point3 -1.0 0.0 0.0)))
@@ -59,10 +59,10 @@
                               (make-instance 'blt3d-phy:blt-model
                                              :mesh-nodes platform))))
 
-  (register-model-loader 
+  (register-model-loader
    :dae
-   #'(lambda (path) 
-       (blt3d-gfx:load-obj->models 
+   #'(lambda (path)
+       (blt3d-gfx:load-obj->models
         (blt3d-imp:dae-geometry (blt3d-imp:load-dae path)))))
 
   (register-model-loader
@@ -76,11 +76,11 @@
           (blt3d-imp:dae-geometry level)
           (make-translate #(0.0 -15.0 0.0 1.0)))
          level)))
-  
+
   (load-models-n-stuff)
   (blt3d-phy:apply-transform (get-model :wedge) (make-scale #(0.01 0.01 0.01)))
-  (blt3d-phy:apply-transform (get-model :wedge) 
-                             (make-inv-ortho-basis 
+  (blt3d-phy:apply-transform (get-model :wedge)
+                             (make-inv-ortho-basis
                               (make-point3 0.0 0.0 -1.0)
                               (make-point3 0.0 1.0 0.0)
                               (make-point3 1.0 0.0 0.0)))

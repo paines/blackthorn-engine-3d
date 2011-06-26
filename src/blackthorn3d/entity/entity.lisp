@@ -99,7 +99,7 @@
     :accessor team
     :initform nil
     :initarg :team)))
-    
+
 
 (defclass entity-client (entity)
   ((oid
@@ -184,7 +184,7 @@
 
 (defun lookup-and-remove-entity (oid)
   (remove-entity (lookup-entity oid)))
-  
+
 (make-alias-serializer :oid :uint32)
 
 (make-vector-serializer :vec3 :single-float 3)

@@ -45,14 +45,14 @@
   (setf (slot-value joint 'transform) mat))
 
 (defun child-joints (joint) (slot-value joint 'child-nodes))
-(defun (setf child-joints) (children joint) 
+(defun (setf child-joints) (children joint)
   (setf (slot-value joint 'child-nodes) children))
 
 (defun joint-id (joint) (id joint))
-(defun make-joint (id inverse-bind-matrix 
+(defun make-joint (id inverse-bind-matrix
                    &key (joint-matrix (make-identity-matrix))
                         child-joints)
-  (make-instance 'joint 
+  (make-instance 'joint
                  :id id
                  :inverse-bind-matrix inverse-bind-matrix
                  :transform joint-matrix
@@ -65,11 +65,11 @@
   "Return the local-to-model matrix for this joint"
  ; (format t "joint ~a's local matrix: ~a~%" (id joint) (joint-matrix joint))
  ; (format t "~8TIBM: ~a~%~%" (joint-ibm joint))
-  
+
   ;(make-identity-matrix)
 
   ;#+disabled
-  (matrix-multiply-m 
+  (matrix-multiply-m
    parent-matrix ;(joint-matrix joint)
    ;#+disabled
    (matrix-multiply-m (joint-matrix joint)
@@ -82,7 +82,7 @@
              (when (eql (find-class 'blt3d-phy:joint) (class-of joint))
                (setf (joint-model-mat joint) (calc-joint-matrix joint parent-m))
                (when (equal "Bip001_Head" (joint-id joint)))
-               (iter (with joint-world = 
+               (iter (with joint-world =
                            (matrix-multiply-m parent-m (joint-matrix joint)))
                      (for child-j in (child-joints joint))
                      (%update-r child-j joint-world)))))

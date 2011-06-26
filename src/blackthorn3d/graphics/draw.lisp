@@ -71,7 +71,7 @@
           (gl:vertex (x a-min) (y a-max) (z a-max))
           (gl:vertex (x a-min) (y a-min) (z a-max))
           (gl:vertex (x a-max) (y a-min) (z a-max))
- 
+
           (let ((dir-vec (vec-scale4 dir 5)))
             (gl:vertex 0 0 0)
             (gl:vertex (x dir-vec) (y dir-vec) (z dir-vec))))))))
@@ -79,18 +79,18 @@
 (defvar +max-sect-depth+ 3)
 (defun draw-sectors (current-sector visited depth)
   (with-slots (geometry portals) current-sector
-    (gl:with-pushed-matrix 
+    (gl:with-pushed-matrix
       (gl:mult-matrix (get-transform-to-world current-sector))
       (draw-object geometry))
-    
+
     ;; and then draw all the adjacent sectors
     (when (< depth +max-sect-depth+)
       (iter (for portal in portals)
             (aif (links-to-sector portal)
                  (if (member (sector-id it) visited)
                      nil
-                     (draw-sectors 
-                      it 
+                     (draw-sectors
+                      it
                       (cons (sector-id current-sector) visited)
                       (1+ depth)))
 
@@ -131,31 +131,31 @@
     (gl:vertex -1.0 -1.0 1.0)
     (gl:vertex 1.0 -1.0 1.0)
     (gl:vertex 1.0 1.0 1.0)
-        
+
     ;; top face
     (gl:vertex -1.0 1.0 -1.0)
     (gl:vertex -1.0 1.0 1.0)
     (gl:vertex 1.0 1.0 1.0)
     (gl:vertex 1.0 1.0 -1.0)
-        
+
     ;; right face
     (gl:vertex 1.0 1.0 1.0)
     (gl:vertex 1.0 -1.0 1.0)
     (gl:vertex 1.0 -1.0 -1.0)
     (gl:vertex 1.0 1.0 -1.0)
-        
+
     ;; back face
     (gl:vertex 1.0 1.0 -1.0)
     (gl:vertex 1.0 -1.0 -1.0)
     (gl:vertex -1.0 -1.0 -1.0)
     (gl:vertex -1.0 1.0 -1.0)
-        
+
     ;; left face
     (gl:vertex -1.0 1.0 -1.0)
     (gl:vertex -1.0 -1.0 -1.0)
     (gl:vertex -1.0 -1.0 1.0)
     (gl:vertex -1.0 1.0 1.0)
-        
+
     ;; bottom face
     (gl:vertex -1.0 -1.0 -1.0)
     (gl:vertex 1.0 -1.0 -1.0)
@@ -168,7 +168,7 @@
     (gl:vertex 0.0 1.0 0.0)
     (gl:vertex -1.0 0.0 0.0)
     (gl:vertex 1.0 0.0 0.0)))
-    
+
 (gl:define-gl-array-format position
   (gl:vertex :type :float :components (x y z)))
 
@@ -177,7 +177,7 @@
   (setf (gl:glaref a i 'x) (x v))
   (setf (gl:glaref a i 'y) (y v))
   (setf (gl:glaref a i 'z) (z v)))
-      
+
 (defun set-quad-indices (a i v)
   (iter (for j from (* i 4) below (+ (* i 4) 4))
         (for k below 4)
@@ -186,7 +186,7 @@
 (defun make-cube ()
   (let ((vert-arr (gl:alloc-gl-array 'position 8))
         (ind-arr  (gl:alloc-gl-array :unsigned-short 24)))
-        
+
     ;; Vertex Array
     (set-vec-in-glarray vert-arr 0 #(-1.0 -1.0 -1.0))
     (set-vec-in-glarray vert-arr 1 #(-1.0 -1.0  1.0))
@@ -196,7 +196,7 @@
     (set-vec-in-glarray vert-arr 5 #( 1.0 -1.0  1.0))
     (set-vec-in-glarray vert-arr 6 #( 1.0  1.0 -1.0))
     (set-vec-in-glarray vert-arr 7 #( 1.0  1.0  1.0))
-    
+
     ;; Index array
     (set-quad-indices ind-arr 0 '(4 5 1 0))
     (set-quad-indices ind-arr 1 '(2 3 7 6))
@@ -216,7 +216,7 @@
   (destructuring-bind (v-arr i-arr) (make-cube)
     (let ((vao (gl:gen-vertex-array))
           (vbo (car (gl:gen-buffers 1)))
-          (ibo (car (gl:gen-buffers 1))))  
+          (ibo (car (gl:gen-buffers 1))))
       (gl:bind-vertex-array vao)
       (gl:bind-buffer :array-buffer vbo)
       (gl:buffer-data :array-buffer :static-draw v-arr)
@@ -241,7 +241,7 @@
 
 (defmethod draw-bounding-sphere ((sphere bounding-sphere))
   (use-material *bv-mat*)
-  (draw-wire-sphere (blt3d-phy::pos sphere) 
+  (draw-wire-sphere (blt3d-phy::pos sphere)
                     (blt3d-phy::rad sphere)))
 
 (defun draw-wire-sphere (pos r &optional (color #(1.0 1.0 1.0)) (segs 8))
@@ -253,18 +253,18 @@
       (let ((step (/ pi segs)))
         (iter (for theta below pi by step)
               (iter (for phi below (* 2.0 pi) by step)
-                    (for v1 = (vector (* (sin theta) (cos phi)) 
-                                      (* (sin theta) (sin phi)) 
+                    (for v1 = (vector (* (sin theta) (cos phi))
+                                      (* (sin theta) (sin phi))
                                       (cos theta)))
                     (for v2 = (vector (* (sin (+ theta step)) (cos phi))
                                       (* (sin (+ theta step)) (sin phi))
                                       (cos (+ theta step))))
-                    (for v3 = (vector 
+                    (for v3 = (vector
                                (* (sin (+ theta step)) (cos (+ phi step)))
                                (* (sin (+ theta step)) (sin (+ phi step)))
                                (cos (+ theta step))))
-                    (for v4 = (vector (* (sin theta) (cos (+ phi step))) 
-                                      (* (sin theta) (sin (+ phi step))) 
+                    (for v4 = (vector (* (sin theta) (cos (+ phi step)))
+                                      (* (sin theta) (sin (+ phi step)))
                                       (cos theta)))
                     (for normal = (cross3 (vec3- v2 v1) (vec3- v3 v1)))
                     (gl:normal (x normal) (y normal) (z normal))
@@ -282,8 +282,8 @@
       (let ((step (/ pi segs)))
         (iter (for theta below pi by step)
               (iter (for phi below (* 2.0 pi) by step)
-                    (gl:vertex (* (sin theta) (cos phi)) 
-                               (* (sin theta) (sin phi)) 
+                    (gl:vertex (* (sin theta) (cos phi))
+                               (* (sin theta) (sin phi))
                                (cos theta))
                     (gl:vertex (* (sin (+ theta step)) (cos phi))
                                (* (sin (+ theta step)) (sin phi))
@@ -291,8 +291,8 @@
                     (gl:vertex (* (sin (+ theta step)) (cos (+ phi step)))
                                (* (sin (+ theta step)) (sin (+ phi step)))
                                (cos (+ theta step)))
-                    (gl:vertex (* (sin theta) (cos (+ phi step))) 
-                               (* (sin theta) (sin (+ phi step))) 
+                    (gl:vertex (* (sin theta) (cos (+ phi step)))
+                               (* (sin theta) (sin (+ phi step)))
                                (cos theta))))))))
 
 (defun draw-plane (size)

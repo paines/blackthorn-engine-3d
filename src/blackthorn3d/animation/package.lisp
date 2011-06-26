@@ -44,7 +44,7 @@
    :copy-anim-controller
    :play-clip
    :state
-  
+
    :add-clip
    :update-clip
    :animation-clip

@@ -34,7 +34,7 @@
     :accessor ideal-coord
     :initarg :ideal-coord
     :initform (list 0.0 (cos (/ pi 6.0)) 1.0 )
-    :documentation "The ideal spherical coordinates of the camera relative to 
+    :documentation "The ideal spherical coordinates of the camera relative to
                     the target.  tuple is (phi theta dist)")
    (ideal-coord2
     :accessor ideal-coord2
@@ -55,7 +55,7 @@
    (target
     :accessor target
     :initarg :target
-    :documentation "the desired target(entity) of the camera. 
+    :documentation "the desired target(entity) of the camera.
                     Used in 3rd person mode")
    (mode
     :accessor mode
@@ -65,7 +65,7 @@
     :accessor minor-mode
     :initarg :minor-mode
     :initform :free)
-   (matrix 
+   (matrix
     :accessor matrix)))
 
 (defmethod update-fp-camera ((c camera) time input-vec)
@@ -94,9 +94,9 @@
           (setf (dir target) (norm4 (cross t-up (cross (dir c) t-up)))))))))
 
 (defmethod update-tp-camera ((c camera) time input-vec)
-  (with-slots (ideal-coord 
-               ideal-coord2 target 
-               pos veloc up dir 
+  (with-slots (ideal-coord
+               ideal-coord2 target
+               pos veloc up dir
                spring-k spring-k2
                minor-mode) c
 
@@ -108,7 +108,7 @@
       ;; note2: this allows the camera to lazily rotate around
       ;;   the character, like in many platform games, as opposed
       ;;   to strafing with the character, as in many shooter games
- 
+
       ;; look-at is an offset from the entity....hopefully we replace
       ;; this eventually
       (let* ((look-at (vec4+ t-pos (vec-scale4 t-up 0.6)))
@@ -118,7 +118,7 @@
 
              (basis (make-ortho-basis t-right t-up (vec-neg4 t-dir)))
              (inv-basis (transpose basis))
-             
+
              (wc-pos (vec4- pos look-at))
              (tc-pos (matrix-multiply-v basis wc-pos))
 
@@ -133,12 +133,12 @@
         (progn
           (setf (new-up c) nil)
           (setf (elt sphere-coord 2) (elt ideal-coord 2))
-          
+
           #+disabled
-          (incf (elt sphere-coord 0) 
+          (incf (elt sphere-coord 0)
                 (* +phi-scale+ (x input-vec)))
           (setf (elt sphere-coord 0) 0.0)
-          (setf (elt sphere-coord 1) 
+          (setf (elt sphere-coord 1)
                 (clamp (- (elt sphere-coord 1)
                           (* +theta-scale+ (y input-vec)))
                        +neg-theta-limit+
@@ -146,17 +146,17 @@
 
           ;; Step1: find the ideal pos for the camera
           (setf ideal-pos
-                (vec4+ look-at (matrix-multiply-v 
+                (vec4+ look-at (matrix-multiply-v
                                 inv-basis
                                 (spherical->cartesian sphere-coord))))
 
           ;; Step2: find the look at point/direction
           (format t "old-dir: ~a~%" dir)
-          (setf c-look 
+          (setf c-look
                 (if (< (dot dir t-up) 1.0)
                     (quat-rotate-vec
-                     (axis-rad->quat c-right 
-                                        ;(+ (elt sphere-coord 1)) 
+                     (axis-rad->quat c-right
+                                        ;(+ (elt sphere-coord 1))
                                      (* +theta-scale+ (y input-vec)))
                      dir)
                     dir))
@@ -165,14 +165,14 @@
 
           ;; Step3: find the up vector
           (setf (up c) (norm4 (cross c-right c-look)))
-          
+
           (setf (dir c) c-look)
           (setf (pos c) ideal-pos)
 
           #+disabled
-          (setf (dir target) (quat-rotate-vec 
-                              (axis-rad->quat 
-                               t-up 
+          (setf (dir target) (quat-rotate-vec
+                              (axis-rad->quat
+                               t-up
                                (* +phi-scale+ (x input-vec)))
                               (dir target))))
 
@@ -194,14 +194,14 @@
              ;; set theta
              (aif (/= 0 (y input-vec))
                   (setf (elt ideal-coord 1)
-                        (clamp (+ (elt ideal-coord 1) 
+                        (clamp (+ (elt ideal-coord 1)
                                   (* +theta-scale+ (y input-vec)))
                                (- +theta-limit+)
                                +theta-limit+)))
              (setf sphere-coord ideal-coord))
 
 
-  
+
             (:strafe
 
              ;; set phi
@@ -214,7 +214,7 @@
              (if (not (is-jumping target))
                  (aif (/= 0 (y input-vec))
                       (setf (elt ideal-coord2 1)
-                            (clamp (+ (elt ideal-coord2 1) 
+                            (clamp (+ (elt ideal-coord2 1)
                                       (* +theta-scale+ (y input-vec)))
                                    (- +theta-limit+)
                                    +theta-limit+)))
@@ -227,23 +227,23 @@
                           (- +theta-limit+)
                           +theta-limit+))))
 
-             
+
              (setf sphere-coord ideal-coord2)))
 
-          ;; mat stuff          
+          ;; mat stuff
           (let* ((translation
-                  (make-translate (vec-scale4 +z-axis+ 
+                  (make-translate (vec-scale4 +z-axis+
                                               (elt sphere-coord 2))))
                  (rotation (quat->matrix (spherical->quat sphere-coord)))
                  (concat (matrix-multiply-m rotation translation))
                  (ideal-pos
-                  (vec4+ (vec4+ (velocity target) look-at) 
+                  (vec4+ (vec4+ (velocity target) look-at)
                           (matrix-multiply-v
                            inv-basis (spherical->cartesian sphere-coord)))
 
                    #+disabled
                    (vec4+ look-at
-                          (matrix-multiply-v 
+                          (matrix-multiply-v
                            inv-basis
                            (matrix-multiply-v concat +origin+))))
                  (displace-vec (vec4- ideal-pos pos))
@@ -252,9 +252,9 @@
                                 (vec-scale4 (velocity c) (* 2.0 (sqrt ks))))))
 
             (setf veloc  (vec-scale4 spring-accel time))
-            
+
                                         ; #+disabled
-            (setf (velocity c) 
+            (setf (velocity c)
                                         ;(vec4+ pos veloc)
                   (vec4- ideal-pos look-at)
                   #+disabled
@@ -266,7 +266,7 @@
             (setf pos t-pos; look-at
                   )))
 
-        
+
         #+disabled
          (setf (dir target)
                 (quat-rotate-vec
@@ -274,7 +274,7 @@
                  (dir t-pos)))))))
 
 ;; for now, we'll update the camera each time this method is called.
-;; the ideal situation would be for the camera to only re-calculate 
+;; the ideal situation would be for the camera to only re-calculate
 ;; the matrix when it changes
 (defmethod update-camera ((c camera) time input-vec)
   (with-slots (mode) c
@@ -350,7 +350,7 @@
     (setf (up c) (quat-rotate-vec quat (up c)))))
 
 (defmethod camera-orbit! ((c camera) phi theta dist)
-  "Orbits the camera around its target by phi (horizontal axis) and theta 
+  "Orbits the camera around its target by phi (horizontal axis) and theta
    (vertical axis) at a radius dist"
   (with-slots (dir up pos target) c
     (when (< (abs (dot up dir)) 0.8)

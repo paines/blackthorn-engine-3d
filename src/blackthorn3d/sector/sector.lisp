@@ -44,7 +44,7 @@
     :initform (quat-identity)
     :documentation "quatenion representing the rotation of the sector
                     Is expected to be in increments of 90 degrees")
-  
+
    (portals
     :accessor portals
     :initarg :portals
@@ -57,7 +57,7 @@
     :initarg :geometry
     :initform nil
     :documentation "contains the r-trees of the sectors geometry")))
-    
+
 #+disabled
 (defmethod initialize-instance :after ((this sector) &key)
   (setf (slot-value this 'inverse-transform)
@@ -68,18 +68,18 @@
   (let ((clone (make-hash-table)))
     (maphash #'(lambda (k v) (setf (gethash k clone) v)) table)
     clone))
-    
+
 
 (defun lookup-sector (name-symbol)
   (gethash name-symbol *sector-table*))
-  
+
 (defun new-sector (name-symbol geometry
                    &key
                    portals
-                   (origin +origin+) 
+                   (origin +origin+)
                    (orientation (quat-identity)))
-  (let ((the-sector 
-         (make-instance 'sector 
+  (let ((the-sector
+         (make-instance 'sector
                         :id name-symbol
                         :origin origin
                         :orientation orientation
@@ -92,7 +92,7 @@
     ;; we really ought to update portals here
     (iter (for p in (portals the-sector))
           (setf (portal-direction p)
-                (get-direction 
+                (get-direction
                  (quat-rotate-vec orientation (dir p))))
           (format t "~2TPORTAL ~a's DIRECTION:   ~a~%"
                   (portal-id p) (portal-direction p)))
@@ -112,7 +112,7 @@
 (defmethod add-sector-relative ((rel-sector sector) direction (sector sector))
   (with-slots ((base-origin origin)) rel-sector
     (with-slots ((new-origin origin)) sector
-      (setf new-origin 
+      (setf new-origin
             (vec4+  base-origin
                     (vec-scale4
                      (getf +directions+ direction)
@@ -129,7 +129,7 @@
     (with-slots ((o2 origin)) sec2
       (let* ((o2-o1 (vec4- o2 o1))
              (direction (get-direction o2-o1)))
-        (format t "DIRECTION from ~a to ~a is ~a~%" 
+        (format t "DIRECTION from ~a to ~a is ~a~%"
                 (sector-id sec1) (sector-id sec2) direction)
         ;; First check if they are next to each other
         (format t "Distance from ~a to ~a is ~a~%"
@@ -140,7 +140,7 @@
           (format t "s1 portals: ~a~%" (portals sec1))
           (format t "s2 portals: ~a~%" (portals sec2))
           (let ((p1 (find-portal-in-direction sec1 direction))
-                (p2 (find-portal-in-direction 
+                (p2 (find-portal-in-direction
                      sec2 (opposite-dir direction))))
             (when (and p1 p2)
               (link-portals sec1 p1 sec2 p2))))))))
@@ -155,33 +155,33 @@
 
 (defmethod foreach-in-sector ((a-sector sector) func)
   (let ((new-table (clone-table (contents a-sector))))
-    (maphash #'(lambda (k v) 
+    (maphash #'(lambda (k v)
                  (declare (ignore k))
-                 (funcall func v))  
-             new-table)))             
+                 (funcall func v))
+             new-table)))
 
 (defmethod foreach-in-sector ((a-sector symbol) func)
   (foreach-in-sector (lookup-sector a-sector) func))
-    
+
 (defmethod add-to-sector (an-entity (a-sector sector))
  ; (setf (gethash (oid an-entity) (contents a-sector)) an-entity)
   (setf (current-sector an-entity) (sector-id a-sector)))
-  
+
 (defmethod add-to-sector (an-entity (a-sector symbol))
   (add-to-sector an-entity (lookup-sector a-sector)))
-  
+
 (defun remove-from-sector (an-entity)
   (let ((the-sector (lookup-sector (current-sector an-entity))))
     (remhash (oid an-entity) (contents the-sector))
     (setf (current-sector an-entity) nil)))
-    
+
 (defmethod update ((a-sector sector))
   (foreach-in-sector a-sector #'(lambda (an-entity) (update an-entity))))
 
 (defun update-sectors ()
-  (maphash #'(lambda (sym a-sector) (declare (ignore sym)) 
+  (maphash #'(lambda (sym a-sector) (declare (ignore sym))
                      (update a-sector))
-           *sector-table*))           
+           *sector-table*))
 
 
 ;;;
@@ -198,9 +198,9 @@
              (make-translate (vec-neg4 origin)))
             pos-or-vec)
           ;  #+disabled
-           (quat-rotate-vec 
+           (quat-rotate-vec
             (quat-inverse orientation)       ; use the inverse
-            (if (zerop (w pos-or-vec)) 
+            (if (zerop (w pos-or-vec))
                 pos-or-vec
                 (vec4- pos-or-vec origin)))))
       (setf (w xformed) (w pos-or-vec))
@@ -218,7 +218,7 @@
 
 (defmethod get-transform-to-world ((this sector))
   (with-slots (origin orientation) this
-    (matrix-multiply-m 
+    (matrix-multiply-m
      (make-translate origin)
      (quat->matrix orientation))))
 
@@ -249,7 +249,7 @@
         (destructuring-bind (vel norm)
             (blt3d-phy:collide-with-world
              test-sphere test-vel geometry depth)
-          (list 
+          (list
            (transform-to-world (to-vec4 vel) a-sector)
            (aif norm (transform-to-world (to-vec4 it) a-sector))))))))
 
@@ -257,20 +257,20 @@
 (defmethod collide-sector-portals ((obj entity-server) (a-sector sector))
   (with-slots (pos bounding-volume) obj
     (with-slots (portals) a-sector
-      
+
       ;; Test against portals
-      (iter (with test-sphere = (move-bounding-volume 
-                                 bounding-volume 
+      (iter (with test-sphere = (move-bounding-volume
+                                 bounding-volume
                                  (transform-to-sector pos a-sector)))
             (for portal in portals)
             (when (and (links-to-sector portal) (collide-p test-sphere portal))
-              (format t "Collided with portal: ~a @~a~%" 
+              (format t "Collided with portal: ~a @~a~%"
                       (portal-id portal) (pos portal))
               ;; We need to change the sector of the object
-              (format t "Setting sector to: ~a~%" 
+              (format t "Setting sector to: ~a~%"
                       (sector-id (links-to-sector portal)))
               (setf (pos obj) (vec4+ pos (vec-scale4 (dir portal) +p-eps+)))
-              (setf (current-sector obj) 
+              (setf (current-sector obj)
                     (sector-id (links-to-sector portal))))))))
 
 (defmethod ray-cast (ray (a-sector sector))
@@ -307,7 +307,7 @@
 
 (defun find-min-max-sector ()
   (let* ((hash-array (collect-sectors))
-         (pos-array (iter (for item in-vector hash-array) 
+         (pos-array (iter (for item in-vector hash-array)
                       (collect (origin item) result-type 'vector)))
          (min-max (find-bounding-points pos-array))
 	 (min-scalar (iter (for scalar in-vector (aref min-max 0))
@@ -315,6 +315,6 @@
 	 (max-scalar (iter (for scalar in-vector (aref min-max 1))
 		       (maximizing scalar)))
 	 (max-scalar-plus (+ max-scalar +sector-size+)))
-    (return-from find-min-max-sector 
+    (return-from find-min-max-sector
        (vector (make-point3 min-scalar min-scalar min-scalar)
 	       (make-point3 max-scalar-plus max-scalar-plus max-scalar-plus)))))

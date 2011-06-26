@@ -43,7 +43,7 @@
 
 (defun set-vertices (vert-lst source-table)
   (setf (gethash (get-attribute "id" (attributes vert-lst)) source-table)
-        (gethash (uri-indirect 
+        (gethash (uri-indirect
                   (get-attribute "source" (attributes (first-child vert-lst))))
                  source-table)))
 
@@ -68,24 +68,24 @@
      ;; collect mesh elements
      (iter (for tri-lst in (children-with-tag "triangles" mesh-lst))
            (for mat-index upfrom 0)
-           (collect 
-            (make-instance 
+           (collect
+            (make-instance
              'element
              :indices (string->sv (third (find-tag "p" (children tri-lst))))
-             :material 
+             :material
              (cons mat-index
                    (get-attribute "material" (attributes tri-lst)))
              :count (parse-integer
                      (get-attribute "count" (attributes tri-lst))))))
      ;; build input list
-     (build-input-lst (find-tag-in-children "triangles" mesh-lst) 
+     (build-input-lst (find-tag-in-children "triangles" mesh-lst)
                       source-table))))
 
 
 
-;; Build a hash table of mesh ids and meshes 
+;; Build a hash table of mesh ids and meshes
 (defun process-geometry (geom-library)
-  "parses the geometry items in the dae file, building a hash table of the 
+  "parses the geometry items in the dae file, building a hash table of the
    meshes (hashed by id)
    @arg[geom-library]{the xml-list of the geometry library}"
   (dae-debug "~%Processing geometry~%")
@@ -95,7 +95,7 @@
           (let ((new-mesh (build-blt-mesh-data geom-xml)))
             (setf (gethash (car new-mesh) mesh-table) new-mesh)
             (counting t into total-models)
-            (finally 
+            (finally
              (dae-debug "Loaded ~a meshes:~%" total-models)
              (let ((*dbg-level* (1+ *dbg-level*)))
                (iter (for (mesh-id mesh-lst) in-hashtable mesh-table)

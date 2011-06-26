@@ -49,7 +49,7 @@
    (growth-k :accessor growth-k :initarg :growth-k :initform 2)
    (width :accessor width :initarg :width :initform 8) ;width is 1/2 full box
    (octree-children :accessor octree-children :initarg :octree-children :initform nil)
-   (objects :accessor objects :initarg :objects 
+   (objects :accessor objects :initarg :objects
                    :initform (make-array 0 :fill-pointer 0 :adjustable t))
    (center :accessor center :initarg :center :initform nil)
    ))
@@ -57,14 +57,14 @@
 (defclass octree (octree-node)())
 
 (defmethod make-octree (center width max-depth)
-  (make-instance 'octree :center center :width width 
+  (make-instance 'octree :center center :width width
 		         :max-depth max-depth))
 
 (defmethod make-child-node ((node octree-node) i)
   (with-slots (width max-depth growth-k depth center) node
     (make-instance 'octree-node :width (/ width 2) :max-depth max-depth
 		   :depth (+ depth 1) :growth-k growth-k
-		   :center (vec4+ center (vec-scale4 (case i 
+		   :center (vec4+ center (vec-scale4 (case i
                                                      (0 (make-point3 -1 -1 -1))
                                                      (1 (make-point3 -1 -1 +1))
                                                      (2 (make-point3 -1 +1 -1))
@@ -91,11 +91,11 @@
 (defmethod initialize-instance :after ((octree-node octree-node) &key)
   (when (< (depth octree-node) (max-depth octree-node))
     (make-children octree-node)))
-      
+
 (defmethod octree-insert ((node octree-node) (object blt3d-ent:entity-server))
   (with-slots (width center octree-children) node
-    (let* ((moved-object 
-             (move-bounding-volume (blt3d-ent:bounding-volume object) 
+    (let* ((moved-object
+             (move-bounding-volume (blt3d-ent:bounding-volume object)
                                  (pos object)))
 	   (object-pos (pos moved-object))
            (object-rad (rad (blt3d-ent:bounding-volume object)))
@@ -112,15 +112,15 @@
 
 (defmethod octree-delete ((node octree-node) (object blt3d-ent:entity-server))
   (with-slots (width center octree-children) node
-    (let* ((moved-object 
-           (move-bounding-volume (blt3d-ent:bounding-volume object) 
+    (let* ((moved-object
+           (move-bounding-volume (blt3d-ent:bounding-volume object)
                                  (pos object)))
 	   (object-pos (pos moved-object))
            (object-rad (rad (blt3d-ent:bounding-volume object)))
            (good-node (find-appropiate-node node object-pos object-rad))
            (good-objects (objects good-node)))
       ;(format t "~%~% HERE ~%~%")
-      ;(format t "~%~%~% ~a ~%" (objects good-node)) 
+      ;(format t "~%~%~% ~a ~%" (objects good-node))
       (setf good-objects (cl:delete object good-objects :test #'equalp))
       ;(delete object good-objects :test #'equalp)
       ;(format t "~%~%~% ~a ~%" (objects good-node))
@@ -130,7 +130,7 @@
   (octree-query node (bounding-volume object)))
 
 (defmethod octree-query ((node octree-node) (object bounding-shape))
-  (let ((good-node (find-appropiate-node node (pos object) 
+  (let ((good-node (find-appropiate-node node (pos object)
 					      (rad object))))
     ;(format t "~%~%HERE ~a" good-node)
     ;(format t "~%~% query ~a" (center good-node))
@@ -177,8 +177,8 @@
 ;	      (format t "~%~% HERE")
 	      (return-from find-appropiate-node node)))))))
 ;	      node))))))
-	  
-   
+
+
 (defmethod find-appropiate-node ((node octree-node) obj-center obj-width)
   (with-slots (width center octree-children) node
     ;(format t "~%~%~%~%~% HERE ~a" octree-children)
@@ -202,7 +202,7 @@
 	    ;(format t "~%~% obj ~a" obj-width)
 	    ;(format t "~%~% node ~a" (center node))
 	    ;(format t "~%~% node ~a~%" (width node))
-	      (return-from find-appropiate-node 
+	      (return-from find-appropiate-node
 			   (find-appropiate-node child obj-center obj-width)))))
     (when (< obj-width width)
     ;(progn

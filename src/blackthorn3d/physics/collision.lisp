@@ -32,7 +32,7 @@
 
 (defmethod collide-p ((s1 bounding-shape) (e blt3d-ent:entity-server))
   (collide-p s1 (bounding-volume e)))
-  
+
 (defmethod collide-p ((e blt3d-ent:entity-server) (s1 bounding-shape))
   (collide-p s1 (bounding-volume e)))
 
@@ -74,11 +74,11 @@
               (let ((e1 (- (svref c i) (svref a-min i)))
                     (e2 (- (svref c i) (svref a-max i))))
                 (if (< e1 0)
-                    (if (< e1 (- r)) 
+                    (if (< e1 (- r))
                         (return-from collide-p nil)
                         (incf d (sq e1)))
                     (if (> e2 0)
-                        (if (> e2 r) 
+                        (if (> e2 r)
                             (return-from collide-p nil)
                             (incf d (sq e2)))))))
         (<= d (sq r))))))
@@ -87,7 +87,7 @@
   (collide-p aabb sph))
 
 
-(defmethod collide-p ((e1 blt3d-ent:entity-server) 
+(defmethod collide-p ((e1 blt3d-ent:entity-server)
                       (e2 blt3d-ent:entity-server))
   (collide-p (move-bounding-volume (blt3d-ent:bounding-volume e1) (pos e1))
 	     (move-bounding-volume (blt3d-ent:bounding-volume e2) (pos e2))))
@@ -107,7 +107,7 @@
              (abs (dot (col (axes obb) i) axis))))))
 
 (defun separating-axis-p (axis obb1 obb2)
-  (> (abs (dot Tvec axis)) 
+  (> (abs (dot Tvec axis))
      (+ (axis-proj bv1 axis)
         (axis-proj bv2 axis))))
 
@@ -128,7 +128,7 @@
              ;; one of the basis axes of bv2 (B)
              (B-face-test (axis)
                (separating-axis-p axis bv1 bv2))
-             
+
              ;; used for testing axes parallel to the cross product
              ;; of an edge of A and an edge of B
              (AB-edge-test (i j)
@@ -144,7 +144,7 @@
       (iter (for i below 3)
             (if (B-face-test (col (axes bv2) i))
                 (return-from collide-p nil)))
-      
+
       ;; Finally the edges, all 9 of them
       (iter (for i below 3)
             (iter (for j below 3)

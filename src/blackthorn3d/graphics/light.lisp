@@ -34,7 +34,7 @@
 (defun light-init ()
   (setf *standard-shadow*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/shadow-map.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -42,7 +42,7 @@
 
   (setf *skinned-shadow*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/skin-shadow-map.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -114,7 +114,7 @@
   (gl:light gl-light :spot-exponent (light-spot-ext this)))
 
 
-(defvar *bias-matrix* 
+(defvar *bias-matrix*
   (make-matrix4x4
    '((0.5 0.0 0.0 0.0)
      (0.0 0.5 0.0 0.0)
@@ -131,7 +131,7 @@
 
 (defmethod shadow-pass ((this light) objects)
   (with-slots (light-viewport position direction texture-matrix) this
-    (let* ((light-view-matrix 
+    (let* ((light-view-matrix
             (look-dir-matrix position direction +x-axis+))
            (light-proj-matrix
             (proj-matrix (view-frustum light-viewport))))
@@ -147,10 +147,10 @@
       ;; only render back faces
     ;  (gl:cull-face :front)
     ;  (gl:front-face :cw)
-      
+
       ;; Load the light matrix
       (gl:load-matrix light-view-matrix)
-      
+
       ;; now we can has draw?
       ;#+disabled
       (let ((mesh-shader *standard-shadow*)
@@ -160,7 +160,7 @@
 
        ;; generate mipmaps
  ;     (gl:generate-mipmap-ext :texture-2d)
-      
+
       (unbind-framebuffer)
       (gl:bind-framebuffer-ext :framebuffer-ext 0)
 
@@ -177,7 +177,7 @@
                (matrix-multiply-m
                 light-view-matrix
                 *cam-inv-view-matrix*))))
- 
+
         (disable-shader))
 
       #+disabled

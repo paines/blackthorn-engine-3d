@@ -59,7 +59,7 @@
    :vs-semantic
    :vs-ref
    :get-stream
-   
+
    :element
    :make-element
    :element-material
@@ -120,7 +120,7 @@
    :make-ray
    :ray-d
    :ray-e
-   :ray-sphere-intersection   
+   :ray-sphere-intersection
    :ray-aabb-intersection
    :ray-cast
    :make-plane
@@ -131,16 +131,16 @@
 
    ;; collision.lisp
    :collide-p
-   
+
    ;; motion.lisp
    :move
-   :chase 
+   :chase
    :jump
    :standard-physics-step
    :gravity-mover
    :make-camera-relative-player-mover
    :standing-on-jumpable-p
-   
+
    ;; skeleton.lisp
    :joint
    :joint-id

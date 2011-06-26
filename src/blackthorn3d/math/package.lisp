@@ -27,7 +27,7 @@
   (:nicknames :blt3d-math)
   (:use :cl :alexandria :iter :blt3d-utils)
   (:export
-   
+
    ;; vector.lisp
    :+zero-vec+
    :+x-axis+
@@ -46,14 +46,14 @@
    :to-vec4
    :to-point4
    :x :y :z :w
-   :r :g :b :a   
+   :r :g :b :a
    :zero-vec-p
    :dot
-   :cross 
+   :cross
    :cross3
    :vec4+ :vec4- :vec4* :vec4/
    :vec3+ :vec3- :vec3* :vec3/
-   :vec-scale4 
+   :vec-scale4
    :vec-scale3
    :vec-neg4
    :vec-neg3
@@ -76,7 +76,7 @@
    :max-axis
    :opposite-dir
    :vec-eql
-   
+
    ;; matrix.lisp
    :+3dsmax-convert+
    :make-matrix

@@ -48,7 +48,7 @@
 (defun tag-name (xml-lst)
   (when (consp xml-lst) (caar xml-lst)))
 
-(defun find-tag (tag lst) 
+(defun find-tag (tag lst)
   (if (consp lst)
       (let ((xml-lst (find-if #'consp lst)))
         (if (string-equal (tag-name xml-lst) tag)
@@ -73,7 +73,7 @@
   (aif (member attrib attrib-lst :test #'string-equal :key #'car)
        (second (car it))
        nil))
-  
+
 (defun string->sv (str)
   (with-input-from-string (s str)
     (iter (for val = (read s nil :eof ))

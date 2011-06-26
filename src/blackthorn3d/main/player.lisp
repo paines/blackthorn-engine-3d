@@ -39,14 +39,14 @@
         :initform nil
         :documentation "The camera that's associated with this player for motion")
    ))
-        
+
 (defmethod on-die ((self player))
   (send-play-explosion :broadcast :none (pos self))
-  
+
   (let ((the-cam (attached-cam self)))
     (with-slots (pos velocity health up dir) self
       (setf health 1.0)
-      
+
       (setf pos (make-point3 0.0 0.1 0.0))
       (setf dir (make-vec3 1.0 0.0 0.0))
       (setf up  (make-vec3 0.0 1.0 0.0))
@@ -57,7 +57,7 @@
         :up  (make-vec3 0.0 1.0 0.0)
         :ideal-coord (list 0.0 (/ pi 6) 4.0))
   )))
-  
+
 (defmethod quickhit ((self player))
   (setf (health self) (- (health self) 0.1))
   (format t "Player health now: ~a~%" (health self)))
@@ -65,17 +65,17 @@
 (defmethod try-die ((self player))
   (when (< (health self) 0.0)
     (on-die self)))
-  
+
 (defvar *client->player* '())
 (defun register-player (p c)
     (setf (getf *client->player* c) p))
-    
+
 (defun remove-player (client)
     (let ((player (getf *client->player* client)))
-      (when player 
+      (when player
         (kill-entity player)))
     (remf *client->player* client))
-    
+
 (defun new-player (client-id)
     (let ((p (make-server-entity
               'player
@@ -83,7 +83,7 @@
               :pos (make-point3 0.0 0.1 0.0)
               :dir (make-vec3 1.0 0.0 0.0)
               :up  (make-vec3 0.0 1.0 0.0)
-              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere 
+              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere
                                   :pos (make-point3 0.0 0.0 0.0)
                                   :rad 1.0)
               :shape-name :wedge
@@ -94,14 +94,14 @@
             (forces p))
       (push (blackthorn3d-physics::make-smarter-jump-mover client-id)
             (forces p))
-      (setf (bounding-volume p) (expand-bounding-spheres 
+      (setf (bounding-volume p) (expand-bounding-spheres
                     (blt3d-res:get-model (shape-name p))))
-      (format t "bounding volume: ~a ~a~%" 
+      (format t "bounding volume: ~a ~a~%"
               (blt3d-phy::pos (bounding-volume p))
               (blt3d-phy::rad (bounding-volume p)))
-    
+
       (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
              (action () (format t "Client ~a started moving.~%" client-id)))
         (make-pos-reactor #'test #'action))
-    
+
       (register-player p client-id)))

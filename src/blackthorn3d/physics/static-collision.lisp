@@ -39,20 +39,20 @@
 
 (defun build-r-tree (triangles)
   "take a vector of triangles and return an r-tree around them"
-  (let ((r-tree 
-         (spatial-trees:make-spatial-tree :r 
+  (let ((r-tree
+         (spatial-trees:make-spatial-tree :r
                                           :rectfun #'make-rect)))
     (iter (for tri in-vector triangles)
           (spatial-trees:insert tri r-tree))
     r-tree))
 
 ;; For now, we'll just return t or nil
-;; probably will want the hit location ... 
+;; probably will want the hit location ...
 (defun sphere-rtree-intersection (sphere rtree)
   ;; get the list of potentially intersecting triangles
   (iter (for tri in (spatial-trees:search sphere rtree))
         (collect (sphere-triangle-intersection sphere tri) into results)
-        (finally 
+        (finally
          (return (iter (with min-d = (list most-positive-single-float))
                        (for hit in results)
                        (unless (null hit)
@@ -61,7 +61,7 @@
                        (finally (return min-d)))))))
 
 (defun initialize-cube (level-model)
-  "Take a model file contains level information 
+  "Take a model file contains level information
   (a 30x30x30 cube) and create a thinger out of it.
   r-tree...thinger...replace the blt-meshes with r-trees"
   (labels ((helper (node)
@@ -83,7 +83,7 @@
         (finally (return min-d))))
 
 ;; intersect two spheres with velocities
-(defmethod swept-sphere-collide ((sph-a bounding-sphere) va 
+(defmethod swept-sphere-collide ((sph-a bounding-sphere) va
                                  (sph-b bounding-sphere) vb)
   ;; Use a swept-sphere-point intersection test
   ;; by combining the radii in one sphere and and
@@ -98,16 +98,16 @@
          ;; return time of intersection and the point
          ;; NOTE: if we don't need the point, or want to calculate
          ;; it later, we can just return the time...
-         (list 
+         (list
           it
           (let ((end-a (vec3+ (pos sph-a) (vec-scale3 va it)))
                 (end-b (vec3+ (pos sph-b) (vec-scale3 vb it))))
-            
-            (vec3->point 
+
+            (vec3->point
              (vec3+ end-a
                     (vec-scale3
                      (vec3- end-b end-a)
-                     (/ (rad sph-a) 
+                     (/ (rad sph-a)
                         (+ (rad sph-a) (rad sph-b))))))))))
   #+disabled
   (let* ((ab (vec3- (pos sph-b) (pos sph-a)))
@@ -130,11 +130,11 @@
 
 ;(defgeneric collide-test (bv bv))
 ;;;
-;;; Collide 
+;;; Collide
 ;;;  when testing entities (bounding-spheres) against static geometry
 ;;;  or, geometry that we put in r-trees (which has already been updated),
 ;;;  We transform the bounding sphere into the coordinate systems
-;;;  
+;;;
 ;;;
 
 (defvar +max-collision-depth+ 5)
@@ -143,14 +143,14 @@
 
 
 (defun copy-sphere (sphere)
-  (make-instance 'bounding-sphere 
+  (make-instance 'bounding-sphere
                  :rad (rad sphere)
                  :pos (pos sphere)))
 
 (defvar +collision-eps+ 1.0e-3)
 
 ;; World = blt-model, for now
-(defmethod collide-with-world ((sphere bounding-sphere) velocity 
+(defmethod collide-with-world ((sphere bounding-sphere) velocity
                                (world blt-model)
                                &optional (depth +max-collision-depth+))
   "Updates the entity obj after performing world-collision"
@@ -167,7 +167,7 @@
     #+disable
     (let ((hit (min-collide
                 (iter (for node in (mesh-nodes world))
-                      (collect (collide-with-world-node 
+                      (collect (collide-with-world-node
                                 test-sph test-vel node))))))
       (if hit
           (slide-sphere test-sph velocity hit)))
@@ -178,9 +178,9 @@
           (for i below depth)
           (for hit = (min-collide
                       (iter (for node in (mesh-nodes world))
-                            (collect (collide-with-world-node 
+                            (collect (collide-with-world-node
                                       test-sph test-vel node)))))
-          (for end first (vec4+ (pos test-sph) test-vel) 
+          (for end first (vec4+ (pos test-sph) test-vel)
                then (vec4+ end test-vel))
           (until (null hit))
           (when hit
@@ -194,7 +194,7 @@
 
           ;; At the end return the displacement from original sphere
           ;; to new one
-          (finally (return  
+          (finally (return
                      (list (vec4- end (pos sphere)) up))))))
 
 ;; x0 stays the same, but the position needs to be moved
@@ -207,9 +207,9 @@
                                     velocity
                                     (node node))
   (let* ((inv-mat (rt-inverse (transform node)))
-         (xformed-bv 
+         (xformed-bv
           (transform-bounding-volume sphere inv-mat))
-         (xformed-vel 
+         (xformed-vel
           (matrix-multiply-v inv-mat velocity)))
 
     (transform-hit (transform node)
@@ -219,25 +219,25 @@
        (aif (swept-sphere-collide sphere velocity
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
-            (progn 
+            (progn
               (list (collide-test xformed-bv xformed-vel (mesh node))))))
 
        ;; Recursively collide with the children
-       
+
       (iter (for child in (child-nodes node))
-            (collect 
+            (collect
              (collide-with-world-node xformed-bv xformed-vel child)))))))
 
 (defmethod collide-with-world-node ((sphere bounding-sphere)
                                     velocity
                                     (node model-node))
   (let* ((inv-mat (rt-inverse (transform node)))
-         (xformed-bv 
+         (xformed-bv
           (transform-bounding-volume sphere inv-mat))
-         (xformed-vel 
+         (xformed-vel
           (matrix-multiply-v inv-mat velocity)))
 
-  
+
     (transform-hit (transform node)
      (min-collide
       (append
@@ -249,7 +249,7 @@
 
        ;; Todo- fix swept-sphere-collide
        #+disabled
-       (aif 
+       (aif
         ;#+disabled
         (swept-sphere-collide sphere velocity
                               (node-bounding-volume node) +zero-vec+)
@@ -257,30 +257,30 @@
         (swept-sphere-collide xformed-bv xformed-vel
                                   (node-bounding-volume node) +zero-vec+)
             ;; if we intersect the bounding-shape, check the mesh
-            (progn 
+            (progn
               ;(format t "Collided with node-sphere!~%")
                    (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
        ;; Recursively collide with the children
        (iter (for child in (child-nodes node))
-             (collect 
+             (collect
               (collide-with-world-node xformed-bv xformed-vel child))))))))
 
 
 ;; performs collision testing of an entity against an rtree of triangles
 ;; returns the results of moving-sphere-triangle-intersection
-(defmethod collide-test ((sphere bounding-sphere) velocity 
+(defmethod collide-test ((sphere bounding-sphere) velocity
                          (r-tree spatial-trees-protocol:spatial-tree))
 
-  (let ((results 
-         (spatial-trees:search (swept-sphere->aabb sphere velocity) 
+  (let ((results
+         (spatial-trees:search (swept-sphere->aabb sphere velocity)
                                r-tree)))
 
     (iter (with min-hit = nil)
           (for tri in results)
           (for hit = (moving-sphere-triangle-intersection
                       sphere tri velocity))
-          (when (and hit (or (null min-hit) 
+          (when (and hit (or (null min-hit)
                              (< (car hit) (car min-hit))))
             (setf min-hit hit))
           (finally (return min-hit)))))
@@ -305,11 +305,11 @@
 #+disabled
 (defmethod collide-test ((bv bounding-shape) velocity (node model-node))
   "recursively tests bv against this node and its children.  Note
-   that, since currently the bounding volume of a node is not 
+   that, since currently the bounding volume of a node is not
    guaranteed to enclose its children, the children must always be
    tested"
-  ;; We need to translate, and transform, the collidee to the 
-  ;; node coordinates.  We do this instead of translating the 
+  ;; We need to translate, and transform, the collidee to the
+  ;; node coordinates.  We do this instead of translating the
   ;; node b/c it's a lot easier to translate a bounding sphere than
   ;; an r-tree.
   (let* ((inv-mat (rt-inverse (transform node)))

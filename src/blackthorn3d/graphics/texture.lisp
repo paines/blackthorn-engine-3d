@@ -48,10 +48,10 @@
   (sdl-image:load-image (blt3d-res:resolve-resource filename)))
 
 (defun image->texture2d (image &key
-                         (min-filter :linear-mipmap-linear) 
+                         (min-filter :linear-mipmap-linear)
                          (mag-filter :linear)
                          (wrap-s :repeat)
-                         (wrap-t :repeat))  
+                         (wrap-t :repeat))
   (sdl:with-pixel (pix (sdl:fp image))
     (let ((tex-id (gen-texture))
           (image-fmt (ecase (sdl:pixel-bpp pix)
@@ -67,9 +67,9 @@
       (gl:bind-texture :texture-2d tex-id)
       (gl:tex-parameter :texture-2d :texture-min-filter min-filter)
       (gl:tex-parameter :texture-2d :texture-mag-filter mag-filter)
-      (gl:tex-image-2d :texture-2d 0 :rgba 
-                       width height 0 
-                       image-fmt :unsigned-byte 
+      (gl:tex-image-2d :texture-2d 0 :rgba
+                       width height 0
+                       image-fmt :unsigned-byte
                        (sdl:pixel-data pix))
       (when (eql min-filter :linear-mipmap-linear)
         (gl:generate-mipmap-ext :texture-2d))
@@ -91,11 +91,11 @@
     (gl:tex-parameter :texture-2d :texture-mag-filter mag-filter)
     (gl:tex-parameter :texture-2d :texture-wrap-s wrap-s)
     (gl:tex-parameter :texture-2d :texture-wrap-t wrap-t)
-    
+
     (gl:tex-image-2d :texture-2d 0
                      int-format
                      width height border
-                     format type 
+                     format type
                      (cffi:null-pointer))
     (gl:bind-texture :texture-2d 0)
     tex-id))

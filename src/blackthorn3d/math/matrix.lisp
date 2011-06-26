@@ -40,15 +40,15 @@
     (make-array size :element-type 'float
                      :initial-element 0.0)))
 
-(defun make-matrix4x4 (&optional init-contents) 
+(defun make-matrix4x4 (&optional init-contents)
   (make-matrix '(4 4) init-contents))
 
 (defun make-matrix3x3 (&optional init-contents)
   (make-matrix '(3 3) init-contents))
-  
+
 (defun get-nrows (mat)
   (array-dimension mat 1))
-  
+
 (defun get-ncols (mat)
   (array-dimension mat 0))
 
@@ -80,7 +80,7 @@
 (defun (setf col) (vec mat c)
   "@arg[mat]{matrix of any size mxn}
    @arg[col]{zero-index column into mat}
-   @arg[vec]{the vector of length l to replace col. 
+   @arg[vec]{the vector of length l to replace col.
              If l < m. the elements in range [l m) in mat not modified.
              If l > m, only the [0 m) elements of vec are copied}
    @return{the modified matrix.  Modifies argument mat}"
@@ -101,7 +101,7 @@
 (defun (setf row) (vec mat r)
   "@arg[mat]{matrix of any size mxn}
    @arg[row]{zero-index row into mat}
-   @arg[vec]{the vector of length l to replace row of mat. 
+   @arg[vec]{the vector of length l to replace row of mat.
              If l < n. the elements in range [l n) in mat not modified.
              If l > n, only the [0 n) elements of vec are copied}
    @return{the modified matrix.  Modifies argument mat}"
@@ -142,7 +142,7 @@
           (iter (for j below n-cols)
                 (setf (aref new-mat j i) (aref m i j))))
     new-mat))
-  
+
 (defun matrix-multiply-v (mat vec)
   "Multiply matrix mat by column vector vec
    @arg[mat]{a matrix of size m x n}
@@ -151,7 +151,7 @@
   (let* ((nrows (min (length vec) (get-nrows mat))))
     (iter (for i below nrows)
           (collect
-           (inner-product (row mat i) vec) 
+           (inner-product (row mat i) vec)
            result-type 'vector))))
 
 ;; Not sure what we would need this for...
@@ -165,7 +165,7 @@
          (n-cols (min (length v) (get-ncols A)))
          (new-cvec (make-array `(1 ,n-rows) :element-type 'float)))
     (iter (for i below n-cols)
-          (setf (aref new-cvec 1 i) 
+          (setf (aref new-cvec 1 i)
                 (inner-product v (col A i))))
 	new-cvec))
 
@@ -200,8 +200,8 @@
    @arg[z]{the axis the z-axis will map to}
    @return{a 4x4 matrix that will convert coordinates from the default
            basis to the one defined by u v w}"
-  (make-matrix4x4 
-   (iter (for i below 4) 
+  (make-matrix4x4
+   (iter (for i below 4)
          (collect
              (if (< i 3)
                  (list (svref u i) (svref v i) (svref w i) 0.0)
@@ -232,7 +232,7 @@
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 
+    (make-matrix4x4
       (transpose-lists  `((1.0 0.0 0.0 0.0)
                           (0.0 ,cosr ,(- sinr) 0.0)
                           (0.0 ,sinr ,cosr 0.0)
@@ -243,7 +243,7 @@
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 
+    (make-matrix4x4
       (transpose-lists `((,cosr 0.0 ,sinr 0.0)
                          (0.0 1.0 0.0 0.0)
                          (,(- sinr) 0.0 ,cosr 0.0)
@@ -254,7 +254,7 @@
    @return{a 4x4 rotation matrix}"
   (let ((cosr (cos r))
         (sinr (sin r)))
-    (make-matrix4x4 
+    (make-matrix4x4
       (transpose-lists `((,cosr ,(- sinr) 0.0 0.0)
                          (,sinr ,cosr 0.0 0.0)
                          (0.0 0.0 1.0 0.0)
@@ -271,11 +271,11 @@
 
 (defun make-orthographic (left right top bottom near far)
   (make-matrix4x4
-   (list 
+   (list
     (list (/ 2.0 (- right left)) 0.0 0.0 0.0)
     (list 0.0 (/ 2.0 (- top bottom)) 0.0 0.0)
     (list 0.0 0.0 (/ -2.0 (- far near)) 0.0)
-    (list (- (/ (+ right left) 
+    (list (- (/ (+ right left)
                 (- right left)))
           (- (/ (+ top bottom)
                 (- top bottom)))
@@ -361,7 +361,7 @@
 
 #+disabled
 (defun Q-R-decomp (mat)
-  (labels ((proj (e a) (vec-scale 
+  (labels ((proj (e a) (vec-scale
                         e (/ (inner-product e a)
                              (inner-product e e)))))
     (destructuring-bind (n-cols n-rows) (array-dimensions mat)
@@ -371,7 +371,7 @@
                 (for a-k = (col mat k))
                 (format t "~3Tcomputed a-~a~%" k)
                 ;; compute uk values
-                (for u-k first a-k 
+                (for u-k first a-k
                      then (vec- a-k (iter (for e in e-lst)
                                           (reducing (proj e a-k)
                                                     by #'vec+))))
@@ -379,13 +379,13 @@
                 (collect u-k into u-lst)
                 (collect (normalize u-k) into e-lst)
                 (format t "~3Tcomputed e-~a~%" k)
-                (collect 
-                 (append 
+                (collect
+                 (append
                   (iter (for e-i in e-lst)
                         (collect (inner-product e-i a-k)))
-                  (iter (for i from (length e-lst) below (- n-rows 
+                  (iter (for i from (length e-lst) below (- n-rows
                                                             (length e-lst)))
-                        (collect 0.0))) 
+                        (collect 0.0)))
                  into R-mat)
                 (format t "~3Tbuilt on r-mat~%")
                 (finally (return (list e-lst R-mat))))
@@ -417,7 +417,7 @@
              (aref mat 3 2)))
 
 
-(defvar +3dsmax-convert+ 
+(defvar +3dsmax-convert+
   (make-inv-ortho-basis (make-point3 1.0 0.0 0.0)
                         (make-point3 0.0 0.0 -1.0)
                         (make-point3 0.0 1.0 0.0)))

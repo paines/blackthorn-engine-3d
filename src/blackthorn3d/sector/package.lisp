@@ -30,7 +30,7 @@
   (:use :iter :cl :alexandria :userial :blt3d-utils :blt3d-math :blt3d-ent
         :blt3d-phy)
   (:export
-   
+
    ;; sector.lisp
    :sector
    :sector-id
@@ -55,7 +55,7 @@
 
    :add-test-sectors
    :collect-sectors
-   
+
    ;; portal.lisp
    :portal
    :portal-id

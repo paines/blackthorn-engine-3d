@@ -35,7 +35,7 @@
 ;; An ANIMATION-CLIP is an abstraction for a collection of channels
 ;; and the targets they bind to (DC: this may be better placed as
 ;; part of the channel, will check collada spec for their choice)
-;; 
+;;
 
 (defclass animation-clip ()
   ((id

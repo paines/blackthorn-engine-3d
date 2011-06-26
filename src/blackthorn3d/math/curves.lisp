@@ -42,16 +42,16 @@
 #+disabled
 (defmacro t-vec (time)
   (once-only (time)
-             `#(,(expt time 3) 
-                ,(expt time 2) 
-                ,time 
+             `#(,(expt time 3)
+                ,(expt time 2)
+                ,time
                 1.0)))
 
 ;; Returns #(a b c d)
 (defun calc-1d-hermite-coefs (p0 p1 v0 v1 dt)
-  (let ((right-vec (make-vector4 p0 
-                                 p1 
-                                 (* dt v0) 
+  (let ((right-vec (make-vector4 p0
+                                 p1
+                                 (* dt v0)
                                  (* dt v1))))
     (matrix-multiply-v herm-mat right-vec)))
 

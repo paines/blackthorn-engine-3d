@@ -47,7 +47,7 @@
    (channel-bindings
     :initarg :channel-bindings
     :documentation "to allow re-use of channels for multiple objects
-                    we bind them to their targets at the controller 
+                    we bind them to their targets at the controller
                     level.  a channel binding is a tuple:
                     (channel target-fn last-frame) where last-frame
                     is an optimization for channel")))
@@ -65,12 +65,12 @@
   (make-instance 'anim-controller
                  :channel-bindings channel-bindings
                  :state :loop
-                 :clips 
+                 :clips
                  (if clips
                      clips
-                     (list 
-                      :default 
-                      (cons 
+                     (list
+                      :default
+                      (cons
                        (get-start (mapcar #'first channel-bindings))
                        (get-end (mapcar #'first channel-bindings)))))))
 
@@ -134,16 +134,16 @@
 ;;          then will run next-clip if there is one
 ;;   :stop - does nothing
 (defmethod update-anim-controller ((this anim-controller) dt)
-  (with-slots (current-clip next-clip elapsed t-start state 
+  (with-slots (current-clip next-clip elapsed t-start state
                             channel-bindings clips) this
     (incf elapsed dt)
     (when current-clip
       (when (> elapsed (end-time current-clip))
-        (if (eql state :loop) 
+        (if (eql state :loop)
             (setf elapsed 0.0)
             (next-clip this))))
     (case state
-      ((:run :loop)  
+      ((:run :loop)
        (if current-clip
            (update-channels channel-bindings elapsed)
            (play-clip this (car clips) state)))

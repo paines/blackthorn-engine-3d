@@ -60,7 +60,7 @@
          (dot02 (dot v0 v2))
          (dot11 (dot v1 v1))
          (dot12 (dot v1 v2))
-         (denom (- (* dot00 dot11) 
+         (denom (- (* dot00 dot11)
                    (* dot01 dot01))))
     (unless (zerop denom)
       (let* ((inv-denom (/ 1.0 denom))
@@ -94,12 +94,12 @@
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
     (let* ((center-dist (plane-dist plane sph-pos)))
       (if (< center-dist sph-rad)
-          (list (vec3- sph-pos (vec-scale3 (plane-n plane) center-dist)) 
+          (list (vec3- sph-pos (vec-scale3 (plane-n plane) center-dist))
                 center-dist)
           nil))))
 
 (defun point-line-sq-distance (point line)
-  "Returns (values sq-dist t-val) where dist is the squared distance of 
+  "Returns (values sq-dist t-val) where dist is the squared distance of
    point from line segment line, t-val is the value along B-A that point
    occurs at"
   (let* ((e (vec3- (cdr line) (car line)))
@@ -107,11 +107,11 @@
          (d2 (dot (vec3- point (cdr line)) (vec-neg3 e))))
     ;; If p is 'behind' the beginning of line
     (if (minusp d1)
-        (values (mag (vec3- point (car line))) 
+        (values (mag (vec3- point (car line)))
                 (/ d1 (sq-mag e)))
         ;; If p is 'after' the end of the line
         (if (minusp d2)
-            (values (sq-mag (vec3- point (cdr line))) 
+            (values (sq-mag (vec3- point (cdr line)))
                     (/ d1 (sq-mag e)))
             ;; If p is in between
             (values
@@ -154,8 +154,8 @@
       ;(format t "We have a ray-cylinder collision~%")
       ;; The ray, Q = P + Vt that intersects the cylinder
       (setf Q (vec3+ Q (vec-scale4 velocity t0)))
-      
-      ;; Now check if the point (Q) is part of the edge, 
+
+      ;; Now check if the point (Q) is part of the edge,
       ;; the start, or end
       (setf H (vec3- Q O))
       (let ((f0 (dot H E)))
@@ -184,14 +184,14 @@
 ;; from http://www.peroxide.dk/papers/collision/collision.pdf
 (defun moving-sphere-triangle-intersection (sphere tri velocity)
   (with-slots ((sph-rad rad) (sph-pos pos)) sphere
-    (let* ((tri-plane (make-plane (tri-n tri) 
+    (let* ((tri-plane (make-plane (tri-n tri)
                                   (- (dot (tri-c tri) (tri-n tri)))))
            (n.vel (dot (tri-n tri) velocity))
            (basepoint-dist (plane-dist tri-plane sph-pos))
            (t-max 1.0)
            t0 t1)
 
-     
+
       ;; check for backfacing
       ;#+disabled
       (when (> n.vel 0)
@@ -201,9 +201,9 @@
       ;; check for velocity parallel to triangle
       (if (= 0.0 n.vel)
           (progn ; (format t "WE IS PARALLEL!~%")
-            (cond 
+            (cond
               ;; Case: the sphere never touches the plane
-              ((< sph-rad basepoint-dist) 
+              ((< sph-rad basepoint-dist)
                (return-from moving-sphere-triangle-intersection nil))
               ;; Case: the sphere moves through the plane
               ((>= sph-rad basepoint-dist)
@@ -223,7 +223,7 @@
       (when (or (< t1 0) (> t0 1.0))
         (return-from moving-sphere-triangle-intersection nil))
 
-      ;; Check for and handle the t0 < 0 case 
+      ;; Check for and handle the t0 < 0 case
       ;; (we start inside the triangle!)
       #+disabled
       (when (< t0 0)
@@ -234,7 +234,7 @@
       ;; clamp t1, we don't care what happens after 1.0
       (setf ;t0 (clamp t0 0 1)
             t1 (clamp t1 0 1))
-      
+
       ;; TEST 1: check if the sphere intersects with the surface of tri
       (let* ((plane-intersection (vec3+ (vec3- sph-pos (tri-n tri))
                                         (vec-scale3 velocity t0))))
@@ -292,10 +292,10 @@
           plane-pt dist)
       (aif (sphere-plane-intersection sphere tri-plane)
            (setf plane-pt (first it)
-                 dist (second it)) 
-           ;; If sphere is too far form triangle plane then we can reject 
+                 dist (second it))
+           ;; If sphere is too far form triangle plane then we can reject
          (return-from sphere-triangle-intersection nil))
-  
+
 
       ;; Check if point is inside triangle
       (when (point-in-triangle-p plane-pt tri)
@@ -308,7 +308,7 @@
                    (when (>= rad-sq dist)
                     ; (format t "~%dist=~a~%t-val=~a~%" dist t-val)
                      ;; Do hit herr
-                     (list dist 
+                     (list dist
                            (vec3+ v0 (vec-scale3 (vec3- v1 v0) t-val)))
                      #+disabled
                      (return-from
@@ -317,17 +317,17 @@
         (let (min-d)
           ;; Side v0->v1
           (setf min-d (side-test (tri-v0 tri) (tri-v1 tri)))
-          
+
           ;; Side v0->v2
           (let ((t2 (side-test (tri-v0 tri) (tri-v2 tri))))
             (if (and min-d t2 (< (car t2) (car min-d)))
                 (setf min-d t2)))
-          
+
           ;; Side v1->v
           (let ((t3 (side-test (tri-v1 tri) (tri-v2 tri))))
             (if (and min-d t3 (< (car t3) (car min-d)))
                 (setf min-d t3)))
-          
+
           min-d)))))
 
 
@@ -341,13 +341,13 @@
          (closest-dist (mag (vec-scale4 velocity x0))))
 
   ;  (format t "#####~%hit: ~a~%" hit)
-              
+
     ;; only move the base point if we aren't already
     ;; very close to the hit
     (if (>= closest-dist 0.00001)
-        (setf new-bp 
-              (vec4+ new-bp 
-                     (set-length4 velocity 
+        (setf new-bp
+              (vec4+ new-bp
+                     (set-length4 velocity
                                   (- closest-dist 0.00001)))
               hit-pt (vec4- hit-pt (set-length4 velocity
                                                 0.00001))))
@@ -368,6 +368,6 @@
    ;   (format t "~3Tplane-n: ~a~%" plane-normal)
    ;   (format t "~3Tplane-d: ~a~%" (plane-d sliding-plane))
   ;    (format t "~3Tplane-dist: ~a~%" (plane-dist sliding-plane dest))
-      
+
 
       (list new-bp new-vel plane-normal))))

@@ -27,7 +27,7 @@
 
 ;;;
 ;;; Stuff for loading animations from COLLADA files
-;;; 
+;;;
 ;;; Current support is for baked matrices with linear interpolation
 ;;; only
 ;;;
@@ -49,8 +49,8 @@
   (let ((*dbg-level* (1+ *dbg-level*))
         (animation-table (make-id-table))
         (sampler-table (make-id-table))
-        (default-count 0))    
-    (iter (for animation in (children-with-tag +animation+ 
+        (default-count 0))
+    (iter (for animation in (children-with-tag +animation+
                                                animations-library))
           (let ((source-table (hash-sources animation))
                 (channel-list ()))
@@ -65,10 +65,10 @@
             (setf
              channel-list
              (iter (for channel in (children-with-tag +channel+ animation))
-                   (let ((inputs 
-                          (gethash (get-uri "source" (attributes channel)) 
+                   (let ((inputs
+                          (gethash (get-uri "source" (attributes channel))
                                    sampler-table)))
-                
+
                      (collect
                       (make-channel
                        :times (src-array (input-by-semantic :input inputs))
@@ -80,7 +80,7 @@
                    (iter (for ch in channel-list)
                          (maximizing (slot-value ch 't-max))))
                   (anim-id (or (get-attribute "id" (attributes animation))
-                               (format nil "animation-no-~a" 
+                               (format nil "animation-no-~a"
                                        (incf default-count)))))
               (dae-debug "anim-id: ~a~%" anim-id)
               (setf (gethash anim-id animation-table)

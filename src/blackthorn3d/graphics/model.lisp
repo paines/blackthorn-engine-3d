@@ -27,15 +27,15 @@
 (in-package :blackthorn3d-graphics)
 
 ;;;
-;;; Models 
-;;; 
+;;; Models
+;;;
 ;;; a model encapsulates mesh and material data in a
 ;;; tree like structure that chains matrices and meshes
 ;;; with the textures and shaders they require to render
 ;;;
 
 
-(defclass model-shape ()  
+(defclass model-shape ()
   ((mesh-graph
     :accessor model-mesh-graph
     :initarg :mesh-graph
@@ -49,7 +49,7 @@
     :initarg :matrix
     :initform nil
     :documentation "the matrix that transforms from the model space
-                    to the space of the parent (world, unless a child 
+                    to the space of the parent (world, unless a child
                     in a scenegraph")))
 
 (defvar *material-array* nil)
@@ -87,7 +87,7 @@
 (defmethod draw-object ((this model-node))
   (gl:with-pushed-matrix
       (aif (transform this) (gl:mult-matrix it))
-   
+
     (let ((*material-array* (material-array this)))
       (draw-object (mesh this))
       (iter (for node in (child-nodes this))
@@ -126,7 +126,7 @@
 ;; Changed to return the same, albeit modified, blt-model
 (defmethod load-obj->models ((this blt-model))
   (labels ((load-node (node)
-             
+
              (when (slot-exists-p node 'mesh)
                (with-slots (mesh transform material-array) node
                  (multiple-value-bind (interleaved accessor)
@@ -180,7 +180,7 @@
   (make-instance
    'skin
    :id (id skin)
-   :vert-data ; interleaved 
+   :vert-data ; interleaved
    (vntiw-array->gl-array interleaved)
    :elements ; elements
    (iter (for elt in elements)

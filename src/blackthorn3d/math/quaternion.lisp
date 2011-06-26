@@ -39,23 +39,23 @@
 
 (defun qv (q)
   (make-vector3 (x q) (y q) (z q)))
-  
+
 (defmacro qw (q)
   `(w ,q))
-  
+
 (defun make-quat (x y z w)
   (make-vector4 x y z w))
 
 (defun make-quat-from-vw (v w)
   (make-vector4 (x v) (y v) (z v) w))
-  
+
 (defun vec3->quat (p)
   (make-quat (x p) (y p) (z p) 0.0))
-  
+
 (defun axis-rad->quat (axis rad)
   (make-quat-from-vw (vec-scale4 axis (sin (/ rad 2.0)))
                      (cos (/ rad 2.0))))
-  
+
 (defun euler->quat (roll pitch yaw)
   "Takes euler angles (roll pitch and yaw and converts them
    to a quaternion.  Assumes order is r->p->y"
@@ -82,7 +82,7 @@
 
 (defun quat-norm (q)
   (normalize q))
-  
+
 (defun quat+ (q r)
   (make-quat
     (+ (x q) (x r))
@@ -151,7 +151,7 @@
       (format t "ZOMG COMPLEXITY~% src: ~a dest: ~a~% dot: ~a~%"
               srcVec destVec e))
     (let ((radical (sqrt disc)))
-      (if (zerop radical) 
+      (if (zerop radical)
           (quat-identity)
           (make-quat-from-vw   (vec-scale4 u (/ 1.0 radical))  ; qv
                                (/ radical 2.0))))))             ; qw

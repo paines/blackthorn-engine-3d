@@ -76,7 +76,7 @@
 ;; so they need a 'handle' function that takes &rest args and does stuff
 ;; For now lets consider creating new effects every time.
 
-;; 
+;;
 
 (defvar *ghost-effect-color* +purple+)
 (defvar *human-effect-color* +aqua+)
@@ -138,10 +138,10 @@
 
 (defmethod render-effect ((this flare))
   (with-slots (pos texture color size) this
-    (draw-billboard-quad pos (x size) (y size) 
+    (draw-billboard-quad pos (x size) (y size)
                          texture color)))
 
-;; these are ugly 
+;; these are ugly
 #+disabled
 (defmethod move-effect ((this gfx) xform)
   (setf (xform this) xform))
@@ -198,7 +198,7 @@
    :drag-coeff 1.0))
 
 (defun make-laser-beam (start beam color texture)
-  (make-instance 'beam 
+  (make-instance 'beam
                  :start start
                  :beam beam
                  :life *laser-duration*

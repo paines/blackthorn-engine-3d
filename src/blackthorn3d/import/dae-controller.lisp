@@ -46,14 +46,14 @@
          (n-verts (parse-integer
                    (get-attribute "count" (attributes weights-tag))))
          (weights (src-array
-                   (input-by-semantic :weight 
-                                      (build-input-lst weights-tag 
+                   (input-by-semantic :weight
+                                      (build-input-lst weights-tag
                                                        sources))))
-         (counts (string->sv (third 
-                              (find-tag-in-children 
+         (counts (string->sv (third
+                              (find-tag-in-children
                                "vcount" weights-tag))))
-         (v-indices (string->sv (third 
-                                 (find-tag-in-children 
+         (v-indices (string->sv (third
+                                 (find-tag-in-children
                                   "v" weights-tag))))
          (index-array (make-array (* 4 n-verts)))
          (weight-array (make-array (* 4 n-verts)))
@@ -69,24 +69,24 @@
                  (for v-ind-inc = (* 2 (+ i start-index)))
                  ;; we have to collect them FIRST
                  ;; then make sure they're NORMALIZED (in case we drop some)
-                 (collect 
+                 (collect
                   (cons (svref v-indices v-ind-inc)
                         (svref weights (svref v-indices (1+ v-ind-inc))))
                   into pairs-lst)
 
                  (finally
-                  ;; select the 4 biggest weights, pad with 0s, and 
+                  ;; select the 4 biggest weights, pad with 0s, and
                   ;; normalize
-                  
+
                   ;;quick check to see sum
                   (when (zerop (iter (for (index . weight) in pairs-lst)
                                      (sum weight)))
                     (format t "ZERO-TOTAL!: pairs: ~a~%" pairs-lst))
 
-                  
+
                   ;; combine same-joint weights
                   ;#+disabled
-                  (setf 
+                  (setf
                    pairs-lst
                    (iter (with result = (make-hash-table))
                          (for (index . weight) in pairs-lst)
@@ -101,10 +101,10 @@
                   (progn
                     (iter (for i below (- 4 (length pairs-lst)))
                           (push '(0 . 0.0) pairs-lst))
-                  
-                    
+
+
                     ;; normalize
-                    (let ((total 
+                    (let ((total
                            (iter (for (index . weight) in pairs-lst)
                                  (for i below 4)
                                  (sum weight))))
@@ -126,7 +126,7 @@
               (format t "V-INDEX: ~a~%" v-index))
             ;; Build the index and weight streams
             (set-thingy v-index count)
-            (finally (format t "Was vi = nverts?!? ~a: ~a~%" 
+            (finally (format t "Was vi = nverts?!? ~a: ~a~%"
                             vi  (= vi n-verts))))
       (list
        (list :joint-index
@@ -150,24 +150,24 @@
   (dae-debug "Processing skin controllers~%")
   (let ((*dbg-level* (1+ *dbg-level*))
         (controller-table (make-id-table)))
-    (iter (for controller in (children-with-tag +controller+ 
+    (iter (for controller in (children-with-tag +controller+
                                                 controller-library))
-          (dae-debug "processing controller: ~a~%" 
+          (dae-debug "processing controller: ~a~%"
                      (get-attribute "id" (attributes controller)))
           (let* ((*dbg-level* (1+ *dbg-level*))
 
                  (skin (find-tag-in-children +skin+ controller))
                  (sources (hash-sources skin))
-                 (bind-pose (matrix-tag->matrix 
-                             (find-tag-in-children +bind-shape-mat+ skin) 
+                 (bind-pose (matrix-tag->matrix
+                             (find-tag-in-children +bind-shape-mat+ skin)
                              :tag +bind-shape-mat+))
-                 (joint-list (build-input-lst 
+                 (joint-list (build-input-lst
                               (find-tag-in-children +joints+ skin)
                               sources)))
-            
+
             ;; DEBUG
             ;(print joint-list)
-            
+
             ;; TODO:- do something with the return of the next 2 statements
 
             ;; Build joint array
@@ -183,10 +183,10 @@
                    ;; Bind pose matrix
                    bind-pose
                    ;; Joint array
-                   (let ((joint-names (src-array 
+                   (let ((joint-names (src-array
                                        (input-by-semantic :joint joint-list)))
-                         (ibm-source 
-                          (input-by-semantic :inv_bind_matrix 
+                         (ibm-source
+                          (input-by-semantic :inv_bind_matrix
                                              joint-list)))
                      (iter (for joint-name in-vector joint-names)
                            (for i upfrom 0)

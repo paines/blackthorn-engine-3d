@@ -80,27 +80,27 @@
   (let ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
-	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 -1.0 -1.0 -1.0) 
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 -1.0 -1.0 -1.0)
 			                    :a-max (make-point3 1.0 1.0 1.0))))
     (is (eql (collide-p s1 s2) t)))
     ; expect T
   (let ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
-	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1.1 0.0 0.0) 
+	(s2 (make-instance 'aa-bounding-box :a-min (make-point3 1.1 0.0 0.0)
 			                    :a-max (make-point3 1.1 2.0 0.0))))
     (is (eql (collide-p s1 s2) nil)))
-  (let ((s1 (make-instance 'bounding-sphere 
+  (let ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0)))
     (is (eql (collide-p s1 nil) nil))
     (is (eql (collide-p nil s1) nil)))
-  (let* ((s1 (make-instance 'bounding-sphere 
+  (let* ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 1.0 0.0 0.0)
                            :rad 1.0))
 	 (e1 (make-instance 'entity-server :pos (make-point3 0.0 1.0 0.0)
 			    :bv s1))
-	 (s2 (make-instance 'bounding-sphere 
+	 (s2 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 2.0 0.0)
                            :rad 1.1))
 	 (e2 (make-instance 'entity-server :pos (make-point3 1.0 0.0 0.0)
@@ -117,7 +117,7 @@
         (is (= test1 1.0))
         (is (=
              (point-line-sq-distance
-              #(0.0 1.0 0.0) (cons #(-1.0 0.0 0.0) #(1.0 0.0 0.0)))             
+              #(0.0 1.0 0.0) (cons #(-1.0 0.0 0.0) #(1.0 0.0 0.0)))
              1.0))
         (is (=
              (point-line-sq-distance
@@ -138,7 +138,7 @@
 
 
 (test move-bounding-volume
-  (let* ((s1 (make-instance 'bounding-sphere 
+  (let* ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
 	 (vec1 (make-vector3 1.0 2.0 3.0))
@@ -146,13 +146,13 @@
     (is (equalp (pos s2) (make-point3 1 2 3)))))
 
 (test move-bounding-volume-set
-  (let ((s1 (make-instance 'bounding-sphere 
+  (let ((s1 (make-instance 'bounding-sphere
                            :pos (make-point3 0.0 0.0 0.0)
                            :rad 1.0))
 	(vec1 (make-vector3 1.0 2.0 3.0)))
     (move-bounding-volume-set s1 vec1)
     (is (equalp (pos s1) (make-point3 1 2 3)))))
-    
+
 
 (test swept-sphere-collide
       (let* ((sph1 (make-instance 'bounding-sphere
@@ -163,7 +163,7 @@
                                   :rad 1.0))
              (vel1 (make-vec3 0.0 0.0 0.0))
              (vel2 (make-vec3 2.1 0.0 0.0)))
-        (format t "result is ~a~%" 
+        (format t "result is ~a~%"
                 (swept-sphere-collide sph1 vel1 sph2 vel2))
         (is (swept-sphere-collide sph1 vel1 sph2 vel2))))
 
@@ -198,7 +198,7 @@
              (sphere (make-instance 'bounding-sphere
                                     :pos (make-point3 4.0 1.5 0.3)
                                     :rad 2.0))
-             (result (ray-sphere-intersection ray sphere 
+             (result (ray-sphere-intersection ray sphere
                                               most-positive-single-float)))
         (format t "~%ray-sphere result: ~a~%" result)
         (is (not (null result)))))
@@ -228,8 +228,8 @@
              (vel (make-vec3 -0.065 0.0 -0.0753))
              (edge-o (make-point3 1.5 -1.5 3.0))
              (edge-e (make-vec3 0.0 3.0 0.0))
-             
-             (result 
+
+             (result
               (sphere-edge-intersection sphere vel edge-o edge-e 1.0)))
         (format t "~%SPHERE-EDGE RESULT: ~a~%" result)
         (is (not (null result)))))
@@ -254,7 +254,7 @@
              (vel1 (make-vec3 2.5 0.0 0.0))
              (vel2 (make-vec3 0.0 0.0 0.0))
              (test-res (swept-sphere-collide sph1 vel1 sph2 vel2))
-             (test-res2 (sphere-point-intersection 
+             (test-res2 (sphere-point-intersection
                          (make-instance 'bounding-sphere
                                         :rad 2.0
                                         :pos +origin+)
@@ -332,15 +332,15 @@
   (blt3d-main::construct-octree))
 
 (test check-collisions-octree
-  (let ((e1 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid) 
-					  :pos (make-point3 3.0 3.0 3.0) 
+  (let ((e1 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid)
+					  :pos (make-point3 3.0 3.0 3.0)
 		       :bv (make-instance 'bounding-sphere :rad 2
 					  :pos (make-point3 0.0 0.0 0.0))))
-	(e2 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid) 
-			                  :pos (make-point3 4.5 4.5 4.5) 
+	(e2 (make-instance 'entity-server :oid (blt3d-ent::make-server-oid)
+			                  :pos (make-point3 4.5 4.5 4.5)
 		       :bv (make-instance 'bounding-sphere :rad 3
 					  :pos (make-point3 0.0 0.0 0.0)))))
     (setf (gethash 0 blt3d-ent::*global-oid-table*) e1)
     (setf (gethash 1 blt3d-ent::*global-oid-table*) e2)
     (blt3d-main::check-collisions-octree)))
-  
+

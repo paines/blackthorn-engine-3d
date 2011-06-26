@@ -32,7 +32,7 @@
 
 (defun on-server-p ()
   (eql *connection-side* :server))
-  
+
 (defun on-client-p ()
   (eql *connection-side* :client))
 

@@ -46,7 +46,7 @@
          (s (dot L (ray-d ray))))
     (when (and (< s 0) (> l2 r2))
       (return-from ray-sphere-intersection nil))
-    
+
     (let ((m2 (- l2 (sq s))))
       (when (> m2 r2)
         (return-from ray-sphere-intersection nil))
@@ -57,7 +57,7 @@
 (defun ray-triangle-intersection (ray tri tmax)
   "Detect whether a ray (e-vec . d-vec) intersects a triangle
    returns nil if no intersection occurs, or (P s) where P
-   is the point on the triangle and s is the distance, 
+   is the point on the triangle and s is the distance,
    or time (in e + s*d).  Returns nil or values (s u v)"
    (let* ((e1 (vec3- (svref tri 1) (svref tri 0)))
           (e2 (vec3- (svref tri 2) (svref tri 0)))
@@ -98,7 +98,7 @@
                   ;; If di is negative
                   (setf t1 (* (- (svref a-min i) (svref o i)) one/d)
                         t0 (* (- (svref a-max i) (svref o i)) one/d)))
-              
+
               (if (< t0 t1)
                   (setf t-min (max t0 t-min)
                         t-max (min t1 t-max))
@@ -106,10 +106,10 @@
                   (setf t-min (max t1 t-min)
                         t-max (min t0 t-max)))
               (when (or (> t-min t-max)
-                        (< t-max 0)) 
+                        (< t-max 0))
                 (return-from ray-aabb-intersection nil))))
-      
-      (let ((t0 (if (> t-min 0) 
+
+      (let ((t0 (if (> t-min 0)
                     t-min t-max)))
         (when (< t0 tmax)
           t0)))))
@@ -135,7 +135,7 @@
                 ;; If di is negative
                 (setf t1 (* (- min-e (svref o i)) one/d)
                       t0 (* (- max-e (svref o i)) one/d)))
-            
+
             (if (< t0 t1)
                 (setf t-min (max t0 t-min)
                       t-max (min t1 t-max))
@@ -143,10 +143,10 @@
                 (setf t-min (max t1 t-min)
                       t-max (min t0 t-max)))
             (when (or (> t-min t-max)
-                      (< t-max 0))                    
+                      (< t-max 0))
               (return-from ray-rect-intersection nil))))
 
-    (let ((t0 (if (> t-min 0) 
+    (let ((t0 (if (> t-min 0)
                   t-min t-max)))
       t0)))
 
@@ -155,15 +155,15 @@
              (cond
                ((typep node 'spatial-tree-leaf-node)
                 (let (result)
-                  (dolist (entry (spatial-trees-impl::records node) 
+                  (dolist (entry (spatial-trees-impl::records node)
                            (nreverse result))
-                    (when 
-                        (ray-rect-intersection 
-                         r 
+                    (when
+                        (ray-rect-intersection
+                         r
                          (spatial-trees-impl::leaf-node-entry-rectangle entry))
-                   
-                      (push 
-                       (spatial-trees-impl::leaf-node-entry-datum entry) 
+
+                      (push
+                       (spatial-trees-impl::leaf-node-entry-datum entry)
                        result)))))
                (t
                 (let (result)
@@ -179,14 +179,14 @@
   (with-slots (pos bounding-volume shape-name) ent
     (unless (eql shape-name :none)
       (let ((test-sphere (move-bounding-volume bounding-volume pos)))
-        (let ((result (ray-sphere-intersection 
-                       ray test-sphere 
+        (let ((result (ray-sphere-intersection
+                       ray test-sphere
                        most-positive-single-float)))
           result)))
 
     #+disabled
-    (aif (and shape (ray-sphere-intersection 
-                     ray test-sphere 
+    (aif (and shape (ray-sphere-intersection
+                     ray test-sphere
                      most-positive-single-float))
          (ray-cast ray shape))))
 
@@ -205,8 +205,8 @@
   ;; so lets be conservative!
   (with-slots (bounding-volume child-nodes transform bounding-volume) node
     ;#+disabled
-    (let ((sphere-hit (ray-sphere-intersection 
-                       ray bounding-volume 
+    (let ((sphere-hit (ray-sphere-intersection
+                       ray bounding-volume
                        most-positive-single-float)))
       (when sphere-hit
         (let* ((inv-xform (rt-inverse transform))
@@ -219,8 +219,8 @@
 
 (defmethod ray-cast (ray (node model-node))
   (with-slots (transform child-nodes mesh bounding-volume) node
-    (let ((sphere-hit (ray-sphere-intersection 
-                       ray bounding-volume 
+    (let ((sphere-hit (ray-sphere-intersection
+                       ray bounding-volume
                        most-positive-single-float)))
       (when sphere-hit
         (let* ((inv-xform (rt-inverse transform))
@@ -234,7 +234,7 @@
 
 ;; ignore meshes... who needs em?
 ;; ok, ideally, we'd have it so we return the intersection
-;; with the sphere higher up...but we're going to do 
+;; with the sphere higher up...but we're going to do
 ;; entity-level detection there, so...
 (defmethod ray-cast (ray (mesh blt-mesh))
   t)

@@ -46,7 +46,7 @@
    :input-use
    :input-xbox-y
    :input-alt-attack
-   
+
    ;; server-control.lisp
    :new-server-controller
    :remove-server-controller
@@ -63,7 +63,7 @@
    :s-input-use
    :s-input-xbox-y
    :s-input-alt-attack
-   
+
    ;; xbox360.lisp
    :xbox360-vibrate
    :xbox360_poll

@@ -36,7 +36,7 @@
      (callback
         :accessor callback
         :initarg :callback)))
-        
+
 (defmethod update ((reactor pos-edge-react))
   (let ((new-state (funcall (check-signal reactor))))
     (when (and (not (state reactor)) new-state)
@@ -44,9 +44,9 @@
         (funcall (callback reactor)))
     (when (and (state reactor) (not new-state))
         (setf (state reactor) nil))))
-        
+
 (defun make-pos-reactor (test action)
   (make-server-entity 'pos-edge-react
     :check-signal test
     :callback action))
-    
+

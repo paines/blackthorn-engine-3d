@@ -42,7 +42,7 @@
        ,@(iter (for i in names)
                (for j below (length names))
                (collect (vec-accessor i j))))))
-        
+
 ;;; Create aliases for accessing different elements
 ;;; of vectors
 (gen-vec-accessors x y z w)
@@ -134,7 +134,7 @@
 
 (defun vec3+ (a b)
   (vec3-3elt-op + a b))
-  
+
 (defun vec4- (a b)
   (vec4-3elt-op - a b))
 
@@ -154,7 +154,7 @@
   (vec3-3elt-op / a b))
 
 (defun vec-scale4 (v s)
-  (make-vector4 
+  (make-vector4
     (* s (x v))
     (* s (y v))
     (* s (z v))
@@ -192,14 +192,14 @@
         (collect (* e s) result-type 'vector)))
 
 (defun vec-neg4 (v)
-  (make-vector4 
+  (make-vector4
     (- (x v))
     (- (y v))
     (- (z v))
     (w v)))
 
 (defun vec-neg3 (v)
-  (make-vector3 
+  (make-vector3
     (- (x v))
     (- (y v))
     (- (z v))))
@@ -216,7 +216,7 @@
 
 (defun mid-point (p1 p2)
   (vec3->point
-   (vec3+ p1 (vec-scale3 
+   (vec3+ p1 (vec-scale3
               (vec3- p2 p1) 0.5))))
 
 (defun sq-mag (v)
@@ -295,20 +295,20 @@
        (zerop (z vec))))
 
 (defun tri-centroid (v0 v1 v2)
-  (make-vector3 
+  (make-vector3
    (/ (+ (x v0) (x v1) (x v2)) 3.0)
    (/ (+ (y v0) (y v1) (y v2)) 3.0)
    (/ (+ (z v0) (z v1) (z v2)) 3.0)))
 
 ;; TODO: fix this later
-#+disabled 
+#+disabled
 (defun centroid (&rest vecs)
   (let ((v-len (length (car vecs))))
     (iter (for v in vecs)
           (counting t into len)
           (iter (for i below v-len)
                 (collect )))))
-                
+
 (defun vector-sum (vectors)
   (reduce #'vec4+ vectors :initial-value +zero-vec+))
 
@@ -359,7 +359,7 @@
 
 (defun to-point4 (vec)
   (make-point3 (x vec) (y vec) (z vec)))
-  
+
 (defun vec-eql (v1 v2)
   (let ((epsilon 0.001))
     (and (< (+ (abs (x v1)) (abs (x v2))) epsilon)

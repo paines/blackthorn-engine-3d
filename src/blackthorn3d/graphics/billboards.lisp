@@ -46,11 +46,11 @@
 
 
 (defun billboard-init ()
- 
+
   (format t "Loading billboard-shader:~%")
   (setf *billboard-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -58,9 +58,9 @@
                      :uniforms '("size")))
 
   (format t "Loading billboard-world-shader:~%")
-  (setf *billboard-world-shader* 
+  (setf *billboard-world-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-world-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -68,9 +68,9 @@
                      :uniforms '("size" "right" "up")))
 
   (format t "Loading billboard-vel-shader:~%")
-  (setf *billboard-vel-shader* 
+  (setf *billboard-vel-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/billboard-vel-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -118,16 +118,16 @@
 (defun draw-billboard-quad (pos size-x size-y texture color
                             &optional (align :screen) axis)
   (setup-shader align axis (vector size-x size-y 0.0))
-  (use-texture texture)    
+  (use-texture texture)
   (gl:color (r color) (g color) (b color) (a color))
   (gl:with-primitives :quads
-      
+
     (gl:tex-coord 0.0 0.0)
     (gl:vertex (x pos) (y pos) (z pos))
-      
+
     (gl:tex-coord 1.0 0.0)
     (gl:vertex (x pos) (y pos) (z pos))
-      
+
     (gl:tex-coord 1.0 1.0)
     (gl:vertex (x pos) (y pos) (z pos))
 
@@ -148,7 +148,7 @@
                         (* (p-energy particle) (a color)))
 
               (gl:tex-coord 0.0 0.0)
-              (gl:vertex (x pos) (y pos) (z pos))                
+              (gl:vertex (x pos) (y pos) (z pos))
               (gl:tex-coord 1.0 0.0)
               (gl:vertex (x pos) (y pos) (z pos))
               (gl:tex-coord 1.0 1.0)
@@ -176,8 +176,8 @@
                 (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
 ;                (gl:vertex-attrib vel-place (x vel) (y vel) (z vel))
-                
-                
+
+
                 (gl:tex-coord 1.0 0.0)
                 (gl:normal (x vel) (y vel) (z vel))
                 (gl:vertex (x pos) (y pos) (z pos))
@@ -197,14 +197,14 @@
 
 (defun render-particles (particles count num-alive texture size
                          &optional (align :screen) axis)
-  
+
   (setup-shader align axis size)
-  
+
   (use-texture texture)
-  (gl:with-pushed-attrib (:depth-buffer-bit)   
+  (gl:with-pushed-attrib (:depth-buffer-bit)
   ;  (gl:enable-client-state :vertex-array)
  ;   (gl:enable-client-state :texture-coord-array)
-    
+
     (case align
       (:velocity (draw-v-particles particles count num-alive))
       (otherwise (draw-particles particles count num-alive))))
@@ -227,7 +227,7 @@
                    (vector (x size) (y size) 0.0))))
 
     (setup-shader :axis axis size)
-    (use-texture texture)    
+    (use-texture texture)
     (gl:color (r color) (g color) (b color) (a color))
 
     (gl:with-primitives :quads
@@ -236,12 +236,12 @@
 
             (gl:tex-coord 0.0 0.0)
             (gl:vertex (x pos) (y pos) (z pos))
-                               
+
             (gl:tex-coord 1.0 0.0)
             (gl:vertex (x pos) (y pos) (z pos))
-               
+
             (gl:tex-coord 1.0 1.0)
             (gl:vertex (x pos) (y pos) (z pos))
-               
+
             (gl:tex-coord 0.0 1.0)
             (gl:vertex (x pos) (y pos) (z pos))))))

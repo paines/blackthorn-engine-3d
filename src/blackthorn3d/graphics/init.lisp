@@ -56,10 +56,10 @@
 
   (setf *particle-tex*
         (image->texture2d (load-image #p "res/images/round-particle2.png")))
- 
+
   (setf *crosshair-tex*
         (image->texture2d (load-image #p "res/images/crosshair.png")))
- 
+
   (setf *default-texture*
         (image->texture2d (load-image #p "res/images/BrushedMetal.jpg")))
 
@@ -78,7 +78,7 @@
   (format t "Loading skin shader:~%")
   (setf *skinned-tex*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/skin-shader.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -90,7 +90,7 @@
   (format t "Loading std shader:~%")
   (setf *standard-tex*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/texture-std.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -104,7 +104,7 @@
 
   (setf *depth-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/depth-buffer.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource

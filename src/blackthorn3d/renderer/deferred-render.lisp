@@ -47,7 +47,7 @@
 
 (defun create-pre-z-fbo ()
   (let ((framebuffer (make-framebuffer)))
-    (setf *depth-buffer* 
+    (setf *depth-buffer*
           (create-texture *screen-width* *screen-height*
                           :depth-component
                           :min-filter :nearest
@@ -67,16 +67,16 @@
     (gl:bind-framebuffer-ext :framebuffer-ext (fbo framebuffer))
 
     ;; Attach the depth buffer
-    (gl:framebuffer-texture-2d-ext 
-     :framebuffer-ext :depth-attachment-ext 
+    (gl:framebuffer-texture-2d-ext
+     :framebuffer-ext :depth-attachment-ext
      :texture-2d *depth-buffer* 0)
     (setf (depth-attachment framebuffer) *depth-buffer*)
 
     ;; Attach the normal buffer
     (gl:framebuffer-texture-2d-ext
-     :framebuffer-ext :color-attachment0-ext 
+     :framebuffer-ext :color-attachment0-ext
      :texture-2d *normal-buffer* 0)
-    (push (list :color-attachment0-ext *normal-buffer*) 
+    (push (list :color-attachment0-ext *normal-buffer*)
           (attachments framebuffer))
 
     (when (not (check-framebuffer-status))
@@ -99,15 +99,15 @@
     (gl:bind-framebuffer-ext :framebuffer-ext (fbo framebuffer))
 
     ;; Attach the diffuse buffer
-    (gl:framebuffer-texture-2d-ext 
-     :framebuffer-ext :color-attachment0-ext 
+    (gl:framebuffer-texture-2d-ext
+     :framebuffer-ext :color-attachment0-ext
      :texture-2d *diffuse-buffer* 0)
-    (push (list :color-attachment0-ext *diffuse-buffer*) 
+    (push (list :color-attachment0-ext *diffuse-buffer*)
           (attachments framebuffer))
 
     (when (not (check-framebuffer-status))
       (format t "#### LIGHT-PASS FBO ERROR!~%"))
-    
+
     (gl:bind-framebuffer-ext :framebuffer-ext 0)
     (setf light-pass-fbo framebuffer)))
 
@@ -118,7 +118,7 @@
   (format t "~%Loading pre-z-shader: #####################~%")
   (setf *pre-z-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/DR/pre-z-pass.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -127,7 +127,7 @@
   (format t "~%Loading light-pass-shader: ################~%")
   (setf *light-pass-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/DR/light-pass-point.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -138,7 +138,7 @@
   (format t "~%Loading forward-pass-shader: ##############~%")
   (setf *forward-pass-shader*
         (make-shader (blt3d-res:file-contents
-                      (blt3d-res:resolve-resource 
+                      (blt3d-res:resolve-resource
                        #p "res/shaders/DR/forward-pass.vert"))
                      (blt3d-res:file-contents
                       (blt3d-res:resolve-resource
@@ -150,7 +150,7 @@
   (create-light-pass-fbo))
 
 ;;;
-;;; Rendering functions.  
+;;; Rendering functions.
 ;;;    These all assume that the viewport is correctly
 ;;;    setup.
 ;;;
@@ -164,10 +164,10 @@
   (gl:disable :blend)
 
   (gl:clear :color-buffer-bit  :depth-buffer-bit)
-   
+
   (let ((*disable-shading* t))
     (enable-shader *pre-z-shader*)
-    
+
     ;; Draw objects
     (iter (for obj in *render-list*)
           (draw-object obj)))
@@ -189,21 +189,21 @@
 
   (enable-shader *light-pass-shader*)
 
-  (gl:uniformi (gl:get-uniform-location 
+  (gl:uniformi (gl:get-uniform-location
                 (program *light-pass-shader*)
                 "depthTex") 0)
-  (gl:uniformi (gl:get-uniform-location 
+  (gl:uniformi (gl:get-uniform-location
                 (program *light-pass-shader*)
                 "normalTex") 1)
-  (gl:uniformf (gl:get-uniform-location 
+  (gl:uniformf (gl:get-uniform-location
                 (program *light-pass-shader*)
                 "znear")
                0.2)
-  (gl:uniformf (gl:get-uniform-location 
+  (gl:uniformf (gl:get-uniform-location
                 (program *light-pass-shader*)
                 "zfar")
                200.0)
-  
+
   (gl:active-texture :texture0)
   (gl:bind-texture :texture-2d *depth-buffer*)
 
@@ -230,7 +230,7 @@
                (*disable-shading* t))
           (setf world-width .2)
           (setf world-height .2)
-    
+
           (draw-screen-quad)
 
           #+disabled
@@ -242,7 +242,7 @@
 
   (gl:active-texture :texture0)
   (gl:bind-texture :texture-2d 0)
-  
+
   (gl:active-texture :texture1)
   (gl:bind-texture :texture-2d 0)
 
@@ -258,7 +258,7 @@
   (gl:blend-func :src-alpha :one-minus-src-alpha)
 
   (enable-shader *forward-pass-shader*)
-  
+
   (gl:uniformi (gl:get-uniform-location
                 (program *forward-pass-shader*)
                 "normals")
@@ -283,19 +283,19 @@
   (gl:clear-depth 1.0)
 
   (set-viewport *main-viewport*)
-  
+
   (when *main-cam*
     (gl:matrix-mode :modelview)
     (with-slots (position direction) *main-light*
       (gl:load-identity)
       (gl:load-matrix *cam-view-matrix*)))
 
-  (setf *render-list* 
-        (remove-if 
+  (setf *render-list*
+        (remove-if
          #'null
          (cons home-sector
-               (remove-if-not 
-                #'(lambda (x) 
+               (remove-if-not
+                #'(lambda (x)
                     (and (shape x) (not (eql *main-cam* x))))
                 entities))))
 
@@ -320,13 +320,13 @@
   (gl:active-texture :texture0)
   (gl:bind-texture :texture-2d *depth-buffer*)
   (draw-screen-quad)
-  
+
  ;(disable-shader)
  ;(gl:enable :texture-2d)
   (gl:translate 1 0 0)
   (gl:bind-texture :texture-2d *normal-buffer*)
   (draw-screen-quad)
-  
+
   (gl:translate 0 1 0)
   (gl:bind-texture :texture-2d *diffuse-buffer*)
   (draw-screen-quad)

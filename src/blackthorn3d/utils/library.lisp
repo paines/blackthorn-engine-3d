@@ -41,11 +41,13 @@
         (pushnew frameworks cffi:*darwin-framework-directories* :test #'equal)))
   #+darwin
   (cffi:define-foreign-library cocoahelper
-    (:darwin (:framework "cocoahelper")))
+    (:darwin (:or (:framework "cocoahelper")
+                  (:default "cocoahelper"))))
   #+darwin
   (cffi:use-foreign-library cocoahelper)
   (cffi:define-foreign-library sdl
-    (:darwin (:framework "SDL"))
+    (:darwin (:or (:framework "SDL")
+                  (:default "libSDL")))
     (:windows "SDL.dll")
     (:unix (:or "libSDL-1.2.so.0.7.2"
                 "libSDL-1.2.so.0"
@@ -58,7 +60,8 @@
 ; from http://code.google.com/p/lispbuilder/source/browse/trunk/lispbuilder-sdl-image/cffi/library.lisp
 (defun load-sdl-image-dlls ()
   (cffi:define-foreign-library sdl-image
-    (:darwin (:framework "SDL_image"))
+    (:darwin (:or (:framework "SDL_image")
+                  (:default "libSDL_image")))
     (:windows (:or "SDL_image.dll" "SDL_image1.2.dll"))
     (:unix (:or "libSDL_image-1.2.so.0"
                 "libSDL_image1.2"
@@ -68,7 +71,8 @@
 ; from http://code.google.com/p/lispbuilder/source/browse/trunk/lispbuilder-sdl-mixer/cffi/library.lisp
 (defun load-sdl-mixer-dlls ()
   (cffi:define-foreign-library sdl-mixer
-    (:darwin (:framework "SDL_mixer"))
+    (:darwin (:or (:framework "SDL_mixer")
+                  (:default "libSDL_mixer")))
     (:windows "SDL_mixer.dll")
     (:unix (:or "libSDL_mixer"
                 "libSDL_mixer.so"

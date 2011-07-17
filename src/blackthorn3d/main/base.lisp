@@ -1,7 +1,7 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>,
-;;;;               2011 Robert Gross <r.gross.3@gmail.com>
+;;;; Copyright (c) 2011, Chris McFarland <askgeek@gmail.com> and
+;;;;                     Robert Gross <r.gross.3@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -25,7 +25,6 @@
 ;;;;
 
 (in-package :blackthorn3d-main)
-
 
 (defun make-sector (name level
                     &optional
@@ -73,7 +72,6 @@
                         (make-portal name pos dir bv)
                         (make-translate #(0.0 -15.0 0.0 1.0))))))
               :orientation orientation))
-
 
 ;; the room players land in when they first connect
 (defun make-start-sector (loaded-dae)

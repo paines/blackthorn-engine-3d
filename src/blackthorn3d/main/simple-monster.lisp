@@ -33,8 +33,7 @@
     :initform nil)
    (eyesight
     :accessor eyesight
-    :initform nil)
-  ))
+    :initform nil)))
 
 (defclass eyesight (entity-server)
   ((follow
@@ -47,26 +46,27 @@
     (monster-wander monster)))
 
 (defun make-eye (the-monster)
-  (make-server-entity 'eyesight
-      :pos (make-point3 0.0 0.0 0.0)
-      :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
-      :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
-      :follow the-monster
-      :shape-name :none
-      :bv (make-instance 'blackthorn3d-physics:bounding-sphere
-                    :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
-                    :rad *eyesight-radius*)))
+  (make-server-entity
+   'eyesight
+   :pos (make-point3 0.0 0.0 0.0)
+   :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
+   :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
+   :follow the-monster
+   :shape-name :none
+   :bv (make-instance 'blackthorn3d-physics:bounding-sphere
+                      :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
+                      :rad *eyesight-radius*)))
 
 (defun make-monster (in-room pos)
-  (let ((the-monster (make-server-entity 'simple-monster
-          :pos pos
-          :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
-          :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
-          :shape-name :wedge
-          :bv (make-instance 'blackthorn3d-physics:bounding-sphere
-                :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
-                :rad 1.0)
-          )))
+  (let ((the-monster (make-server-entity
+                      'simple-monster
+                      :pos pos
+                      :dir (blt3d-math:make-vec3 1.0 0.0 0.0)
+                      :up  (blt3d-math:make-vec3 0.0 1.0 0.0)
+                      :shape-name :wedge
+                      :bv (make-instance 'blackthorn3d-physics:bounding-sphere
+                                         :pos (blt3d-math:make-vec3 0.0 0.0 0.0)
+                                         :rad 1.0))))
     (add-to-room the-monster in-room)
     (setf (eyesight the-monster) (make-eye the-monster))
     the-monster))
@@ -76,16 +76,12 @@
     (remove-entity eye)
     (setf (pos eye) (pos (follow eye)))))
 
-
-
 (defun monster-chase-who (self who)
   (format t "Chase ~a~%" who)
   (if (or (not (is-alive-p who))
           (not (blackthorn3d-physics:collide-p (eyesight self) who)))
-    ;; then
-    (setf (chase-who self) nil)
-    ;; else
-    (blt3d-phy:chase self who 0.08)))
+      (setf (chase-who self) nil)
+      (blt3d-phy:chase self who 0.08)))
 
 (defun monster-wander (self)
   (declare (ignore self)))
@@ -98,7 +94,6 @@
 
 (defmethod collide ((p player) (eye eyesight))
   (collide eye p))
-
 
 (defmessage :force-disconnect send-force-disconnect
   (:string ; reason

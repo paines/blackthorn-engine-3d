@@ -26,27 +26,26 @@
 (in-package :blackthorn3d-main)
 
 (defclass pos-edge-react (entity-server)
-    ((state
-        :accessor state
-        :initform nil)
-     (check-signal
-        :accessor check-signal
-        :initform #'(lambda () nil)
-        :initarg :check-signal)
-     (callback
-        :accessor callback
-        :initarg :callback)))
+  ((state
+    :accessor state
+    :initform nil)
+   (check-signal
+    :accessor check-signal
+    :initform #'(lambda () nil)
+    :initarg :check-signal)
+   (callback
+    :accessor callback
+    :initarg :callback)))
 
 (defmethod update ((reactor pos-edge-react))
   (let ((new-state (funcall (check-signal reactor))))
     (when (and (not (state reactor)) new-state)
-        (setf (state reactor) t)
-        (funcall (callback reactor)))
+      (setf (state reactor) t)
+      (funcall (callback reactor)))
     (when (and (state reactor) (not new-state))
-        (setf (state reactor) nil))))
+      (setf (state reactor) nil))))
 
 (defun make-pos-reactor (test action)
   (make-server-entity 'pos-edge-react
-    :check-signal test
-    :callback action))
-
+                      :check-signal test
+                      :callback action))

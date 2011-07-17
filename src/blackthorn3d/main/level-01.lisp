@@ -38,18 +38,18 @@
 ;;;
 
   ;; monsters & stuff like that
-  ;#+disabled
- ; (load-model :fire-beast :dae #p "res/models/characters/FireBeastFinal.dae")
-  (load-model :spider :dae #p "res/models/characters/KatanaLegSpiderFinal.dae")
+  ;;#+disabled
+  ;;(load-model :fire-beast :dae #p "res/models/characters/FireBeastFinal.dae")
+  (load-model :spider :dae #p"res/models/characters/KatanaLegSpiderFinal.dae")
   (blt3d-phy:apply-transform (get-model :spider)
                              (make-scale #(0.35 0.35 0.35)))
 
-  (load-model :ghost :dae #p "res/models/characters/GhostFinal.dae")
+  (load-model :ghost :dae #p"res/models/characters/GhostFinal.dae")
   (blt3d-phy:apply-transform (get-model :ghost)
                              (make-scale #(0.15 0.15 0.15)))
 
-  (load-model :human-gun :dae #p "res/models/characters/ShooterFinal.dae")
-  (load-model :gun :dae #p "res/models/props/GunFinal.dae")
+  (load-model :human-gun :dae #p"res/models/characters/ShooterFinal.dae")
+  (load-model :gun :dae #p"res/models/props/GunFinal.dae")
   (blt3d-phy:apply-transform (get-model :human-gun)
                              (make-scale #(0.01 0.01 0.01)))
   (blt3d-phy:apply-transform (get-model :gun)
@@ -63,7 +63,6 @@
                               (make-point3 0.0 1.0 0.0)))
   (blt3d-phy:attach-node-to-model (car (blt3d-phy:mesh-nodes (get-model :gun)))
                                   "Bip001_R_Hand" (get-model :human-gun))
-
 
   (load-model :human-sword :dae #p "res/models/characters/SwordsmanFinal.dae")
   (load-model :sword :dae #p "res/models/props/SwordFinal.dae")
@@ -85,20 +84,19 @@
   (load-model :hallway :level #p "res/models/maps/HallwayFiveWay.dae")
   (load-model :victory :level #p "res/models/maps/VictoryRoom.dae")
 
-
 ;;;
 ;;; Level layout
 ;;;
 
   (make-start-sector (get-model :dead-end-room))
 
- ; #+disabled
+  ;; #+disabled
   (progn
     (add-sector-relative
      :start-sector
      :south
      (make-sector :s1 (get-model :hallway)
-                  ;(axis-rad->quat +y-axis+ pi)
+                  ;;(axis-rad->quat +y-axis+ pi)
                   ))
 
     (add-sector-relative
@@ -125,7 +123,6 @@
      (make-sector :d4 (get-model :dead-end-room)
                   (axis-rad->quat +y-axis+ (/ pi -2.0))))
 
-
     ;; Now link them all
 
     (link-sectors :start-sector :s1)
@@ -134,12 +131,11 @@
     (link-sectors :s1 :d3)
     (link-sectors :s1 :d4)
 
-;    (link-sectors :l1 :m1)
-;    (link-sectors :m1 :d1)
-;    (link-sectors :m1 :d2)
-  ;  (link-sectors :s1 :s2)
-  ;  (link-sectors :s2 :end)
-
+    ;;(link-sectors :l1 :m1)
+    ;;(link-sectors :m1 :d1)
+    ;;(link-sectors :m1 :d2)
+    ;;(link-sectors :s1 :s2)
+    ;;(link-sectors :s2 :end)
 
     #+disabled
     (progn

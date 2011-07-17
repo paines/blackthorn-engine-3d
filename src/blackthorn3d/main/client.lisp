@@ -26,7 +26,7 @@
 (in-package :blackthorn3d-main)
 
 (defun use-model-on (model-symbol entity)
-    (setf (shape entity) (get-model model-symbol)))
+  (setf (shape entity) (get-model model-symbol)))
 
 (defvar *should-quit* nil)
 
@@ -43,7 +43,7 @@
           (format t  "Killed by monster!~%")
           (setf *should-quit* t))
         ;; this really shouldn't be done every step
-        ;(setf (current-sector entity) (lookup-sector (current-sector entity)))
+        ;;(setf (current-sector entity) (lookup-sector (current-sector entity)))
         #+disabled
         (use-model-on (shape-name entity) entity)))
 
@@ -80,7 +80,7 @@
     (:event-entity-remove
      (apply-message-handler #'handle-entity-remove-client src message))
     (:force-disconnect
-      (setf *should-quit* t))
+     (setf *should-quit* t))
     (:event-camera
      (apply-message-handler #'handle-camera-client src message))
     (:event-sound
@@ -90,8 +90,7 @@
     (:play-laser
      (apply-message-handler #'handle-play-laser src message))
     (:play-animation
-     (apply-message-handler #'handle-play-animation src message))
-    ))
+     (apply-message-handler #'handle-play-animation src message))))
 
 (defun finalize-client ()
   (socket-disconnect-all)
@@ -119,7 +118,7 @@
               :title-caption "Test" :icon-caption "Test")
   (when reset-viewport
     (blt3d-rend:init)
-	(load-models-n-stuff)
+    (load-models-n-stuff)
     (blt3d-rend:set-viewport-size width height)))
 
 (defun largest-video-dimensions (&key fullscreen)
@@ -177,7 +176,6 @@
       (set-window *windowed-width* *windowed-height*
                   :fullscreen *window-fullscreen-p*)
 
-
       (blt3d-snd:init)
       (blt3d-rend:init)
       (init-client)
@@ -217,27 +215,25 @@
                (vy (float (input-view-y *input*)))
                (jmp (float (input-jump *input*))))
 
-           (send-input :server
-                       (* 0.1 mx)
-                       (* 0.1 my)
-                       (* 0.1 vx)
-                       (* 0.1 vy)
-                       jmp
-                       (input-camera-mode *input*)
-                       (input-attack *input*)
-                       (input-fly-up *input*)
-                       (input-fly-down *input*)
+           (send-input
+            :server
+            (* 0.1 mx)
+            (* 0.1 my)
+            (* 0.1 vx)
+            (* 0.1 vy)
+            jmp
+            (input-camera-mode *input*)
+            (input-attack *input*)
+            (input-fly-up *input*)
+            (input-fly-down *input*)
 
-                       (input-use *input*)
-                       (input-xbox-y *input*)
-                       (input-alt-attack *input*)
-                       ))
-
+            (input-use *input*)
+            (input-xbox-y *input*)
+            (input-alt-attack *input*)))
 
          (blt3d-rend:update-graphics (list-entities) 1/60)
 
          (blt3d-rend:render-frame (list-entities))
-
 
          (iter (for (src message) in (message-receive-all :timeout 0))
                (handle-message-client src message))

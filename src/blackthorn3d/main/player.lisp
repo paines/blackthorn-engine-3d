@@ -27,18 +27,17 @@
 
 (defclass player (entity-server)
   ((client
-        :accessor player-client
-        :initarg :client
-        :documentation "The socket symbol for the player's client")
+    :accessor player-client
+    :initarg :client
+    :documentation "The socket symbol for the player's client")
    (health
-        :accessor health
-        :initform 1.0
-        :documentation "Health in range [0.0, 1.0]")
+    :accessor health
+    :initform 1.0
+    :documentation "Health in range [0.0, 1.0]")
    (camera
-        :accessor attached-cam
-        :initform nil
-        :documentation "The camera that's associated with this player for motion")
-   ))
+    :accessor attached-cam
+    :initform nil
+    :documentation "The camera that's associated with this player for motion")))
 
 (defmethod on-die ((self player))
   (send-play-explosion :broadcast :none (pos self))
@@ -51,12 +50,12 @@
       (setf dir (make-vec3 1.0 0.0 0.0))
       (setf up  (make-vec3 0.0 1.0 0.0))
       (setf velocity (vec-neg4 +y-axis+))
-      (reinitialize-instance the-cam
-        :pos (make-point3 0.0 0.0 0.0)
-        :dir (make-vec3 1.0 0.0 0.0)
-        :up  (make-vec3 0.0 1.0 0.0)
-        :ideal-coord (list 0.0 (/ pi 6) 4.0))
-  )))
+      (reinitialize-instance
+       the-cam
+       :pos (make-point3 0.0 0.0 0.0)
+       :dir (make-vec3 1.0 0.0 0.0)
+       :up  (make-vec3 0.0 1.0 0.0)
+       :ideal-coord (list 0.0 (/ pi 6) 4.0)))))
 
 (defmethod quickhit ((self player))
   (setf (health self) (- (health self) 0.1))
@@ -68,40 +67,39 @@
 
 (defvar *client->player* '())
 (defun register-player (p c)
-    (setf (getf *client->player* c) p))
+  (setf (getf *client->player* c) p))
 
 (defun remove-player (client)
-    (let ((player (getf *client->player* client)))
-      (when player
-        (kill-entity player)))
-    (remf *client->player* client))
+  (let ((player (getf *client->player* client)))
+    (when player
+      (kill-entity player)))
+  (remf *client->player* client))
 
 (defun new-player (client-id)
-    (let ((p (make-server-entity
-              'player
-              :client client-id
-              :pos (make-point3 0.0 0.1 0.0)
-              :dir (make-vec3 1.0 0.0 0.0)
-              :up  (make-vec3 0.0 1.0 0.0)
-              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere
-                                  :pos (make-point3 0.0 0.0 0.0)
-                                  :rad 1.0)
-              :shape-name :wedge
-              :velocity (vec-neg4 +y-axis+)
-              )))
-      ;(push #'blackthorn3d-physics:gravity-mover (movers p))
-      (push (blackthorn3d-physics::make-gravity-mover)
-            (forces p))
-      (push (blackthorn3d-physics::make-smarter-jump-mover client-id)
-            (forces p))
-      (setf (bounding-volume p) (expand-bounding-spheres
-                    (blt3d-res:get-model (shape-name p))))
-      (format t "bounding volume: ~a ~a~%"
-              (blt3d-phy::pos (bounding-volume p))
-              (blt3d-phy::rad (bounding-volume p)))
+  (let ((p (make-server-entity
+            'player
+            :client client-id
+            :pos (make-point3 0.0 0.1 0.0)
+            :dir (make-vec3 1.0 0.0 0.0)
+            :up  (make-vec3 0.0 1.0 0.0)
+            :bv  (make-instance 'blackthorn3d-physics:bounding-sphere
+                                :pos (make-point3 0.0 0.0 0.0)
+                                :rad 1.0)
+            :shape-name :wedge
+            :velocity (vec-neg4 +y-axis+))))
+    ;;(push #'blackthorn3d-physics:gravity-mover (movers p))
+    (push (blackthorn3d-physics::make-gravity-mover)
+          (forces p))
+    (push (blackthorn3d-physics::make-smarter-jump-mover client-id)
+          (forces p))
+    (setf (bounding-volume p) (expand-bounding-spheres
+                               (blt3d-res:get-model (shape-name p))))
+    (format t "bounding volume: ~a ~a~%"
+            (blt3d-phy::pos (bounding-volume p))
+            (blt3d-phy::rad (bounding-volume p)))
 
-      (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
-             (action () (format t "Client ~a started moving.~%" client-id)))
-        (make-pos-reactor #'test #'action))
+    (flet ((test () (not (eql 0.0 (s-input-move-x client-id))))
+           (action () (format t "Client ~a started moving.~%" client-id)))
+      (make-pos-reactor #'test #'action))
 
-      (register-player p client-id)))
+    (register-player p client-id)))

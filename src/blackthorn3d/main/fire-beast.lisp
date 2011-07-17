@@ -1,6 +1,6 @@
 ;;;; Blackthorn -- Lisp Game Engine
 ;;;;
-;;;; Copyright (c) 2011 Chris McFarland <askgeek@gmail.com>
+;;;; Copyright (c) 2011, Chris McFarland <askgeek@gmail.com>
 ;;;;
 ;;;; Permission is hereby granted, free of charge, to any person
 ;;;; obtaining a copy of this software and associated documentation
@@ -29,17 +29,15 @@
 
 (defun make-fire-beast (client-id)
   (let ((self (make-server-entity
-              'fire-beast
-              :client client-id
-              :pos (make-point3 0.0 0.1 0.0)
-              :dir (make-vec3 1.0 0.0 0.0)
-              :up  (make-vec3 0.0 1.0 0.0)
-              :bv  (make-instance 'blackthorn3d-physics:bounding-sphere
-                                  :pos (make-point3 0.0 0.0 0.0)
-                                  :rad 1.0)
-              :shape-name :wedge
-              :shape (get-model :fire-beast)
-              :velocity (vec-neg4 +y-axis+)
-              )))
-    self)
-)
+               'fire-beast
+               :client client-id
+               :pos (make-point3 0.0 0.1 0.0)
+               :dir (make-vec3 1.0 0.0 0.0)
+               :up  (make-vec3 0.0 1.0 0.0)
+               :bv  (make-instance 'blackthorn3d-physics:bounding-sphere
+                                   :pos (make-point3 0.0 0.0 0.0)
+                                   :rad 1.0)
+               :shape-name :wedge
+               :shape (get-model :fire-beast)
+               :velocity (vec-neg4 +y-axis+))))
+    self))

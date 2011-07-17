@@ -100,12 +100,9 @@
     :initform nil
     :initarg :team)))
 
-
 (defclass entity-client (entity)
   ((oid
     :initarg :oid)))
-
-
 
 (defgeneric update (a-server-entity))
 (defmethod update ((e entity-server))
@@ -121,7 +118,6 @@
 
 (defmethod transform-entity :before ((e entity-server) xform)
   (setf (velocity e) (matrix-multiply-v xform (velocity e))))
-
 
 (defvar *global-oid-table* (make-hash-table))
 (defvar *recently-created-server-entities* nil)

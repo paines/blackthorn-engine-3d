@@ -25,14 +25,13 @@
 
 (in-package :blackthorn3d-main)
 
-
 (defmethod update :before ((self entity-server))
   ;; Perform quaternion interpolation
   (with-slots (up dir new-up) self
     (when new-up
-     ;; makeh the quat
+      ;; makeh the quat
       (when (< (+ 1.0 (dot up new-up) 0.0001))
-            (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
+        (setf (up self) (vec4+ up (vec-scale4 dir 0.001))))
 
       (let* ((up-quat (quat-rotate-to-vec up new-up))
              (rot-quat (quat-slerp +quat-identity+ up-quat
@@ -42,7 +41,6 @@
                       rot-quat up))
               (dir self)
               (norm4 (cross up (cross dir up))))))))
-
 
 (defvar last-laser 0.0)
 (defvar laser-delay 0.3)
@@ -69,7 +67,6 @@
          it
          0.0)))
 
-
 (defmethod update ((p player))
   (incf last-laser 1/120)
   (with-slots (client pos up dir) p
@@ -91,24 +88,19 @@
 	     (camera-dir (to-vec4 (dir my-camera)))
              (start-pos (vec4+ (vec4+ pos (vec-scale4 up 0.3)) dir))
              (ray (norm4 camera-dir))
-             ;(distance (run-into-something p (vec4+ pos up) dir here)))
+             ;;(distance (run-into-something p (vec4+ pos up) dir here)))
 	     (distance (run-into-something p start-pos ray here)))
-	     ;(distance 5.0))
+        ;;(distance 5.0))
         (send-play-laser
          :broadcast :human
          start-pos
          (vec-scale4 ray distance))
-        (blt3d-snd:send-sound :broadcast :laser nil 128)
-        )
-      )
-
-                                        ;#+disabled
+        (blt3d-snd:send-sound :broadcast :laser nil 128)))
+    ;;#+disabled
     (when (> (s-input-xbox-y client) 0)
       (quickhit p))
 
-    (try-die p)
-
-    ))
+    (try-die p)))
 
 (defun is-alive-p (thing)
   (oid-in-use-p (oid thing)))
@@ -128,14 +120,13 @@
         :strafe
         :free))
 
-
     (let* ((input-vec (vector (s-input-move-x client) (s-input-move-y client)))
            (move-vec (vec-scale4 (move-player c input-vec) 0.4))
            (target (blt3d-phy::target c))
            (c-sector (lookup-sector (current-sector c)))
            (t-sector (lookup-sector (current-sector target))))
 
-      ;(setf (velocity target) move-vec)
+      ;;(setf (velocity target) move-vec)
 
       (setf blt3d-phy::*hackity-hack__lookup-sector* #'lookup-sector)
       (setf blt3d-phy::*hackity-hack__collide-sector* #'collide-sector)
@@ -156,9 +147,6 @@
                      t-sector)
            (format t "Ray hit sector!: ~a~%" it))
 
-
-
-
       (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                              (s-input-view-y client)))
 
@@ -172,13 +160,9 @@
       ;; do sector check for camera
       (collide-sector-portals c c-sector))))
 
-
-
-
 (defun next-frame ()
   ;; (sleep) call moved to with-timer-loop
-  (socket-flush-all)
-  )
+  (socket-flush-all))
 
 (defvar *client-count* 0)
 
@@ -250,17 +234,17 @@
   (format t "Client ~a disconnected. (Total: ~a)~%" client *client-count*))
 
 (defun new-camera (player-entity)
-    (make-server-entity
-        'camera
-        :pos (make-point3 0.0 0.0 0.0)
-        :dir (make-vec3 1.0 0.0 0.0)
-        :up  (make-vec3 0.0 1.0 0.0)
-        :ideal-coord (list 0.0 (/ pi 6) 4.0)
-        :target player-entity
-        :bv (make-instance 'bounding-sphere
-                                        :rad 0.07
-                                        :pos +origin+)
-        :mode :third-person))
+  (make-server-entity
+   'camera
+   :pos (make-point3 0.0 0.0 0.0)
+   :dir (make-vec3 1.0 0.0 0.0)
+   :up  (make-vec3 0.0 1.0 0.0)
+   :ideal-coord (list 0.0 (/ pi 6) 4.0)
+   :target player-entity
+   :bv (make-instance 'bounding-sphere
+                      :rad 0.07
+                      :pos +origin+)
+   :mode :third-person))
 
 (defun finalize-server ()
   (socket-disconnect-all))
@@ -313,11 +297,11 @@
 
 (defun synchronize-clients ()
   (iter (for (src message) in (message-receive-all :timeout 0))
-               (handle-message-server src message))
+        (handle-message-server src message))
 
- (message-send :broadcast (make-event :entity-create))
- (message-send :broadcast (make-event :entity-update))
- (message-send :broadcast (make-event :entity-remove)))
+  (message-send :broadcast (make-event :entity-create))
+  (message-send :broadcast (make-event :entity-update))
+  (message-send :broadcast (make-event :entity-remove)))
 
 (defun update-entities ()
   (iter (for thing in (list-entities))
@@ -327,7 +311,6 @@
   (iter outer (for x on input-list)
     (iter (for y in (rest x))
       (in outer (collect (list (first x) y))))))
-
 
 ;;;
 ;;; COLLISION STEP
@@ -342,15 +325,14 @@
     ;; Update the sector of the entity
     (setf (current-sector obj) (sector-id (links-to-sector p)))))
 
-
 (defvar *octree*)
 
 (defun construct-octree ()
   (let* ((min-max (blt3d-sec::find-min-max-sector))
 	 (center (vec-scale4 (vec4+ (aref min-max 0) (aref min-max 1)) 0.5))
 	 (width (/ (- (aref (aref min-max 1) 0)
-				   (aref (aref min-max 0) 0)) 0.5))
-	 (depth 5)) ; depth 8 broke it
+                      (aref (aref min-max 0) 0)) 0.5))
+	 (depth 5))                     ; depth 8 broke it
     (make-octree center width depth)))
 
 (defun make-hash-key (e1 e2)
@@ -369,21 +351,19 @@
       (let ((potential (coerce (octree-query *octree* each-entity) 'list)))
 	(iter (for (e1 e2) in (combinations potential))
 	  (when (not (gethash (make-hash-key e1 e2) collision-hash))
-	    ; test for collision, otherwise already done
+            ;; test for collision, otherwise already done
 	    (collide e1 e2)))))))
 
-;#+disabled ;old check
+;;#+disabled ;;old check
 (defun check-collisions ()
   (iter (for (e1 e2) in (combinations (list-entities)))
         (when (blackthorn3d-physics:collide-p e1 e2)
           (collide e1 e2))))
 
-
-
 (defun remove-disconnected-clients ()
   (iter (for client in *delay-disconnected-clients*)
-    (format t "Removing client: ~a~%" client)
-    (remove-player client))
+        (format t "Removing client: ~a~%" client)
+        (remove-player client))
   (setf *delay-disconnected-clients* nil))
 
 ;; added by Robert
@@ -402,11 +382,8 @@
     (return-from server-main))
   (socket-disconnect-callback #'handle-disconnect)
   (format t "Server running on port ~a.~%" port)
-
-
-
-;  (setf *level* (load-level))
-  ;(make-monster :start-sector (make-point3 20.0 0.0 0.0))
+  ;;(setf *level* (load-level))
+  ;;(make-monster :start-sector (make-point3 20.0 0.0 0.0))
 
   (setf *server-frame-rate* 120)
 
@@ -417,6 +394,6 @@
       (remove-disconnected-clients)
       (update-entities)
       (sound-update-all-clients)
-      ;(check-collisions-octree)
+      ;;(check-collisions-octree)
       (check-collisions)
       (synchronize-clients))))

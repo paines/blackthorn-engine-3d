@@ -114,9 +114,9 @@
           (children-with-tag "param" accessor-lst)))
 
 (defun get-stride (accessor-lst)
-  (aif (get-attribute "stride" (attributes accessor-lst))
-       (parse-integer it)
-       1))
+  (if-let (it (get-attribute "stride" (attributes accessor-lst)))
+          (parse-integer it)
+          1))
 
 (defun make-source (src-lst)
   (let ((accessor-lst (find-tag +accessor+ (children src-lst)))
@@ -150,8 +150,8 @@
                          (input->source (uri-indirect
                                          (get-attribute "source" attribs))
                                         sources)
-                         (aif (get-attribute "offset" attribs)
-                              (parse-integer it)))))))
+                         (if-let (it (get-attribute "offset" attribs))
+                                 (parse-integer it)))))))
 
 (defun input-by-semantic (semantic inputs)
   (second (find semantic inputs :key #'car)))
@@ -246,16 +246,16 @@
         ;; vertex streams
         (iter (for i below (length indices) by stride)
               (let ((vertex (subseq indices i (+ i stride))))
-                (aif (gethash vertex vertex-ht)
-                     (vector-push it new-indices)
-                     (progn
-                       (setf (gethash vertex vertex-ht)
-                             curr-index)
-                       (vector-push curr-index new-indices)
-                       (iter (for f in src-fns)
-;                             (for i in-vector vertex)
-                             (funcall (first f) (svref vertex (third f))))
-                       (incf curr-index)))))
+                (if-let (it (gethash vertex vertex-ht))
+                        (vector-push it new-indices)
+                        (progn
+                          (setf (gethash vertex vertex-ht)
+                                curr-index)
+                          (vector-push curr-index new-indices)
+                          (iter (for f in src-fns)
+                                ;;(for i in-vector vertex)
+                                (funcall (first f) (svref vertex (third f))))
+                          (incf curr-index)))))
         (collect (make-element
                   :indices new-indices
                   :material (element-material elt)

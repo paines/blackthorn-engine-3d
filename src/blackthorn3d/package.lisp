@@ -35,11 +35,6 @@
   (:use :cl :blt3d-utils :blt3d-main)
   (:export
 
-   ;; utils.lisp
-   :aif
-   :acond
-   :it
-
    ;; resources.lisp
    :add-resource-path
    :resolve-resource

@@ -59,7 +59,7 @@
                         (fov (/ pi 2))
                         (type :projection))
   (let ((aspect-ratio
-         (aif aspect-ratio it (/ (car size) (cadr size)))))
+         (if-let (it aspect-ratio) it (/ (car size) (cadr size)))))
     (make-instance 'viewport
                    :size size
                    :fov fov

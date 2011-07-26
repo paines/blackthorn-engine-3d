@@ -105,9 +105,9 @@
 
         ;; We need to interpolate to new-up. I think we should store the
         ;; new up in the entity and use dt to interpolate to it
-        (aif (or new-up2 new-up)
-             (setf (new-up self)
-                   it))))))
+        (if-let (it (or new-up2 new-up))
+                (setf (new-up self)
+                      it))))))
 
 
 (defun force-step (an-entity dt)

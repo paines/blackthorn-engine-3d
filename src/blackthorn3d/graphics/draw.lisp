@@ -86,13 +86,13 @@
     ;; and then draw all the adjacent sectors
     (when (< depth +max-sect-depth+)
       (iter (for portal in portals)
-            (aif (links-to-sector portal)
-                 (if (member (sector-id it) visited)
-                     nil
-                     (draw-sectors
-                      it
-                      (cons (sector-id current-sector) visited)
-                      (1+ depth)))
+            (if-let (it (links-to-sector portal))
+                    (if (member (sector-id it) visited)
+                        nil
+                        (draw-sectors
+                         it
+                         (cons (sector-id current-sector) visited)
+                         (1+ depth)))
 
                  #+disabled
                  (progn

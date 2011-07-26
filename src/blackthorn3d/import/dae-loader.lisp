@@ -65,12 +65,12 @@
                        (cons (subseq str start) nil)
                        nil)))))
    ; (format t "~%SPLIT_LOC: ~A~%" (split-loc loc 0))
-    (aif (gethash (car (split-loc loc 0)) nodes)
-         it
-         (progn
-           (format t "WARNING: found no mapping for ~a~%"
-                   (car (split-loc loc 0)))
-           #'(lambda (val))))
+    (if-let (it (gethash (car (split-loc loc 0)) nodes))
+            it
+            (progn
+              (format t "WARNING: found no mapping for ~a~%"
+                      (car (split-loc loc 0)))
+              #'(lambda (val))))
    ; (format t "~2Tlocation: ~a~%" loc)
     #+disabled
     (destructuring-bind (node-id location &rest dc) (split-loc loc 0)
@@ -85,10 +85,10 @@
    matching blt-material objects to the index of the element"
   (iter (for elt in elements)
         (let ((mat-id (element-material elt)))
-          (collect (aif (find (cdr mat-id)
-                              materials :test #'equal :key #'car)
-                        (gethash (second it) *material-table*)
-                        nil) result-type 'vector))))
+          (collect (if-let (it (find (cdr mat-id)
+                                     materials :test #'equal :key #'car))
+                           (gethash (second it) *material-table*)
+                           nil) result-type 'vector))))
 
 (defun geometry-type (id)
   (cond
@@ -155,8 +155,8 @@
                        (if (equal id sid)
                            (progn (format t "found node ~a~%" n)
                                   (return-from find-root-node n))
-                           (aif (find-root-node children sid)
-                               (return-from find-root-node it))))))))
+                           (if-let (it (find-root-node children sid))
+                                   (return-from find-root-node it))))))))
 
     (destructuring-bind (controller-id root-node materials) data
       ;; First get the controller and then the geometry

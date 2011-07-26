@@ -290,11 +290,11 @@
     (let ((tri-plane (get-triangle-plane tri))
           (rad-sq (* sph-rad sph-rad))
           plane-pt dist)
-      (aif (sphere-plane-intersection sphere tri-plane)
-           (setf plane-pt (first it)
-                 dist (second it))
-           ;; If sphere is too far form triangle plane then we can reject
-         (return-from sphere-triangle-intersection nil))
+      (if-let (it (sphere-plane-intersection sphere tri-plane))
+              (setf plane-pt (first it)
+                    dist (second it))
+              ;; If sphere is too far form triangle plane then we can reject
+              (return-from sphere-triangle-intersection nil))
 
 
       ;; Check if point is inside triangle

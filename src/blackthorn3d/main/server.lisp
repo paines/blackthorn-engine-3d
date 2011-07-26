@@ -61,11 +61,11 @@
   (let* ((ray (make-ray pos dir))
          (sector-distance (ray-cast ray sector))
          (distances (mapcar #'(lambda (e) (ray-cast ray e)) (list-entities))))
-    (aif (hit-thing-with-laser ray (list me))
-         (quickhit it))
-    (aif (min-t (cons sector-distance distances))
-         it
-         0.0)))
+    (if-let (it (hit-thing-with-laser ray (list me)))
+            (quickhit it))
+    (if-let (it (min-t (cons sector-distance distances)))
+            it
+            0.0)))
 
 (defmethod update ((p player))
   (incf last-laser 1/120)
@@ -143,9 +143,9 @@
       ;; Ray-test: Lets have the main character shoot out a ray
       ;; every step and see what it hits!
       #+disabled
-      (aif (ray-cast (make-ray (pos target) (to-vec4 (dir target)))
-                     t-sector)
-           (format t "Ray hit sector!: ~a~%" it))
+      (if-let (it (ray-cast (make-ray (pos target) (to-vec4 (dir target)))
+                            t-sector))
+              (format t "Ray hit sector!: ~a~%" it))
 
       (update-camera c (/ 1.0 120.0) (vector (s-input-view-x client)
                                              (s-input-view-y client)))

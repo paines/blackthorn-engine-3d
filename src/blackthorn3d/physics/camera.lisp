@@ -192,12 +192,12 @@
                         (* +phi-scale+ (x input-vec)))))
 
              ;; set theta
-             (aif (/= 0 (y input-vec))
-                  (setf (elt ideal-coord 1)
-                        (clamp (+ (elt ideal-coord 1)
-                                  (* +theta-scale+ (y input-vec)))
-                               (- +theta-limit+)
-                               +theta-limit+)))
+             (if-let (it (/= 0 (y input-vec)))
+                     (setf (elt ideal-coord 1)
+                           (clamp (+ (elt ideal-coord 1)
+                                     (* +theta-scale+ (y input-vec)))
+                                  (- +theta-limit+)
+                                  +theta-limit+)))
              (setf sphere-coord ideal-coord))
 
 
@@ -212,12 +212,12 @@
 
              ;; set theta
              (if (not (is-jumping target))
-                 (aif (/= 0 (y input-vec))
-                      (setf (elt ideal-coord2 1)
-                            (clamp (+ (elt ideal-coord2 1)
-                                      (* +theta-scale+ (y input-vec)))
-                                   (- +theta-limit+)
-                                   +theta-limit+)))
+                 (if-let (it (/= 0 (y input-vec)))
+                         (setf (elt ideal-coord2 1)
+                               (clamp (+ (elt ideal-coord2 1)
+                                         (* +theta-scale+ (y input-vec)))
+                                      (- +theta-limit+)
+                                      +theta-limit+)))
 
                  (let ((rel-theta (asin (/ (y tc-pos) (mag tc-pos)))))
                    (setf (elt ideal-coord2 1)

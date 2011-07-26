@@ -28,11 +28,6 @@
   (:use :cl :alexandria :iter)
   (:export
 
-   ;; utils.lisp
-   :aif
-   :acond
-   :it
-
    ;; library.lisp
    :load-dlls
 

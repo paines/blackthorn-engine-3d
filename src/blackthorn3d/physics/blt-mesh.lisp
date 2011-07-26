@@ -115,8 +115,8 @@
    (bind-pose->vert-array this)))
 
 (defun vs-get-stream (stream vs-lst)
-  (aif (find stream vs-lst :key #'vs-semantic)
-       (vs-stream it)))
+  (if-let (it (find stream vs-lst :key #'vs-semantic))
+          (vs-stream it)))
 
 (defmethod get-stream (stream (this blt-mesh))
   (vs-get-stream stream (vertex-streams this)))

@@ -131,15 +131,15 @@
     ;; otherwise create a new index and set the arrays
     (iter (for i below (length prim-arr) by num-inputs)
           (let ((vertex (subseq prim-arr i (+ i num-inputs))))
-            (aif (gethash vertex vertex-ht)
-                 (vector-push it indices)
-                 (progn
-                   (setf (gethash vertex vertex-ht) curr-index)
-                   (vector-push curr-index indices)
-                   (iter (for f in fns)
-                         (for i in-vector vertex)
-                         (funcall (car f) i))
-                   (incf curr-index)))))
+            (if-let (it (gethash vertex vertex-ht))
+                    (vector-push it indices)
+                    (progn
+                      (setf (gethash vertex vertex-ht) curr-index)
+                      (vector-push curr-index indices)
+                      (iter (for f in fns)
+                            (for i in-vector vertex)
+                            (funcall (car f) i))
+                      (incf curr-index)))))
     ;; we return a list of each attribute array with it's semantic
     (cons indices (mapcar #'(lambda (input fn)
                               (cons (car input) (cdr fn)))

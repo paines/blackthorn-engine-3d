@@ -124,8 +124,8 @@
 
     (make-node node-id :geometry *transform* (list geom-id material-map)
                (iter (for node in (children-with-tag "node" node-tag))
-                     (aif (process-node node)
-                          (collect it))))))
+                     (if-let (it (process-node node))
+                             (collect it))))))
 
 (defun process-platform-node (node-tag)
   (let* ((node-id (get-attribute "id" (attributes node-tag)))
@@ -140,8 +140,8 @@
 
     (make-node node-id :platform *transform* (list geom-id material-map)
                (iter (for node in (children-with-tag "node" node-tag))
-                     (aif (process-node node)
-                          (collect it))))))
+                     (if-let (it (process-node node))
+                             (collect it))))))
 (defun process-portal-node (node-tag)
   (let* ((node-id (get-attribute "id" (attributes node-tag)))
          (portal-name (portal-name (get-attribute "name" (attributes node-tag))))
@@ -156,8 +156,8 @@
                ;; it is an error for a portal node to have children.
                #+disabled
                (iter (for node in (children-with-tag "node" node-tag))
-                     (aif (process-node node)
-                          (collect it))))))
+                     (if-let (it (process-node node))
+                             (collect it))))))
 
 (defun process-joint-node (node-tag)
   (let ((node-id (get-attribute "id" (attributes node-tag)))
@@ -169,8 +169,8 @@
 
     (make-node node-id :joint *transform* (list joint-id joint-name)
                (iter (for node in (children-with-tag "node" node-tag))
-                     (aif (process-node node)
-                          (collect it))))))
+                     (if-let (it (process-node node))
+                             (collect it))))))
 
 (let ((default-count -1))
   (defun get-default-name (prefix)
@@ -193,8 +193,8 @@
     (make-node node-id :controller *transform*
                (list controller-id skeleton material-map)
                (iter (for node in (children-with-tag "node" node-tag))
-                     (aif (process-node node)
-                          (collect it))))))
+                     (if-let (it (process-node node))
+                             (collect it))))))
 
 ;; Returns tree of nodes
 
@@ -225,7 +225,7 @@
        ;; We just make a node...these will be ignored, i think, when
        ;; putting everything together
        (let* ((children (iter (for node in (children-with-tag "node" node-tag))
-                              (aif (process-node node) (collect it))))
+                              (if-let (it (process-node node)) (collect it))))
               (type (if (find-if #'(lambda (x)
                                      (not (eql :unknown (node-type x))))
                                  children)

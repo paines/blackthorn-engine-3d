@@ -70,9 +70,9 @@
             (collect xml))))
 
 (defun get-attribute (attrib attrib-lst)
-  (aif (member attrib attrib-lst :test #'string-equal :key #'car)
-       (second (car it))
-       nil))
+  (if-let (it (member attrib attrib-lst :test #'string-equal :key #'car))
+          (second (car it))
+          nil))
 
 (defun string->sv (str)
   (with-input-from-string (s str)

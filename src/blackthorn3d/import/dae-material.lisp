@@ -37,31 +37,31 @@
                  (subseq dumb-string (1+ p)))))
 
 (defun mat-prop-finder (attrib e)
-  (aif (find-tag attrib (children e))
-       (let ((value (first-child it)))
-         (cond
-           ((equal "color" (tag-name value))
-            (string->sv (third value)))
-           ((equal "float" (tag-name value))
-            (float (read-from-string (third value))))
-           ((equal "texture" (tag-name value))
-            ;; We'll just load it to texture here, I think.
-            ;; save me some trouble
-            (merge-pathnames
-             (pathname (get-filename
-                        (gethash
-                         (get-attribute "texture" (attributes value))
-                         *param-table*)))
-             +image-path+)
+  (if-let (it (find-tag attrib (children e)))
+          (let ((value (first-child it)))
+            (cond
+              ((equal "color" (tag-name value))
+               (string->sv (third value)))
+              ((equal "float" (tag-name value))
+               (float (read-from-string (third value))))
+              ((equal "texture" (tag-name value))
+               ;; We'll just load it to texture here, I think.
+               ;; save me some trouble
+               (merge-pathnames
+                (pathname (get-filename
+                           (gethash
+                            (get-attribute "texture" (attributes value))
+                            *param-table*)))
+                +image-path+)
 
-            #+disabled
-            (let ((filename ))
-              (setf *epic-texture*
-                    (image->texture2d
-                     (load-image (merge-pathnames
-                                  (pathname filename)
-                                  +image-path+))))))
-           (t nil)))))
+               #+disabled
+               (let ((filename ))
+                 (setf *epic-texture*
+                       (image->texture2d
+                        (load-image (merge-pathnames
+                                     (pathname filename)
+                                     +image-path+))))))
+              (t nil)))))
 
 (defun load-param (param)
   (let ((child (first-child param)))
@@ -96,12 +96,12 @@
            :specular    (mat-prop-finder "specular" effect-tag)
            :shininess   (mat-prop-finder "shininess" effect-tag)
            :textures
-           (aif (find-tag "texture" (children effect-tag))
-                #+disabled(load-image (gethash
-                                       (get-attribute "texture"
-                                                      (attributes it))
-                                       images-ht))
-                nil)))))
+           (if-let (it (find-tag "texture" (children effect-tag)))
+                   #+disabled(load-image (gethash
+                                          (get-attribute "texture"
+                                                         (attributes it))
+                                          images-ht))
+                   nil)))))
 
 ;; Build a hash table of materials (hashed by id)
 (defun process-materials (mat-library image-library effect-library)

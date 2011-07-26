@@ -251,7 +251,7 @@
              test-sphere test-vel geometry depth)
           (list
            (transform-to-world (to-vec4 vel) a-sector)
-           (aif norm (transform-to-world (to-vec4 it) a-sector))))))))
+           (if-let (it norm) (transform-to-world (to-vec4 it) a-sector))))))))
 
 (defvar +p-eps+ 1e-3)
 (defmethod collide-sector-portals ((obj entity-server) (a-sector sector))
@@ -277,13 +277,13 @@
   (let ((x-ray (make-ray (transform-to-sector (ray-e ray) a-sector)
                          (transform-to-sector (ray-d ray) a-sector))))
     (with-slots (geometry portals) a-sector
-      (aif (ray-cast x-ray geometry)
-           it
-           ;; also check for portals!!
-           (iter (for portal in portals)
-                 (when (ray-cast x-ray portal)
-                   (aif (ray-cast ray (links-to-sector portal))
-                        (return-from ray-cast it))))))))
+      (if-let (it (ray-cast x-ray geometry))
+              it
+              ;; also check for portals!!
+              (iter (for portal in portals)
+                    (when (ray-cast x-ray portal)
+                      (if-let (it2 (ray-cast ray (links-to-sector portal)))
+                              (return-from ray-cast it2))))))))
 
 
 

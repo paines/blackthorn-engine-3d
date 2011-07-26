@@ -24,6 +24,10 @@ syntax: glob
 *.?x64fsl
 *.exe
 *.pyc
+*.app
+*.dmg
+*.gz
+*.bz2
 
 # build files
 bin
@@ -31,3 +35,7 @@ build/ccl
 build/sbcl*
 build/quicklisp*
 doc
+
+# shared libraries for non-bundled OSes
+# note: these should probably be moved to build anyway
+lib/*.framework

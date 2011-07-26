@@ -56,8 +56,8 @@
 
 
 (defmethod update-model((this blt-model) time)
-  (aif (animations this)
-       (update-anim-controller it time))
+  (if-let (it (animations this))
+          (update-anim-controller it time))
   #+disabled
   (iter (for node in (mesh-nodes this))
         (update-node node time nil)))
@@ -80,13 +80,13 @@
 
 (defmethod draw-object ((this node))
   (gl:with-pushed-matrix
-      (aif (transform this) (gl:mult-matrix it))
+      (if-let (it (transform this)) (gl:mult-matrix it))
     (iter (for node in (child-nodes this))
           (draw-object node))))
 
 (defmethod draw-object ((this model-node))
   (gl:with-pushed-matrix
-      (aif (transform this) (gl:mult-matrix it))
+      (if-let (it (transform this)) (gl:mult-matrix it))
 
     (let ((*material-array* (material-array this)))
       (draw-object (mesh this))

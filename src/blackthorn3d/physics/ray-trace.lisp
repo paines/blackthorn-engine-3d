@@ -185,10 +185,10 @@
           result)))
 
     #+disabled
-    (aif (and shape (ray-sphere-intersection
-                     ray test-sphere
-                     most-positive-single-float))
-         (ray-cast ray shape))))
+    (if-let (it (and shape (ray-sphere-intersection
+                            ray test-sphere
+                            most-positive-single-float)))
+            (ray-cast ray shape))))
 
 (defmethod ray-cast (ray (model blt-model))
   (iter (for node in (mesh-nodes model))
@@ -254,8 +254,8 @@
 (defun standing-on-p (ent obj)
   (with-slots (pos up bounding-volume) ent
     (let ((r-d (to-vec4 (vec-neg4 up))))
-      (aif (ray-cast (make-ray pos r-d) obj)
-           (progn
-             (when (and (plusp it)
-                      (< it (+ +standing-thresh+ (rad bounding-volume))))
-               t))))))
+      (if-let (it (ray-cast (make-ray pos r-d) obj))
+              (progn
+                (when (and (plusp it)
+                           (< it (+ +standing-thresh+ (rad bounding-volume))))
+                  t))))))

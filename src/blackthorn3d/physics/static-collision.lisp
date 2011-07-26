@@ -94,21 +94,21 @@
                                :pos (pos sph-a)))
          (va-vb (vec3- va vb)))
   ;  (format t "~%new velocity: ~a~%" va-vb)
-    (aif (sphere-point-intersection sph-c va-vb (pos sph-b) 1.0)
-         ;; return time of intersection and the point
-         ;; NOTE: if we don't need the point, or want to calculate
-         ;; it later, we can just return the time...
-         (list
-          it
-          (let ((end-a (vec3+ (pos sph-a) (vec-scale3 va it)))
-                (end-b (vec3+ (pos sph-b) (vec-scale3 vb it))))
+    (if-let (it (sphere-point-intersection sph-c va-vb (pos sph-b) 1.0))
+            ;; return time of intersection and the point
+            ;; NOTE: if we don't need the point, or want to calculate
+            ;; it later, we can just return the time...
+            (list
+             it
+             (let ((end-a (vec3+ (pos sph-a) (vec-scale3 va it)))
+                   (end-b (vec3+ (pos sph-b) (vec-scale3 vb it))))
 
-            (vec3->point
-             (vec3+ end-a
-                    (vec-scale3
-                     (vec3- end-b end-a)
-                     (/ (rad sph-a)
-                        (+ (rad sph-a) (rad sph-b))))))))))
+               (vec3->point
+                (vec3+ end-a
+                       (vec-scale3
+                        (vec3- end-b end-a)
+                        (/ (rad sph-a)
+                           (+ (rad sph-a) (rad sph-b))))))))))
   #+disabled
   (let* ((ab (vec3- (pos sph-b) (pos sph-a)))
          (vb-va (vec3- vb va))
@@ -216,11 +216,12 @@
      (min-collide
       #+disabled
       (append
-       (aif (swept-sphere-collide sphere velocity
-                                  (node-bounding-volume node) +zero-vec+)
-            ;; if we intersect the bounding-shape, check the mesh
-            (progn
-              (list (collide-test xformed-bv xformed-vel (mesh node))))))
+       (if-let (it (swept-sphere-collide
+                    sphere velocity
+                    (node-bounding-volume node) +zero-vec+))
+               ;; if we intersect the bounding-shape, check the mesh
+               (progn
+                 (list (collide-test xformed-bv xformed-vel (mesh node))))))
 
        ;; Recursively collide with the children
 
@@ -249,17 +250,20 @@
 
        ;; Todo- fix swept-sphere-collide
        #+disabled
-       (aif
-        ;#+disabled
-        (swept-sphere-collide sphere velocity
-                              (node-bounding-volume node) +zero-vec+)
-        #+disabled
-        (swept-sphere-collide xformed-bv xformed-vel
-                                  (node-bounding-volume node) +zero-vec+)
-            ;; if we intersect the bounding-shape, check the mesh
-            (progn
-              ;(format t "Collided with node-sphere!~%")
-                   (list (collide-test xformed-bv xformed-vel (mesh node)))))
+       (if-let
+        (it
+         ;;#+disabled
+         (swept-sphere-collide
+          sphere velocity
+          (node-bounding-volume node) +zero-vec+)
+         #+disabled
+         (swept-sphere-collide
+          xformed-bv xformed-vel
+          (node-bounding-volume node) +zero-vec+))
+        ;; if we intersect the bounding-shape, check the mesh
+        (progn
+          ;;(format t "Collided with node-sphere!~%")
+          (list (collide-test xformed-bv xformed-vel (mesh node)))))
 
        ;; Recursively collide with the children
        (iter (for child in (child-nodes node))
@@ -316,8 +320,8 @@
          (xformed-bv (transform-bounding-volume bv inv-mat))
         (xformed-vel (matrix-multiply-v inv-mat velocity)))
     (min-collide
-     (cons (aif (collide-test xformed-bv (node-bounding-shape node))
-                ;; if we intersect the bounding-shape, check the mesh
-                (collide-test xformed-bv (mesh node)))
+     (cons (if-let (it (collide-test xformed-bv (node-bounding-shape node)))
+                   ;; if we intersect the bounding-shape, check the mesh
+                   (collide-test xformed-bv (mesh node)))
            (iter (for child in (child-nodes node))
                  (collect (collide-test xformed-bv xformed-vel child)))))))

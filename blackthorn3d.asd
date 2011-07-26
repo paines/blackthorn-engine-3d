@@ -39,7 +39,6 @@
                                     ((:module utils
                                               :components
                                               ((:file "package")
-                                               (:file "anaphora")
                                                (:file "library"))
                                               :serial t)
                                      (:module math

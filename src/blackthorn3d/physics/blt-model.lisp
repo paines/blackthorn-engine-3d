@@ -56,8 +56,8 @@
 ;; We will need the capability to add/remove nodes
 (defmethod find-node (obj (model blt-model))
   (iter (for node in (mesh-nodes model))
-        (aif (find-node obj node)
-          (return-from find-node it))))
+        (if-let (it (find-node obj node))
+                (return-from find-node it))))
 
 
 (defmethod attach-obj-to-model (obj (node-id string) transform
@@ -70,8 +70,8 @@
                                  (node-id string)
                                  (model blt-model))
   (format t "~%ATTACHING node to model at node ~a~%" node-id)
-  (aif (find-node node-id model)
-       (attach-node new-node it)))
+  (if-let (it (find-node node-id model))
+          (attach-node new-node it)))
 
 (defmethod detach-node-from-model ((node-id string) (model blt-model))
   (labels ((detach-helper (id node)
@@ -81,8 +81,8 @@
                          (setf (child-nodes node)
                                (delete child (child-nodes node)))
                          (return-from detach-helper child))
-                       (aif (detach-helper id child)
-                           (return-from detach-helper it))))))
+                       (if-let (it (detach-helper id child))
+                               (return-from detach-helper it))))))
 
     (iter (for node in (mesh-nodes model))
           (for test = (detach-helper node-id node))
@@ -233,19 +233,19 @@
 (defun get-vs-fns (vertex-streams format)
   (iter (for (semantic n-elts) in format)
         (collect
-         (aif (find semantic vertex-streams :key #'vs-semantic)
-              (let ((len n-elts))
-                #'(lambda (index)
-                    ;;(format t "original vector: ~a~%" (vs-ref it index))
-                    (concatenate
-                     'vector
-                     (subseq (vs-ref it index)
-                             0 (min len (vs-stride it)))
-                     (iter (for i below (- len (vs-stride it)))
-                           (collect 0.0 result-type 'vector)))))
-              (let ((zero-vec (iter (for i below n-elts)
-                                    (collect 0.0 result-type 'vector))))
-                #'(lambda (index) zero-vec))))))
+         (if-let (it (find semantic vertex-streams :key #'vs-semantic))
+                 (let ((len n-elts))
+                   #'(lambda (index)
+                       ;;(format t "original vector: ~a~%" (vs-ref it index))
+                       (concatenate
+                        'vector
+                        (subseq (vs-ref it index)
+                                0 (min len (vs-stride it)))
+                        (iter (for i below (- len (vs-stride it)))
+                              (collect 0.0 result-type 'vector)))))
+                 (let ((zero-vec (iter (for i below n-elts)
+                                       (collect 0.0 result-type 'vector))))
+                   #'(lambda (index) zero-vec))))))
 
 
 ;; combines unified vertex-streams into one large 2-d array

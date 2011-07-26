@@ -61,11 +61,11 @@
   (let* ((args (command-line-arguments:get-command-line-arguments))
          (opts (command-line-arguments:process-command-line-options
                         *cli-options*
-                        (aif (position "--" args :test #'equal)
-                             (nthcdr (1+ it) args)
-                             args))))
-    (append (or (aif (getf opts :server) (list :server it))
-                (aif (getf opts :connect) (list :client it))
+                        (if-let (it (position "--" args :test #'equal))
+                                (nthcdr (1+ it) args)
+                                args))))
+    (append (or (if-let (it (getf opts :server)) (list :server it))
+                (if-let (it (getf opts :connect)) (list :client it))
                 (list :offline nil))
             (list (getf opts :port)))))
 

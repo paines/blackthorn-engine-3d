@@ -38,16 +38,17 @@
    :directory (pathname-directory pathname)))
 
 (defun add-resource-path (pathname)
-  (aif (and pathname (fad:file-exists-p (directory-of pathname)))
-       (pushnew it *resource-search-paths* :test #'equal)))
+  (if-let (it (and pathname (fad:file-exists-p (directory-of pathname))))
+          (pushnew it *resource-search-paths* :test #'equal)))
 
 (defun resource (pathname)
-  (aif (iter (for dir in *resource-search-paths*)
-             (thereis (fad:file-exists-p (merge-pathnames pathname dir))))
-       it
-       (error "Unable to find resource ~s in search path ~s."
-              pathname
-              *resource-search-paths*)))
+  (if-let
+   (it (iter (for dir in *resource-search-paths*)
+             (thereis (fad:file-exists-p (merge-pathnames pathname dir)))))
+   it
+   (error "Unable to find resource ~s in search path ~s."
+          pathname
+          *resource-search-paths*)))
 
 (defun resource-wild (pathname)
   (iter (for dir in *resource-search-paths*)

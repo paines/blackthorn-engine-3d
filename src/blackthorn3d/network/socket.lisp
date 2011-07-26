@@ -287,9 +287,9 @@
                      ID to send to that client.}
    @arg[buffer]{A userial buffer with the outgoing message.
                 See @a[http://nklein.com/software/unet/userial/#make-buffer]{make-buffer}.}"
-  (acond ((eql destination :broadcast)
-          (iter (for connection in *socket-connections*)
-                (socket-send-buffer connection buffer)))
-         ((nid->socket destination)
-          (socket-send-buffer it buffer))
-         (t (error "Unknown node ID ~s" destination))))
+  (if (eql destination :broadcast)
+      (iter (for connection in *socket-connections*)
+            (socket-send-buffer connection buffer))
+      (if-let (it (nid->socket destination))
+              (socket-send-buffer it buffer)
+              (error "Unknown node ID ~s" destination))))

@@ -28,8 +28,13 @@ set -e
 
 build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/scripts/readlink-dirname.sh" "$BASH_SOURCE")")"
 
-"$build_dir/scripts/get-lisp.sh"
+# Look for Lisp. If it isn't found, try to install it.
+lisp="$("$build_dir/scripts/find-lisp.sh")"
+if [[ -z "$lisp" ]]; then
+    "$build_dir/scripts/get-lisp.sh"
+fi
 
+# Look for Lisp again. If it isn't found, then we failed to install it; abort.
 lisp="$("$build_dir/scripts/find-lisp.sh")"
 if [[ -z "$lisp" ]]; then
     echo "Unable to find which Lisp to run for installing Quicklisp."

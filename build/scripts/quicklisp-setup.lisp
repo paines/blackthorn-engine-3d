@@ -34,8 +34,11 @@
 #-quicklisp
 (let ((quicklisp-init
        (merge-pathnames "../quicklisp/setup.lisp" (loaded-file-directory))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
+  (assert
+   (probe-file quicklisp-init)
+   ()
+   "Failed to find quicklisp. Did you run build/get-dependencies.sh ?")
+  (load quicklisp-init))
 
 ;; Add any directories in build/libs to the registry
 (let ((dir (merge-pathnames "../../" (loaded-file-directory))))

@@ -33,13 +33,14 @@ _lisp = find_lisp()
 
 # Drivers
 _load = 'build/scripts/load.lisp'
+_nop = 'build/scripts/nop.lisp'
 _quicklisp_setup = 'build/scripts/quicklisp-setup.lisp'
 
 # ASDF System
 _system = 'lkcas'
 
 # Network
-_localhost = '127.0.0.1'
+_localhost = 'localhost'
 _port = '12345'
 
 def load(lisp = _lisp, driver = _load, system = _system, args = []):
@@ -49,16 +50,20 @@ def load(lisp = _lisp, driver = _load, system = _system, args = []):
              '--load', driver,
              '--', *args)
 
+def shell(**rest):
+    load(driver = _nop, **rest)
+
 def server(host = _localhost, port = _port, args = [], **rest):
-    load(args = ['--server=%s --port=%s' % (host, port)] + args, **rest)
+    load(args = ['--server=%s' % host, '--port=%s' % port] + args, **rest)
 
 def client(host = _localhost, port = _port, args = [], **rest):
-    load(args = ['--connect=%s --port=%s' % (host, port)] + args, **rest)
+    load(args = ['--connect=%s' % host, '--port=%s' % port] + args, **rest)
 
 _commands = {
+    'client': client,
     'load': load,
     'server': server,
-    'client': client,
+    'shell': shell,
 }
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -69,7 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('-H', '--host')
     parser.add_argument('-p', '--port')
     args = parser.parse_args()
-    extract_args = ['lisp', 'system']
+    extract_args = ['lisp', 'driver', 'system', 'host', 'port']
     kwargs = dict([(k, getattr(args, k)) for k in extract_args
                    if getattr(args, k) is not None])
     commands = args.commands if len(args.commands) > 0 else ['server']

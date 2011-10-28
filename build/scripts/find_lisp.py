@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 #### Blackthorn -- Lisp Game Engine
 ####
 #### Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
@@ -24,33 +24,39 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")"
-cached_result_file="$build_dir/.find-lisp"
+import os, subprocess
 
-if [[ -e $cached_result_file ]]; then
-  result=$(<"$cached_result_file")
-  if [[ -n $result ]]; then
-    echo "$result"
-    exit 0
-  fi
-fi
+def _path():
+    return os.environ['PATH'].split(os.pathsep)
 
-# test-for <program> <result>
-function test-for () {
-  program="$1"
-  result="$2"
-  ignore=$(which "$program" 2>&1)
-  if [[ $? -eq 0 ]]; then
-    echo "$result"
-    echo "$result" > "$cached_result_file"
-    exit 0
-  fi
-}
+def _is_executable(filename):
+    return os.path.isfile(filename) and os.access(filename, os.X_OK)
 
-test-for sbcl sbcl
-test-for alisp allegro
-test-for clisp clisp
-test-for ecl ecl
-test-for ccl clozure
+def which(filename, path = None):
+    if path is None:
+        path = _path()
+    if os.path.isabs(filename):
+        return filename if _is_executable(filename) else None
+    for directory in path:
+        abs_filename = os.path.join(directory, filename)
+        if _is_executable(abs_filename):
+            return abs_filename
 
-exit 1
+_cached_filename = '.find-lisp'
+_lisps = (
+    ('sbcl', 'sbcl'),
+    ('ccl', 'clozure'),
+    ('alisp', 'allegro'),
+    ('clisp', 'clisp'),
+    ('ecl', 'ecl'),
+)
+def find_lisp(cache_filename = _cached_filename):
+    if os.path.isfile(cache_filename):
+        with open(cache_filename) as f:
+            lisp = f.read()
+            if lisp in zip(*_lisps)[0]: return lisp
+    for command, alias in _lisps:
+        if which(command) is not None:
+            with open(cache_filename, 'w') as f:
+                f.write(alias)
+            return alias

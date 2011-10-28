@@ -35,6 +35,7 @@ _lisp = find_lisp()
 _load = 'build/scripts/load.lisp'
 _nop = 'build/scripts/nop.lisp'
 _quicklisp_setup = 'build/scripts/quicklisp-setup.lisp'
+_test = 'build/scripts/test.lisp'
 
 # ASDF System
 _system = 'lkcas'
@@ -59,11 +60,15 @@ def server(host = _localhost, port = _port, args = [], **rest):
 def client(host = _localhost, port = _port, args = [], **rest):
     load(args = ['--connect=%s' % host, '--port=%s' % port] + args, **rest)
 
+def test(**rest):
+    load(driver = _test, system = 'blackthorn3d-test', **rest)
+
 _commands = {
     'client': client,
     'load': load,
     'server': server,
     'shell': shell,
+    'test': test,
 }
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

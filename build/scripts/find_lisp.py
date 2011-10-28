@@ -54,7 +54,8 @@ def find_lisp(cache_filename = _cached_filename):
     if os.path.isfile(cache_filename):
         with open(cache_filename) as f:
             lisp = f.read()
-            if lisp in zip(*_lisps)[0]: return lisp
+            # 2.x returns list, 3.x returns iterator
+            if lisp in next(iter(zip(*_lisps))): return lisp
     for command, alias in _lisps:
         if which(command) is not None:
             with open(cache_filename, 'w') as f:

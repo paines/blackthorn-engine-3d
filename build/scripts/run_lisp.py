@@ -91,9 +91,9 @@ def run_lisp(impl_name, *args):
     iter_args = iter(args)
     try:
         while True:
-            in_arg = iter_args.next()
+            in_arg = next(iter_args)
             if in_arg in ('--load', '--eval'):
-                out_args.extend(impl['transform_arg'](in_arg, iter_args.next()))
+                out_args.extend(impl['transform_arg'](in_arg, next(iter_args)))
             else:
                 out_args.append(in_arg)
             if in_arg == '--':

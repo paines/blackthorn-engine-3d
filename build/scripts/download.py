@@ -31,7 +31,6 @@ def download(url):
 
     if len(url) <= 0:
         raise Exception('Please specify a url to download.')
-    print('Downloading "%s"' % url)
     remote_file = urllib2.urlopen(url)
     match = re.match(r'.*/([^?]*).*', url)
     if match is None:
@@ -41,4 +40,4 @@ def download(url):
     local_file.write(remote_file.read())
     local_file.close()
     remote_file.close()
-    print('Finished download.')
+    return filename

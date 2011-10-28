@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 #### Blackthorn -- Lisp Game Engine
 ####
 #### Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
@@ -24,23 +24,18 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/readlink-dirname.sh" "$BASH_SOURCE")")"
+import os
+from download import download
+from run_lisp import run_lisp
 
-lisp="$1"
-
-quicklisp_file="quicklisp.lisp"
-quicklisp_url="http://beta.quicklisp.org/$quicklisp_file"
-
-echo "Attempting to install Quicklisp..."
-
-pushd "$build_dir" >& /dev/null
-"$build_dir/scripts/download.sh" "$quicklisp_url"
-if [ ! "$(echo $?)" -eq 0 ]; then
-    echo "Failed to download Quicklisp."
-    echo
-    echo "Please go to the following URL and install it manually:"
-    echo "$quicklisp_url"
-else
-    "$build_dir/scripts/run-lisp.pl" "$lisp" --load "$quicklisp_file" --eval "(quicklisp-quickstart:install :path \"quicklisp/\")" --eval '#-allegro (quit) #+allegro (exit)'
-fi
-popd >& /dev/null
+_build_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+_quicklisp_url="http://beta.quicklisp.org/quicklisp.lisp"
+def get_quicklisp(lisp):
+    previous_cwd = os.getcwd()
+    os.chdir(_build_dir)
+    filename = download(_quicklisp_url)
+    run_lisp(lisp,
+             '--load', filename,
+             '--eval', '(quicklisp-quickstart:install :path "quicklisp/")',
+             '--eval', '#-allegro (quit) #+allegro (exit)')
+    os.chdir(previous_cwd)

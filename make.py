@@ -24,7 +24,7 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-import os, sys
+import argparse, os, sys
 from build.scripts.find_lisp import find_lisp
 from build.scripts.run_lisp import run_lisp
 
@@ -39,7 +39,7 @@ _quicklisp_setup = 'build/scripts/quicklisp-setup.lisp'
 _system = 'lkcas'
 
 # Network
-_localhost = 'localhost'
+_localhost = '127.0.0.1'
 _port = '12345'
 
 def load(lisp = _lisp, driver = _load, system = _system, args = []):
@@ -53,7 +53,25 @@ def server(host = _localhost, port = _port, args = [], **rest):
     load(args = ['--server=%s --port=%s' % (host, port)] + args, **rest)
 
 def client(host = _localhost, port = _port, args = [], **rest):
-    load(args = ['--client=%s --port=%s' % (host, port)] + args, **rest)
+    load(args = ['--connect=%s --port=%s' % (host, port)] + args, **rest)
 
+_commands = {
+    'load': load,
+    'server': server,
+    'client': client,
+}
 if __name__ == '__main__':
-    server()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('commands', nargs='*')
+    parser.add_argument('-l', '--lisp')
+    parser.add_argument('-d', '--driver')
+    parser.add_argument('-s', '--system')
+    parser.add_argument('-H', '--host')
+    parser.add_argument('-p', '--port')
+    args = parser.parse_args()
+    extract_args = ['lisp', 'system']
+    kwargs = dict([(k, getattr(args, k)) for k in extract_args
+                   if getattr(args, k) is not None])
+    commands = args.commands if len(args.commands) > 0 else ['server']
+    for command in commands:
+        _commands[command](**kwargs)

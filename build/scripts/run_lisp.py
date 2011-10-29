@@ -84,7 +84,7 @@ _impls = {
     },
 }
 
-def run_lisp(impl_name, *args):
+def _run_lisp_args(impl_name, *args):
     impl = _impls[impl_name]
     impl_cmd = impl['cmd']
     out_args = []
@@ -102,8 +102,23 @@ def run_lisp(impl_name, *args):
         pass
     out_args = list(impl['reorder_args'](*out_args))
     out_args.extend(iter_args)
-    proc = subprocess.Popen([impl_cmd] + out_args)
+    return [impl_cmd] + out_args
+
+def run_lisp(impl_name, *args):
+    proc = subprocess.Popen(_run_lisp_args(impl_name, *args))
     try:
         return proc.wait()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         proc.kill()
+        raise e
+
+def run_lisp_output(impl_name, *args):
+    proc = subprocess.Popen(_run_lisp_args(impl_name, *args),
+                            stdout = subprocess.PIPE,
+                            stderr = subprocess.STDOUT)
+    try:
+        stdout, stderr = proc.communicate()
+        return stdout
+    except KeyboardInterrupt as e:
+        proc.kill()
+        raise e

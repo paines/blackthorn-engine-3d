@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 #### Blackthorn -- Lisp Game Engine
 ####
 #### Copyright (c) 2011, Elliott Slaughter <elliottslaughter@gmail.com>
@@ -24,23 +24,24 @@
 #### DEALINGS IN THE SOFTWARE.
 ####
 
-set -e
+import os, re
+from scripts.find_lisp import find_lisp
+from scripts.get_lisp import get_lisp
+from scripts.get_quicklisp import get_quicklisp
+from scripts.run_lisp import run_lisp_output
 
-build_dir="$(dirname "$("$(dirname "$BASH_SOURCE")/scripts/readlink-dirname.sh" "$BASH_SOURCE")")"
+_build_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Look for Lisp. If it isn't found, try to install it.
-lisp="$("$build_dir/scripts/find-lisp.sh")"
-if [[ -z "$lisp" ]]; then
-    "$build_dir/scripts/get-lisp.sh"
-fi
-
-# Look for Lisp again. If it isn't found, then we failed to install it; abort.
-lisp="$("$build_dir/scripts/find-lisp.sh")"
-if [[ -z "$lisp" ]]; then
-    echo "Unable to find which Lisp to run for installing Quicklisp."
-    exit 1
-fi
-
-if [[ -z $("$build_dir/scripts/run-lisp.pl" "$lisp" --load "$build_dir/scripts/quicklisp-existsp.lisp" 2>&1 | grep 'Quicklisp exists? yes') ]]; then
-    "$build_dir/scripts/get-quicklisp.sh" "$lisp"
-fi
+_quicklisp_exists = re.compile(r'^Quicklisp exists[?] yes$', re.M)
+if __name__ == '__main__':
+    lisp = find_lisp()
+    if lisp is None:
+        get_lisp()
+    lisp = find_lisp()
+    if lisp is None:
+        print('Failed to install Lisp')
+    output = run_lisp_output(
+        'sbcl',
+        '--load', os.path.join(_build_dir, 'scripts', 'quicklisp-existsp.lisp'))
+    if re.search(_quicklisp_exists, output) is None:
+        get_quicklisp(lisp)

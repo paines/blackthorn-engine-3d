@@ -51,6 +51,7 @@ def get_lisp_for_windows():
             subprocess.check_call(['svn', 'co', _clozure_url])
             print('Done downloading Clozure CL.')
     if which('sbcl') is None:
+        print('Downloading SBCL...')
         filename = download(_sbcl_url)
         if filename is None:
             print("Failed to download SBCL.")

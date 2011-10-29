@@ -33,6 +33,7 @@ _quicklisp_url = "http://beta.quicklisp.org/quicklisp.lisp"
 def get_quicklisp(lisp):
     previous_cwd = os.getcwd()
     os.chdir(_build_dir)
+    print('Downloading Quicklisp...')
     filename = download(_quicklisp_url)
     run_lisp(lisp,
              '--load', filename,

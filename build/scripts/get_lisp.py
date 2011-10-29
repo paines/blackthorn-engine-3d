@@ -26,8 +26,8 @@
 
 import os, subprocess, sys
 
-from download import download
-from which import which
+from .download import download
+from .which import which
 
 _build_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 _svn_url = \

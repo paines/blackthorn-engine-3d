@@ -29,7 +29,7 @@ from download import download
 from run_lisp import run_lisp
 
 _build_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-_quicklisp_url="http://beta.quicklisp.org/quicklisp.lisp"
+_quicklisp_url = "http://beta.quicklisp.org/quicklisp.lisp"
 def get_quicklisp(lisp):
     previous_cwd = os.getcwd()
     os.chdir(_build_dir)

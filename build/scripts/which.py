@@ -25,24 +25,19 @@
 ####
 
 import os, subprocess
-from which import which
 
-_cached_filename = '.find-lisp'
-_lisps = (
-    ('sbcl', 'sbcl'),
-    ('ccl', 'clozure'),
-    ('alisp', 'allegro'),
-    ('clisp', 'clisp'),
-    ('ecl', 'ecl'),
-)
-def find_lisp(cache_filename = _cached_filename):
-    if os.path.isfile(cache_filename):
-        with open(cache_filename) as f:
-            lisp = f.read()
-            # 2.x returns list, 3.x returns iterator
-            if lisp in next(iter(zip(*_lisps))): return lisp
-    for command, alias in _lisps:
-        if which(command) is not None:
-            with open(cache_filename, 'w') as f:
-                f.write(alias)
-            return alias
+def _path():
+    return os.environ['PATH'].split(os.pathsep)
+
+def _is_executable(filename):
+    return os.path.isfile(filename) and os.access(filename, os.X_OK)
+
+def which(filename, path = None):
+    if path is None:
+        path = _path()
+    if os.path.isabs(filename):
+        return filename if _is_executable(filename) else None
+    for directory in path:
+        abs_filename = os.path.join(directory, filename)
+        if _is_executable(abs_filename):
+            return abs_filename

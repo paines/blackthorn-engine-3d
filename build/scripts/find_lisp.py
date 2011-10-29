@@ -25,7 +25,7 @@
 ####
 
 import os, subprocess
-from which import which
+from .which import which
 
 _cached_filename = '.find-lisp'
 _lisps = (

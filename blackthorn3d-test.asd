@@ -32,6 +32,8 @@
   :name "blackthorn3d-test"
   :author "Elliott Slaughter <elliottslaughter@gmail.com>"
   :version "0.0"
+  :license "MIT"
+  :description "Test suite for Blackthorn 3D"
   :components ((:module src
                         :components
                         ((:module test

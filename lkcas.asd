@@ -33,5 +33,6 @@
   :properties ((:long-name . "Linux Kinetic Combat Action Simulator"))
   :author "Elliott Slaughter <elliottslaughter@gmail.com>"
   :version "0.0"
-  :description "Simple demo of Blackthorn 3D Engine."
+  :license "MIT"
+  :description "Demo zero-gravity shooter game for Blackthorn 3D engine"
   :depends-on (:blackthorn3d))

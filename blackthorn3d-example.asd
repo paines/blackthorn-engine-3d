@@ -23,13 +23,15 @@
 ;;;; DEALINGS IN THE SOFTWARE.
 ;;;;
 
-(defpackage :blank-asd
+(defpackage :blackthorn3d-example-asd
   (:use :cl :asdf))
 
-(in-package :blank-asd)
+(in-package :blackthorn3d-example-asd)
 
-(defsystem blank
-  :name "blank"
+(defsystem blackthorn3d-example
+  :name "blackthorn3d-example"
   :author "Elliott Slaughter <elliottslaughter@gmail.com>"
   :version "0.0"
+  :license "MIT"
+  :description "Trivial demo game for Blackthorn 3D engine"
   :depends-on (:blackthorn3d))

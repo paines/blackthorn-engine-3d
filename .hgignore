@@ -1,0 +1,7 @@
+syntax: glob
+
+# hidden, backup, and temporary files
+*~
+.\#*
+.*.swp
+.DS_Store
